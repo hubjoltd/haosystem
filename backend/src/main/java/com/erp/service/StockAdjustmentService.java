@@ -48,7 +48,7 @@ public class StockAdjustmentService {
         }
         adjustment.setQuantityAfter(newStock);
         
-        BigDecimal costPrice = item.getCostPrice() != null ? item.getCostPrice() : BigDecimal.ZERO;
+        BigDecimal costPrice = item.getUnitCost() != null ? item.getUnitCost() : BigDecimal.ZERO;
         BigDecimal valueDiff = costPrice.multiply(BigDecimal.valueOf(adjustment.getQuantityAdjusted()));
         if ("DECREASE".equals(adjustment.getAdjustmentType())) {
             valueDiff = valueDiff.negate();

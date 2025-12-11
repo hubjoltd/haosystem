@@ -54,9 +54,9 @@ public class StockTransferService {
             outLedger.setQuantityIn(0);
             outLedger.setQuantityOut(line.getQuantity());
             outLedger.setBalanceQuantity(line.getItem().getCurrentStock());
-            outLedger.setUnitValue(line.getItem().getCostPrice());
-            outLedger.setTotalValue(line.getItem().getCostPrice() != null ? 
-                line.getItem().getCostPrice().multiply(BigDecimal.valueOf(line.getQuantity())) : BigDecimal.ZERO);
+            outLedger.setUnitValue(line.getItem().getUnitCost());
+            outLedger.setTotalValue(line.getItem().getUnitCost() != null ? 
+                line.getItem().getUnitCost().multiply(BigDecimal.valueOf(line.getQuantity())) : BigDecimal.ZERO);
             outLedger.setTransactionDate(LocalDateTime.now());
             inventoryLedgerRepository.save(outLedger);
             
@@ -69,9 +69,9 @@ public class StockTransferService {
             inLedger.setQuantityIn(line.getQuantity());
             inLedger.setQuantityOut(0);
             inLedger.setBalanceQuantity(line.getItem().getCurrentStock());
-            inLedger.setUnitValue(line.getItem().getCostPrice());
-            inLedger.setTotalValue(line.getItem().getCostPrice() != null ? 
-                line.getItem().getCostPrice().multiply(BigDecimal.valueOf(line.getQuantity())) : BigDecimal.ZERO);
+            inLedger.setUnitValue(line.getItem().getUnitCost());
+            inLedger.setTotalValue(line.getItem().getUnitCost() != null ? 
+                line.getItem().getUnitCost().multiply(BigDecimal.valueOf(line.getQuantity())) : BigDecimal.ZERO);
             inLedger.setTransactionDate(LocalDateTime.now());
             inventoryLedgerRepository.save(inLedger);
         }

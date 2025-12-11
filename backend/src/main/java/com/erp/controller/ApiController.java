@@ -130,6 +130,11 @@ public class ApiController {
         return ResponseEntity.ok(itemGroupService.findAll());
     }
     
+    @GetMapping("/inventory/groups/active")
+    public ResponseEntity<List<ItemGroup>> getActiveGroups() {
+        return ResponseEntity.ok(itemGroupService.findAllActive());
+    }
+    
     @GetMapping("/inventory/groups/{id}")
     public ResponseEntity<ItemGroup> getGroup(@PathVariable Long id) {
         return itemGroupService.findById(id)
@@ -137,8 +142,22 @@ public class ApiController {
             .orElse(ResponseEntity.notFound().build());
     }
     
+    @GetMapping("/inventory/groups/{id}/can-deactivate")
+    public ResponseEntity<Map<String, Object>> canDeactivateGroup(@PathVariable Long id) {
+        Map<String, Object> result = new HashMap<>();
+        boolean canDeactivate = itemGroupService.canDeactivate(id);
+        result.put("canDeactivate", canDeactivate);
+        result.put("itemCount", itemGroupService.countItemsInGroup(id));
+        return ResponseEntity.ok(result);
+    }
+    
     @PostMapping("/inventory/groups")
-    public ResponseEntity<ItemGroup> createGroup(@RequestBody ItemGroup group) {
+    public ResponseEntity<?> createGroup(@RequestBody ItemGroup group) {
+        if (itemGroupService.existsByCode(group.getCode())) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Group code already exists");
+            return ResponseEntity.badRequest().body(error);
+        }
         return ResponseEntity.ok(itemGroupService.save(group));
     }
     
@@ -147,15 +166,37 @@ public class ApiController {
         return ResponseEntity.ok(itemGroupService.update(id, group));
     }
     
-    @DeleteMapping("/inventory/groups/{id}")
-    public ResponseEntity<Void> deleteGroup(@PathVariable Long id) {
-        itemGroupService.delete(id);
+    @PutMapping("/inventory/groups/{id}/deactivate")
+    public ResponseEntity<?> deactivateGroup(@PathVariable Long id) {
+        if (!itemGroupService.canDeactivate(id)) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Cannot deactivate group with existing items");
+            return ResponseEntity.badRequest().body(error);
+        }
+        itemGroupService.deactivate(id);
         return ResponseEntity.ok().build();
+    }
+    
+    @DeleteMapping("/inventory/groups/{id}")
+    public ResponseEntity<?> deleteGroup(@PathVariable Long id) {
+        try {
+            itemGroupService.delete(id);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
     }
 
     @GetMapping("/inventory/items")
     public ResponseEntity<List<Item>> getItems() {
         return ResponseEntity.ok(itemService.findAll());
+    }
+    
+    @GetMapping("/inventory/items/active")
+    public ResponseEntity<List<Item>> getActiveItems() {
+        return ResponseEntity.ok(itemService.findAllActive());
     }
     
     @GetMapping("/inventory/items/{id}")
@@ -165,13 +206,42 @@ public class ApiController {
             .orElse(ResponseEntity.notFound().build());
     }
     
+    @GetMapping("/inventory/items/group/{groupId}")
+    public ResponseEntity<List<Item>> getItemsByGroup(@PathVariable Long groupId) {
+        return ResponseEntity.ok(itemService.findByGroupId(groupId));
+    }
+    
+    @GetMapping("/inventory/items/validate-name")
+    public ResponseEntity<Map<String, Boolean>> validateItemName(
+            @RequestParam String name,
+            @RequestParam Long groupId,
+            @RequestParam(required = false) Long excludeId) {
+        Map<String, Boolean> result = new HashMap<>();
+        result.put("isUnique", itemService.isNameUniqueInGroup(name, groupId, excludeId));
+        return ResponseEntity.ok(result);
+    }
+    
     @PostMapping("/inventory/items")
-    public ResponseEntity<Item> createItem(@RequestBody Item item) {
+    public ResponseEntity<?> createItem(@RequestBody Item item) {
+        if (item.getGroup() != null && item.getName() != null) {
+            if (!itemService.isNameUniqueInGroup(item.getName(), item.getGroup().getId(), null)) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Item name already exists in this group");
+                return ResponseEntity.badRequest().body(error);
+            }
+        }
         return ResponseEntity.ok(itemService.save(item));
     }
     
     @PutMapping("/inventory/items/{id}")
-    public ResponseEntity<Item> updateItem(@PathVariable Long id, @RequestBody Item item) {
+    public ResponseEntity<?> updateItem(@PathVariable Long id, @RequestBody Item item) {
+        if (item.getGroup() != null && item.getName() != null) {
+            if (!itemService.isNameUniqueInGroup(item.getName(), item.getGroup().getId(), id)) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Item name already exists in this group");
+                return ResponseEntity.badRequest().body(error);
+            }
+        }
         return ResponseEntity.ok(itemService.update(id, item));
     }
     
@@ -191,6 +261,16 @@ public class ApiController {
         return ResponseEntity.ok(unitOfMeasureService.findAll());
     }
     
+    @GetMapping("/inventory/units/active")
+    public ResponseEntity<List<UnitOfMeasure>> getActiveUnits() {
+        return ResponseEntity.ok(unitOfMeasureService.findAllActive());
+    }
+    
+    @GetMapping("/inventory/units/base")
+    public ResponseEntity<List<UnitOfMeasure>> getBaseUnits() {
+        return ResponseEntity.ok(unitOfMeasureService.findAllBaseUnits());
+    }
+    
     @GetMapping("/inventory/units/{id}")
     public ResponseEntity<UnitOfMeasure> getUnit(@PathVariable Long id) {
         return unitOfMeasureService.findById(id)
@@ -199,7 +279,12 @@ public class ApiController {
     }
     
     @PostMapping("/inventory/units")
-    public ResponseEntity<UnitOfMeasure> createUnit(@RequestBody UnitOfMeasure unit) {
+    public ResponseEntity<?> createUnit(@RequestBody UnitOfMeasure unit) {
+        if (unitOfMeasureService.existsByCode(unit.getCode())) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "UOM code already exists");
+            return ResponseEntity.badRequest().body(error);
+        }
         return ResponseEntity.ok(unitOfMeasureService.save(unit));
     }
     
@@ -219,6 +304,11 @@ public class ApiController {
         return ResponseEntity.ok(warehouseService.findAll());
     }
     
+    @GetMapping("/inventory/warehouses/active")
+    public ResponseEntity<List<Warehouse>> getActiveWarehouses() {
+        return ResponseEntity.ok(warehouseService.findAllActive());
+    }
+    
     @GetMapping("/inventory/warehouses/{id}")
     public ResponseEntity<Warehouse> getWarehouse(@PathVariable Long id) {
         return warehouseService.findById(id)
@@ -227,7 +317,12 @@ public class ApiController {
     }
     
     @PostMapping("/inventory/warehouses")
-    public ResponseEntity<Warehouse> createWarehouse(@RequestBody Warehouse warehouse) {
+    public ResponseEntity<?> createWarehouse(@RequestBody Warehouse warehouse) {
+        if (warehouseService.existsByCode(warehouse.getCode())) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Warehouse code already exists");
+            return ResponseEntity.badRequest().body(error);
+        }
         return ResponseEntity.ok(warehouseService.save(warehouse));
     }
     

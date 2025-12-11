@@ -64,6 +64,6 @@ com/erp/config/SecurityConfig.class
 com/erp/repository/StockTransferRepository.class
 com/erp/repository/CustomerRepository.class
 com/erp/repository/WarehouseRepository.class
-com/erp/model/StockTransfer.class
 com/erp/model/Supplier.class
+com/erp/model/StockTransfer.class
 com/erp/repository/GeneralSettingsRepository.class

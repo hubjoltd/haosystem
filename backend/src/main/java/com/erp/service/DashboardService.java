@@ -39,8 +39,8 @@ public class DashboardService {
         stats.put("totalIssues", goodsIssueRepository.count());
         
         BigDecimal totalInventoryValue = itemRepository.findAll().stream()
-            .filter(item -> item.getCurrentStock() != null && item.getCostPrice() != null)
-            .map(item -> item.getCostPrice().multiply(BigDecimal.valueOf(item.getCurrentStock())))
+            .filter(item -> item.getCurrentStock() != null && item.getUnitCost() != null)
+            .map(item -> item.getUnitCost().multiply(BigDecimal.valueOf(item.getCurrentStock())))
             .reduce(BigDecimal.ZERO, BigDecimal::add);
         stats.put("totalInventoryValue", totalInventoryValue);
         

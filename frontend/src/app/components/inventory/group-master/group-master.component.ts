@@ -14,6 +14,8 @@ export class GroupMasterComponent implements OnInit {
   editMode: boolean = false;
   selectedGroup: ItemGroup = this.getEmptyGroup();
   loading: boolean = false;
+  errorMessage: string = '';
+  canDeactivateInfo: { canDeactivate: boolean; itemCount: number } | null = null;
 
   constructor(private groupService: ItemGroupService) {}
 
@@ -53,9 +55,12 @@ export class GroupMasterComponent implements OnInit {
   }
 
   openModal(group?: ItemGroup) {
+    this.errorMessage = '';
+    this.canDeactivateInfo = null;
     if (group) {
       this.editMode = true;
       this.selectedGroup = { ...group };
+      this.checkCanDeactivate(group.id!);
     } else {
       this.editMode = false;
       this.selectedGroup = this.getEmptyGroup();
@@ -63,19 +68,55 @@ export class GroupMasterComponent implements OnInit {
     this.showModal = true;
   }
 
+  checkCanDeactivate(id: number): void {
+    this.groupService.canDeactivate(id).subscribe({
+      next: (info) => {
+        this.canDeactivateInfo = info;
+      },
+      error: (err) => console.error('Error checking deactivate status', err)
+    });
+  }
+
   closeModal() {
     this.showModal = false;
     this.selectedGroup = this.getEmptyGroup();
+    this.errorMessage = '';
+    this.canDeactivateInfo = null;
+  }
+
+  isFormValid(): boolean {
+    return this.selectedGroup.code.trim() !== '' && 
+           this.selectedGroup.name.trim() !== '';
+  }
+
+  canChangeToInactive(): boolean {
+    if (!this.editMode) return true;
+    if (this.selectedGroup.status === 'Active') return true;
+    if (this.canDeactivateInfo === null) return true;
+    return this.canDeactivateInfo.canDeactivate;
   }
 
   saveGroup(): void {
+    if (!this.isFormValid()) {
+      this.errorMessage = 'Group Code and Name are required';
+      return;
+    }
+
+    if (this.editMode && this.selectedGroup.status === 'Inactive' && 
+        this.canDeactivateInfo && !this.canDeactivateInfo.canDeactivate) {
+      this.errorMessage = `Cannot deactivate: ${this.canDeactivateInfo.itemCount} item(s) are linked to this group`;
+      return;
+    }
+
     if (this.editMode && this.selectedGroup.id) {
       this.groupService.update(this.selectedGroup.id, this.selectedGroup).subscribe({
         next: () => {
           this.loadGroups();
           this.closeModal();
         },
-        error: (err) => console.error('Error updating group', err)
+        error: (err) => {
+          this.errorMessage = err.error?.error || 'Error updating group';
+        }
       });
     } else {
       this.groupService.create(this.selectedGroup).subscribe({
@@ -83,18 +124,31 @@ export class GroupMasterComponent implements OnInit {
           this.loadGroups();
           this.closeModal();
         },
-        error: (err) => console.error('Error creating group', err)
+        error: (err) => {
+          this.errorMessage = err.error?.error || 'Error creating group';
+        }
       });
     }
   }
 
   deleteGroup(id: number): void {
-    if (confirm('Are you sure you want to delete this group?')) {
-      this.groupService.delete(id).subscribe({
-        next: () => this.loadGroups(),
-        error: (err) => console.error('Error deleting group', err)
-      });
-    }
+    this.groupService.canDeactivate(id).subscribe({
+      next: (info) => {
+        if (!info.canDeactivate) {
+          alert(`Cannot delete group: ${info.itemCount} item(s) are linked to this group. Please reassign or delete those items first.`);
+          return;
+        }
+        if (confirm('Are you sure you want to delete this group?')) {
+          this.groupService.delete(id).subscribe({
+            next: () => this.loadGroups(),
+            error: (err) => {
+              alert(err.error?.error || 'Error deleting group');
+            }
+          });
+        }
+      },
+      error: (err) => console.error('Error checking delete status', err)
+    });
   }
 
   getStatusClass(status: string): string {

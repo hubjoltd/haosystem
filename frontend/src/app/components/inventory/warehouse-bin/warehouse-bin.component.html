@@ -34,18 +34,13 @@
           </div>
           <div class="warehouse-details">
             <h3>{{ warehouse.name }}</h3>
-            <p>{{ warehouse.code }} - {{ warehouse.location }}</p>
+            <p><strong>{{ warehouse.code }}</strong> - {{ warehouse.address || 'No address' }}</p>
           </div>
         </div>
         <div class="warehouse-stats">
-          <div class="usage-info">
-            <span class="usage-text">{{ warehouse.usedCapacity || 0 }} / {{ warehouse.capacity }}</span>
-            <div class="usage-bar">
-              <div class="usage-fill" 
-                   [style.width.%]="getUsagePercent(warehouse.usedCapacity || 0, warehouse.capacity)"
-                   [ngClass]="getUsageClass(warehouse.usedCapacity || 0, warehouse.capacity)"></div>
-            </div>
-          </div>
+          <span class="badge" [ngClass]="warehouse.status === 'Active' ? 'badge-success' : 'badge-danger'">
+            {{ warehouse.status }}
+          </span>
           <i class="fas fa-chevron-down expand-icon" [class.rotated]="expandedWarehouse === warehouse.id"></i>
         </div>
       </div>
@@ -53,30 +48,39 @@
       <div class="bins-section" *ngIf="expandedWarehouse === warehouse.id">
         <div class="bins-header">
           <h4>Bins ({{ getBinsForWarehouse(warehouse.id!).length }})</h4>
-          <button class="btn btn-sm btn-primary" (click)="openBinModal(warehouse.id!)">
-            <i class="fas fa-plus"></i> Add Bin
-          </button>
+          <div class="header-actions">
+            <button class="btn btn-sm btn-secondary" (click)="openModal('warehouse', warehouse); $event.stopPropagation()">
+              <i class="fas fa-edit"></i> Edit Warehouse
+            </button>
+            <button class="btn btn-sm btn-primary" (click)="openBinModal(warehouse.id!); $event.stopPropagation()">
+              <i class="fas fa-plus"></i> Add Bin
+            </button>
+          </div>
         </div>
         <div class="bins-grid">
           <div *ngIf="getBinsForWarehouse(warehouse.id!).length === 0" class="empty-bins">
-            <p>No bins in this warehouse</p>
+            <p>No bins in this warehouse. Bins are optional for organizing items within a warehouse.</p>
           </div>
           <div class="bin-card" *ngFor="let bin of getBinsForWarehouse(warehouse.id!)">
             <div class="bin-header">
               <strong>{{ bin.code }}</strong>
               <div class="bin-actions">
-                <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-secondary" (click)="editBin(bin)" title="Edit"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger" (click)="deleteBin(bin.id!)" title="Delete"><i class="fas fa-trash"></i></button>
               </div>
             </div>
-            <p>{{ bin.name }}</p>
-            <div class="bin-usage">
-              <span>{{ bin.usedCapacity || 0 }} / {{ bin.capacity }}</span>
-              <div class="usage-bar small">
-                <div class="usage-fill" 
-                     [style.width.%]="getUsagePercent(bin.usedCapacity || 0, bin.capacity)"
-                     [ngClass]="getUsageClass(bin.usedCapacity || 0, bin.capacity)"></div>
-              </div>
+            <p class="bin-name">{{ bin.name }}</p>
+            <div class="bin-location" *ngIf="bin.zone || bin.aisle || bin.rack || bin.shelf">
+              <small>
+                <span *ngIf="bin.zone">Zone: {{ bin.zone }}</span>
+                <span *ngIf="bin.aisle"> | Aisle: {{ bin.aisle }}</span>
+                <span *ngIf="bin.rack"> | Rack: {{ bin.rack }}</span>
+                <span *ngIf="bin.shelf"> | Shelf: {{ bin.shelf }}</span>
+              </small>
             </div>
+            <span class="badge badge-sm" [ngClass]="bin.status === 'Active' ? 'badge-success' : 'badge-danger'">
+              {{ bin.status }}
+            </span>
           </div>
         </div>
       </div>
@@ -84,30 +88,36 @@
   </div>
 </div>
 
-<!-- Warehouse Modal -->
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+<div class="modal-overlay" *ngIf="showModal && modalType === 'warehouse'" (click)="closeModal()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ editMode ? 'Edit Warehouse' : 'Add Warehouse' }}</h2>
       <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
-      <div class="form-group">
-        <label>Warehouse Code</label>
-        <input type="text" class="form-control" [(ngModel)]="selectedWarehouse.code" placeholder="WH-001" />
+      <div class="alert alert-danger" *ngIf="errorMessage">
+        {{ errorMessage }}
       </div>
+      
       <div class="form-group">
-        <label>Warehouse Name</label>
-        <input type="text" class="form-control" [(ngModel)]="selectedWarehouse.name" placeholder="Main Warehouse" />
+        <label>Warehouse Code <span class="required">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="selectedWarehouse.code" 
+               placeholder="e.g., WH-001" [readonly]="editMode" />
+        <small class="form-hint" *ngIf="!editMode">Unique identifier for this warehouse</small>
       </div>
+      
       <div class="form-group">
-        <label>Location</label>
-        <input type="text" class="form-control" [(ngModel)]="selectedWarehouse.location" placeholder="City, Country" />
+        <label>Warehouse Name <span class="required">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="selectedWarehouse.name" 
+               placeholder="e.g., Main Warehouse" />
       </div>
+      
       <div class="form-group">
-        <label>Capacity</label>
-        <input type="number" class="form-control" [(ngModel)]="selectedWarehouse.capacity" placeholder="1000" />
+        <label>Address</label>
+        <textarea class="form-control" [(ngModel)]="selectedWarehouse.address" 
+                  placeholder="Full address (optional)" rows="3"></textarea>
       </div>
+      
       <div class="form-group">
         <label>Status</label>
         <select class="form-control" [(ngModel)]="selectedWarehouse.status">
@@ -118,7 +128,76 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-      <button class="btn btn-primary" (click)="saveWarehouse()">{{ editMode ? 'Update' : 'Save' }}</button>
+      <button class="btn btn-primary" (click)="saveWarehouse()" [disabled]="!isWarehouseFormValid()">
+        {{ editMode ? 'Update' : 'Save' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal && modalType === 'bin'" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editMode ? 'Edit Bin' : 'Add Bin' }}</h2>
+      <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-danger" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+      
+      <div class="form-group">
+        <label>Bin Code <span class="required">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="selectedBin.code" 
+               placeholder="e.g., BIN-A1" [readonly]="editMode" />
+        <small class="form-hint" *ngIf="!editMode">Unique within this warehouse</small>
+      </div>
+      
+      <div class="form-group">
+        <label>Bin Name <span class="required">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="selectedBin.name" 
+               placeholder="e.g., Storage Bin A1" />
+      </div>
+      
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Zone</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedBin.zone" 
+                 placeholder="e.g., A, B, C (optional)" />
+        </div>
+        <div class="form-group">
+          <label>Aisle</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedBin.aisle" 
+                 placeholder="e.g., 1, 2, 3 (optional)" />
+        </div>
+      </div>
+      
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Rack</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedBin.rack" 
+                 placeholder="e.g., R1, R2 (optional)" />
+        </div>
+        <div class="form-group">
+          <label>Shelf</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedBin.shelf" 
+                 placeholder="e.g., S1, S2 (optional)" />
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Status</label>
+        <select class="form-control" [(ngModel)]="selectedBin.status">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveBin()" [disabled]="!isBinFormValid()">
+        {{ editMode ? 'Update' : 'Save' }}
+      </button>
     </div>
   </div>
 </div>

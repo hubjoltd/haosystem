@@ -12,8 +12,8 @@
 /home/runner/workspace/backend/src/main/java/com/erp/model/GoodsReceiptLine.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/GoodsIssueLine.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/StockTransferLine.java
-/home/runner/workspace/backend/src/main/java/com/erp/model/UnitOfMeasure.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/InventoryLedger.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/UnitOfMeasure.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/ItemGroup.java
 /home/runner/workspace/backend/src/main/java/com/erp/dto/AuthResponse.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/ApiController.java
@@ -55,8 +55,8 @@
 /home/runner/workspace/backend/src/main/java/com/erp/model/Bin.java
 /home/runner/workspace/backend/src/main/java/com/erp/dto/LoginRequest.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/SettingsService.java
-/home/runner/workspace/backend/src/main/java/com/erp/repository/ItemGroupRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/StockAdjustmentRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/ItemGroupRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Role.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/UserRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Supplier.java

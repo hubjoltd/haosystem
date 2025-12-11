@@ -27,8 +27,8 @@
       <table class="table">
         <thead>
           <tr>
-            <th>Code</th>
-            <th>Name</th>
+            <th>Group Code</th>
+            <th>Group Name</th>
             <th>Description</th>
             <th>Status</th>
             <th>Actions</th>
@@ -50,7 +50,7 @@
           <tr *ngFor="let group of filteredGroups">
             <td><strong>{{ group.code }}</strong></td>
             <td>{{ group.name }}</td>
-            <td>{{ group.description }}</td>
+            <td>{{ group.description || '-' }}</td>
             <td>
               <span class="badge" [ngClass]="group.status === 'Active' ? 'badge-success' : 'badge-danger'">
                 {{ group.status }}
@@ -58,8 +58,8 @@
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn btn-sm btn-secondary" (click)="openModal(group)"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-sm btn-danger" (click)="deleteGroup(group.id!)"><i class="fas fa-trash"></i></button>
+                <button class="btn btn-sm btn-secondary" (click)="openModal(group)" title="Edit"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger" (click)="deleteGroup(group.id!)" title="Delete"><i class="fas fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -69,7 +69,6 @@
   </div>
 </div>
 
-<!-- Modal -->
 <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -77,29 +76,45 @@
       <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
-      <div class="form-group">
-        <label>Group Code</label>
-        <input type="text" class="form-control" [(ngModel)]="selectedGroup.code" placeholder="GRP-001" />
+      <div class="alert alert-danger" *ngIf="errorMessage">
+        {{ errorMessage }}
       </div>
+      
       <div class="form-group">
-        <label>Group Name</label>
-        <input type="text" class="form-control" [(ngModel)]="selectedGroup.name" placeholder="Group name" />
+        <label>Group Code <span class="required">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="selectedGroup.code" 
+               placeholder="e.g., GRP-001" [readonly]="editMode" />
+        <small class="form-hint" *ngIf="!editMode">Unique identifier for this group</small>
       </div>
+      
+      <div class="form-group">
+        <label>Group Name <span class="required">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="selectedGroup.name" 
+               placeholder="Enter group name" />
+      </div>
+      
       <div class="form-group">
         <label>Description</label>
-        <textarea class="form-control" [(ngModel)]="selectedGroup.description" placeholder="Group description"></textarea>
+        <textarea class="form-control" [(ngModel)]="selectedGroup.description" 
+                  placeholder="Optional description" rows="3"></textarea>
       </div>
+      
       <div class="form-group">
         <label>Status</label>
         <select class="form-control" [(ngModel)]="selectedGroup.status">
           <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
+          <option value="Inactive" [disabled]="!canChangeToInactive()">Inactive</option>
         </select>
+        <small class="form-hint warning" *ngIf="editMode && canDeactivateInfo && !canDeactivateInfo.canDeactivate">
+          Cannot set to Inactive: {{ canDeactivateInfo.itemCount }} item(s) linked to this group
+        </small>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-      <button class="btn btn-primary" (click)="saveGroup()">{{ editMode ? 'Update' : 'Save' }}</button>
+      <button class="btn btn-primary" (click)="saveGroup()" [disabled]="!isFormValid()">
+        {{ editMode ? 'Update' : 'Save' }}
+      </button>
     </div>
   </div>
 </div>

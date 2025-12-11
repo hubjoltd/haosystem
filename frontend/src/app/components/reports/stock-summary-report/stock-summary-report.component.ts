@@ -50,14 +50,14 @@ export class StockSummaryReportComponent implements OnInit {
         let filteredData = data;
         
         if (this.selectedGroup) {
-          filteredData = filteredData.filter(item => item.groupName === this.selectedGroup);
+          filteredData = filteredData.filter(item => item.group?.name === this.selectedGroup);
         }
         
         this.reportData = filteredData.map(item => ({
           code: item.code,
           name: item.name,
-          group: item.groupName,
-          unit: item.unit,
+          group: item.group?.name || '',
+          unit: item.unitOfMeasure?.name || '',
           opening: 0,
           stockIn: 0,
           stockOut: 0,

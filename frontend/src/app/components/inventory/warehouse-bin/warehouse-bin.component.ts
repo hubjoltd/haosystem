@@ -9,7 +9,6 @@ import { WarehouseService, Warehouse, Bin } from '../../../services/warehouse.se
 })
 export class WarehouseBinComponent implements OnInit {
   warehouses: Warehouse[] = [];
-  bins: Bin[] = [];
   warehouseBins: { [key: number]: Bin[] } = {};
   expandedWarehouse: number | null = null;
   showModal: boolean = false;
@@ -18,6 +17,7 @@ export class WarehouseBinComponent implements OnInit {
   selectedWarehouse: Warehouse = this.getEmptyWarehouse();
   selectedBin: Bin = this.getEmptyBin();
   loading: boolean = false;
+  errorMessage: string = '';
 
   constructor(private warehouseService: WarehouseService) {}
 
@@ -52,9 +52,7 @@ export class WarehouseBinComponent implements OnInit {
     return {
       code: '',
       name: '',
-      location: '',
-      capacity: 0,
-      usedCapacity: 0,
+      address: '',
       status: 'Active'
     };
   }
@@ -63,8 +61,10 @@ export class WarehouseBinComponent implements OnInit {
     return {
       code: '',
       name: '',
-      capacity: 0,
-      usedCapacity: 0,
+      zone: '',
+      aisle: '',
+      rack: '',
+      shelf: '',
       status: 'Active'
     };
   }
@@ -82,6 +82,7 @@ export class WarehouseBinComponent implements OnInit {
 
   openModal(type: string, item?: Warehouse | Bin) {
     this.modalType = type;
+    this.errorMessage = '';
     if (type === 'warehouse') {
       if (item) {
         this.editMode = true;
@@ -104,16 +105,34 @@ export class WarehouseBinComponent implements OnInit {
 
   closeModal() {
     this.showModal = false;
+    this.errorMessage = '';
+  }
+
+  isWarehouseFormValid(): boolean {
+    return this.selectedWarehouse.code.trim() !== '' && 
+           this.selectedWarehouse.name.trim() !== '';
+  }
+
+  isBinFormValid(): boolean {
+    return this.selectedBin.code.trim() !== '' && 
+           this.selectedBin.name.trim() !== '';
   }
 
   saveWarehouse(): void {
+    if (!this.isWarehouseFormValid()) {
+      this.errorMessage = 'Warehouse Code and Name are required';
+      return;
+    }
+
     if (this.editMode && this.selectedWarehouse.id) {
       this.warehouseService.updateWarehouse(this.selectedWarehouse.id, this.selectedWarehouse).subscribe({
         next: () => {
           this.loadWarehouses();
           this.closeModal();
         },
-        error: (err) => console.error('Error updating warehouse', err)
+        error: (err) => {
+          this.errorMessage = err.error?.error || 'Error updating warehouse';
+        }
       });
     } else {
       this.warehouseService.createWarehouse(this.selectedWarehouse).subscribe({
@@ -121,12 +140,19 @@ export class WarehouseBinComponent implements OnInit {
           this.loadWarehouses();
           this.closeModal();
         },
-        error: (err) => console.error('Error creating warehouse', err)
+        error: (err) => {
+          this.errorMessage = err.error?.error || 'Error creating warehouse';
+        }
       });
     }
   }
 
   saveBin(): void {
+    if (!this.isBinFormValid()) {
+      this.errorMessage = 'Bin Code and Name are required';
+      return;
+    }
+
     if (this.editMode && this.selectedBin.id) {
       this.warehouseService.updateBin(this.selectedBin.id, this.selectedBin).subscribe({
         next: () => {
@@ -135,7 +161,9 @@ export class WarehouseBinComponent implements OnInit {
           }
           this.closeModal();
         },
-        error: (err) => console.error('Error updating bin', err)
+        error: (err) => {
+          this.errorMessage = err.error?.error || 'Error updating bin';
+        }
       });
     } else {
       this.selectedBin.warehouseId = this.expandedWarehouse || undefined;
@@ -146,16 +174,20 @@ export class WarehouseBinComponent implements OnInit {
           }
           this.closeModal();
         },
-        error: (err) => console.error('Error creating bin', err)
+        error: (err) => {
+          this.errorMessage = err.error?.error || 'Error creating bin';
+        }
       });
     }
   }
 
   deleteWarehouse(id: number): void {
-    if (confirm('Are you sure you want to delete this warehouse?')) {
+    if (confirm('Are you sure you want to delete this warehouse? All bins inside will also be deleted.')) {
       this.warehouseService.deleteWarehouse(id).subscribe({
         next: () => this.loadWarehouses(),
-        error: (err) => console.error('Error deleting warehouse', err)
+        error: (err) => {
+          alert(err.error?.error || 'Error deleting warehouse');
+        }
       });
     }
   }
@@ -168,21 +200,11 @@ export class WarehouseBinComponent implements OnInit {
             this.loadBinsForWarehouse(this.expandedWarehouse);
           }
         },
-        error: (err) => console.error('Error deleting bin', err)
+        error: (err) => {
+          alert(err.error?.error || 'Error deleting bin');
+        }
       });
     }
-  }
-
-  getUsagePercent(used: number, capacity: number): number {
-    if (!capacity) return 0;
-    return (used / capacity) * 100;
-  }
-
-  getUsageClass(used: number, capacity: number): string {
-    const percent = this.getUsagePercent(used, capacity);
-    if (percent >= 90) return 'critical';
-    if (percent >= 70) return 'warning';
-    return 'normal';
   }
 
   getBinsForWarehouse(warehouseId: number): Bin[] {
@@ -194,6 +216,15 @@ export class WarehouseBinComponent implements OnInit {
     this.selectedBin.warehouseId = warehouseId;
     this.modalType = 'bin';
     this.editMode = false;
+    this.errorMessage = '';
+    this.showModal = true;
+  }
+
+  editBin(bin: Bin): void {
+    this.modalType = 'bin';
+    this.editMode = true;
+    this.selectedBin = { ...bin };
+    this.errorMessage = '';
     this.showModal = true;
   }
 }

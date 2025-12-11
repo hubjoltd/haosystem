@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 export interface Supplier {
   id?: number;
@@ -24,6 +24,12 @@ export class SupplierService {
 
   getAll(): Observable<Supplier[]> {
     return this.http.get<Supplier[]>(this.baseUrl);
+  }
+
+  getActive(): Observable<Supplier[]> {
+    return this.http.get<Supplier[]>(this.baseUrl).pipe(
+      map((suppliers: Supplier[]) => suppliers.filter(s => s.status === 'Active'))
+    );
   }
 
   getById(id: number): Observable<Supplier> {

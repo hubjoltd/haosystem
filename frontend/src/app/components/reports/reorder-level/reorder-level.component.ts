@@ -28,8 +28,8 @@ export class ReorderLevelComponent implements OnInit {
         this.reportData = data.map(item => ({
           code: item.code,
           name: item.name,
-          group: item.groupName,
-          unit: item.unit,
+          group: item.group?.name || '',
+          unit: item.unitOfMeasure?.name || '',
           currentStock: item.currentStock || 0,
           reorderLevel: item.reorderLevel || 0,
           shortage: (item.reorderLevel || 0) - (item.currentStock || 0),

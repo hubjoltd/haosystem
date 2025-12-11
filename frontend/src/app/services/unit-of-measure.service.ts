@@ -6,8 +6,14 @@ export interface UnitOfMeasure {
   id?: number;
   code: string;
   name: string;
-  symbol: string;
+  symbol?: string;
+  conversionFactor?: number;
+  baseUom?: UnitOfMeasure;
   status: string;
+  createdBy?: string;
+  createdDate?: string;
+  updatedBy?: string;
+  updatedDate?: string;
 }
 
 @Injectable({
@@ -20,6 +26,14 @@ export class UnitOfMeasureService {
 
   getAll(): Observable<UnitOfMeasure[]> {
     return this.http.get<UnitOfMeasure[]>(this.baseUrl);
+  }
+
+  getActive(): Observable<UnitOfMeasure[]> {
+    return this.http.get<UnitOfMeasure[]>(`${this.baseUrl}/active`);
+  }
+
+  getBaseUnits(): Observable<UnitOfMeasure[]> {
+    return this.http.get<UnitOfMeasure[]>(`${this.baseUrl}/base`);
   }
 
   getById(id: number): Observable<UnitOfMeasure> {

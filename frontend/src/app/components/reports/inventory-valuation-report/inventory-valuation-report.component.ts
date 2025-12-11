@@ -29,11 +29,11 @@ export class InventoryValuationReportComponent implements OnInit {
         this.reportData = data.map(item => ({
           code: item.code,
           name: item.name,
-          group: item.groupName,
-          unit: item.unit,
+          group: item.group?.name || '',
+          unit: item.unitOfMeasure?.name || '',
           quantity: item.currentStock || 0,
-          unitCost: item.costPrice || 0,
-          totalValue: ((item.currentStock || 0) * (item.costPrice || 0))
+          unitCost: item.unitCost || 0,
+          totalValue: ((item.currentStock || 0) * (item.unitCost || 0))
         }));
         
         this.totalValue = this.reportData.reduce((sum, item) => sum + item.totalValue, 0);

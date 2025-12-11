@@ -6,10 +6,13 @@ export interface Warehouse {
   id?: number;
   code: string;
   name: string;
-  location: string;
-  capacity: number;
-  usedCapacity: number;
+  address?: string;
+  defaultBin?: Bin;
   status: string;
+  createdBy?: string;
+  createdDate?: string;
+  updatedBy?: string;
+  updatedDate?: string;
 }
 
 export interface Bin {
@@ -18,9 +21,15 @@ export interface Bin {
   name: string;
   warehouse?: Warehouse;
   warehouseId?: number;
-  capacity: number;
-  usedCapacity: number;
+  zone?: string;
+  aisle?: string;
+  rack?: string;
+  shelf?: string;
   status: string;
+  createdBy?: string;
+  createdDate?: string;
+  updatedBy?: string;
+  updatedDate?: string;
 }
 
 @Injectable({
@@ -34,6 +43,10 @@ export class WarehouseService {
 
   getAllWarehouses(): Observable<Warehouse[]> {
     return this.http.get<Warehouse[]>(this.warehouseUrl);
+  }
+
+  getActiveWarehouses(): Observable<Warehouse[]> {
+    return this.http.get<Warehouse[]>(`${this.warehouseUrl}/active`);
   }
 
   getWarehouseById(id: number): Observable<Warehouse> {
