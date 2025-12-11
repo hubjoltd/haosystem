@@ -15,11 +15,11 @@
   &.collapsed {
     width: 70px;
 
-    .sidebar-header .logo span,
-    .nav-link span,
+    .logo-text,
+    .nav-text,
     .expand-icon,
-    .logout-btn span {
-      display: none;
+    .logout-text {
+      display: none !important;
     }
 
     .nav-link {
@@ -28,7 +28,7 @@
     }
 
     .sub-menu {
-      display: none;
+      display: none !important;
     }
   }
 }
@@ -48,7 +48,7 @@
       color: white;
     }
 
-    span {
+    .logo-text {
       font-size: 1.25rem;
       font-weight: 600;
       color: white;
@@ -84,7 +84,7 @@
 .nav-item {
   margin: 2px 8px;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
 
   &.active > .nav-link {
     background: linear-gradient(135deg, #00796b 0%, #009688 100%);
@@ -117,7 +117,7 @@
   border-radius: 8px;
   font-size: 0.9rem;
 
-  i {
+  i:first-child {
     width: 20px;
     text-align: center;
     font-size: 1rem;
@@ -125,7 +125,7 @@
     flex-shrink: 0;
   }
 
-  span {
+  .nav-text {
     flex: 1;
     font-weight: 500;
     white-space: nowrap;
@@ -137,6 +137,7 @@
     font-size: 0.7rem;
     transition: transform 0.3s ease;
     color: #999;
+    width: auto;
 
     &.rotated {
       transform: rotate(180deg);
@@ -169,7 +170,7 @@
       background: rgba(0, 121, 107, 0.15);
       color: #00796b;
       
-      i {
+      i:first-child {
         color: #00796b;
       }
     }
@@ -180,7 +181,7 @@
     font-size: 0.85rem;
     border-radius: 0;
 
-    i {
+    i:first-child {
       font-size: 0.85rem;
     }
   }
@@ -193,6 +194,7 @@
     .nav-link {
       padding-left: 64px;
       font-size: 0.8rem;
+      position: relative;
 
       &:before {
         content: '';
@@ -234,7 +236,7 @@
     font-size: 1rem;
   }
 
-  span {
+  .logout-text {
     font-size: 0.9rem;
   }
 

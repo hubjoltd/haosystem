@@ -2,7 +2,7 @@
   <div class="sidebar-header">
     <div class="logo">
       <i class="fas fa-cube"></i>
-      <span *ngIf="!collapsed">ERP System</span>
+      <span class="logo-text">ERP System</span>
     </div>
   </div>
 
@@ -12,18 +12,18 @@
         <li class="nav-item" [class.active]="isActive(item.route)" [class.has-active-child]="hasActiveChild(item)">
           <a class="nav-link" (click)="toggleMenu(item)" [title]="item.label">
             <i [class]="item.icon"></i>
-            <span *ngIf="!collapsed">{{ item.label }}</span>
-            <i *ngIf="item.children && !collapsed" 
+            <span class="nav-text">{{ item.label }}</span>
+            <i *ngIf="item.children" 
                class="fas fa-chevron-down expand-icon" 
                [class.rotated]="item.expanded"></i>
           </a>
           
-          <ul class="sub-menu" *ngIf="item.children && item.expanded && !collapsed">
+          <ul class="sub-menu" *ngIf="item.children && item.expanded">
             <ng-container *ngFor="let child of item.children">
               <li class="nav-item" [class.active]="isActive(child.route)" [class.has-active-child]="hasActiveChild(child)">
                 <a class="nav-link" (click)="toggleMenu(child)">
                   <i [class]="child.icon"></i>
-                  <span>{{ child.label }}</span>
+                  <span class="nav-text">{{ child.label }}</span>
                   <i *ngIf="child.children" 
                      class="fas fa-chevron-down expand-icon" 
                      [class.rotated]="child.expanded"></i>
@@ -35,7 +35,7 @@
                       [class.active]="isActive(subChild.route)">
                     <a class="nav-link" (click)="toggleMenu(subChild)">
                       <i [class]="subChild.icon"></i>
-                      <span>{{ subChild.label }}</span>
+                      <span class="nav-text">{{ subChild.label }}</span>
                     </a>
                   </li>
                 </ul>
@@ -50,7 +50,7 @@
   <div class="sidebar-footer">
     <a class="logout-btn" (click)="logout()" [title]="'Logout'">
       <i class="fas fa-sign-out-alt"></i>
-      <span *ngIf="!collapsed">Logout</span>
+      <span class="logout-text">Logout</span>
     </a>
   </div>
 </aside>
