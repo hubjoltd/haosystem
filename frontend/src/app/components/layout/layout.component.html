@@ -1,5 +1,6 @@
-<div class="layout" [class.sidebar-collapsed]="sidebarCollapsed">
-  <app-sidebar [collapsed]="sidebarCollapsed"></app-sidebar>
+<div class="layout" [class.sidebar-collapsed]="sidebarCollapsed" [class.mobile-menu-open]="mobileMenuOpen">
+  <div class="mobile-overlay" *ngIf="mobileMenuOpen" (click)="closeMobileMenu()"></div>
+  <app-sidebar [collapsed]="sidebarCollapsed" [mobileOpen]="mobileMenuOpen"></app-sidebar>
   <div class="main-wrapper">
     <app-header (toggleSidebar)="toggleSidebar()"></app-header>
     <main class="main-content">

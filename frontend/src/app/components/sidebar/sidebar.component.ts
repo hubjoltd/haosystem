@@ -17,6 +17,7 @@ interface MenuItem {
 })
 export class SidebarComponent {
   @Input() collapsed: boolean = false;
+  @Input() mobileOpen: boolean = false;
 
   menuItems: MenuItem[] = [
     { icon: 'fas fa-home', label: 'Dashboard', route: '/app/dashboard' },
