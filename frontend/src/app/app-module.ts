@@ -20,6 +20,10 @@ import { CustomerSettingsComponent } from './components/settings/customer-settin
 import { ContractSettingsComponent } from './components/settings/contract-settings/contract-settings.component';
 import { RolesSettingsComponent } from './components/settings/roles-settings/roles-settings.component';
 import { StaffManagementComponent } from './components/settings/staff-management/staff-management.component';
+import { TaxRatesComponent } from './components/settings/finance-settings/tax-rates/tax-rates.component';
+import { CurrenciesComponent } from './components/settings/finance-settings/currencies/currencies.component';
+import { PaymentModesComponent } from './components/settings/finance-settings/payment-modes/payment-modes.component';
+import { ExpenseCategoriesComponent } from './components/settings/finance-settings/expense-categories/expense-categories.component';
 
 import { CustomerManagementComponent } from './components/customer-management/customer-management.component';
 import { ContractManagementComponent } from './components/contract-management/contract-management.component';
@@ -61,6 +65,10 @@ import { PurchaseVsGrnReportComponent } from './components/reports/purchase-vs-g
     ContractSettingsComponent,
     RolesSettingsComponent,
     StaffManagementComponent,
+    TaxRatesComponent,
+    CurrenciesComponent,
+    PaymentModesComponent,
+    ExpenseCategoriesComponent,
     CustomerManagementComponent,
     ContractManagementComponent,
     GroupMasterComponent,

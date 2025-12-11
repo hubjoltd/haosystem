@@ -11,6 +11,10 @@ import { CustomerSettingsComponent } from './components/settings/customer-settin
 import { ContractSettingsComponent } from './components/settings/contract-settings/contract-settings.component';
 import { RolesSettingsComponent } from './components/settings/roles-settings/roles-settings.component';
 import { StaffManagementComponent } from './components/settings/staff-management/staff-management.component';
+import { TaxRatesComponent } from './components/settings/finance-settings/tax-rates/tax-rates.component';
+import { CurrenciesComponent } from './components/settings/finance-settings/currencies/currencies.component';
+import { PaymentModesComponent } from './components/settings/finance-settings/payment-modes/payment-modes.component';
+import { ExpenseCategoriesComponent } from './components/settings/finance-settings/expense-categories/expense-categories.component';
 
 import { CustomerManagementComponent } from './components/customer-management/customer-management.component';
 import { ContractManagementComponent } from './components/contract-management/contract-management.component';
@@ -49,6 +53,10 @@ const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'settings/general', component: GeneralSettingsComponent },
       { path: 'settings/finance', component: FinanceSettingsComponent },
+      { path: 'settings/finance/tax-rates', component: TaxRatesComponent },
+      { path: 'settings/finance/currencies', component: CurrenciesComponent },
+      { path: 'settings/finance/payment-modes', component: PaymentModesComponent },
+      { path: 'settings/finance/expense-categories', component: ExpenseCategoriesComponent },
       { path: 'settings/customer', component: CustomerSettingsComponent },
       { path: 'settings/contract', component: ContractSettingsComponent },
       { path: 'settings/roles', component: RolesSettingsComponent },

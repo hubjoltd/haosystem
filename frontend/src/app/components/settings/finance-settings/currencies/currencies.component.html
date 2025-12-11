@@ -1,0 +1,108 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1>Currencies</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <a routerLink="/app/settings/general">Settings</a>
+        <span>/</span>
+        <span>Currencies</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> Add Currency
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Symbol</th>
+            <th>Exchange Rate</th>
+            <th>Default</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="currencies.length === 0">
+            <td colspan="7" class="empty-state">
+              <i class="fas fa-coins"></i>
+              <p>No currencies configured. Click "Add Currency" to create one.</p>
+            </td>
+          </tr>
+          <tr *ngFor="let currency of currencies">
+            <td><strong>{{ currency.code }}</strong></td>
+            <td>{{ currency.name }}</td>
+            <td>{{ currency.symbol }}</td>
+            <td>{{ currency.exchangeRate }}</td>
+            <td><span class="badge" [class.badge-primary]="currency.isDefault">{{ currency.isDefault ? 'Yes' : 'No' }}</span></td>
+            <td><span class="badge" [class.badge-success]="currency.status === 'Active'" [class.badge-danger]="currency.status !== 'Active'">{{ currency.status }}</span></td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary" (click)="openModal(currency)"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger" (click)="deleteCurrency(currency.id!)"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editMode ? 'Edit Currency' : 'Add Currency' }}</h2>
+      <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Currency Code</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedCurrency.code" placeholder="e.g., USD, EUR" />
+        </div>
+        <div class="form-group">
+          <label>Currency Name</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedCurrency.name" placeholder="e.g., US Dollar" />
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Symbol</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedCurrency.symbol" placeholder="e.g., $, €" />
+        </div>
+        <div class="form-group">
+          <label>Exchange Rate</label>
+          <input type="number" class="form-control" [(ngModel)]="selectedCurrency.exchangeRate" placeholder="1.00" />
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Default Currency</label>
+          <select class="form-control" [(ngModel)]="selectedCurrency.isDefault">
+            <option [ngValue]="true">Yes</option>
+            <option [ngValue]="false">No</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select class="form-control" [(ngModel)]="selectedCurrency.status">
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveCurrency()">{{ editMode ? 'Update' : 'Save' }}</button>
+    </div>
+  </div>
+</div>

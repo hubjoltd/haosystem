@@ -1,0 +1,89 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1>Expense Categories</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <a routerLink="/app/settings/general">Settings</a>
+        <span>/</span>
+        <span>Expense Categories</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> Add Category
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="expenseCategories.length === 0">
+            <td colspan="5" class="empty-state">
+              <i class="fas fa-receipt"></i>
+              <p>No expense categories configured. Click "Add Category" to create one.</p>
+            </td>
+          </tr>
+          <tr *ngFor="let category of expenseCategories">
+            <td><strong>{{ category.code }}</strong></td>
+            <td>{{ category.name }}</td>
+            <td>{{ category.description }}</td>
+            <td><span class="badge" [class.badge-success]="category.status === 'Active'" [class.badge-danger]="category.status !== 'Active'">{{ category.status }}</span></td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary" (click)="openModal(category)"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger" (click)="deleteCategory(category.id!)"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editMode ? 'Edit Expense Category' : 'Add Expense Category' }}</h2>
+      <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Category Code</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedCategory.code" placeholder="e.g., EXP-001" />
+        </div>
+        <div class="form-group">
+          <label>Category Name</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedCategory.name" placeholder="e.g., Office Supplies" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" [(ngModel)]="selectedCategory.description" placeholder="Category description"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select class="form-control" [(ngModel)]="selectedCategory.status">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveCategory()">{{ editMode ? 'Update' : 'Save' }}</button>
+    </div>
+  </div>
+</div>

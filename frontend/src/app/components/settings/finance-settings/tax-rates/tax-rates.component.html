@@ -1,0 +1,87 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1>Tax Rates</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <a routerLink="/app/settings/general">Settings</a>
+        <span>/</span>
+        <span>Tax Rates</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> Add Tax Rate
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Rate (%)</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="taxRates.length === 0">
+            <td colspan="5" class="empty-state">
+              <i class="fas fa-percent"></i>
+              <p>No tax rates configured. Click "Add Tax Rate" to create one.</p>
+            </td>
+          </tr>
+          <tr *ngFor="let tax of taxRates">
+            <td><strong>{{ tax.name }}</strong></td>
+            <td>{{ tax.rate }}%</td>
+            <td>{{ tax.description }}</td>
+            <td><span class="badge" [class.badge-success]="tax.status === 'Active'" [class.badge-danger]="tax.status !== 'Active'">{{ tax.status }}</span></td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary" (click)="openModal(tax)"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger" (click)="deleteTaxRate(tax.id!)"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editMode ? 'Edit Tax Rate' : 'Add Tax Rate' }}</h2>
+      <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Tax Name</label>
+        <input type="text" class="form-control" [(ngModel)]="selectedTaxRate.name" placeholder="e.g., VAT, GST" />
+      </div>
+      <div class="form-group">
+        <label>Rate (%)</label>
+        <input type="number" class="form-control" [(ngModel)]="selectedTaxRate.rate" placeholder="0" />
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" [(ngModel)]="selectedTaxRate.description" placeholder="Tax description"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select class="form-control" [(ngModel)]="selectedTaxRate.status">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveTaxRate()">{{ editMode ? 'Update' : 'Save' }}</button>
+    </div>
+  </div>
+</div>

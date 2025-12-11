@@ -26,7 +26,17 @@ export class SidebarComponent {
       expanded: false,
       children: [
         { icon: 'fas fa-sliders-h', label: 'General Settings', route: '/app/settings/general' },
-        { icon: 'fas fa-dollar-sign', label: 'Finance Settings', route: '/app/settings/finance' },
+        {
+          icon: 'fas fa-dollar-sign',
+          label: 'Finance Settings',
+          expanded: false,
+          children: [
+            { icon: 'fas fa-percent', label: 'Tax Rates', route: '/app/settings/finance/tax-rates' },
+            { icon: 'fas fa-coins', label: 'Currencies', route: '/app/settings/finance/currencies' },
+            { icon: 'fas fa-credit-card', label: 'Payment Modes', route: '/app/settings/finance/payment-modes' },
+            { icon: 'fas fa-receipt', label: 'Expense Categories', route: '/app/settings/finance/expense-categories' }
+          ]
+        },
         { icon: 'fas fa-user-cog', label: 'Customer Settings', route: '/app/settings/customer' },
         { icon: 'fas fa-file-contract', label: 'Contract Settings', route: '/app/settings/contract' },
         { icon: 'fas fa-user-shield', label: 'Roles Settings', route: '/app/settings/roles' },
@@ -52,19 +62,19 @@ export class SidebarComponent {
             { icon: 'fas fa-truck', label: 'Supplier', route: '/app/inventory/suppliers' }
           ]
         },
-        { icon: 'fas fa-calculator', label: 'Inventory Valuation', route: '/app/inventory/valuation' },
+        { icon: 'fas fa-calculator', label: 'Inventory Valuation Engine', route: '/app/inventory/valuation' },
+        {
+          icon: 'fas fa-exchange-alt',
+          label: 'Stock Movement',
+          expanded: false,
+          children: [
+            { icon: 'fas fa-arrow-down', label: 'Goods Receipt (GRN)', route: '/app/stock/grn' },
+            { icon: 'fas fa-arrow-up', label: 'Goods Issue', route: '/app/stock/issue' },
+            { icon: 'fas fa-arrows-alt-h', label: 'Stock Transfer', route: '/app/stock/transfer' },
+            { icon: 'fas fa-edit', label: 'Stock Adjustments', route: '/app/stock/adjustments' }
+          ]
+        },
         { icon: 'fas fa-book', label: 'Inventory Ledger', route: '/app/inventory/ledger' }
-      ]
-    },
-    {
-      icon: 'fas fa-exchange-alt',
-      label: 'Stock Movement',
-      expanded: false,
-      children: [
-        { icon: 'fas fa-arrow-down', label: 'Goods Receipt (GRN)', route: '/app/stock/grn' },
-        { icon: 'fas fa-arrow-up', label: 'Goods Issue', route: '/app/stock/issue' },
-        { icon: 'fas fa-arrows-alt-h', label: 'Stock Transfer', route: '/app/stock/transfer' },
-        { icon: 'fas fa-edit', label: 'Stock Adjustments', route: '/app/stock/adjustments' }
       ]
     },
     {
@@ -72,15 +82,15 @@ export class SidebarComponent {
       label: 'Inventory Reports',
       expanded: false,
       children: [
-        { icon: 'fas fa-clipboard-list', label: 'Stock Summary', route: '/app/reports/stock-summary' },
-        { icon: 'fas fa-coins', label: 'Inventory Valuation', route: '/app/reports/valuation' },
-        { icon: 'fas fa-chart-line', label: 'Item Movement', route: '/app/reports/item-movement' },
-        { icon: 'fas fa-book-open', label: 'Stock Ledger', route: '/app/reports/stock-ledger' },
-        { icon: 'fas fa-sitemap', label: 'Group-wise Stock', route: '/app/reports/group-wise' },
-        { icon: 'fas fa-warehouse', label: 'Warehouse Stock', route: '/app/reports/warehouse-stock' },
+        { icon: 'fas fa-clipboard-list', label: 'Stock Summary Report', route: '/app/reports/stock-summary' },
+        { icon: 'fas fa-coins', label: 'Inventory Valuation Report', route: '/app/reports/valuation' },
+        { icon: 'fas fa-chart-line', label: 'Item Movement Report', route: '/app/reports/item-movement' },
+        { icon: 'fas fa-book-open', label: 'Stock Ledger Report', route: '/app/reports/stock-ledger' },
+        { icon: 'fas fa-sitemap', label: 'Group-wise Stock Report', route: '/app/reports/group-wise' },
+        { icon: 'fas fa-warehouse', label: 'Warehouse Stock Report', route: '/app/reports/warehouse-stock' },
         { icon: 'fas fa-exclamation-triangle', label: 'Reorder Level', route: '/app/reports/reorder-level' },
-        { icon: 'fas fa-hourglass-half', label: 'Slow Moving Items', route: '/app/reports/slow-moving' },
-        { icon: 'fas fa-file-invoice', label: 'Purchase vs GRN', route: '/app/reports/purchase-grn' }
+        { icon: 'fas fa-hourglass-half', label: 'Slow/Non-Moving Items Report', route: '/app/reports/slow-moving' },
+        { icon: 'fas fa-file-invoice', label: 'Purchase vs GRN Report', route: '/app/reports/purchase-grn' }
       ]
     }
   ];
