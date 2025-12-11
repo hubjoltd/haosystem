@@ -19,15 +19,15 @@
 
       <form (ngSubmit)="onSubmit()">
         <div class="form-group">
-          <label for="email">Email Address</label>
+          <label for="username">Username</label>
           <div class="input-wrapper">
-            <i class="fas fa-envelope"></i>
+            <i class="fas fa-user"></i>
             <input
-              type="email"
-              id="email"
-              [(ngModel)]="email"
-              name="email"
-              placeholder="Enter your email"
+              type="text"
+              id="username"
+              [(ngModel)]="username"
+              name="username"
+              placeholder="Enter your username"
               class="form-control"
             />
           </div>
@@ -71,7 +71,7 @@
       </form>
 
       <div class="login-footer">
-        <p>Don't have an account? <a href="#">Contact Admin</a></p>
+        <p>Default login: admin / admin123</p>
       </div>
     </div>
   </div>

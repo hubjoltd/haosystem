@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ContractService, Contract } from '../../services/contract.service';
+import { CustomerService, Customer } from '../../services/customer.service';
 
 @Component({
   selector: 'app-contract-management',
@@ -6,41 +8,128 @@ import { Component } from '@angular/core';
   templateUrl: './contract-management.component.html',
   styleUrls: ['./contract-management.component.scss']
 })
-export class ContractManagementComponent {
-  contracts = [
-    { id: 'CON-001', customer: 'ABC Corporation', type: 'Service Agreement', startDate: '2024-01-01', endDate: '2024-12-31', value: 50000, status: 'Active' },
-    { id: 'CON-002', customer: 'XYZ Industries', type: 'Maintenance Contract', startDate: '2024-03-15', endDate: '2024-09-15', value: 15000, status: 'Active' },
-    { id: 'CON-003', customer: 'Global Trading Co.', type: 'Annual Subscription', startDate: '2023-06-01', endDate: '2024-05-31', value: 35000, status: 'Pending Renewal' },
-    { id: 'CON-004', customer: 'Tech Solutions Ltd', type: 'One-time Project', startDate: '2024-02-01', endDate: '2024-04-30', value: 25000, status: 'Completed' },
-    { id: 'CON-005', customer: 'Local Retail Shop', type: 'Service Agreement', startDate: '2023-01-01', endDate: '2023-12-31', value: 8000, status: 'Expired' }
-  ];
-
+export class ContractManagementComponent implements OnInit {
+  contracts: Contract[] = [];
+  customers: Customer[] = [];
   searchQuery: string = '';
   showModal: boolean = false;
+  editMode: boolean = false;
+  selectedContract: Contract = this.getEmptyContract();
+  loading: boolean = false;
+
+  constructor(
+    private contractService: ContractService,
+    private customerService: CustomerService
+  ) {}
+
+  ngOnInit(): void {
+    this.loadData();
+  }
+
+  loadData(): void {
+    this.loading = true;
+    this.contractService.getAll().subscribe({
+      next: (data) => {
+        this.contracts = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading contracts', err);
+        this.loading = false;
+      }
+    });
+
+    this.customerService.getAll().subscribe({
+      next: (data) => this.customers = data,
+      error: (err) => console.error('Error loading customers', err)
+    });
+  }
 
   get filteredContracts() {
     if (!this.searchQuery) return this.contracts;
     return this.contracts.filter(c => 
-      c.id.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-      c.customer.toLowerCase().includes(this.searchQuery.toLowerCase())
+      c.contractNumber?.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+      c.title.toLowerCase().includes(this.searchQuery.toLowerCase())
     );
   }
 
-  openModal() {
+  getEmptyContract(): Contract {
+    return {
+      title: '',
+      description: '',
+      startDate: '',
+      endDate: '',
+      value: 0,
+      status: 'Active',
+      paymentTerms: ''
+    };
+  }
+
+  openModal(contract?: Contract) {
+    if (contract) {
+      this.editMode = true;
+      this.selectedContract = { ...contract };
+    } else {
+      this.editMode = false;
+      this.selectedContract = this.getEmptyContract();
+    }
     this.showModal = true;
   }
 
   closeModal() {
     this.showModal = false;
+    this.selectedContract = this.getEmptyContract();
+  }
+
+  saveContract(): void {
+    if (this.editMode && this.selectedContract.id) {
+      this.contractService.update(this.selectedContract.id, this.selectedContract).subscribe({
+        next: () => {
+          this.loadData();
+          this.closeModal();
+        },
+        error: (err) => console.error('Error updating contract', err)
+      });
+    } else {
+      this.contractService.create(this.selectedContract).subscribe({
+        next: () => {
+          this.loadData();
+          this.closeModal();
+        },
+        error: (err) => console.error('Error creating contract', err)
+      });
+    }
+  }
+
+  deleteContract(id: number): void {
+    if (confirm('Are you sure you want to delete this contract?')) {
+      this.contractService.delete(id).subscribe({
+        next: () => this.loadData(),
+        error: (err) => console.error('Error deleting contract', err)
+      });
+    }
   }
 
   getStatusClass(status: string): string {
     const classes: { [key: string]: string } = {
       'Active': 'badge-success',
-      'Pending Renewal': 'badge-warning',
+      'Pending': 'badge-warning',
       'Completed': 'badge-info',
-      'Expired': 'badge-danger'
+      'Expired': 'badge-danger',
+      'Cancelled': 'badge-secondary'
     };
     return classes[status] || 'badge-info';
+  }
+
+  getTotalValue(): number {
+    return this.contracts.reduce((sum, c) => sum + (c.value || 0), 0);
+  }
+
+  getActiveCount(): number {
+    return this.contracts.filter(c => c.status === 'Active').length;
+  }
+
+  getPendingCount(): number {
+    return this.contracts.filter(c => c.status === 'Pending').length;
   }
 }

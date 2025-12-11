@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { WarehouseService, Warehouse, Bin } from '../../../services/warehouse.service';
 
 @Component({
   selector: 'app-warehouse-bin',
@@ -6,42 +7,98 @@ import { Component } from '@angular/core';
   templateUrl: './warehouse-bin.component.html',
   styleUrls: ['./warehouse-bin.component.scss']
 })
-export class WarehouseBinComponent {
-  warehouses = [
-    { 
-      id: 1, code: 'WH-001', name: 'Main Warehouse', location: 'Building A', capacity: 10000, used: 7500, 
-      bins: [
-        { code: 'BIN-A1', name: 'Aisle A Row 1', capacity: 500, used: 350 },
-        { code: 'BIN-A2', name: 'Aisle A Row 2', capacity: 500, used: 420 },
-        { code: 'BIN-B1', name: 'Aisle B Row 1', capacity: 500, used: 280 }
-      ]
-    },
-    { 
-      id: 2, code: 'WH-002', name: 'Secondary Warehouse', location: 'Building B', capacity: 5000, used: 3200,
-      bins: [
-        { code: 'BIN-C1', name: 'Aisle C Row 1', capacity: 400, used: 300 },
-        { code: 'BIN-C2', name: 'Aisle C Row 2', capacity: 400, used: 250 }
-      ]
-    },
-    { 
-      id: 3, code: 'WH-003', name: 'Cold Storage', location: 'Building C', capacity: 2000, used: 1800,
-      bins: [
-        { code: 'BIN-F1', name: 'Freezer 1', capacity: 300, used: 280 },
-        { code: 'BIN-F2', name: 'Freezer 2', capacity: 300, used: 250 }
-      ]
-    }
-  ];
-
+export class WarehouseBinComponent implements OnInit {
+  warehouses: Warehouse[] = [];
+  bins: Bin[] = [];
+  warehouseBins: { [key: number]: Bin[] } = {};
   expandedWarehouse: number | null = null;
   showModal: boolean = false;
   modalType: string = '';
+  editMode: boolean = false;
+  selectedWarehouse: Warehouse = this.getEmptyWarehouse();
+  selectedBin: Bin = this.getEmptyBin();
+  loading: boolean = false;
 
-  toggleWarehouse(id: number) {
-    this.expandedWarehouse = this.expandedWarehouse === id ? null : id;
+  constructor(private warehouseService: WarehouseService) {}
+
+  ngOnInit(): void {
+    this.loadWarehouses();
   }
 
-  openModal(type: string) {
+  loadWarehouses(): void {
+    this.loading = true;
+    this.warehouseService.getAllWarehouses().subscribe({
+      next: (data) => {
+        this.warehouses = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading warehouses', err);
+        this.loading = false;
+      }
+    });
+  }
+
+  loadBinsForWarehouse(warehouseId: number): void {
+    this.warehouseService.getBinsByWarehouse(warehouseId).subscribe({
+      next: (data) => {
+        this.warehouseBins[warehouseId] = data;
+      },
+      error: (err) => console.error('Error loading bins', err)
+    });
+  }
+
+  getEmptyWarehouse(): Warehouse {
+    return {
+      code: '',
+      name: '',
+      location: '',
+      capacity: 0,
+      usedCapacity: 0,
+      status: 'Active'
+    };
+  }
+
+  getEmptyBin(): Bin {
+    return {
+      code: '',
+      name: '',
+      capacity: 0,
+      usedCapacity: 0,
+      status: 'Active'
+    };
+  }
+
+  toggleWarehouse(id: number) {
+    if (this.expandedWarehouse === id) {
+      this.expandedWarehouse = null;
+    } else {
+      this.expandedWarehouse = id;
+      if (!this.warehouseBins[id]) {
+        this.loadBinsForWarehouse(id);
+      }
+    }
+  }
+
+  openModal(type: string, item?: Warehouse | Bin) {
     this.modalType = type;
+    if (type === 'warehouse') {
+      if (item) {
+        this.editMode = true;
+        this.selectedWarehouse = { ...item } as Warehouse;
+      } else {
+        this.editMode = false;
+        this.selectedWarehouse = this.getEmptyWarehouse();
+      }
+    } else if (type === 'bin') {
+      if (item) {
+        this.editMode = true;
+        this.selectedBin = { ...item } as Bin;
+      } else {
+        this.editMode = false;
+        this.selectedBin = this.getEmptyBin();
+      }
+    }
     this.showModal = true;
   }
 
@@ -49,7 +106,75 @@ export class WarehouseBinComponent {
     this.showModal = false;
   }
 
+  saveWarehouse(): void {
+    if (this.editMode && this.selectedWarehouse.id) {
+      this.warehouseService.updateWarehouse(this.selectedWarehouse.id, this.selectedWarehouse).subscribe({
+        next: () => {
+          this.loadWarehouses();
+          this.closeModal();
+        },
+        error: (err) => console.error('Error updating warehouse', err)
+      });
+    } else {
+      this.warehouseService.createWarehouse(this.selectedWarehouse).subscribe({
+        next: () => {
+          this.loadWarehouses();
+          this.closeModal();
+        },
+        error: (err) => console.error('Error creating warehouse', err)
+      });
+    }
+  }
+
+  saveBin(): void {
+    if (this.editMode && this.selectedBin.id) {
+      this.warehouseService.updateBin(this.selectedBin.id, this.selectedBin).subscribe({
+        next: () => {
+          if (this.expandedWarehouse) {
+            this.loadBinsForWarehouse(this.expandedWarehouse);
+          }
+          this.closeModal();
+        },
+        error: (err) => console.error('Error updating bin', err)
+      });
+    } else {
+      this.selectedBin.warehouseId = this.expandedWarehouse || undefined;
+      this.warehouseService.createBin(this.selectedBin).subscribe({
+        next: () => {
+          if (this.expandedWarehouse) {
+            this.loadBinsForWarehouse(this.expandedWarehouse);
+          }
+          this.closeModal();
+        },
+        error: (err) => console.error('Error creating bin', err)
+      });
+    }
+  }
+
+  deleteWarehouse(id: number): void {
+    if (confirm('Are you sure you want to delete this warehouse?')) {
+      this.warehouseService.deleteWarehouse(id).subscribe({
+        next: () => this.loadWarehouses(),
+        error: (err) => console.error('Error deleting warehouse', err)
+      });
+    }
+  }
+
+  deleteBin(id: number): void {
+    if (confirm('Are you sure you want to delete this bin?')) {
+      this.warehouseService.deleteBin(id).subscribe({
+        next: () => {
+          if (this.expandedWarehouse) {
+            this.loadBinsForWarehouse(this.expandedWarehouse);
+          }
+        },
+        error: (err) => console.error('Error deleting bin', err)
+      });
+    }
+  }
+
   getUsagePercent(used: number, capacity: number): number {
+    if (!capacity) return 0;
     return (used / capacity) * 100;
   }
 
@@ -58,5 +183,17 @@ export class WarehouseBinComponent {
     if (percent >= 90) return 'critical';
     if (percent >= 70) return 'warning';
     return 'normal';
+  }
+
+  getBinsForWarehouse(warehouseId: number): Bin[] {
+    return this.warehouseBins[warehouseId] || [];
+  }
+
+  openBinModal(warehouseId: number): void {
+    this.selectedBin = this.getEmptyBin();
+    this.selectedBin.warehouseId = warehouseId;
+    this.modalType = 'bin';
+    this.editMode = false;
+    this.showModal = true;
   }
 }

@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { SupplierService, Supplier } from '../../../services/supplier.service';
 
 @Component({
   selector: 'app-supplier',
@@ -6,21 +7,101 @@ import { Component } from '@angular/core';
   templateUrl: './supplier.component.html',
   styleUrls: ['./supplier.component.scss']
 })
-export class SupplierComponent {
-  suppliers = [
-    { id: 1, code: 'SUP-001', name: 'Global Supplies Inc.', email: 'contact@globalsupplies.com', phone: '+1 234 567 8901', category: 'Electronics', rating: 4.5, status: 'Active' },
-    { id: 2, code: 'SUP-002', name: 'Steel Works Ltd', email: 'info@steelworks.com', phone: '+1 234 567 8902', category: 'Raw Materials', rating: 4.2, status: 'Active' },
-    { id: 3, code: 'SUP-003', name: 'Office Plus', email: 'sales@officeplus.com', phone: '+1 234 567 8903', category: 'Stationery', rating: 4.8, status: 'Active' },
-    { id: 4, code: 'SUP-004', name: 'Furniture World', email: 'order@furnitureworld.com', phone: '+1 234 567 8904', category: 'Furniture', rating: 3.9, status: 'Inactive' }
-  ];
-
+export class SupplierComponent implements OnInit {
+  suppliers: Supplier[] = [];
   searchQuery: string = '';
   showModal: boolean = false;
+  editMode: boolean = false;
+  selectedSupplier: Supplier = this.getEmptySupplier();
+  loading: boolean = false;
 
-  openModal() { this.showModal = true; }
-  closeModal() { this.showModal = false; }
+  constructor(private supplierService: SupplierService) {}
 
-  getRatingStars(rating: number): number[] {
-    return Array(5).fill(0).map((_, i) => i < Math.floor(rating) ? 1 : 0);
+  ngOnInit(): void {
+    this.loadSuppliers();
+  }
+
+  loadSuppliers(): void {
+    this.loading = true;
+    this.supplierService.getAll().subscribe({
+      next: (data) => {
+        this.suppliers = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading suppliers', err);
+        this.loading = false;
+      }
+    });
+  }
+
+  get filteredSuppliers() {
+    if (!this.searchQuery) return this.suppliers;
+    return this.suppliers.filter(s => 
+      s.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+      s.code.toLowerCase().includes(this.searchQuery.toLowerCase())
+    );
+  }
+
+  getEmptySupplier(): Supplier {
+    return {
+      code: '',
+      name: '',
+      contactPerson: '',
+      email: '',
+      phone: '',
+      address: '',
+      paymentTerms: '',
+      status: 'Active'
+    };
+  }
+
+  openModal(supplier?: Supplier) {
+    if (supplier) {
+      this.editMode = true;
+      this.selectedSupplier = { ...supplier };
+    } else {
+      this.editMode = false;
+      this.selectedSupplier = this.getEmptySupplier();
+    }
+    this.showModal = true;
+  }
+
+  closeModal() {
+    this.showModal = false;
+    this.selectedSupplier = this.getEmptySupplier();
+  }
+
+  saveSupplier(): void {
+    if (this.editMode && this.selectedSupplier.id) {
+      this.supplierService.update(this.selectedSupplier.id, this.selectedSupplier).subscribe({
+        next: () => {
+          this.loadSuppliers();
+          this.closeModal();
+        },
+        error: (err) => console.error('Error updating supplier', err)
+      });
+    } else {
+      this.supplierService.create(this.selectedSupplier).subscribe({
+        next: () => {
+          this.loadSuppliers();
+          this.closeModal();
+        },
+        error: (err) => console.error('Error creating supplier', err)
+      });
+    }
+  }
+
+  deleteSupplier(id: number): void {
+    if (confirm('Are you sure you want to delete this supplier?')) {
+      this.supplierService.delete(id).subscribe({
+        next: () => this.loadSuppliers(),
+        error: (err) => console.error('Error deleting supplier', err)
+      });
+    }
+  }
+
+  getStatusClass(status: string): string {
+    return status === 'Active' ? 'badge-success' : 'badge-danger';
   }
 }

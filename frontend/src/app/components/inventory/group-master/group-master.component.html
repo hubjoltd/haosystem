@@ -30,17 +30,27 @@
             <th>Code</th>
             <th>Name</th>
             <th>Description</th>
-            <th>Items</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let group of groups">
+          <tr *ngIf="loading">
+            <td colspan="5" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading...</p>
+            </td>
+          </tr>
+          <tr *ngIf="!loading && filteredGroups.length === 0">
+            <td colspan="5" class="empty-state">
+              <i class="fas fa-layer-group"></i>
+              <p>No groups found. Click "Add Group" to create one.</p>
+            </td>
+          </tr>
+          <tr *ngFor="let group of filteredGroups">
             <td><strong>{{ group.code }}</strong></td>
             <td>{{ group.name }}</td>
             <td>{{ group.description }}</td>
-            <td>{{ group.itemCount }}</td>
             <td>
               <span class="badge" [ngClass]="group.status === 'Active' ? 'badge-success' : 'badge-danger'">
                 {{ group.status }}
@@ -48,13 +58,48 @@
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                <button class="btn btn-sm btn-secondary" (click)="openModal(group)"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger" (click)="deleteGroup(group.id!)"><i class="fas fa-trash"></i></button>
               </div>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editMode ? 'Edit Group' : 'Add Group' }}</h2>
+      <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Group Code</label>
+        <input type="text" class="form-control" [(ngModel)]="selectedGroup.code" placeholder="GRP-001" />
+      </div>
+      <div class="form-group">
+        <label>Group Name</label>
+        <input type="text" class="form-control" [(ngModel)]="selectedGroup.name" placeholder="Group name" />
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" [(ngModel)]="selectedGroup.description" placeholder="Group description"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select class="form-control" [(ngModel)]="selectedGroup.status">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveGroup()">{{ editMode ? 'Update' : 'Save' }}</button>
     </div>
   </div>
 </div>

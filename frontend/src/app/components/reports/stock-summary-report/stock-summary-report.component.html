@@ -6,20 +6,78 @@
         <a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Stock Summary</span>
       </div>
     </div>
-    <button class="btn btn-primary"><i class="fas fa-download"></i> Export</button>
+    <div class="export-buttons">
+      <button class="btn btn-success" (click)="exportToExcel()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-excel"></i> Excel
+      </button>
+      <button class="btn btn-danger" (click)="exportToPDF()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-pdf"></i> PDF
+      </button>
+      <button class="btn btn-info" (click)="exportToCSV()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-csv"></i> CSV
+      </button>
+    </div>
   </div>
   <div class="card">
     <div class="filters-row">
-      <div class="form-group"><label>Warehouse</label><select class="form-control"><option value="">All Warehouses</option></select></div>
-      <div class="form-group"><label>Group</label><select class="form-control"><option value="">All Groups</option></select></div>
-      <button class="btn btn-primary filter-btn"><i class="fas fa-filter"></i> Generate</button>
+      <div class="form-group">
+        <label>Warehouse</label>
+        <select class="form-control" [(ngModel)]="selectedWarehouse">
+          <option value="">All Warehouses</option>
+          <option *ngFor="let w of warehouses" [value]="w.code">{{ w.name }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Group</label>
+        <select class="form-control" [(ngModel)]="selectedGroup">
+          <option value="">All Groups</option>
+          <option *ngFor="let g of groups" [value]="g.name">{{ g.name }}</option>
+        </select>
+      </div>
+      <button class="btn btn-primary filter-btn" (click)="generateReport()" [disabled]="loading">
+        <i class="fas fa-filter"></i> {{ loading ? 'Generating...' : 'Generate' }}
+      </button>
     </div>
   </div>
   <div class="card">
     <div class="table-container">
       <table class="table">
-        <thead><tr><th>Item Code</th><th>Item Name</th><th>Group</th><th>Unit</th><th>Opening</th><th>In</th><th>Out</th><th>Closing</th></tr></thead>
-        <tbody><tr *ngIf="reportData.length === 0"><td colspan="8" class="empty-state"><i class="fas fa-chart-bar"></i><p>Generate report to view data</p></td></tr></tbody>
+        <thead>
+          <tr>
+            <th>Item Code</th>
+            <th>Item Name</th>
+            <th>Group</th>
+            <th>Unit</th>
+            <th>Opening</th>
+            <th>In</th>
+            <th>Out</th>
+            <th>Closing</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="reportData.length === 0 && !loading">
+            <td colspan="8" class="empty-state">
+              <i class="fas fa-chart-bar"></i>
+              <p>Generate report to view data</p>
+            </td>
+          </tr>
+          <tr *ngIf="loading">
+            <td colspan="8" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading...</p>
+            </td>
+          </tr>
+          <tr *ngFor="let row of reportData">
+            <td>{{ row.code }}</td>
+            <td>{{ row.name }}</td>
+            <td>{{ row.group }}</td>
+            <td>{{ row.unit }}</td>
+            <td>{{ row.opening }}</td>
+            <td>{{ row.stockIn }}</td>
+            <td>{{ row.stockOut }}</td>
+            <td>{{ row.closing }}</td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </div>

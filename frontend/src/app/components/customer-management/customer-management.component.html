@@ -24,21 +24,21 @@
     <div class="stat-card">
       <div class="icon success"><i class="fas fa-user-check"></i></div>
       <div class="info">
-        <h3>4</h3>
+        <h3>{{ getActiveCount() }}</h3>
         <p>Active Customers</p>
       </div>
     </div>
     <div class="stat-card">
-      <div class="icon warning"><i class="fas fa-dollar-sign"></i></div>
+      <div class="icon warning"><i class="fas fa-user-times"></i></div>
       <div class="info">
-        <h3>$67,700</h3>
-        <p>Total Balance</p>
+        <h3>{{ getInactiveCount() }}</h3>
+        <p>Inactive Customers</p>
       </div>
     </div>
     <div class="stat-card">
       <div class="icon info"><i class="fas fa-chart-line"></i></div>
       <div class="info">
-        <h3>+12%</h3>
+        <h3>{{ customers.length > 0 ? '+12%' : '0%' }}</h3>
         <p>Growth Rate</p>
       </div>
     </div>
@@ -50,20 +50,6 @@
         <i class="fas fa-search"></i>
         <input type="text" [(ngModel)]="searchQuery" placeholder="Search customers..." />
       </div>
-      <div class="filter-group">
-        <select class="form-control">
-          <option value="">All Groups</option>
-          <option value="Retail">Retail</option>
-          <option value="Wholesale">Wholesale</option>
-          <option value="VIP">VIP</option>
-          <option value="Corporate">Corporate</option>
-        </select>
-        <select class="form-control">
-          <option value="">All Statuses</option>
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
-      </div>
     </div>
 
     <div class="table-container">
@@ -74,12 +60,23 @@
             <th>Email</th>
             <th>Phone</th>
             <th>Group</th>
-            <th>Balance</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
+          <tr *ngIf="loading">
+            <td colspan="6" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading...</p>
+            </td>
+          </tr>
+          <tr *ngIf="!loading && filteredCustomers.length === 0">
+            <td colspan="6" class="empty-state">
+              <i class="fas fa-users"></i>
+              <p>No customers found. Click "Add Customer" to create one.</p>
+            </td>
+          </tr>
           <tr *ngFor="let customer of filteredCustomers">
             <td>
               <div class="user-cell">
@@ -89,16 +86,14 @@
             </td>
             <td>{{ customer.email }}</td>
             <td>{{ customer.phone }}</td>
-            <td><span class="badge badge-info">{{ customer.group }}</span></td>
-            <td>${{ customer.balance.toLocaleString() }}</td>
+            <td><span class="badge badge-info">{{ customer.customerGroup || '-' }}</span></td>
             <td>
               <span class="badge" [ngClass]="getStatusClass(customer.status)">{{ customer.status }}</span>
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn btn-sm btn-secondary" title="View"><i class="fas fa-eye"></i></button>
-                <button class="btn btn-sm btn-secondary" title="Edit"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-sm btn-danger" title="Delete"><i class="fas fa-trash"></i></button>
+                <button class="btn btn-sm btn-secondary" title="Edit" (click)="openModal(customer)"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger" title="Delete" (click)="deleteCustomer(customer.id!)"><i class="fas fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -108,13 +103,55 @@
 
     <div class="table-footer">
       <span>Showing {{ filteredCustomers.length }} of {{ customers.length }} customers</span>
-      <div class="pagination">
-        <button class="btn btn-sm btn-secondary"><i class="fas fa-chevron-left"></i></button>
-        <button class="btn btn-sm btn-primary">1</button>
-        <button class="btn btn-sm btn-secondary">2</button>
-        <button class="btn btn-sm btn-secondary">3</button>
-        <button class="btn btn-sm btn-secondary"><i class="fas fa-chevron-right"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editMode ? 'Edit Customer' : 'Add Customer' }}</h2>
+      <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Customer Name</label>
+        <input type="text" class="form-control" [(ngModel)]="selectedCustomer.name" placeholder="Enter customer name" />
       </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" class="form-control" [(ngModel)]="selectedCustomer.email" placeholder="Enter email address" />
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="text" class="form-control" [(ngModel)]="selectedCustomer.phone" placeholder="Enter phone number" />
+      </div>
+      <div class="form-group">
+        <label>Address</label>
+        <input type="text" class="form-control" [(ngModel)]="selectedCustomer.address" placeholder="Enter address" />
+      </div>
+      <div class="form-group">
+        <label>Customer Group</label>
+        <select class="form-control" [(ngModel)]="selectedCustomer.customerGroup">
+          <option value="">Select Group</option>
+          <option value="Retail">Retail</option>
+          <option value="Wholesale">Wholesale</option>
+          <option value="VIP">VIP</option>
+          <option value="Corporate">Corporate</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select class="form-control" [(ngModel)]="selectedCustomer.status">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveCustomer()">{{ editMode ? 'Update' : 'Save' }}</button>
     </div>
   </div>
 </div>

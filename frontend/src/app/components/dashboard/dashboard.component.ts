@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { DashboardService, DashboardStats } from '../../services/dashboard.service';
+import { ItemService, Item } from '../../services/item.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -7,38 +9,51 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
-  stats = [
-    { icon: 'fas fa-shopping-cart', label: 'Total Orders', value: '2,367', change: '+12%', type: 'primary' },
-    { icon: 'fas fa-dollar-sign', label: 'Total Revenue', value: '$93,438.78', change: '+8%', type: 'success' },
-    { icon: 'fas fa-users', label: 'Total Customers', value: '39,358', change: '+9%', type: 'info' },
-    { icon: 'fas fa-box', label: 'Total Products', value: '1,245', change: '+5%', type: 'warning' }
-  ];
+  stats: { icon: string; label: string; value: string; change: string; type: string }[] = [];
+  dashboardStats: DashboardStats | null = null;
+  lowStockItems: Item[] = [];
+  loading: boolean = true;
 
-  recentOrders = [
-    { id: 'ORD-001', customer: 'Sunil Joshi', product: 'Elite Admin', priority: 'Low', amount: '$3.9k' },
-    { id: 'ORD-002', customer: 'Andrew McDownland', product: 'Real Homes Theme', priority: 'Medium', amount: '$24.5k' },
-    { id: 'ORD-003', customer: 'Christopher Jamil', product: 'MedicalPro Theme', priority: 'High', amount: '$12.8k' },
-    { id: 'ORD-004', customer: 'Nirav Joshi', product: 'Hosting Dashboard', priority: 'Critical', amount: '$2.4k' }
-  ];
+  constructor(
+    private dashboardService: DashboardService,
+    private itemService: ItemService
+  ) {}
 
-  monthlyEarnings = [
-    { month: 'Jan', earnings: 4500 },
-    { month: 'Feb', earnings: 5200 },
-    { month: 'Mar', earnings: 6100 },
-    { month: 'Apr', earnings: 5800 },
-    { month: 'May', earnings: 7200 },
-    { month: 'Jun', earnings: 8500 }
-  ];
+  ngOnInit(): void {
+    this.loadDashboardData();
+  }
 
-  inventoryAlerts = [
-    { item: 'Product A', currentStock: 15, reorderLevel: 20, status: 'Low' },
-    { item: 'Product B', currentStock: 5, reorderLevel: 25, status: 'Critical' },
-    { item: 'Product C', currentStock: 18, reorderLevel: 20, status: 'Low' }
-  ];
+  loadDashboardData(): void {
+    this.dashboardService.getStats().subscribe({
+      next: (data) => {
+        this.dashboardStats = data;
+        this.stats = [
+          { icon: 'fas fa-users', label: 'Total Customers', value: data.totalCustomers?.toString() || '0', change: '', type: 'primary' },
+          { icon: 'fas fa-file-contract', label: 'Total Contracts', value: data.totalContracts?.toString() || '0', change: '', type: 'success' },
+          { icon: 'fas fa-box', label: 'Total Items', value: data.totalItems?.toString() || '0', change: '', type: 'info' },
+          { icon: 'fas fa-dollar-sign', label: 'Inventory Value', value: '$' + (data.totalInventoryValue?.toLocaleString() || '0'), change: '', type: 'warning' }
+        ];
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading dashboard stats', err);
+        this.stats = [
+          { icon: 'fas fa-users', label: 'Total Customers', value: '0', change: '', type: 'primary' },
+          { icon: 'fas fa-file-contract', label: 'Total Contracts', value: '0', change: '', type: 'success' },
+          { icon: 'fas fa-box', label: 'Total Items', value: '0', change: '', type: 'info' },
+          { icon: 'fas fa-dollar-sign', label: 'Inventory Value', value: '$0', change: '', type: 'warning' }
+        ];
+        this.loading = false;
+      }
+    });
 
-  constructor() {}
-
-  ngOnInit(): void {}
+    this.itemService.getLowStock().subscribe({
+      next: (items) => {
+        this.lowStockItems = items;
+      },
+      error: (err) => console.error('Error loading low stock items', err)
+    });
+  }
 
   getPriorityClass(priority: string): string {
     const classes: { [key: string]: string } = {

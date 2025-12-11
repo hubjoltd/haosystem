@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { SettingsService, GeneralSettings } from '../../../services/settings.service';
 
 @Component({
   selector: 'app-general-settings',
@@ -6,25 +7,61 @@ import { Component } from '@angular/core';
   templateUrl: './general-settings.component.html',
   styleUrls: ['./general-settings.component.scss']
 })
-export class GeneralSettingsComponent {
-  companyName: string = 'My Company Ltd.';
-  companyEmail: string = 'info@mycompany.com';
-  companyPhone: string = '+1 234 567 8900';
-  companyAddress: string = '123 Business Street, City, Country';
-  timezone: string = 'UTC';
-  dateFormat: string = 'DD/MM/YYYY';
-  language: string = 'en';
+export class GeneralSettingsComponent implements OnInit {
+  settings: GeneralSettings = {
+    companyName: '',
+    companyAddress: '',
+    companyPhone: '',
+    companyEmail: '',
+    companyWebsite: '',
+    currency: 'USD',
+    dateFormat: 'DD/MM/YYYY',
+    timezone: 'UTC',
+    logoPath: ''
+  };
+  
+  saving: boolean = false;
+  loading: boolean = false;
 
   timezones = ['UTC', 'America/New_York', 'Europe/London', 'Asia/Tokyo', 'Australia/Sydney'];
   dateFormats = ['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'];
-  languages = [
-    { code: 'en', name: 'English' },
-    { code: 'es', name: 'Spanish' },
-    { code: 'fr', name: 'French' },
-    { code: 'de', name: 'German' }
-  ];
+  currencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD'];
 
-  saveSettings() {
-    console.log('Settings saved');
+  constructor(private settingsService: SettingsService) {}
+
+  ngOnInit(): void {
+    this.loadSettings();
+  }
+
+  loadSettings(): void {
+    this.loading = true;
+    this.settingsService.getGeneralSettings().subscribe({
+      next: (data) => {
+        if (data) {
+          this.settings = data;
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading settings', err);
+        this.loading = false;
+      }
+    });
+  }
+
+  saveSettings(): void {
+    this.saving = true;
+    this.settingsService.saveGeneralSettings(this.settings).subscribe({
+      next: (data) => {
+        this.settings = data;
+        this.saving = false;
+        alert('Settings saved successfully!');
+      },
+      error: (err) => {
+        console.error('Error saving settings', err);
+        this.saving = false;
+        alert('Error saving settings');
+      }
+    });
   }
 }

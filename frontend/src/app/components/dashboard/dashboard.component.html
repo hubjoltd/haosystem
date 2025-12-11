@@ -8,16 +8,6 @@
         <span>Dashboard</span>
       </div>
     </div>
-    <div class="header-stats">
-      <div class="mini-stat">
-        <span class="label">This Month</span>
-        <span class="value">$58,356</span>
-      </div>
-      <div class="mini-stat">
-        <span class="label">Last Month</span>
-        <span class="value">$48,356</span>
-      </div>
-    </div>
   </div>
 
   <div class="stats-grid">
@@ -29,152 +19,79 @@
         <h3>{{ stat.value }}</h3>
         <p>{{ stat.label }}</p>
       </div>
-      <div class="change" [class.positive]="stat.change.startsWith('+')">
-        {{ stat.change }}
-      </div>
     </div>
   </div>
 
   <div class="dashboard-grid">
     <div class="card chart-card">
       <div class="card-header">
-        <h3>Revenue Updates</h3>
-        <select class="month-select">
-          <option>March 2023</option>
-          <option>February 2023</option>
-          <option>January 2023</option>
-        </select>
+        <h3>Revenue Overview</h3>
       </div>
       <div class="chart-container">
         <div class="chart-placeholder">
           <div class="bar-chart">
-            <div class="bar" *ngFor="let data of monthlyEarnings" [style.height.%]="(data.earnings / 10000) * 100">
-              <span class="bar-label">{{ data.month }}</span>
-              <span class="bar-value">${{ (data.earnings / 1000).toFixed(1) }}k</span>
-            </div>
+            <div class="bar" [style.height.%]="60"><span class="bar-label">Jan</span></div>
+            <div class="bar" [style.height.%]="75"><span class="bar-label">Feb</span></div>
+            <div class="bar" [style.height.%]="45"><span class="bar-label">Mar</span></div>
+            <div class="bar" [style.height.%]="80"><span class="bar-label">Apr</span></div>
+            <div class="bar" [style.height.%]="65"><span class="bar-label">May</span></div>
+            <div class="bar" [style.height.%]="90"><span class="bar-label">Jun</span></div>
           </div>
         </div>
-      </div>
-      <div class="chart-legend">
-        <span class="legend-item"><i class="fas fa-circle" style="color: #00796b;"></i> Earnings</span>
-        <span class="legend-item"><i class="fas fa-circle" style="color: #26a69a;"></i> Expense</span>
       </div>
     </div>
 
     <div class="side-stats">
       <div class="card earnings-card">
-        <h4>Monthly Earnings</h4>
-        <div class="mini-chart">
-          <div class="sparkline">
-            <span *ngFor="let i of [1,2,3,4,5,6,7,8]" class="spark" [style.height.px]="20 + (i * 5)"></span>
-          </div>
-        </div>
+        <h4>Inventory Summary</h4>
         <div class="amount">
-          <h3>$39,358</h3>
-          <span class="change positive">+9 this week</span>
+          <h3>{{ dashboardStats?.totalItems || 0 }}</h3>
+          <span class="label">Total Items</span>
         </div>
       </div>
 
       <div class="card customers-card">
-        <h4>Customers</h4>
-        <div class="mini-chart">
-          <div class="line-chart">
-            <svg viewBox="0 0 100 40">
-              <polyline fill="none" stroke="#00796b" stroke-width="2" points="0,35 20,25 40,30 60,15 80,20 100,10"/>
-            </svg>
-          </div>
-        </div>
+        <h4>Active Contracts</h4>
         <div class="amount">
-          <h3>$39,358</h3>
-          <span class="change positive">+9 this week</span>
+          <h3>{{ dashboardStats?.totalContracts || 0 }}</h3>
+          <span class="label">Contracts</span>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="dashboard-grid">
-    <div class="card">
-      <div class="card-header">
-        <h3>Total Sales</h3>
-        <select class="month-select">
-          <option>March 2023</option>
-        </select>
-      </div>
-      <div class="sales-info">
-        <p class="label">Sales Yearly</p>
-        <h2>8,364,398</h2>
-      </div>
-      <div class="donut-placeholder">
-        <div class="donut">
-          <div class="donut-ring"></div>
-          <div class="donut-center">
-            <i class="fas fa-shopping-cart"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card wide-card">
-      <div class="card-header">
-        <h3>Product Performance</h3>
-        <select class="month-select">
-          <option>March 2023</option>
-        </select>
-      </div>
-      <div class="table-container">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Assigned</th>
-              <th>Name</th>
-              <th>Priority</th>
-              <th>Budget</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let order of recentOrders">
-              <td>
-                <div class="user-cell">
-                  <div class="avatar">
-                    <i class="fas fa-user"></i>
-                  </div>
-                  <span>{{ order.customer }}</span>
-                </div>
-              </td>
-              <td>{{ order.product }}</td>
-              <td>
-                <span class="badge" [ngClass]="getPriorityClass(order.priority)">{{ order.priority }}</span>
-              </td>
-              <td>{{ order.amount }}</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </div>
   </div>
 
   <div class="card">
     <div class="card-header">
-      <h3>Inventory Alerts</h3>
-      <button class="btn btn-primary btn-sm">View All</button>
+      <h3>Low Stock Alerts</h3>
+      <a routerLink="/app/reports/reorder-level" class="btn btn-primary btn-sm">View All</a>
     </div>
     <div class="table-container">
       <table class="table">
         <thead>
           <tr>
-            <th>Item</th>
+            <th>Item Code</th>
+            <th>Item Name</th>
             <th>Current Stock</th>
             <th>Reorder Level</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let alert of inventoryAlerts">
-            <td>{{ alert.item }}</td>
-            <td>{{ alert.currentStock }}</td>
-            <td>{{ alert.reorderLevel }}</td>
+          <tr *ngIf="lowStockItems.length === 0">
+            <td colspan="5" class="empty-state">
+              <i class="fas fa-check-circle" style="color: #4caf50;"></i>
+              <p>No low stock alerts</p>
+            </td>
+          </tr>
+          <tr *ngFor="let item of lowStockItems">
+            <td>{{ item.code }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.currentStock }}</td>
+            <td>{{ item.reorderLevel }}</td>
             <td>
-              <span class="badge" [ngClass]="getStatusClass(alert.status)">{{ alert.status }}</span>
+              <span class="badge" [ngClass]="getStatusClass(item.currentStock <= 0 ? 'Critical' : 'Low')">
+                {{ item.currentStock <= 0 ? 'Out of Stock' : 'Low Stock' }}
+              </span>
             </td>
           </tr>
         </tbody>

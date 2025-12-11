@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService, LoginRequest } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -8,31 +9,42 @@ import { Router } from '@angular/router';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
-  email: string = '';
+  username: string = '';
   password: string = '';
   rememberMe: boolean = false;
   showPassword: boolean = false;
   isLoading: boolean = false;
   errorMessage: string = '';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
   }
 
   onSubmit() {
-    if (!this.email || !this.password) {
-      this.errorMessage = 'Please enter email and password';
+    if (!this.username || !this.password) {
+      this.errorMessage = 'Please enter username and password';
       return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
 
-    setTimeout(() => {
-      this.isLoading = false;
-      this.router.navigate(['/app/dashboard']);
-    }, 1000);
+    const request: LoginRequest = {
+      username: this.username,
+      password: this.password
+    };
+
+    this.authService.login(request).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.router.navigate(['/app/dashboard']);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = err.error?.error || 'Login failed. Please try again.';
+      }
+    });
   }
 }

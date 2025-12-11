@@ -11,9 +11,6 @@
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn btn-secondary" (click)="openModal('bin')">
-        <i class="fas fa-plus"></i> Add Bin
-      </button>
       <button class="btn btn-primary" (click)="openModal('warehouse')">
         <i class="fas fa-plus"></i> Add Warehouse
       </button>
@@ -21,8 +18,16 @@
   </div>
 
   <div class="warehouse-list">
+    <div *ngIf="loading" class="empty-state">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Loading warehouses...</p>
+    </div>
+    <div *ngIf="!loading && warehouses.length === 0" class="empty-state">
+      <i class="fas fa-warehouse"></i>
+      <p>No warehouses found. Click "Add Warehouse" to create one.</p>
+    </div>
     <div class="warehouse-card" *ngFor="let warehouse of warehouses">
-      <div class="warehouse-header" (click)="toggleWarehouse(warehouse.id)">
+      <div class="warehouse-header" (click)="toggleWarehouse(warehouse.id!)">
         <div class="warehouse-info">
           <div class="warehouse-icon">
             <i class="fas fa-warehouse"></i>
@@ -34,11 +39,11 @@
         </div>
         <div class="warehouse-stats">
           <div class="usage-info">
-            <span class="usage-text">{{ warehouse.used }} / {{ warehouse.capacity }}</span>
+            <span class="usage-text">{{ warehouse.usedCapacity || 0 }} / {{ warehouse.capacity }}</span>
             <div class="usage-bar">
               <div class="usage-fill" 
-                   [style.width.%]="getUsagePercent(warehouse.used, warehouse.capacity)"
-                   [ngClass]="getUsageClass(warehouse.used, warehouse.capacity)"></div>
+                   [style.width.%]="getUsagePercent(warehouse.usedCapacity || 0, warehouse.capacity)"
+                   [ngClass]="getUsageClass(warehouse.usedCapacity || 0, warehouse.capacity)"></div>
             </div>
           </div>
           <i class="fas fa-chevron-down expand-icon" [class.rotated]="expandedWarehouse === warehouse.id"></i>
@@ -47,13 +52,16 @@
 
       <div class="bins-section" *ngIf="expandedWarehouse === warehouse.id">
         <div class="bins-header">
-          <h4>Bins ({{ warehouse.bins.length }})</h4>
-          <button class="btn btn-sm btn-primary">
+          <h4>Bins ({{ getBinsForWarehouse(warehouse.id!).length }})</h4>
+          <button class="btn btn-sm btn-primary" (click)="openBinModal(warehouse.id!)">
             <i class="fas fa-plus"></i> Add Bin
           </button>
         </div>
         <div class="bins-grid">
-          <div class="bin-card" *ngFor="let bin of warehouse.bins">
+          <div *ngIf="getBinsForWarehouse(warehouse.id!).length === 0" class="empty-bins">
+            <p>No bins in this warehouse</p>
+          </div>
+          <div class="bin-card" *ngFor="let bin of getBinsForWarehouse(warehouse.id!)">
             <div class="bin-header">
               <strong>{{ bin.code }}</strong>
               <div class="bin-actions">
@@ -62,16 +70,55 @@
             </div>
             <p>{{ bin.name }}</p>
             <div class="bin-usage">
-              <span>{{ bin.used }} / {{ bin.capacity }}</span>
+              <span>{{ bin.usedCapacity || 0 }} / {{ bin.capacity }}</span>
               <div class="usage-bar small">
                 <div class="usage-fill" 
-                     [style.width.%]="getUsagePercent(bin.used, bin.capacity)"
-                     [ngClass]="getUsageClass(bin.used, bin.capacity)"></div>
+                     [style.width.%]="getUsagePercent(bin.usedCapacity || 0, bin.capacity)"
+                     [ngClass]="getUsageClass(bin.usedCapacity || 0, bin.capacity)"></div>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Warehouse Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editMode ? 'Edit Warehouse' : 'Add Warehouse' }}</h2>
+      <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Warehouse Code</label>
+        <input type="text" class="form-control" [(ngModel)]="selectedWarehouse.code" placeholder="WH-001" />
+      </div>
+      <div class="form-group">
+        <label>Warehouse Name</label>
+        <input type="text" class="form-control" [(ngModel)]="selectedWarehouse.name" placeholder="Main Warehouse" />
+      </div>
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" class="form-control" [(ngModel)]="selectedWarehouse.location" placeholder="City, Country" />
+      </div>
+      <div class="form-group">
+        <label>Capacity</label>
+        <input type="number" class="form-control" [(ngModel)]="selectedWarehouse.capacity" placeholder="1000" />
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select class="form-control" [(ngModel)]="selectedWarehouse.status">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveWarehouse()">{{ editMode ? 'Update' : 'Save' }}</button>
     </div>
   </div>
 </div>

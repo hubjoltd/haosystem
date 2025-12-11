@@ -24,21 +24,21 @@
     <div class="stat-card">
       <div class="icon success"><i class="fas fa-check-circle"></i></div>
       <div class="info">
-        <h3>2</h3>
+        <h3>{{ getActiveCount() }}</h3>
         <p>Active Contracts</p>
       </div>
     </div>
     <div class="stat-card">
       <div class="icon warning"><i class="fas fa-clock"></i></div>
       <div class="info">
-        <h3>1</h3>
-        <p>Pending Renewal</p>
+        <h3>{{ getPendingCount() }}</h3>
+        <p>Pending</p>
       </div>
     </div>
     <div class="stat-card">
       <div class="icon info"><i class="fas fa-dollar-sign"></i></div>
       <div class="info">
-        <h3>$133,000</h3>
+        <h3>${{ getTotalValue() | number }}</h3>
         <p>Total Value</p>
       </div>
     </div>
@@ -50,29 +50,14 @@
         <i class="fas fa-search"></i>
         <input type="text" [(ngModel)]="searchQuery" placeholder="Search contracts..." />
       </div>
-      <div class="filter-group">
-        <select class="form-control">
-          <option value="">All Types</option>
-          <option value="Service Agreement">Service Agreement</option>
-          <option value="Maintenance Contract">Maintenance Contract</option>
-          <option value="Annual Subscription">Annual Subscription</option>
-        </select>
-        <select class="form-control">
-          <option value="">All Statuses</option>
-          <option value="Active">Active</option>
-          <option value="Pending Renewal">Pending Renewal</option>
-          <option value="Expired">Expired</option>
-        </select>
-      </div>
     </div>
 
     <div class="table-container">
       <table class="table">
         <thead>
           <tr>
-            <th>Contract ID</th>
-            <th>Customer</th>
-            <th>Type</th>
+            <th>Contract #</th>
+            <th>Title</th>
             <th>Start Date</th>
             <th>End Date</th>
             <th>Value</th>
@@ -81,26 +66,89 @@
           </tr>
         </thead>
         <tbody>
+          <tr *ngIf="loading">
+            <td colspan="7" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading...</p>
+            </td>
+          </tr>
+          <tr *ngIf="!loading && filteredContracts.length === 0">
+            <td colspan="7" class="empty-state">
+              <i class="fas fa-file-contract"></i>
+              <p>No contracts found. Click "New Contract" to create one.</p>
+            </td>
+          </tr>
           <tr *ngFor="let contract of filteredContracts">
-            <td><strong>{{ contract.id }}</strong></td>
-            <td>{{ contract.customer }}</td>
-            <td>{{ contract.type }}</td>
+            <td><strong>{{ contract.contractNumber || 'C-' + contract.id }}</strong></td>
+            <td>{{ contract.title }}</td>
             <td>{{ contract.startDate }}</td>
             <td>{{ contract.endDate }}</td>
-            <td>${{ contract.value.toLocaleString() }}</td>
+            <td>${{ contract.value | number }}</td>
             <td>
               <span class="badge" [ngClass]="getStatusClass(contract.status)">{{ contract.status }}</span>
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn btn-sm btn-secondary" title="View"><i class="fas fa-eye"></i></button>
-                <button class="btn btn-sm btn-secondary" title="Edit"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-sm btn-success" title="Renew"><i class="fas fa-redo"></i></button>
+                <button class="btn btn-sm btn-secondary" title="Edit" (click)="openModal(contract)"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger" title="Delete" (click)="deleteContract(contract.id!)"><i class="fas fa-trash"></i></button>
               </div>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editMode ? 'Edit Contract' : 'New Contract' }}</h2>
+      <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" class="form-control" [(ngModel)]="selectedContract.title" placeholder="Contract title" />
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" [(ngModel)]="selectedContract.description" placeholder="Contract description"></textarea>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Start Date</label>
+          <input type="date" class="form-control" [(ngModel)]="selectedContract.startDate" />
+        </div>
+        <div class="form-group">
+          <label>End Date</label>
+          <input type="date" class="form-control" [(ngModel)]="selectedContract.endDate" />
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Value ($)</label>
+          <input type="number" class="form-control" [(ngModel)]="selectedContract.value" placeholder="0" />
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select class="form-control" [(ngModel)]="selectedContract.status">
+            <option value="Active">Active</option>
+            <option value="Pending">Pending</option>
+            <option value="Expired">Expired</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Payment Terms</label>
+        <input type="text" class="form-control" [(ngModel)]="selectedContract.paymentTerms" placeholder="Net 30" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveContract()">{{ editMode ? 'Update' : 'Save' }}</button>
     </div>
   </div>
 </div>
