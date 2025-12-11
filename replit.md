@@ -43,7 +43,11 @@ The application uses a hierarchical component structure:
 4. **Stock Movement** - Goods Receipt (GRN), Goods Issue, Stock Transfer, Adjustments
 5. **Customer & Contract Management** - CRUD operations with search and filtering
 6. **Purchase Order Management** - Purchase Requisition, PR Fulfillment (Convert to PO, Stock Issue, Material Transfer), Direct Purchase (components scaffolded, awaiting design implementation)
-7. **Reports** - Reorganized into sub-sections:
+7. **Audit Trails & Logging** - Comprehensive audit tracking with three sub-sections:
+   - **System Audits**: Login/logout, password changes, settings updates
+   - **Inventory Audits**: Item changes, stock movements, quantity modifications
+   - **Purchase Audits**: PR creation/submission/approval, PO conversion, stock fulfillment with full workflow tracking
+8. **Reports** - Reorganized into sub-sections:
    - **Inventory Reports**: Stock Summary, Inventory Valuation, Item Movement, Stock Ledger, Group-wise Stock, Warehouse Stock, Reorder Level, Slow-Moving Items, Purchase vs GRN
    - **Purchase Reports**: PR List, PR Item Pending, PR Fulfillment History, PO List, Direct Purchase, Stock Issue/Transfer (components scaffolded, awaiting design implementation)
 
@@ -71,6 +75,7 @@ The application uses a hierarchical component structure:
   - `/api/stock-movement/grn`, `/api/stock-movement/issues`, `/api/stock-movement/transfers`, `/api/stock-movement/adjustments`
   - `/api/settings/general`, `/api/settings/finance`
   - `/api/dashboard/stats`
+  - `/api/audit` (with filters for module, action, date range, entity type)
 
 ### Development Tools
 - **Vitest** - Unit testing framework
