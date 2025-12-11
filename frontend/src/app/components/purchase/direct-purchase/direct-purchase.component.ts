@@ -16,6 +16,7 @@ export class DirectPurchaseComponent implements OnInit {
   searchQuery: string = '';
   showModal: boolean = false;
   editMode: boolean = false;
+  viewMode: 'kanban' | 'table' = 'table';
   selectedPurchase: DirectPurchase = this.getEmptyPurchase();
   loading: boolean = false;
 
@@ -182,5 +183,31 @@ export class DirectPurchaseComponent implements OnInit {
   formatDate(date: string | undefined): string {
     if (!date) return '-';
     return new Date(date).toLocaleDateString();
+  }
+
+  toggleViewMode(): void {
+    this.viewMode = this.viewMode === 'kanban' ? 'table' : 'kanban';
+  }
+
+  get draftPurchases(): DirectPurchase[] {
+    return this.filteredPurchases.filter(p => 
+      p.status === 'Draft' || p.status?.toLowerCase().includes('draft')
+    );
+  }
+
+  get pendingPurchases(): DirectPurchase[] {
+    return this.filteredPurchases.filter(p => 
+      p.status === 'Pending' || 
+      p.status === 'Pending Approval' || 
+      p.status?.toLowerCase().includes('pending')
+    );
+  }
+
+  get completedPurchases(): DirectPurchase[] {
+    return this.filteredPurchases.filter(p => 
+      p.status === 'Completed' || 
+      p.status === 'Approved' ||
+      p.status?.toLowerCase().includes('complete')
+    );
   }
 }

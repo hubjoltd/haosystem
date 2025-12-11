@@ -27,13 +27,23 @@
           <i class="fas fa-file-export"></i> Export
         </button>
       </div>
-      <div class="search-box">
-        <i class="fas fa-search"></i>
-        <input type="text" [(ngModel)]="searchQuery" placeholder="Search..." />
+      <div class="toolbar-right">
+        <div class="view-toggle">
+          <button class="toggle-btn" [class.active]="viewMode === 'kanban'" (click)="viewMode = 'kanban'" title="Kanban View">
+            <i class="fas fa-columns"></i>
+          </button>
+          <button class="toggle-btn" [class.active]="viewMode === 'table'" (click)="viewMode = 'table'" title="Table View">
+            <i class="fas fa-table"></i>
+          </button>
+        </div>
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" [(ngModel)]="searchQuery" placeholder="Search..." />
+        </div>
       </div>
     </div>
 
-    <div class="table-container">
+    <div class="table-container" *ngIf="viewMode === 'table'">
       <table class="table">
         <thead>
           <tr>
@@ -83,6 +93,134 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="kanban-board" *ngIf="viewMode === 'kanban'">
+      <div class="kanban-column draft">
+        <div class="column-header">
+          <span class="column-title">Draft</span>
+          <span class="column-count">{{ draftPurchases.length }} Orders</span>
+        </div>
+        <div class="column-body">
+          <div class="po-card" *ngFor="let purchase of draftPurchases" (click)="viewPurchase(purchase)">
+            <div class="card-header">
+              <span class="po-number">{{ purchase.poNumber || 'Draft' }}</span>
+              <span class="badge" [ngClass]="getStatusClass(purchase.status)">{{ purchase.status }}</span>
+            </div>
+            <div class="card-supplier">{{ purchase.supplierName }}</div>
+            <div class="card-details">
+              <div class="detail-row">
+                <span class="label">Created:</span>
+                <span class="value">{{ formatDate(purchase.createdDate) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Deliver:</span>
+                <span class="value">{{ formatDate(purchase.deliveryDate) }}</span>
+              </div>
+              <div class="detail-row" *ngIf="purchase.totalAmount">
+                <span class="label">Amount:</span>
+                <span class="value">{{ purchase.totalAmount | number:'1.2-2' }}</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="card-actions">
+                <button class="btn-icon" (click)="openModal(purchase); $event.stopPropagation()" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon delete" (click)="deletePurchase(purchase.id!); $event.stopPropagation()" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="empty-column" *ngIf="draftPurchases.length === 0">
+            <i class="fas fa-file-alt"></i>
+            <span>No Draft Orders</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kanban-column pending">
+        <div class="column-header">
+          <span class="column-title">Pending</span>
+          <span class="column-count">{{ pendingPurchases.length }} Orders</span>
+        </div>
+        <div class="column-body">
+          <div class="po-card" *ngFor="let purchase of pendingPurchases" (click)="viewPurchase(purchase)">
+            <div class="card-header">
+              <span class="po-number">{{ purchase.poNumber }}</span>
+              <span class="badge" [ngClass]="getStatusClass(purchase.status)">{{ purchase.status }}</span>
+            </div>
+            <div class="card-supplier">{{ purchase.supplierName }}</div>
+            <div class="card-details">
+              <div class="detail-row">
+                <span class="label">Created:</span>
+                <span class="value">{{ formatDate(purchase.createdDate) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Deliver:</span>
+                <span class="value">{{ formatDate(purchase.deliveryDate) }}</span>
+              </div>
+              <div class="detail-row" *ngIf="purchase.totalAmount">
+                <span class="label">Amount:</span>
+                <span class="value">{{ purchase.totalAmount | number:'1.2-2' }}</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="card-actions">
+                <button class="btn-icon" (click)="viewPurchase(purchase); $event.stopPropagation()" title="View">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="empty-column" *ngIf="pendingPurchases.length === 0">
+            <i class="fas fa-clock"></i>
+            <span>No Pending Orders</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kanban-column completed">
+        <div class="column-header">
+          <span class="column-title">Completed</span>
+          <span class="column-count">{{ completedPurchases.length }} Orders</span>
+        </div>
+        <div class="column-body">
+          <div class="po-card" *ngFor="let purchase of completedPurchases" (click)="viewPurchase(purchase)">
+            <div class="card-header">
+              <span class="po-number">{{ purchase.poNumber }}</span>
+              <span class="badge" [ngClass]="getStatusClass(purchase.status)">{{ purchase.status }}</span>
+            </div>
+            <div class="card-supplier">{{ purchase.supplierName }}</div>
+            <div class="card-details">
+              <div class="detail-row">
+                <span class="label">Created:</span>
+                <span class="value">{{ formatDate(purchase.createdDate) }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Deliver:</span>
+                <span class="value">{{ formatDate(purchase.deliveryDate) }}</span>
+              </div>
+              <div class="detail-row" *ngIf="purchase.totalAmount">
+                <span class="label">Amount:</span>
+                <span class="value">{{ purchase.totalAmount | number:'1.2-2' }}</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="card-actions">
+                <button class="btn-icon" (click)="viewPurchase(purchase); $event.stopPropagation()" title="View">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="empty-column" *ngIf="completedPurchases.length === 0">
+            <i class="fas fa-check-circle"></i>
+            <span>No Completed Orders</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

@@ -11,18 +11,28 @@
       <i class="fa fa-search"></i>
       <input type="text" placeholder="Search Requisitions" [(ngModel)]="searchTerm" />
     </div>
-    <div class="sort-options">
-      <span>Sort By:</span>
-      <span *ngFor="let opt of sortOptions" 
-            class="sort-link" 
-            [class.active]="currentSort === opt.value"
-            (click)="currentSort = opt.value">
-        {{ opt.label }}
-      </span>
+    <div class="toolbar-right">
+      <div class="view-toggle">
+        <button class="toggle-btn" [class.active]="viewMode === 'kanban'" (click)="viewMode = 'kanban'" title="Kanban View">
+          <i class="fa fa-columns"></i>
+        </button>
+        <button class="toggle-btn" [class.active]="viewMode === 'table'" (click)="viewMode = 'table'" title="Table View">
+          <i class="fa fa-table"></i>
+        </button>
+      </div>
+      <div class="sort-options" *ngIf="viewMode === 'kanban'">
+        <span>Sort By:</span>
+        <span *ngFor="let opt of sortOptions" 
+              class="sort-link" 
+              [class.active]="currentSort === opt.value"
+              (click)="currentSort = opt.value">
+          {{ opt.label }}
+        </span>
+      </div>
     </div>
   </div>
 
-  <div class="kanban-board">
+  <div class="kanban-board" *ngIf="viewMode === 'kanban'">
     <div class="kanban-column draft">
       <div class="column-header">
         <span class="column-title">Draft</span>
@@ -128,6 +138,59 @@
           <span>No Approved Requisitions</span>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="table-view" *ngIf="viewMode === 'table'">
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>PR Number</th>
+            <th>PR Date</th>
+            <th>Required Date</th>
+            <th>Department</th>
+            <th>Requested By</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="getAllFilteredPRs().length === 0">
+            <td colspan="8" class="empty-state">
+              <i class="fa fa-file-alt"></i>
+              <p>No requisitions found</p>
+            </td>
+          </tr>
+          <tr *ngFor="let pr of getAllFilteredPRs()" (click)="viewPR(pr)" class="clickable-row">
+            <td><strong class="pr-link">{{ pr.prNumber }}</strong></td>
+            <td>{{ formatDate(pr.prDate) }}</td>
+            <td>{{ formatDate(pr.requiredDate) }}</td>
+            <td>{{ pr.department }}</td>
+            <td>{{ pr.requestedBy }}</td>
+            <td>
+              <span class="priority-badge" [ngClass]="getPriorityClass(pr.priority)">{{ pr.priority }}</span>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(pr.status)">{{ pr.status }}</span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-icon" (click)="openEditModal(pr); $event.stopPropagation()" title="Edit" *ngIf="canEdit(pr)">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button class="btn-icon" (click)="viewPR(pr); $event.stopPropagation()" title="View" *ngIf="!canEdit(pr)">
+                  <i class="fa fa-eye"></i>
+                </button>
+                <button class="btn-icon delete" (click)="deletePR(pr); $event.stopPropagation()" title="Delete" *ngIf="canDelete(pr)">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

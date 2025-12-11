@@ -21,6 +21,7 @@ export class PurchaseRequisitionComponent implements OnInit {
   showModal = false;
   isEditing = false;
   searchTerm = '';
+  viewMode: 'kanban' | 'table' = 'kanban';
   
   selectedPR: PurchaseRequisition = this.getEmptyPR();
   
@@ -222,5 +223,29 @@ export class PurchaseRequisitionComponent implements OnInit {
 
   canDelete(pr: PurchaseRequisition): boolean {
     return pr.status === 'Draft';
+  }
+
+  toggleViewMode(): void {
+    this.viewMode = this.viewMode === 'kanban' ? 'table' : 'kanban';
+  }
+
+  getAllFilteredPRs(): PurchaseRequisition[] {
+    if (!this.searchTerm) return this.requisitions;
+    const term = this.searchTerm.toLowerCase();
+    return this.requisitions.filter(pr => 
+      pr.prNumber?.toLowerCase().includes(term) ||
+      pr.department?.toLowerCase().includes(term) ||
+      pr.requestedBy?.toLowerCase().includes(term)
+    );
+  }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'Draft': return 'status-draft';
+      case 'Submitted': return 'status-submitted';
+      case 'Approved': return 'status-approved';
+      case 'Rejected': return 'status-rejected';
+      default: return 'status-default';
+    }
   }
 }
