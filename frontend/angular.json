@@ -68,7 +68,8 @@
           "builder": "@angular/build:dev-server",
           "options": {
             "host": "0.0.0.0",
-            "port": 5000
+            "port": 5000,
+            "allowedHosts": [".replit.dev", ".kirk.replit.dev"]
           },
           "configurations": {
             "production": {
