@@ -20,7 +20,7 @@ export interface Item {
   providedIn: 'root'
 })
 export class ItemService {
-  private baseUrl = 'http://localhost:8080/api/inventory/items';
+  private baseUrl = '/api/inventory/items';
 
   constructor(private http: HttpClient) {}
 

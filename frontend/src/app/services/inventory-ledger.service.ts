@@ -22,7 +22,7 @@ export interface InventoryLedger {
   providedIn: 'root'
 })
 export class InventoryLedgerService {
-  private baseUrl = 'http://localhost:8080/api/inventory/ledger';
+  private baseUrl = '/api/inventory/ledger';
 
   constructor(private http: HttpClient) {}
 

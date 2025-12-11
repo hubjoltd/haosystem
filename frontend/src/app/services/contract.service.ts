@@ -22,7 +22,7 @@ export interface Contract {
   providedIn: 'root'
 })
 export class ContractService {
-  private baseUrl = 'http://localhost:8080/api/contracts';
+  private baseUrl = '/api/contracts';
 
   constructor(private http: HttpClient) {}
 

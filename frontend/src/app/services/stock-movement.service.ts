@@ -60,7 +60,7 @@ export interface StockAdjustment {
   providedIn: 'root'
 })
 export class StockMovementService {
-  private baseUrl = 'http://localhost:8080/api/stock';
+  private baseUrl = '/api/stock';
 
   constructor(private http: HttpClient) {}
 

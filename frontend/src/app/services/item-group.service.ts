@@ -14,7 +14,7 @@ export interface ItemGroup {
   providedIn: 'root'
 })
 export class ItemGroupService {
-  private baseUrl = 'http://localhost:8080/api/inventory/groups';
+  private baseUrl = '/api/inventory/groups';
 
   constructor(private http: HttpClient) {}
 

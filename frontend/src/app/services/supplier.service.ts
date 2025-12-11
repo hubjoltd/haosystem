@@ -18,7 +18,7 @@ export interface Supplier {
   providedIn: 'root'
 })
 export class SupplierService {
-  private baseUrl = 'http://localhost:8080/api/inventory/suppliers';
+  private baseUrl = '/api/inventory/suppliers';
 
   constructor(private http: HttpClient) {}
 

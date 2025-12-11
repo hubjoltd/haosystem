@@ -27,8 +27,8 @@ export interface Bin {
   providedIn: 'root'
 })
 export class WarehouseService {
-  private warehouseUrl = 'http://localhost:8080/api/inventory/warehouses';
-  private binUrl = 'http://localhost:8080/api/inventory/bins';
+  private warehouseUrl = '/api/inventory/warehouses';
+  private binUrl = '/api/inventory/bins';
 
   constructor(private http: HttpClient) {}
 

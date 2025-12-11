@@ -14,7 +14,7 @@ export interface UnitOfMeasure {
   providedIn: 'root'
 })
 export class UnitOfMeasureService {
-  private baseUrl = 'http://localhost:8080/api/inventory/units';
+  private baseUrl = '/api/inventory/units';
 
   constructor(private http: HttpClient) {}
 
