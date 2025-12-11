@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from './services/auth-interceptor.service';
@@ -95,6 +96,7 @@ import { PurchaseVsGrnReportComponent } from './components/reports/purchase-vs-g
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
+    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
