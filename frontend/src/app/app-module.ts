@@ -52,6 +52,19 @@ import { ReorderLevelComponent } from './components/reports/reorder-level/reorde
 import { SlowMovingItemsReportComponent } from './components/reports/slow-moving-items-report/slow-moving-items-report.component';
 import { PurchaseVsGrnReportComponent } from './components/reports/purchase-vs-grn-report/purchase-vs-grn-report.component';
 
+import { PurchaseRequisitionComponent } from './components/purchase/purchase-requisition/purchase-requisition.component';
+import { ConvertToPoComponent } from './components/purchase/pr-fulfillment/convert-to-po/convert-to-po.component';
+import { StockIssueFulfillmentComponent } from './components/purchase/pr-fulfillment/stock-issue/stock-issue-fulfillment.component';
+import { MaterialTransferFulfillmentComponent } from './components/purchase/pr-fulfillment/material-transfer/material-transfer-fulfillment.component';
+import { DirectPurchaseComponent } from './components/purchase/direct-purchase/direct-purchase.component';
+
+import { PrListReportComponent } from './components/reports/purchase/pr-list/pr-list-report.component';
+import { PrPendingReportComponent } from './components/reports/purchase/pr-pending/pr-pending-report.component';
+import { PrHistoryReportComponent } from './components/reports/purchase/pr-history/pr-history-report.component';
+import { PoListReportComponent } from './components/reports/purchase/po-list/po-list-report.component';
+import { DirectPurchaseReportComponent } from './components/reports/purchase/direct-purchase/direct-purchase-report.component';
+import { StockIssueTransferReportComponent } from './components/reports/purchase/stock-issue-transfer/stock-issue-transfer-report.component';
+
 @NgModule({
   declarations: [
     App,
@@ -91,7 +104,18 @@ import { PurchaseVsGrnReportComponent } from './components/reports/purchase-vs-g
     WarehouseStockReportComponent,
     ReorderLevelComponent,
     SlowMovingItemsReportComponent,
-    PurchaseVsGrnReportComponent
+    PurchaseVsGrnReportComponent,
+    PurchaseRequisitionComponent,
+    ConvertToPoComponent,
+    StockIssueFulfillmentComponent,
+    MaterialTransferFulfillmentComponent,
+    DirectPurchaseComponent,
+    PrListReportComponent,
+    PrPendingReportComponent,
+    PrHistoryReportComponent,
+    PoListReportComponent,
+    DirectPurchaseReportComponent,
+    StockIssueTransferReportComponent
   ],
   imports: [
     BrowserModule,

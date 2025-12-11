@@ -79,19 +79,58 @@ export class SidebarComponent {
       ]
     },
     {
-      icon: 'fas fa-chart-bar',
-      label: 'Inventory Reports',
+      icon: 'fas fa-shopping-cart',
+      label: 'Purchase Order Management',
       expanded: false,
       children: [
-        { icon: 'fas fa-clipboard-list', label: 'Stock Summary Report', route: '/app/reports/stock-summary' },
-        { icon: 'fas fa-coins', label: 'Inventory Valuation Report', route: '/app/reports/valuation' },
-        { icon: 'fas fa-chart-line', label: 'Item Movement Report', route: '/app/reports/item-movement' },
-        { icon: 'fas fa-book-open', label: 'Stock Ledger Report', route: '/app/reports/stock-ledger' },
-        { icon: 'fas fa-sitemap', label: 'Group-wise Stock Report', route: '/app/reports/group-wise' },
-        { icon: 'fas fa-warehouse', label: 'Warehouse Stock Report', route: '/app/reports/warehouse-stock' },
-        { icon: 'fas fa-exclamation-triangle', label: 'Reorder Level', route: '/app/reports/reorder-level' },
-        { icon: 'fas fa-hourglass-half', label: 'Slow/Non-Moving Items Report', route: '/app/reports/slow-moving' },
-        { icon: 'fas fa-file-invoice', label: 'Purchase vs GRN Report', route: '/app/reports/purchase-grn' }
+        { icon: 'fas fa-file-alt', label: 'Purchase Requisition', route: '/app/purchase/requisition' },
+        {
+          icon: 'fas fa-tasks',
+          label: 'PR Fulfillment',
+          expanded: false,
+          children: [
+            { icon: 'fas fa-file-invoice', label: 'Convert to Purchase Order', route: '/app/purchase/fulfillment/convert-to-po' },
+            { icon: 'fas fa-arrow-up', label: 'Fulfill from Stock Issue', route: '/app/purchase/fulfillment/stock-issue' },
+            { icon: 'fas fa-exchange-alt', label: 'Fulfill via Material Transfer', route: '/app/purchase/fulfillment/material-transfer' }
+          ]
+        },
+        { icon: 'fas fa-cart-plus', label: 'Direct Purchase', route: '/app/purchase/direct' }
+      ]
+    },
+    {
+      icon: 'fas fa-chart-bar',
+      label: 'Reports',
+      expanded: false,
+      children: [
+        {
+          icon: 'fas fa-boxes',
+          label: 'Inventory Reports',
+          expanded: false,
+          children: [
+            { icon: 'fas fa-clipboard-list', label: 'Stock Summary Report', route: '/app/reports/stock-summary' },
+            { icon: 'fas fa-coins', label: 'Inventory Valuation Report', route: '/app/reports/valuation' },
+            { icon: 'fas fa-chart-line', label: 'Item Movement Report', route: '/app/reports/item-movement' },
+            { icon: 'fas fa-book-open', label: 'Stock Ledger Report', route: '/app/reports/stock-ledger' },
+            { icon: 'fas fa-sitemap', label: 'Group-wise Stock Report', route: '/app/reports/group-wise' },
+            { icon: 'fas fa-warehouse', label: 'Warehouse Stock Report', route: '/app/reports/warehouse-stock' },
+            { icon: 'fas fa-exclamation-triangle', label: 'Reorder Level', route: '/app/reports/reorder-level' },
+            { icon: 'fas fa-hourglass-half', label: 'Slow/Non-Moving Items Report', route: '/app/reports/slow-moving' },
+            { icon: 'fas fa-file-invoice', label: 'Purchase vs GRN Report', route: '/app/reports/purchase-grn' }
+          ]
+        },
+        {
+          icon: 'fas fa-shopping-cart',
+          label: 'Purchase Reports',
+          expanded: false,
+          children: [
+            { icon: 'fas fa-list-alt', label: 'PR List Report', route: '/app/reports/purchase/pr-list' },
+            { icon: 'fas fa-clock', label: 'PR Item Pending Report', route: '/app/reports/purchase/pr-pending' },
+            { icon: 'fas fa-history', label: 'PR Fulfillment History Report', route: '/app/reports/purchase/pr-history' },
+            { icon: 'fas fa-file-alt', label: 'PO List', route: '/app/reports/purchase/po-list' },
+            { icon: 'fas fa-cart-arrow-down', label: 'Direct Purchase Report', route: '/app/reports/purchase/direct-purchase' },
+            { icon: 'fas fa-exchange-alt', label: 'Stock Issue/Transfer Report', route: '/app/reports/purchase/stock-issue-transfer' }
+          ]
+        }
       ]
     }
   ];
