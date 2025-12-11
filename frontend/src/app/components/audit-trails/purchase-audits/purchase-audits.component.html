@@ -1,0 +1,118 @@
+<div class="audit-container">
+  <div class="page-header">
+    <h2>Purchase Audits</h2>
+    <p class="subtitle">Complete audit trail for purchase requisitions, orders, and fulfillment workflows</p>
+  </div>
+
+  <div class="audit-legend">
+    <div class="legend-title">Workflow Tracking:</div>
+    <div class="legend-items">
+      <span class="legend-item"><i class="fas fa-plus-circle"></i> Created</span>
+      <span class="legend-item"><i class="fas fa-paper-plane"></i> Submitted</span>
+      <span class="legend-item"><i class="fas fa-check-circle"></i> Approved</span>
+      <span class="legend-item"><i class="fas fa-times-circle"></i> Rejected</span>
+      <span class="legend-item"><i class="fas fa-exchange-alt"></i> Converted to PO</span>
+      <span class="legend-item"><i class="fas fa-arrow-right"></i> Stock Issued</span>
+      <span class="legend-item"><i class="fas fa-truck"></i> Transferred</span>
+    </div>
+  </div>
+
+  <div class="filters-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Search</label>
+        <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" 
+               placeholder="Search by PR/PO number, user..." class="form-control">
+      </div>
+      <div class="filter-group">
+        <label>Document Type</label>
+        <select [(ngModel)]="selectedEntityType" (change)="applyFilters()" class="form-control">
+          <option value="">All Types</option>
+          <option *ngFor="let type of entityTypes" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Action</label>
+        <select [(ngModel)]="selectedAction" (change)="applyFilters()" class="form-control">
+          <option value="">All Actions</option>
+          <option *ngFor="let action of actions" [value]="action">{{ formatAction(action) }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Start Date</label>
+        <input type="date" [(ngModel)]="startDate" (change)="applyFilters()" class="form-control">
+      </div>
+      <div class="filter-group">
+        <label>End Date</label>
+        <input type="date" [(ngModel)]="endDate" (change)="applyFilters()" class="form-control">
+      </div>
+      <div class="filter-actions">
+        <button class="btn btn-secondary" (click)="clearFilters()">
+          <i class="fas fa-times"></i> Clear
+        </button>
+        <button class="btn btn-primary" (click)="exportToExcel()">
+          <i class="fas fa-file-excel"></i> Export
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <div class="loading-overlay" *ngIf="loading">
+      <i class="fas fa-spinner fa-spin"></i> Loading...
+    </div>
+    
+    <table class="data-table" *ngIf="!loading">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Action</th>
+          <th>Document Type</th>
+          <th>Document No.</th>
+          <th>Changes</th>
+          <th>Performed By</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let audit of filteredAudits">
+          <td class="timestamp-cell">{{ formatDate(audit.timestamp) }}</td>
+          <td>
+            <span class="action-badge" [ngClass]="getActionClass(audit.action)">
+              <i class="fas" [ngClass]="getWorkflowIcon(audit.action)"></i>
+              {{ formatAction(audit.action) }}
+            </span>
+          </td>
+          <td>
+            <span class="entity-type">
+              <i class="fas fa-file-alt"></i> {{ audit.entityType }}
+            </span>
+          </td>
+          <td class="doc-number">{{ audit.entityName || '-' }}</td>
+          <td class="changes-cell">
+            <span *ngIf="audit.previousValue && audit.newValue" class="change-indicator">
+              <span class="old-value">{{ audit.previousValue }}</span>
+              <i class="fas fa-arrow-right"></i>
+              <span class="new-value">{{ audit.newValue }}</span>
+            </span>
+            <span *ngIf="!audit.previousValue || !audit.newValue">-</span>
+          </td>
+          <td class="user-cell">
+            <i class="fas fa-user"></i> {{ audit.performedBy }}
+          </td>
+          <td class="details-cell">{{ audit.details || '-' }}</td>
+        </tr>
+        <tr *ngIf="filteredAudits.length === 0">
+          <td colspan="7" class="empty-state">
+            <i class="fas fa-clipboard-list"></i>
+            <p>No purchase audit records found</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="results-summary" *ngIf="!loading">
+    Showing {{ filteredAudits.length }} of {{ audits.length }} records
+  </div>
+</div>

@@ -1,0 +1,104 @@
+<div class="audit-container">
+  <div class="page-header">
+    <h2>Inventory Audits</h2>
+    <p class="subtitle">Track all inventory-related changes including items, stock movements, and warehouse operations</p>
+  </div>
+
+  <div class="filters-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Search</label>
+        <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" 
+               placeholder="Search by item, user, or details..." class="form-control">
+      </div>
+      <div class="filter-group">
+        <label>Entity Type</label>
+        <select [(ngModel)]="selectedEntityType" (change)="applyFilters()" class="form-control">
+          <option value="">All Types</option>
+          <option *ngFor="let type of entityTypes" [value]="type">{{ type }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Action</label>
+        <select [(ngModel)]="selectedAction" (change)="applyFilters()" class="form-control">
+          <option value="">All Actions</option>
+          <option *ngFor="let action of actions" [value]="action">{{ formatAction(action) }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Start Date</label>
+        <input type="date" [(ngModel)]="startDate" (change)="applyFilters()" class="form-control">
+      </div>
+      <div class="filter-group">
+        <label>End Date</label>
+        <input type="date" [(ngModel)]="endDate" (change)="applyFilters()" class="form-control">
+      </div>
+      <div class="filter-actions">
+        <button class="btn btn-secondary" (click)="clearFilters()">
+          <i class="fas fa-times"></i> Clear
+        </button>
+        <button class="btn btn-primary" (click)="exportToExcel()">
+          <i class="fas fa-file-excel"></i> Export
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <div class="loading-overlay" *ngIf="loading">
+      <i class="fas fa-spinner fa-spin"></i> Loading...
+    </div>
+    
+    <table class="data-table" *ngIf="!loading">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Action</th>
+          <th>Entity Type</th>
+          <th>Entity Name</th>
+          <th>Changes</th>
+          <th>Performed By</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let audit of filteredAudits">
+          <td class="timestamp-cell">{{ formatDate(audit.timestamp) }}</td>
+          <td>
+            <span class="badge" [ngClass]="getActionClass(audit.action)">
+              {{ formatAction(audit.action) }}
+            </span>
+          </td>
+          <td>
+            <span class="entity-type">
+              <i class="fas fa-box"></i> {{ audit.entityType }}
+            </span>
+          </td>
+          <td>{{ audit.entityName || '-' }}</td>
+          <td class="changes-cell">
+            <span *ngIf="audit.previousValue && audit.newValue" class="change-indicator">
+              <span class="old-value">{{ audit.previousValue }}</span>
+              <i class="fas fa-arrow-right"></i>
+              <span class="new-value">{{ audit.newValue }}</span>
+            </span>
+            <span *ngIf="!audit.previousValue || !audit.newValue">-</span>
+          </td>
+          <td class="user-cell">
+            <i class="fas fa-user"></i> {{ audit.performedBy }}
+          </td>
+          <td class="details-cell">{{ audit.details || '-' }}</td>
+        </tr>
+        <tr *ngIf="filteredAudits.length === 0">
+          <td colspan="7" class="empty-state">
+            <i class="fas fa-boxes"></i>
+            <p>No inventory audit records found</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="results-summary" *ngIf="!loading">
+    Showing {{ filteredAudits.length }} of {{ audits.length }} records
+  </div>
+</div>

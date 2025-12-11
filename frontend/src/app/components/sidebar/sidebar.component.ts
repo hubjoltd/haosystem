@@ -132,6 +132,16 @@ export class SidebarComponent {
           ]
         }
       ]
+    },
+    {
+      icon: 'fas fa-history',
+      label: 'Audit Trails & Logging',
+      expanded: false,
+      children: [
+        { icon: 'fas fa-server', label: 'System Audits', route: '/app/audit/system' },
+        { icon: 'fas fa-boxes', label: 'Inventory Audits', route: '/app/audit/inventory' },
+        { icon: 'fas fa-shopping-cart', label: 'Purchase Audits', route: '/app/audit/purchase' }
+      ]
     }
   ];
 

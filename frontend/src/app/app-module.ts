@@ -65,6 +65,10 @@ import { PoListReportComponent } from './components/reports/purchase/po-list/po-
 import { DirectPurchaseReportComponent } from './components/reports/purchase/direct-purchase/direct-purchase-report.component';
 import { StockIssueTransferReportComponent } from './components/reports/purchase/stock-issue-transfer/stock-issue-transfer-report.component';
 
+import { SystemAuditsComponent } from './components/audit-trails/system-audits/system-audits.component';
+import { InventoryAuditsComponent } from './components/audit-trails/inventory-audits/inventory-audits.component';
+import { PurchaseAuditsComponent } from './components/audit-trails/purchase-audits/purchase-audits.component';
+
 @NgModule({
   declarations: [
     App,
@@ -115,7 +119,10 @@ import { StockIssueTransferReportComponent } from './components/reports/purchase
     PrHistoryReportComponent,
     PoListReportComponent,
     DirectPurchaseReportComponent,
-    StockIssueTransferReportComponent
+    StockIssueTransferReportComponent,
+    SystemAuditsComponent,
+    InventoryAuditsComponent,
+    PurchaseAuditsComponent
   ],
   imports: [
     BrowserModule,

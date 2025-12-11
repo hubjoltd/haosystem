@@ -55,6 +55,10 @@ import { PoListReportComponent } from './components/reports/purchase/po-list/po-
 import { DirectPurchaseReportComponent } from './components/reports/purchase/direct-purchase/direct-purchase-report.component';
 import { StockIssueTransferReportComponent } from './components/reports/purchase/stock-issue-transfer/stock-issue-transfer-report.component';
 
+import { SystemAuditsComponent } from './components/audit-trails/system-audits/system-audits.component';
+import { InventoryAuditsComponent } from './components/audit-trails/inventory-audits/inventory-audits.component';
+import { PurchaseAuditsComponent } from './components/audit-trails/purchase-audits/purchase-audits.component';
+
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
@@ -106,7 +110,10 @@ const routes: Routes = [
       { path: 'reports/purchase/pr-history', component: PrHistoryReportComponent },
       { path: 'reports/purchase/po-list', component: PoListReportComponent },
       { path: 'reports/purchase/direct-purchase', component: DirectPurchaseReportComponent },
-      { path: 'reports/purchase/stock-issue-transfer', component: StockIssueTransferReportComponent }
+      { path: 'reports/purchase/stock-issue-transfer', component: StockIssueTransferReportComponent },
+      { path: 'audit/system', component: SystemAuditsComponent },
+      { path: 'audit/inventory', component: InventoryAuditsComponent },
+      { path: 'audit/purchase', component: PurchaseAuditsComponent }
     ]
   }
 ];
