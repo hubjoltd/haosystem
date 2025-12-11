@@ -3,13 +3,18 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
+export type PRStatus = 'Draft' | 'Submitted' | 'Approved' | 'Partially Fulfilled' | 'Fully Fulfilled' | 'Rejected';
+export type PRItemStatus = 'Pending' | 'Partially Fulfilled' | 'Fully Fulfilled';
+
 export interface PRItem {
   id?: number;
   itemName: string;
   itemDescription: string;
   quantity: number;
+  fulfilledQuantity?: number;
   uom: string;
   remarks: string;
+  status?: PRItemStatus;
 }
 
 export interface PurchaseRequisition {
@@ -18,14 +23,27 @@ export interface PurchaseRequisition {
   prDate: string;
   requiredDate: string;
   requestedBy: string;
+  requestedById?: number;
   department: string;
   deliveryLocation: string;
   purpose: string;
   priority: 'Normal' | 'Urgent' | 'Critical';
-  status: 'Draft' | 'Submitted' | 'Approved' | 'Rejected' | 'Fulfilled';
+  status: PRStatus;
   items: PRItem[];
   commentsCount?: number;
   createdAt?: string;
+  createdBy?: string;
+  createdById?: number;
+  submittedAt?: string;
+  submittedBy?: string;
+  submittedById?: number;
+  approvedAt?: string;
+  approvedBy?: string;
+  approvedById?: number;
+  rejectedAt?: string;
+  rejectedBy?: string;
+  rejectedById?: number;
+  rejectionReason?: string;
   updatedAt?: string;
 }
 
@@ -69,8 +87,8 @@ export class PurchaseRequisitionService {
     return this.http.post<PurchaseRequisition>(`${this.baseUrl}/${id}/approve`, {});
   }
 
-  reject(id: number): Observable<PurchaseRequisition> {
-    return this.http.post<PurchaseRequisition>(`${this.baseUrl}/${id}/reject`, {});
+  reject(id: number, reason?: string): Observable<PurchaseRequisition> {
+    return this.http.post<PurchaseRequisition>(`${this.baseUrl}/${id}/reject`, { reason });
   }
 
   getByStatus(status: string): Observable<PurchaseRequisition[]> {

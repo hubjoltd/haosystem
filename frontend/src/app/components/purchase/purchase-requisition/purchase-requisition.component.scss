@@ -665,6 +665,347 @@
   background: #f8f9fa;
 }
 
+.kanban-column.partial {
+  .column-header {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+  }
+}
+
+.kanban-column.fulfilled {
+  .column-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  }
+}
+
+.kanban-column.rejected {
+  .column-header {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  }
+}
+
+.card-actions-row {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+
+  &.convert {
+    background: #008080;
+    color: white;
+
+    &:hover {
+      background: #006666;
+    }
+  }
+
+  &.stock {
+    background: #17a2b8;
+    color: white;
+
+    &:hover {
+      background: #138496;
+    }
+  }
+
+  &.transfer {
+    background: #6c757d;
+    color: white;
+
+    &:hover {
+      background: #5a6268;
+    }
+  }
+
+  &.approve {
+    background: #28a745;
+    color: white;
+
+    &:hover {
+      background: #218838;
+    }
+  }
+
+  &.reject {
+    background: #dc3545;
+    color: white;
+
+    &:hover {
+      background: #c82333;
+    }
+  }
+}
+
+.progress-bar {
+  height: 20px;
+  background: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  margin: 10px 0;
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ffc107 0%, #28a745 100%);
+    transition: width 0.3s ease;
+  }
+
+  .progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 11px;
+    font-weight: 600;
+    color: #333;
+  }
+}
+
+.completed-badge {
+  background: #d4edda;
+  color: #155724;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+
+  i {
+    margin-right: 4px;
+  }
+}
+
+.rejected-badge {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+
+  i {
+    margin-right: 4px;
+  }
+}
+
+.pr-card.completed {
+  background: linear-gradient(135deg, #f8fff8 0%, #e8f5e9 100%);
+  border-left: 4px solid #28a745;
+}
+
+.pr-card.rejected-card {
+  background: linear-gradient(135deg, #fff8f8 0%, #ffebee 100%);
+  border-left: 4px solid #dc3545;
+}
+
+.rejection-reason {
+  color: #dc3545;
+  font-style: italic;
+}
+
+.rejected-by {
+  font-size: 11px;
+  color: #999;
+}
+
+.status-partial {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-fulfilled {
+  background: #d4edda;
+  color: #155724;
+}
+
+.btn-icon {
+  &.approve {
+    color: #28a745;
+
+    &:hover {
+      background: #d4edda;
+    }
+  }
+
+  &.reject {
+    color: #dc3545;
+
+    &:hover {
+      background: #f8d7da;
+    }
+  }
+
+  &.convert {
+    color: #008080;
+
+    &:hover {
+      background: #e0f2f2;
+    }
+  }
+
+  &.stock {
+    color: #17a2b8;
+
+    &:hover {
+      background: #d1ecf1;
+    }
+  }
+
+  &.transfer {
+    color: #6c757d;
+
+    &:hover {
+      background: #e9ecef;
+    }
+  }
+}
+
+.completed-label {
+  color: #28a745;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.item-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.item-partial {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.item-fulfilled {
+  background: #d4edda;
+  color: #155724;
+}
+
+.btn-approve {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #218838;
+  }
+}
+
+.btn-reject {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #c82333;
+  }
+}
+
+.completed-message {
+  color: #28a745;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #d4edda;
+  border-radius: 6px;
+}
+
+.rejected-message {
+  color: #dc3545;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #f8d7da;
+  border-radius: 6px;
+}
+
+.section-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.fulfillment-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .progress-label {
+    font-size: 13px;
+    color: #666;
+  }
+
+  .progress-bar-inline {
+    width: 120px;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #ffc107 0%, #28a745 100%);
+      transition: width 0.3s ease;
+    }
+  }
+
+  .progress-percent {
+    font-size: 13px;
+    font-weight: 600;
+    color: #008080;
+    min-width: 35px;
+  }
+}
+
+.fulfilled-qty {
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+}
+
+.item-status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 @media (max-width: 992px) {
   .kanban-board {
     grid-template-columns: 1fr;

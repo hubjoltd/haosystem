@@ -96,6 +96,14 @@
               <span class="value">{{ formatDate(pr.requiredDate) }}</span>
             </div>
           </div>
+          <div class="card-actions-row" *ngIf="canApproveReject(pr)">
+            <button class="btn-action approve" (click)="approvePR(pr, $event)" title="Approve">
+              <i class="fa fa-check"></i> Approve
+            </button>
+            <button class="btn-action reject" (click)="rejectPR(pr, $event)" title="Reject">
+              <i class="fa fa-times"></i> Reject
+            </button>
+          </div>
           <div class="card-footer">
             <span class="comments"><i class="fa fa-comments"></i> Comments: {{ pr.commentsCount || 0 }}</span>
           </div>
@@ -119,15 +127,20 @@
             <span class="priority-badge" [ngClass]="getPriorityClass(pr.priority)">{{ pr.priority }}</span>
           </div>
           <div class="card-department">{{ pr.department }}</div>
-          <div class="card-details">
-            <div class="detail-row">
-              <span class="label">Date:</span>
-              <span class="value">{{ formatDate(pr.prDate) }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="label">Required:</span>
-              <span class="value">{{ formatDate(pr.requiredDate) }}</span>
-            </div>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="calculateFulfillmentProgress(pr)"></div>
+            <span class="progress-text">{{ calculateFulfillmentProgress(pr) }}% Fulfilled</span>
+          </div>
+          <div class="card-actions-row">
+            <button class="btn-action convert" (click)="convertToPO(pr, $event)" title="Convert to PO">
+              <i class="fa fa-file-invoice"></i>
+            </button>
+            <button class="btn-action stock" (click)="fulfillFromStock(pr, $event)" title="Fulfill from Stock">
+              <i class="fa fa-box"></i>
+            </button>
+            <button class="btn-action transfer" (click)="materialTransfer(pr, $event)" title="Material Transfer">
+              <i class="fa fa-exchange-alt"></i>
+            </button>
           </div>
           <div class="card-footer">
             <span class="comments"><i class="fa fa-comments"></i> Comments: {{ pr.commentsCount || 0 }}</span>
@@ -136,6 +149,102 @@
         <div class="empty-column" *ngIf="getFilteredPRs(approvedPRs).length === 0">
           <i class="fa fa-check-circle"></i>
           <span>No Approved Requisitions</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kanban-column partial">
+      <div class="column-header">
+        <span class="column-title">Partially Fulfilled</span>
+        <span class="column-count">{{ getFilteredPRs(partiallyFulfilledPRs).length }} Requisitions</span>
+      </div>
+      <div class="column-body">
+        <div class="pr-card" *ngFor="let pr of getFilteredPRs(partiallyFulfilledPRs)" (click)="viewPR(pr)">
+          <div class="card-header">
+            <span class="pr-number">{{ pr.prNumber }}</span>
+            <span class="priority-badge" [ngClass]="getPriorityClass(pr.priority)">{{ pr.priority }}</span>
+          </div>
+          <div class="card-department">{{ pr.department }}</div>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="calculateFulfillmentProgress(pr)"></div>
+            <span class="progress-text">{{ calculateFulfillmentProgress(pr) }}% Fulfilled</span>
+          </div>
+          <div class="card-actions-row">
+            <button class="btn-action convert" (click)="convertToPO(pr, $event)" title="Convert to PO">
+              <i class="fa fa-file-invoice"></i>
+            </button>
+            <button class="btn-action stock" (click)="fulfillFromStock(pr, $event)" title="Fulfill from Stock">
+              <i class="fa fa-box"></i>
+            </button>
+            <button class="btn-action transfer" (click)="materialTransfer(pr, $event)" title="Material Transfer">
+              <i class="fa fa-exchange-alt"></i>
+            </button>
+          </div>
+          <div class="card-footer">
+            <span class="comments"><i class="fa fa-comments"></i> Comments: {{ pr.commentsCount || 0 }}</span>
+          </div>
+        </div>
+        <div class="empty-column" *ngIf="getFilteredPRs(partiallyFulfilledPRs).length === 0">
+          <i class="fa fa-tasks"></i>
+          <span>No Partially Fulfilled</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kanban-column fulfilled">
+      <div class="column-header">
+        <span class="column-title">Fully Fulfilled</span>
+        <span class="column-count">{{ getFilteredPRs(fullyFulfilledPRs).length }} Requisitions</span>
+      </div>
+      <div class="column-body">
+        <div class="pr-card completed" *ngFor="let pr of getFilteredPRs(fullyFulfilledPRs)" (click)="viewPR(pr)">
+          <div class="card-header">
+            <span class="pr-number">{{ pr.prNumber }}</span>
+            <span class="completed-badge"><i class="fa fa-check-circle"></i> Completed</span>
+          </div>
+          <div class="card-department">{{ pr.department }}</div>
+          <div class="card-details">
+            <div class="detail-row">
+              <span class="label">Date:</span>
+              <span class="value">{{ formatDate(pr.prDate) }}</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <span class="comments"><i class="fa fa-comments"></i> Comments: {{ pr.commentsCount || 0 }}</span>
+          </div>
+        </div>
+        <div class="empty-column" *ngIf="getFilteredPRs(fullyFulfilledPRs).length === 0">
+          <i class="fa fa-check-double"></i>
+          <span>No Fulfilled Requisitions</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kanban-column rejected">
+      <div class="column-header">
+        <span class="column-title">Rejected</span>
+        <span class="column-count">{{ getFilteredPRs(rejectedPRs).length }} Requisitions</span>
+      </div>
+      <div class="column-body">
+        <div class="pr-card rejected-card" *ngFor="let pr of getFilteredPRs(rejectedPRs)" (click)="viewPR(pr)">
+          <div class="card-header">
+            <span class="pr-number">{{ pr.prNumber }}</span>
+            <span class="rejected-badge"><i class="fa fa-times-circle"></i> Rejected</span>
+          </div>
+          <div class="card-department">{{ pr.department }}</div>
+          <div class="card-details">
+            <div class="detail-row" *ngIf="pr.rejectionReason">
+              <span class="label">Reason:</span>
+              <span class="value rejection-reason">{{ pr.rejectionReason }}</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <span class="rejected-by" *ngIf="pr.rejectedBy">By: {{ pr.rejectedBy }}</span>
+          </div>
+        </div>
+        <div class="empty-column" *ngIf="getFilteredPRs(rejectedPRs).length === 0">
+          <i class="fa fa-ban"></i>
+          <span>No Rejected Requisitions</span>
         </div>
       </div>
     </div>
@@ -186,6 +295,24 @@
                 <button class="btn-icon delete" (click)="deletePR(pr); $event.stopPropagation()" title="Delete" *ngIf="canDelete(pr)">
                   <i class="fa fa-trash"></i>
                 </button>
+                <button class="btn-icon approve" (click)="approvePR(pr, $event)" title="Approve" *ngIf="canApproveReject(pr)">
+                  <i class="fa fa-check"></i>
+                </button>
+                <button class="btn-icon reject" (click)="rejectPR(pr, $event)" title="Reject" *ngIf="canApproveReject(pr)">
+                  <i class="fa fa-times"></i>
+                </button>
+                <button class="btn-icon convert" (click)="convertToPO(pr, $event)" title="Convert to PO" *ngIf="canConvertToPO(pr)">
+                  <i class="fa fa-file-invoice"></i>
+                </button>
+                <button class="btn-icon stock" (click)="fulfillFromStock(pr, $event)" title="Fulfill from Stock" *ngIf="canFulfillFromStock(pr)">
+                  <i class="fa fa-box"></i>
+                </button>
+                <button class="btn-icon transfer" (click)="materialTransfer(pr, $event)" title="Material Transfer" *ngIf="canMaterialTransfer(pr)">
+                  <i class="fa fa-exchange-alt"></i>
+                </button>
+                <span class="completed-label" *ngIf="isCompleted(pr)">
+                  <i class="fa fa-check-circle"></i> Completed
+                </span>
               </div>
             </td>
           </tr>
@@ -250,49 +377,68 @@
       <div class="items-section">
         <div class="section-header">
           <h3>Material List</h3>
-          <button class="btn-secondary" (click)="addItem()" [disabled]="!canEdit(selectedPR) && isEditing">
-            <i class="fa fa-plus"></i> Add Item
-          </button>
+          <div class="section-header-right">
+            <div class="fulfillment-progress" *ngIf="selectedPR.status !== 'Draft' && selectedPR.status !== 'Submitted' && selectedPR.status !== 'Rejected'">
+              <span class="progress-label">Fulfillment Progress:</span>
+              <div class="progress-bar-inline">
+                <div class="progress-fill" [style.width.%]="calculateFulfillmentProgress(selectedPR)"></div>
+              </div>
+              <span class="progress-percent">{{ calculateFulfillmentProgress(selectedPR) }}%</span>
+            </div>
+            <button class="btn-secondary" (click)="addItem()" *ngIf="canSubmit(selectedPR) || !isEditing">
+              <i class="fa fa-plus"></i> Add Item
+            </button>
+          </div>
         </div>
         <div class="items-table-container">
           <table class="items-table">
             <thead>
               <tr>
                 <th style="width: 30px;">#</th>
-                <th style="width: 200px;">Item Name *</th>
+                <th style="width: 180px;">Item Name *</th>
                 <th>Item Description</th>
-                <th style="width: 100px;">Quantity *</th>
-                <th style="width: 120px;">UOM</th>
+                <th style="width: 80px;">Qty *</th>
+                <th style="width: 80px;" *ngIf="selectedPR.status !== 'Draft'">Fulfilled</th>
+                <th style="width: 100px;">UOM</th>
+                <th style="width: 100px;" *ngIf="selectedPR.status !== 'Draft'">Status</th>
                 <th>Remarks</th>
-                <th style="width: 50px;">Action</th>
+                <th style="width: 50px;" *ngIf="canSubmit(selectedPR)">Action</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let item of selectedPR.items; let i = index">
                 <td>{{ i + 1 }}</td>
                 <td>
-                  <select class="form-control" [(ngModel)]="item.itemName" (change)="onItemSelect(i)" [disabled]="!canEdit(selectedPR) && isEditing">
+                  <select class="form-control" [(ngModel)]="item.itemName" (change)="onItemSelect(i)" [disabled]="!canSubmit(selectedPR) && isEditing">
                     <option value="">Select Item</option>
                     <option *ngFor="let it of items" [value]="it.name">{{ it.name }}</option>
                   </select>
                 </td>
                 <td>
-                  <input type="text" class="form-control" [(ngModel)]="item.itemDescription" placeholder="Description" [readonly]="!canEdit(selectedPR) && isEditing" />
+                  <input type="text" class="form-control" [(ngModel)]="item.itemDescription" placeholder="Description" [readonly]="!canSubmit(selectedPR) && isEditing" />
                 </td>
                 <td>
-                  <input type="number" class="form-control" [(ngModel)]="item.quantity" min="0" [readonly]="!canEdit(selectedPR) && isEditing" />
+                  <input type="number" class="form-control" [(ngModel)]="item.quantity" min="0" [readonly]="!canSubmit(selectedPR) && isEditing" />
+                </td>
+                <td *ngIf="selectedPR.status !== 'Draft'">
+                  <span class="fulfilled-qty">{{ item.fulfilledQuantity || 0 }} / {{ item.quantity }}</span>
                 </td>
                 <td>
-                  <select class="form-control" [(ngModel)]="item.uom" [disabled]="!canEdit(selectedPR) && isEditing">
+                  <select class="form-control" [(ngModel)]="item.uom" [disabled]="!canSubmit(selectedPR) && isEditing">
                     <option value="">Select UOM</option>
                     <option *ngFor="let unit of units" [value]="unit.symbol || unit.code">{{ unit.name }} ({{ unit.symbol || unit.code }})</option>
                   </select>
                 </td>
-                <td>
-                  <input type="text" class="form-control" [(ngModel)]="item.remarks" placeholder="Remarks" [readonly]="!canEdit(selectedPR) && isEditing" />
+                <td *ngIf="selectedPR.status !== 'Draft'">
+                  <span class="item-status-badge" [ngClass]="getItemStatusClass(item.status)">
+                    {{ item.status || 'Pending' }}
+                  </span>
                 </td>
                 <td>
-                  <button class="btn-icon delete" (click)="removeItem(i)" [disabled]="selectedPR.items.length <= 1 || (!canEdit(selectedPR) && isEditing)" title="Remove">
+                  <input type="text" class="form-control" [(ngModel)]="item.remarks" placeholder="Remarks" [readonly]="!canSubmit(selectedPR) && isEditing" />
+                </td>
+                <td *ngIf="canSubmit(selectedPR)">
+                  <button class="btn-icon delete" (click)="removeItem(i)" [disabled]="selectedPR.items.length <= 1" title="Remove">
                     <i class="fa fa-trash"></i>
                   </button>
                 </td>
@@ -304,12 +450,38 @@
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" (click)="closeModal()">Cancel</button>
-      <button class="btn-primary" (click)="saveDraft()" *ngIf="canEdit(selectedPR) || !isEditing">
+      
+      <button class="btn-primary" (click)="saveDraft()" *ngIf="canSubmit(selectedPR) || !isEditing">
         <i class="fa fa-save"></i> Save as Draft
       </button>
-      <button class="btn-success" (click)="submitPR()" *ngIf="canEdit(selectedPR) || !isEditing">
+      <button class="btn-success" (click)="submitPR()" *ngIf="canSubmit(selectedPR) || !isEditing">
         <i class="fa fa-paper-plane"></i> Submit
       </button>
+      
+      <button class="btn-approve" (click)="approvePR(selectedPR)" *ngIf="canApproveReject(selectedPR)">
+        <i class="fa fa-check"></i> Approve
+      </button>
+      <button class="btn-reject" (click)="rejectPR(selectedPR)" *ngIf="canApproveReject(selectedPR)">
+        <i class="fa fa-times"></i> Reject
+      </button>
+      
+      <button class="btn-primary" (click)="convertToPO(selectedPR)" *ngIf="canConvertToPO(selectedPR)">
+        <i class="fa fa-file-invoice"></i> Convert to PO
+      </button>
+      <button class="btn-secondary" (click)="fulfillFromStock(selectedPR)" *ngIf="canFulfillFromStock(selectedPR)">
+        <i class="fa fa-box"></i> Fulfill from Stock
+      </button>
+      <button class="btn-secondary" (click)="materialTransfer(selectedPR)" *ngIf="canMaterialTransfer(selectedPR)">
+        <i class="fa fa-exchange-alt"></i> Material Transfer
+      </button>
+      
+      <span class="completed-message" *ngIf="isCompleted(selectedPR)">
+        <i class="fa fa-check-circle"></i> This requisition has been fully fulfilled
+      </span>
+      
+      <span class="rejected-message" *ngIf="isRejected(selectedPR)">
+        <i class="fa fa-times-circle"></i> This requisition was rejected
+      </span>
     </div>
   </div>
 </div>

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { PurchaseRequisitionService, PurchaseRequisition, PRItem } from '../../../services/purchase-requisition.service';
+import { Router } from '@angular/router';
+import { PurchaseRequisitionService, PurchaseRequisition, PRItem, PRStatus } from '../../../services/purchase-requisition.service';
 import { UnitOfMeasureService, UnitOfMeasure } from '../../../services/unit-of-measure.service';
 import { ItemService, Item } from '../../../services/item.service';
 
@@ -14,6 +15,11 @@ export class PurchaseRequisitionComponent implements OnInit {
   draftPRs: PurchaseRequisition[] = [];
   submittedPRs: PurchaseRequisition[] = [];
   approvedPRs: PurchaseRequisition[] = [];
+  partiallyFulfilledPRs: PurchaseRequisition[] = [];
+  fullyFulfilledPRs: PurchaseRequisition[] = [];
+  rejectedPRs: PurchaseRequisition[] = [];
+  
+  isAdmin = true;
   
   units: UnitOfMeasure[] = [];
   items: Item[] = [];
@@ -35,7 +41,8 @@ export class PurchaseRequisitionComponent implements OnInit {
   constructor(
     private prService: PurchaseRequisitionService,
     private unitService: UnitOfMeasureService,
-    private itemService: ItemService
+    private itemService: ItemService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -69,6 +76,9 @@ export class PurchaseRequisitionComponent implements OnInit {
     this.draftPRs = this.requisitions.filter(pr => pr.status === 'Draft');
     this.submittedPRs = this.requisitions.filter(pr => pr.status === 'Submitted');
     this.approvedPRs = this.requisitions.filter(pr => pr.status === 'Approved');
+    this.partiallyFulfilledPRs = this.requisitions.filter(pr => pr.status === 'Partially Fulfilled');
+    this.fullyFulfilledPRs = this.requisitions.filter(pr => pr.status === 'Fully Fulfilled');
+    this.rejectedPRs = this.requisitions.filter(pr => pr.status === 'Rejected');
   }
 
   getFilteredPRs(list: PurchaseRequisition[]): PurchaseRequisition[] {
@@ -103,8 +113,10 @@ export class PurchaseRequisitionComponent implements OnInit {
       itemName: '',
       itemDescription: '',
       quantity: 0,
+      fulfilledQuantity: 0,
       uom: '',
-      remarks: ''
+      remarks: '',
+      status: 'Pending'
     };
   }
 
@@ -244,8 +256,104 @@ export class PurchaseRequisitionComponent implements OnInit {
       case 'Draft': return 'status-draft';
       case 'Submitted': return 'status-submitted';
       case 'Approved': return 'status-approved';
+      case 'Partially Fulfilled': return 'status-partial';
+      case 'Fully Fulfilled': return 'status-fulfilled';
       case 'Rejected': return 'status-rejected';
       default: return 'status-default';
     }
+  }
+
+  canSubmit(pr: PurchaseRequisition): boolean {
+    return pr.status === 'Draft';
+  }
+
+  canApproveReject(pr: PurchaseRequisition): boolean {
+    return pr.status === 'Submitted' && this.isAdmin;
+  }
+
+  canConvertToPO(pr: PurchaseRequisition): boolean {
+    return pr.status === 'Approved' || pr.status === 'Partially Fulfilled';
+  }
+
+  canFulfillFromStock(pr: PurchaseRequisition): boolean {
+    return pr.status === 'Approved' || pr.status === 'Partially Fulfilled';
+  }
+
+  canMaterialTransfer(pr: PurchaseRequisition): boolean {
+    return pr.status === 'Approved' || pr.status === 'Partially Fulfilled';
+  }
+
+  isCompleted(pr: PurchaseRequisition): boolean {
+    return pr.status === 'Fully Fulfilled';
+  }
+
+  isRejected(pr: PurchaseRequisition): boolean {
+    return pr.status === 'Rejected';
+  }
+
+  approvePR(pr: PurchaseRequisition, event?: Event): void {
+    event?.stopPropagation();
+    if (!this.canApproveReject(pr)) return;
+    
+    if (confirm(`Are you sure you want to approve ${pr.prNumber}?`)) {
+      if (pr.id) {
+        this.prService.approve(pr.id).subscribe({
+          next: () => this.loadData(),
+          error: (err) => console.error('Error approving PR:', err)
+        });
+      }
+    }
+  }
+
+  rejectPR(pr: PurchaseRequisition, event?: Event): void {
+    event?.stopPropagation();
+    if (!this.canApproveReject(pr)) return;
+    
+    const reason = prompt(`Enter rejection reason for ${pr.prNumber}:`);
+    if (reason) {
+      if (pr.id) {
+        this.prService.reject(pr.id, reason).subscribe({
+          next: () => {
+            this.loadData();
+            this.closeModal();
+          },
+          error: (err) => console.error('Error rejecting PR:', err)
+        });
+      }
+    }
+  }
+
+  convertToPO(pr: PurchaseRequisition, event?: Event): void {
+    event?.stopPropagation();
+    if (!this.canConvertToPO(pr)) return;
+    this.router.navigate(['/app/purchase/fulfillment/convert-to-po'], { queryParams: { prId: pr.id } });
+  }
+
+  fulfillFromStock(pr: PurchaseRequisition, event?: Event): void {
+    event?.stopPropagation();
+    if (!this.canFulfillFromStock(pr)) return;
+    this.router.navigate(['/app/purchase/fulfillment/stock-issue'], { queryParams: { prId: pr.id } });
+  }
+
+  materialTransfer(pr: PurchaseRequisition, event?: Event): void {
+    event?.stopPropagation();
+    if (!this.canMaterialTransfer(pr)) return;
+    this.router.navigate(['/app/purchase/fulfillment/material-transfer'], { queryParams: { prId: pr.id } });
+  }
+
+  getItemStatusClass(status: string | undefined): string {
+    switch (status) {
+      case 'Pending': return 'item-pending';
+      case 'Partially Fulfilled': return 'item-partial';
+      case 'Fully Fulfilled': return 'item-fulfilled';
+      default: return 'item-pending';
+    }
+  }
+
+  calculateFulfillmentProgress(pr: PurchaseRequisition): number {
+    if (!pr.items || pr.items.length === 0) return 0;
+    const totalQty = pr.items.reduce((sum, item) => sum + item.quantity, 0);
+    const fulfilledQty = pr.items.reduce((sum, item) => sum + (item.fulfilledQuantity || 0), 0);
+    return totalQty > 0 ? Math.round((fulfilledQty / totalQty) * 100) : 0;
   }
 }
