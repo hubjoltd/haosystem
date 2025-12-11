@@ -356,4 +356,10 @@ export class PurchaseRequisitionComponent implements OnInit {
     const fulfilledQty = pr.items.reduce((sum, item) => sum + (item.fulfilledQuantity || 0), 0);
     return totalQty > 0 ? Math.round((fulfilledQty / totalQty) * 100) : 0;
   }
+
+  printPR(pr: PurchaseRequisition): void {
+    if (pr.id) {
+      this.router.navigate(['/app/purchase/requisition', pr.id, 'print']);
+    }
+  }
 }

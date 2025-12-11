@@ -69,6 +69,9 @@ import { SystemAuditsComponent } from './components/audit-trails/system-audits/s
 import { InventoryAuditsComponent } from './components/audit-trails/inventory-audits/inventory-audits.component';
 import { PurchaseAuditsComponent } from './components/audit-trails/purchase-audits/purchase-audits.component';
 
+import { PrPrintComponent } from './components/purchase/pr-print/pr-print.component';
+import { PoPrintComponent } from './components/purchase/po-print/po-print.component';
+
 @NgModule({
   declarations: [
     App,
@@ -122,7 +125,9 @@ import { PurchaseAuditsComponent } from './components/audit-trails/purchase-audi
     StockIssueTransferReportComponent,
     SystemAuditsComponent,
     InventoryAuditsComponent,
-    PurchaseAuditsComponent
+    PurchaseAuditsComponent,
+    PrPrintComponent,
+    PoPrintComponent
   ],
   imports: [
     BrowserModule,

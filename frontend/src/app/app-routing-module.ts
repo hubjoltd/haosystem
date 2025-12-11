@@ -59,6 +59,9 @@ import { SystemAuditsComponent } from './components/audit-trails/system-audits/s
 import { InventoryAuditsComponent } from './components/audit-trails/inventory-audits/inventory-audits.component';
 import { PurchaseAuditsComponent } from './components/audit-trails/purchase-audits/purchase-audits.component';
 
+import { PrPrintComponent } from './components/purchase/pr-print/pr-print.component';
+import { PoPrintComponent } from './components/purchase/po-print/po-print.component';
+
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
@@ -113,7 +116,9 @@ const routes: Routes = [
       { path: 'reports/purchase/stock-issue-transfer', component: StockIssueTransferReportComponent },
       { path: 'audit/system', component: SystemAuditsComponent },
       { path: 'audit/inventory', component: InventoryAuditsComponent },
-      { path: 'audit/purchase', component: PurchaseAuditsComponent }
+      { path: 'audit/purchase', component: PurchaseAuditsComponent },
+      { path: 'purchase/requisition/:id/print', component: PrPrintComponent },
+      { path: 'purchase/direct/:id/print', component: PoPrintComponent }
     ]
   }
 ];

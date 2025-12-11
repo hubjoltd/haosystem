@@ -58,6 +58,9 @@
           <div class="card-footer">
             <span class="comments"><i class="fa fa-comments"></i> Comments: {{ pr.commentsCount || 0 }}</span>
             <div class="card-actions">
+              <button class="btn-icon print" (click)="printPR(pr); $event.stopPropagation()" title="Print">
+                <i class="fa fa-print"></i>
+              </button>
               <button class="btn-icon" (click)="openEditModal(pr); $event.stopPropagation()" title="Edit">
                 <i class="fa fa-edit"></i>
               </button>
@@ -286,6 +289,9 @@
             </td>
             <td>
               <div class="action-buttons">
+                <button class="btn-icon print" (click)="printPR(pr); $event.stopPropagation()" title="Print">
+                  <i class="fa fa-print"></i>
+                </button>
                 <button class="btn-icon" (click)="openEditModal(pr); $event.stopPropagation()" title="Edit" *ngIf="canEdit(pr)">
                   <i class="fa fa-edit"></i>
                 </button>

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { DirectPurchaseService, DirectPurchase, DirectPurchaseItem } from '../../../services/direct-purchase.service';
 import { SupplierService, Supplier } from '../../../services/supplier.service';
 import { UnitOfMeasureService, UnitOfMeasure } from '../../../services/unit-of-measure.service';
@@ -23,7 +24,8 @@ export class DirectPurchaseComponent implements OnInit {
   constructor(
     private directPurchaseService: DirectPurchaseService,
     private supplierService: SupplierService,
-    private unitService: UnitOfMeasureService
+    private unitService: UnitOfMeasureService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -209,5 +211,11 @@ export class DirectPurchaseComponent implements OnInit {
       p.status === 'Approved' ||
       p.status?.toLowerCase().includes('complete')
     );
+  }
+
+  printPO(purchase: DirectPurchase): void {
+    if (purchase.id) {
+      this.router.navigate(['/app/purchase/direct', purchase.id, 'print']);
+    }
   }
 }

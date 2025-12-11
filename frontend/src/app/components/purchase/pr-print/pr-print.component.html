@@ -1,0 +1,155 @@
+<div class="print-actions no-print">
+  <button class="btn-back" (click)="goBack()">
+    <i class="fa fa-arrow-left"></i> Back
+  </button>
+  <button class="btn-print" (click)="triggerPrint()">
+    <i class="fa fa-print"></i> Print
+  </button>
+</div>
+
+<div class="print-container" *ngIf="pr">
+  <div class="a4-page">
+    <div class="document-header">
+      <div class="company-info">
+        <h1 class="company-name">{{ companyName }}</h1>
+        <p class="company-address">{{ companyAddress }}</p>
+      </div>
+      <div class="document-title">
+        <h2>PURCHASE REQUISITION</h2>
+        <span class="internal-badge">INTERNAL DOCUMENT</span>
+      </div>
+    </div>
+
+    <div class="pr-info-section">
+      <div class="info-grid">
+        <div class="info-item">
+          <label>PR Number:</label>
+          <span class="value">{{ pr.prNumber }}</span>
+        </div>
+        <div class="info-item">
+          <label>PR Date:</label>
+          <span class="value">{{ formatDate(pr.prDate) }}</span>
+        </div>
+        <div class="info-item">
+          <label>Department:</label>
+          <span class="value">{{ pr.department }}</span>
+        </div>
+        <div class="info-item">
+          <label>Required Date:</label>
+          <span class="value">{{ formatDate(pr.requiredDate) }}</span>
+        </div>
+        <div class="info-item">
+          <label>Priority:</label>
+          <span class="value priority" [class]="pr.priority.toLowerCase()">{{ pr.priority }}</span>
+        </div>
+        <div class="info-item">
+          <label>Status:</label>
+          <span class="value status">{{ pr.status }}</span>
+        </div>
+      </div>
+      <div class="purpose-section" *ngIf="pr.purpose">
+        <label>Purpose:</label>
+        <p class="purpose-text">{{ pr.purpose }}</p>
+      </div>
+    </div>
+
+    <div class="materials-section">
+      <h3 class="section-title">Material List</h3>
+      <table class="materials-table">
+        <thead>
+          <tr>
+            <th class="col-sno">#</th>
+            <th class="col-item">Item Name</th>
+            <th class="col-desc">Description</th>
+            <th class="col-qty">Requested Qty</th>
+            <th class="col-qty">Fulfilled Qty</th>
+            <th class="col-qty">Pending Qty</th>
+            <th class="col-uom">UOM</th>
+            <th class="col-status">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of pr.items; let i = index">
+            <td class="center">{{ i + 1 }}</td>
+            <td>{{ item.itemName }}</td>
+            <td>{{ item.itemDescription }}</td>
+            <td class="center">{{ item.quantity }}</td>
+            <td class="center">{{ item.fulfilledQuantity || 0 }}</td>
+            <td class="center">{{ getPendingQty(item) }}</td>
+            <td class="center">{{ item.uom }}</td>
+            <td class="center">
+              <span class="item-status" [class]="(item.status || 'Pending').toLowerCase().replace(' ', '-')">
+                {{ item.status || 'Pending' }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="totals-row">
+            <td colspan="3" class="right"><strong>Totals:</strong></td>
+            <td class="center"><strong>{{ getTotalRequested() }}</strong></td>
+            <td class="center"><strong>{{ getTotalFulfilled() }}</strong></td>
+            <td class="center"><strong>{{ getTotalPending() }}</strong></td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="history-section" *ngIf="fulfillmentHistory.length > 0">
+      <h3 class="section-title">Fulfillment History</h3>
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Action</th>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Performed By</th>
+            <th>Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let history of fulfillmentHistory">
+            <td>{{ history.date }}</td>
+            <td>{{ history.action }}</td>
+            <td>{{ history.itemName }}</td>
+            <td class="center">{{ history.quantity }}</td>
+            <td>{{ history.performedBy }}</td>
+            <td>{{ history.reference }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="remarks-section" *ngIf="pr.remarks">
+      <h3 class="section-title">Remarks</h3>
+      <p class="remarks-text">{{ pr.remarks }}</p>
+    </div>
+
+    <div class="signatures-section">
+      <div class="signature-box">
+        <div class="signature-line"></div>
+        <p class="signature-label">Requested By</p>
+        <p class="signature-name">{{ pr.requestedBy || '_________________' }}</p>
+        <p class="signature-date">Date: _______________</p>
+      </div>
+      <div class="signature-box">
+        <div class="signature-line"></div>
+        <p class="signature-label">Approved By</p>
+        <p class="signature-name">{{ pr.approvedBy || '_________________' }}</p>
+        <p class="signature-date">Date: _______________</p>
+      </div>
+    </div>
+
+    <div class="document-footer">
+      <p>This is an internal document. Printed on: {{ formatDate(today) }}</p>
+      <p>Page 1 of 1</p>
+    </div>
+  </div>
+</div>
+
+<div class="loading-container" *ngIf="loading">
+  <div class="spinner"></div>
+  <p>Loading document...</p>
+</div>

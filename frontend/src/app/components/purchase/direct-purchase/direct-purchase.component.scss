@@ -284,6 +284,14 @@
     color: #dc3545;
   }
 
+  &.print {
+    color: #6f42c1;
+
+    &:hover {
+      background: #e2d9f3;
+    }
+  }
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;

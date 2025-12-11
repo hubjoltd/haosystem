@@ -124,6 +124,9 @@
             </div>
             <div class="card-footer">
               <div class="card-actions">
+                <button class="btn-icon print" (click)="printPO(purchase); $event.stopPropagation()" title="Print">
+                  <i class="fas fa-print"></i>
+                </button>
                 <button class="btn-icon" (click)="openModal(purchase); $event.stopPropagation()" title="Edit">
                   <i class="fas fa-edit"></i>
                 </button>
@@ -168,6 +171,9 @@
             </div>
             <div class="card-footer">
               <div class="card-actions">
+                <button class="btn-icon print" (click)="printPO(purchase); $event.stopPropagation()" title="Print">
+                  <i class="fas fa-print"></i>
+                </button>
                 <button class="btn-icon" (click)="viewPurchase(purchase); $event.stopPropagation()" title="View">
                   <i class="fas fa-eye"></i>
                 </button>
@@ -209,6 +215,9 @@
             </div>
             <div class="card-footer">
               <div class="card-actions">
+                <button class="btn-icon print" (click)="printPO(purchase); $event.stopPropagation()" title="Print">
+                  <i class="fas fa-print"></i>
+                </button>
                 <button class="btn-icon" (click)="viewPurchase(purchase); $event.stopPropagation()" title="View">
                   <i class="fas fa-eye"></i>
                 </button>

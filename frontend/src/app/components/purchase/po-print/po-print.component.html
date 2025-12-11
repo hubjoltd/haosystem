@@ -1,0 +1,142 @@
+<div class="print-actions no-print">
+  <button class="btn-back" (click)="goBack()">
+    <i class="fa fa-arrow-left"></i> Back
+  </button>
+  <button class="btn-print" (click)="triggerPrint()">
+    <i class="fa fa-print"></i> Print
+  </button>
+</div>
+
+<div class="print-container" *ngIf="po">
+  <div class="a4-page">
+    <div class="document-header">
+      <div class="company-info">
+        <h1 class="company-name">{{ companyName }}</h1>
+        <p class="company-address">{{ companyAddress }}</p>
+        <p class="company-contact">Tel: {{ companyPhone }} | Email: {{ companyEmail }}</p>
+      </div>
+      <div class="document-title">
+        <h2>PURCHASE ORDER</h2>
+        <div class="po-number-box">
+          <span class="label">PO Number</span>
+          <span class="value">{{ po.poNumber }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-row">
+      <div class="supplier-section">
+        <h3 class="section-label">SUPPLIER</h3>
+        <div class="info-box">
+          <p class="supplier-name">{{ po.supplierName }}</p>
+          <p *ngIf="po.supplierAddress">{{ po.supplierAddress }}</p>
+          <p *ngIf="po.supplierContact">Contact: {{ po.supplierContact }}</p>
+        </div>
+      </div>
+      <div class="delivery-section">
+        <h3 class="section-label">DELIVERY ADDRESS</h3>
+        <div class="info-box">
+          <p>{{ deliveryAddress }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="order-info">
+      <div class="info-item">
+        <label>PO Date:</label>
+        <span>{{ formatDate(po.poDate || po.createdDate || '') }}</span>
+      </div>
+      <div class="info-item">
+        <label>Expected Delivery:</label>
+        <span>{{ formatDate(po.expectedDate || po.deliveryDate || '') }}</span>
+      </div>
+      <div class="info-item">
+        <label>Payment Terms:</label>
+        <span>{{ po.paymentTerms || 'Net 30 Days' }}</span>
+      </div>
+    </div>
+
+    <div class="items-section">
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th class="col-sno">#</th>
+            <th class="col-item">Item Description</th>
+            <th class="col-qty">Quantity</th>
+            <th class="col-unit">Unit</th>
+            <th class="col-rate">Rate</th>
+            <th class="col-amount">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of po.items; let i = index">
+            <td class="center">{{ i + 1 }}</td>
+            <td>
+              <strong>{{ item.itemName }}</strong>
+              <span class="item-desc" *ngIf="item.description"><br>{{ item.description }}</span>
+            </td>
+            <td class="center">{{ item.quantity }}</td>
+            <td class="center">{{ item.unit || 'PCS' }}</td>
+            <td class="right">{{ formatCurrency(item.rate) }}</td>
+            <td class="right">{{ formatCurrency(getItemAmount(item)) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="totals-section">
+      <div class="totals-box">
+        <div class="total-row">
+          <span class="label">Subtotal:</span>
+          <span class="value">{{ formatCurrency(getSubtotal()) }}</span>
+        </div>
+        <div class="total-row">
+          <span class="label">Tax (10%):</span>
+          <span class="value">{{ formatCurrency(getTaxAmount()) }}</span>
+        </div>
+        <div class="total-row grand-total">
+          <span class="label">TOTAL AMOUNT:</span>
+          <span class="value">{{ formatCurrency(getTotal()) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="amount-words">
+      <label>Amount in Words:</label>
+      <p>{{ getTotal() | currency:'USD':'symbol':'1.2-2' }} Only</p>
+    </div>
+
+    <div class="terms-section">
+      <h3 class="section-title">Terms & Conditions</h3>
+      <ol class="terms-list">
+        <li>Please quote the PO number on all correspondence and delivery documents.</li>
+        <li>Goods must be delivered in good condition within the specified time frame.</li>
+        <li>Payment will be made as per the payment terms mentioned above.</li>
+        <li>Any discrepancy in quality or quantity must be reported within 3 working days.</li>
+      </ol>
+    </div>
+
+    <div class="signatures-section">
+      <div class="signature-box">
+        <div class="signature-line"></div>
+        <p class="signature-label">Authorized Signatory</p>
+        <p class="signature-title">Procurement Manager</p>
+      </div>
+      <div class="signature-box">
+        <div class="signature-line"></div>
+        <p class="signature-label">Supplier Acknowledgment</p>
+        <p class="signature-title">Date & Stamp</p>
+      </div>
+    </div>
+
+    <div class="document-footer">
+      <p>This is an official Purchase Order document. Generated on: {{ formatDate(today) }}</p>
+      <p>Page 1 of 1</p>
+    </div>
+  </div>
+</div>
+
+<div class="loading-container" *ngIf="loading">
+  <div class="spinner"></div>
+  <p>Loading document...</p>
+</div>

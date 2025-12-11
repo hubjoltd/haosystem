@@ -30,6 +30,7 @@ export interface PurchaseRequisition {
   priority: 'Normal' | 'Urgent' | 'Critical';
   status: PRStatus;
   items: PRItem[];
+  remarks?: string;
   commentsCount?: number;
   createdAt?: string;
   createdBy?: string;

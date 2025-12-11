@@ -8,6 +8,7 @@ export interface DirectPurchaseItem {
   description: string;
   quantity: number;
   uom: string;
+  unit?: string;
   rate: number;
   amount: number;
   remarks: string;
@@ -17,8 +18,12 @@ export interface DirectPurchase {
   id?: number;
   poNumber?: string;
   poType: string;
+  poDate?: string;
+  expectedDate?: string;
   supplierId: number;
   supplierName?: string;
+  supplierAddress?: string;
+  supplierContact?: string;
   deliveryLocation: string;
   paymentTerms: string;
   deliveryDate: string;
@@ -26,6 +31,7 @@ export interface DirectPurchase {
   status: string;
   items: DirectPurchaseItem[];
   totalAmount?: number;
+  remarks?: string;
 }
 
 @Injectable({
