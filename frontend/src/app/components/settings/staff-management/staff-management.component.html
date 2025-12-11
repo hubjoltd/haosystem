@@ -1,0 +1,79 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1>Staff Management</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Settings</span>
+        <span>/</span>
+        <span>Staff</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> Add Staff
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Search staff..." />
+      </div>
+      <div class="filter-group">
+        <select class="form-control">
+          <option value="">All Roles</option>
+          <option value="Admin">Admin</option>
+          <option value="Manager">Manager</option>
+          <option value="Staff">Staff</option>
+        </select>
+        <select class="form-control">
+          <option value="">All Departments</option>
+          <option value="IT">IT</option>
+          <option value="Sales">Sales</option>
+          <option value="Operations">Operations</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Department</th>
+            <th>Join Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let member of filteredStaff">
+            <td>
+              <div class="user-cell">
+                <div class="avatar">{{ member.name.charAt(0) }}</div>
+                <span>{{ member.name }}</span>
+              </div>
+            </td>
+            <td>{{ member.email }}</td>
+            <td>{{ member.role }}</td>
+            <td>{{ member.department }}</td>
+            <td>{{ member.joinDate }}</td>
+            <td>
+              <span class="badge" [ngClass]="getStatusClass(member.status)">{{ member.status }}</span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

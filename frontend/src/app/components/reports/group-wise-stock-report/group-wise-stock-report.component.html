@@ -1,0 +1,20 @@
+<div class="report-page">
+  <div class="page-header">
+    <div><h1>Group-wise Stock Report</h1><div class="breadcrumb"><a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Group-wise</span></div></div>
+    <button class="btn btn-primary"><i class="fas fa-download"></i> Export</button>
+  </div>
+  <div class="card">
+    <div class="filters-row">
+      <div class="form-group"><label>Group</label><select class="form-control"><option value="">All Groups</option></select></div>
+      <button class="btn btn-primary filter-btn"><i class="fas fa-filter"></i> Generate</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Group</th><th>Items Count</th><th>Total Quantity</th><th>Total Value</th></tr></thead>
+        <tbody><tr *ngIf="reportData.length === 0"><td colspan="4" class="empty-state"><i class="fas fa-sitemap"></i><p>Generate report to view data</p></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>

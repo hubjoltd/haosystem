@@ -1,0 +1,72 @@
+<header class="header">
+  <div class="header-left">
+    <button class="toggle-btn" (click)="onToggleSidebar()">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search..." />
+    </div>
+  </div>
+
+  <div class="header-right">
+    <div class="header-actions">
+      <div class="notification-wrapper">
+        <button class="action-btn" (click)="toggleNotifications()">
+          <i class="fas fa-bell"></i>
+          <span class="badge" *ngIf="getUnreadCount() > 0">{{ getUnreadCount() }}</span>
+        </button>
+        <div class="dropdown notification-dropdown" *ngIf="showNotifications">
+          <div class="dropdown-header">
+            <h4>Notifications</h4>
+            <a href="#">Mark all as read</a>
+          </div>
+          <div class="dropdown-body">
+            <div class="notification-item" *ngFor="let notification of notifications" [class.unread]="!notification.read">
+              <div class="notification-icon">
+                <i class="fas fa-info-circle"></i>
+              </div>
+              <div class="notification-content">
+                <p>{{ notification.message }}</p>
+                <span class="time">{{ notification.time }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="dropdown-footer">
+            <a href="#">View all notifications</a>
+          </div>
+        </div>
+      </div>
+
+      <button class="action-btn">
+        <i class="fas fa-envelope"></i>
+        <span class="badge">2</span>
+      </button>
+    </div>
+
+    <div class="profile-wrapper">
+      <button class="profile-btn" (click)="toggleProfile()">
+        <div class="avatar">
+          <i class="fas fa-user"></i>
+        </div>
+        <span class="name">Admin User</span>
+        <i class="fas fa-chevron-down"></i>
+      </button>
+      <div class="dropdown profile-dropdown" *ngIf="showProfile">
+        <a href="#" class="dropdown-item">
+          <i class="fas fa-user"></i>
+          My Profile
+        </a>
+        <a href="#" class="dropdown-item">
+          <i class="fas fa-cog"></i>
+          Account Settings
+        </a>
+        <div class="dropdown-divider"></div>
+        <a routerLink="/login" class="dropdown-item text-danger">
+          <i class="fas fa-sign-out-alt"></i>
+          Logout
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,86 @@
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+
+import { LoginComponent } from './components/login/login.component';
+import { LayoutComponent } from './components/layout/layout.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+
+import { GeneralSettingsComponent } from './components/settings/general-settings/general-settings.component';
+import { FinanceSettingsComponent } from './components/settings/finance-settings/finance-settings.component';
+import { CustomerSettingsComponent } from './components/settings/customer-settings/customer-settings.component';
+import { ContractSettingsComponent } from './components/settings/contract-settings/contract-settings.component';
+import { RolesSettingsComponent } from './components/settings/roles-settings/roles-settings.component';
+import { StaffManagementComponent } from './components/settings/staff-management/staff-management.component';
+
+import { CustomerManagementComponent } from './components/customer-management/customer-management.component';
+import { ContractManagementComponent } from './components/contract-management/contract-management.component';
+
+import { GroupMasterComponent } from './components/inventory/group-master/group-master.component';
+import { ItemMasterComponent } from './components/inventory/item-master/item-master.component';
+import { UnitsOfMeasureComponent } from './components/inventory/units-of-measure/units-of-measure.component';
+import { WarehouseBinComponent } from './components/inventory/warehouse-bin/warehouse-bin.component';
+import { SupplierComponent } from './components/inventory/supplier/supplier.component';
+import { InventoryValuationComponent } from './components/inventory/inventory-valuation/inventory-valuation.component';
+import { InventoryLedgerComponent } from './components/inventory/inventory-ledger/inventory-ledger.component';
+
+import { GoodsReceiptComponent } from './components/stock-movement/goods-receipt/goods-receipt.component';
+import { GoodsIssueComponent } from './components/stock-movement/goods-issue/goods-issue.component';
+import { StockTransferComponent } from './components/stock-movement/stock-transfer/stock-transfer.component';
+import { StockAdjustmentsComponent } from './components/stock-movement/stock-adjustments/stock-adjustments.component';
+
+import { StockSummaryReportComponent } from './components/reports/stock-summary-report/stock-summary-report.component';
+import { InventoryValuationReportComponent } from './components/reports/inventory-valuation-report/inventory-valuation-report.component';
+import { ItemMovementReportComponent } from './components/reports/item-movement-report/item-movement-report.component';
+import { StockLedgerReportComponent } from './components/reports/stock-ledger-report/stock-ledger-report.component';
+import { GroupWiseStockReportComponent } from './components/reports/group-wise-stock-report/group-wise-stock-report.component';
+import { WarehouseStockReportComponent } from './components/reports/warehouse-stock-report/warehouse-stock-report.component';
+import { ReorderLevelComponent } from './components/reports/reorder-level/reorder-level.component';
+import { SlowMovingItemsReportComponent } from './components/reports/slow-moving-items-report/slow-moving-items-report.component';
+import { PurchaseVsGrnReportComponent } from './components/reports/purchase-vs-grn-report/purchase-vs-grn-report.component';
+
+const routes: Routes = [
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent },
+  {
+    path: 'app',
+    component: LayoutComponent,
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: DashboardComponent },
+      { path: 'settings/general', component: GeneralSettingsComponent },
+      { path: 'settings/finance', component: FinanceSettingsComponent },
+      { path: 'settings/customer', component: CustomerSettingsComponent },
+      { path: 'settings/contract', component: ContractSettingsComponent },
+      { path: 'settings/roles', component: RolesSettingsComponent },
+      { path: 'settings/staff', component: StaffManagementComponent },
+      { path: 'customers', component: CustomerManagementComponent },
+      { path: 'contracts', component: ContractManagementComponent },
+      { path: 'inventory/groups', component: GroupMasterComponent },
+      { path: 'inventory/items', component: ItemMasterComponent },
+      { path: 'inventory/units', component: UnitsOfMeasureComponent },
+      { path: 'inventory/warehouse', component: WarehouseBinComponent },
+      { path: 'inventory/suppliers', component: SupplierComponent },
+      { path: 'inventory/valuation', component: InventoryValuationComponent },
+      { path: 'inventory/ledger', component: InventoryLedgerComponent },
+      { path: 'stock/grn', component: GoodsReceiptComponent },
+      { path: 'stock/issue', component: GoodsIssueComponent },
+      { path: 'stock/transfer', component: StockTransferComponent },
+      { path: 'stock/adjustments', component: StockAdjustmentsComponent },
+      { path: 'reports/stock-summary', component: StockSummaryReportComponent },
+      { path: 'reports/valuation', component: InventoryValuationReportComponent },
+      { path: 'reports/item-movement', component: ItemMovementReportComponent },
+      { path: 'reports/stock-ledger', component: StockLedgerReportComponent },
+      { path: 'reports/group-wise', component: GroupWiseStockReportComponent },
+      { path: 'reports/warehouse-stock', component: WarehouseStockReportComponent },
+      { path: 'reports/reorder-level', component: ReorderLevelComponent },
+      { path: 'reports/slow-moving', component: SlowMovingItemsReportComponent },
+      { path: 'reports/purchase-grn', component: PurchaseVsGrnReportComponent }
+    ]
+  }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }

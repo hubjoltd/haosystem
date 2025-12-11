@@ -1,0 +1,24 @@
+.settings-page {
+  .card {
+    margin-bottom: 24px;
+  }
+}
+
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+}
+
+.color-badge {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+}

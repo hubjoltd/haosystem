@@ -1,0 +1,120 @@
+<div class="management-page">
+  <div class="page-header">
+    <div>
+      <h1>Customer Management</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Customers</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> Add Customer
+    </button>
+  </div>
+
+  <div class="stats-grid grid-4">
+    <div class="stat-card">
+      <div class="icon primary"><i class="fas fa-users"></i></div>
+      <div class="info">
+        <h3>{{ customers.length }}</h3>
+        <p>Total Customers</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="icon success"><i class="fas fa-user-check"></i></div>
+      <div class="info">
+        <h3>4</h3>
+        <p>Active Customers</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="icon warning"><i class="fas fa-dollar-sign"></i></div>
+      <div class="info">
+        <h3>$67,700</h3>
+        <p>Total Balance</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="icon info"><i class="fas fa-chart-line"></i></div>
+      <div class="info">
+        <h3>+12%</h3>
+        <p>Growth Rate</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Search customers..." />
+      </div>
+      <div class="filter-group">
+        <select class="form-control">
+          <option value="">All Groups</option>
+          <option value="Retail">Retail</option>
+          <option value="Wholesale">Wholesale</option>
+          <option value="VIP">VIP</option>
+          <option value="Corporate">Corporate</option>
+        </select>
+        <select class="form-control">
+          <option value="">All Statuses</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Customer</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Group</th>
+            <th>Balance</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let customer of filteredCustomers">
+            <td>
+              <div class="user-cell">
+                <div class="avatar">{{ customer.name.charAt(0) }}</div>
+                <span>{{ customer.name }}</span>
+              </div>
+            </td>
+            <td>{{ customer.email }}</td>
+            <td>{{ customer.phone }}</td>
+            <td><span class="badge badge-info">{{ customer.group }}</span></td>
+            <td>${{ customer.balance.toLocaleString() }}</td>
+            <td>
+              <span class="badge" [ngClass]="getStatusClass(customer.status)">{{ customer.status }}</span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary" title="View"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm btn-secondary" title="Edit"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger" title="Delete"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <span>Showing {{ filteredCustomers.length }} of {{ customers.length }} customers</span>
+      <div class="pagination">
+        <button class="btn btn-sm btn-secondary"><i class="fas fa-chevron-left"></i></button>
+        <button class="btn btn-sm btn-primary">1</button>
+        <button class="btn btn-sm btn-secondary">2</button>
+        <button class="btn btn-sm btn-secondary">3</button>
+        <button class="btn btn-sm btn-secondary"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,44 @@
+<div class="stock-page">
+  <div class="page-header">
+    <div>
+      <h1>Stock Adjustments</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Stock Movement</span>
+        <span>/</span>
+        <span>Adjustments</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> New Adjustment
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Adjustment No.</th>
+            <th>Date</th>
+            <th>Item</th>
+            <th>Adjustment Type</th>
+            <th>Quantity</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="adjustments.length === 0">
+            <td colspan="8" class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>No adjustments found</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

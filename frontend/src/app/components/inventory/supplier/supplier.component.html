@@ -1,0 +1,88 @@
+<div class="inventory-page">
+  <div class="page-header">
+    <div>
+      <h1>Supplier Management</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Inventory</span>
+        <span>/</span>
+        <span>Suppliers</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> Add Supplier
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Search suppliers..." />
+      </div>
+      <div class="filter-group">
+        <select class="form-control">
+          <option value="">All Categories</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Raw Materials">Raw Materials</option>
+          <option value="Stationery">Stationery</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Supplier</th>
+            <th>Contact</th>
+            <th>Category</th>
+            <th>Rating</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let supplier of suppliers">
+            <td><strong>{{ supplier.code }}</strong></td>
+            <td>
+              <div class="supplier-info">
+                <div class="avatar">{{ supplier.name.charAt(0) }}</div>
+                <span>{{ supplier.name }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="contact-info">
+                <span>{{ supplier.email }}</span>
+                <span class="phone">{{ supplier.phone }}</span>
+              </div>
+            </td>
+            <td>{{ supplier.category }}</td>
+            <td>
+              <div class="rating">
+                <i *ngFor="let star of getRatingStars(supplier.rating)" 
+                   class="fas fa-star" 
+                   [class.filled]="star === 1"></i>
+                <span>{{ supplier.rating }}</span>
+              </div>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="supplier.status === 'Active' ? 'badge-success' : 'badge-danger'">
+                {{ supplier.status }}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

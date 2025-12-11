@@ -1,0 +1,88 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1>Contract Settings</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Settings</span>
+        <span>/</span>
+        <span>Contract</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header-row">
+        <h3>Contract Types</h3>
+        <button class="btn btn-primary btn-sm">
+          <i class="fas fa-plus"></i> Add Type
+        </button>
+      </div>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Duration (Months)</th>
+              <th>Renewable</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let type of contractTypes">
+              <td>{{ type.name }}</td>
+              <td>{{ type.duration }}</td>
+              <td>
+                <span class="badge" [ngClass]="type.renewable ? 'badge-success' : 'badge-info'">
+                  {{ type.renewable ? 'Yes' : 'No' }}
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header-row">
+        <h3>Contract Statuses</h3>
+        <button class="btn btn-primary btn-sm">
+          <i class="fas fa-plus"></i> Add Status
+        </button>
+      </div>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Color</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let status of contractStatuses">
+              <td>{{ status.name }}</td>
+              <td>
+                <span class="color-badge" [style.background]="status.color"></span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,141 @@
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.method-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.method-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #00796b;
+  }
+
+  &.active {
+    border-color: #00796b;
+    background: rgba(0, 121, 107, 0.05);
+  }
+}
+
+.method-radio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .method-item.active & {
+    border-color: #00796b;
+  }
+
+  .radio-dot {
+    width: 10px;
+    height: 10px;
+    background: #00796b;
+    border-radius: 50%;
+  }
+}
+
+.method-info {
+  h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  p {
+    font-size: 0.8rem;
+    color: #6c757d;
+  }
+}
+
+.total-value-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.total-value {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+  border-radius: 8px;
+  color: white;
+  margin-bottom: 20px;
+
+  i {
+    font-size: 2.5rem;
+    opacity: 0.9;
+  }
+
+  .value-info {
+    span {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    h2 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+  }
+}
+
+.value-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #e0e0e0;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  span {
+    color: #6c757d;
+  }
+
+  strong {
+    color: #2c3e50;
+  }
+}
+
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+}
+
+tfoot td {
+  font-weight: 600;
+  background: #f8f9fa;
+}

@@ -1,0 +1,14 @@
+<div class="report-page">
+  <div class="page-header">
+    <div><h1>Reorder Level Report</h1><div class="breadcrumb"><a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Reorder Level</span></div></div>
+    <button class="btn btn-primary"><i class="fas fa-download"></i> Export</button>
+  </div>
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Item Code</th><th>Item Name</th><th>Current Stock</th><th>Reorder Level</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody><tr *ngIf="reportData.length === 0"><td colspan="6" class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>No items below reorder level</p></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>

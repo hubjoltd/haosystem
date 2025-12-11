@@ -1,0 +1,9 @@
+com/erp/model/Warehouse.class
+com/erp/ErpApplication.class
+com/erp/model/Item.class
+com/erp/model/Customer.class
+com/erp/config/CorsConfig.class
+com/erp/repository/CustomerRepository.class
+com/erp/repository/WarehouseRepository.class
+com/erp/repository/ItemRepository.class
+com/erp/controller/ApiController.class

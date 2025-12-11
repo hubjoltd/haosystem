@@ -1,0 +1,35 @@
+.filters-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+
+  .form-group {
+    min-width: 180px;
+    margin-bottom: 0;
+  }
+
+  .filter-btn {
+    height: 46px;
+  }
+}
+
+.qty-in {
+  color: #28a745;
+}
+
+.qty-out {
+  color: #dc3545;
+}
+
+.positive {
+  color: #28a745;
+}
+
+.negative {
+  color: #dc3545;
+}
+
+.card {
+  margin-bottom: 24px;
+}

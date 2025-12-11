@@ -1,0 +1,71 @@
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.filter-group {
+  display: flex;
+  gap: 12px;
+
+  .form-control {
+    width: auto;
+    min-width: 150px;
+  }
+}
+
+.supplier-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+  }
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+
+  span {
+    font-size: 0.875rem;
+  }
+
+  .phone {
+    font-size: 0.8rem;
+    color: #6c757d;
+  }
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  i {
+    color: #e0e0e0;
+    font-size: 0.8rem;
+
+    &.filled {
+      color: #ffc107;
+    }
+  }
+
+  span {
+    margin-left: 4px;
+    font-size: 0.875rem;
+    color: #6c757d;
+  }
+}

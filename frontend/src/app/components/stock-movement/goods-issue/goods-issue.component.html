@@ -1,0 +1,56 @@
+<div class="stock-page">
+  <div class="page-header">
+    <div>
+      <h1>Goods Issue</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Stock Movement</span>
+        <span>/</span>
+        <span>Goods Issue</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> New Issue
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Issue No.</th>
+            <th>Date</th>
+            <th>Department</th>
+            <th>Requested By</th>
+            <th>Items</th>
+            <th>Total Qty</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let issue of issueList">
+            <td><strong>{{ issue.id }}</strong></td>
+            <td>{{ issue.date }}</td>
+            <td>{{ issue.department }}</td>
+            <td>{{ issue.requestedBy }}</td>
+            <td>{{ issue.items }}</td>
+            <td>{{ issue.totalQty }}</td>
+            <td>
+              <span class="badge" [ngClass]="getStatusClass(issue.status)">{{ issue.status }}</span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-primary"><i class="fas fa-print"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

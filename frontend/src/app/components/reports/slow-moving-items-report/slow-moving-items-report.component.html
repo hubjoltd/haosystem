@@ -1,0 +1,20 @@
+<div class="report-page">
+  <div class="page-header">
+    <div><h1>Slow / Non-Moving Items Report</h1><div class="breadcrumb"><a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Slow Moving</span></div></div>
+    <button class="btn btn-primary"><i class="fas fa-download"></i> Export</button>
+  </div>
+  <div class="card">
+    <div class="filters-row">
+      <div class="form-group"><label>Days Without Movement</label><select class="form-control"><option>30 Days</option><option>60 Days</option><option>90 Days</option></select></div>
+      <button class="btn btn-primary filter-btn"><i class="fas fa-filter"></i> Generate</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Item Code</th><th>Item Name</th><th>Last Movement</th><th>Days Idle</th><th>Current Stock</th><th>Value</th></tr></thead>
+        <tbody><tr *ngIf="reportData.length === 0"><td colspan="6" class="empty-state"><i class="fas fa-hourglass-half"></i><p>Generate report to view data</p></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>

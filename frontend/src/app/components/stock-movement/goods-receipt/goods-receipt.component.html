@@ -1,0 +1,89 @@
+<div class="stock-page">
+  <div class="page-header">
+    <div>
+      <h1>Goods Receipt Note (GRN)</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Stock Movement</span>
+        <span>/</span>
+        <span>GRN</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> New GRN
+    </button>
+  </div>
+
+  <div class="stats-grid grid-4">
+    <div class="stat-card">
+      <div class="icon primary"><i class="fas fa-file-alt"></i></div>
+      <div class="info">
+        <h3>{{ grnList.length }}</h3>
+        <p>Total GRNs</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="icon success"><i class="fas fa-check-circle"></i></div>
+      <div class="info">
+        <h3>2</h3>
+        <p>Completed</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="icon warning"><i class="fas fa-clock"></i></div>
+      <div class="info">
+        <h3>1</h3>
+        <p>Pending</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="icon info"><i class="fas fa-dollar-sign"></i></div>
+      <div class="info">
+        <h3>$21,000</h3>
+        <p>Total Value</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>GRN No.</th>
+            <th>Date</th>
+            <th>Supplier</th>
+            <th>PO Reference</th>
+            <th>Items</th>
+            <th>Total Qty</th>
+            <th>Total Value</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let grn of grnList">
+            <td><strong>{{ grn.id }}</strong></td>
+            <td>{{ grn.date }}</td>
+            <td>{{ grn.supplier }}</td>
+            <td>{{ grn.poRef }}</td>
+            <td>{{ grn.items }}</td>
+            <td>{{ grn.totalQty }}</td>
+            <td>${{ grn.totalValue.toLocaleString() }}</td>
+            <td>
+              <span class="badge" [ngClass]="getStatusClass(grn.status)">{{ grn.status }}</span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-primary"><i class="fas fa-print"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

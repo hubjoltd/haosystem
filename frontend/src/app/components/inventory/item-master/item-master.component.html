@@ -1,0 +1,104 @@
+<div class="inventory-page">
+  <div class="page-header">
+    <div>
+      <h1>Item Master</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Inventory</span>
+        <span>/</span>
+        <span>Items</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> Add Item
+    </button>
+  </div>
+
+  <div class="stats-grid grid-4">
+    <div class="stat-card">
+      <div class="icon primary"><i class="fas fa-box"></i></div>
+      <div class="info">
+        <h3>{{ items.length }}</h3>
+        <p>Total Items</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="icon success"><i class="fas fa-check-circle"></i></div>
+      <div class="info">
+        <h3>4</h3>
+        <p>In Stock</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="icon warning"><i class="fas fa-exclamation-triangle"></i></div>
+      <div class="info">
+        <h3>1</h3>
+        <p>Low Stock</p>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="icon info"><i class="fas fa-dollar-sign"></i></div>
+      <div class="info">
+        <h3>$45,250</h3>
+        <p>Total Value</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Search items..." />
+      </div>
+      <div class="filter-group">
+        <select class="form-control">
+          <option value="">All Groups</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Furniture">Furniture</option>
+          <option value="Stationery">Stationery</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Group</th>
+            <th>Unit</th>
+            <th>Cost Price</th>
+            <th>Sell Price</th>
+            <th>Stock</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of items">
+            <td><strong>{{ item.code }}</strong></td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.group }}</td>
+            <td>{{ item.unit }}</td>
+            <td>${{ item.costPrice }}</td>
+            <td>${{ item.sellPrice }}</td>
+            <td>{{ item.stock }}</td>
+            <td>
+              <span class="badge" [ngClass]="getStockClass(item.status)">{{ item.status }}</span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

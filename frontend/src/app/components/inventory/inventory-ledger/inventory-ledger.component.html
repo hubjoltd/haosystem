@@ -1,0 +1,77 @@
+<div class="inventory-page">
+  <div class="page-header">
+    <div>
+      <h1>Inventory Ledger</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Inventory</span>
+        <span>/</span>
+        <span>Ledger</span>
+      </div>
+    </div>
+    <button class="btn btn-primary">
+      <i class="fas fa-download"></i> Export
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="filters-row">
+      <div class="form-group">
+        <label>Item</label>
+        <select class="form-control" [(ngModel)]="selectedItem">
+          <option value="">All Items</option>
+          <option value="laptop">Laptop Dell XPS</option>
+          <option value="chair">Office Chair</option>
+          <option value="paper">A4 Paper Ream</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>From Date</label>
+        <input type="date" class="form-control" [(ngModel)]="dateFrom" />
+      </div>
+      <div class="form-group">
+        <label>To Date</label>
+        <input type="date" class="form-control" [(ngModel)]="dateTo" />
+      </div>
+      <button class="btn btn-primary filter-btn">
+        <i class="fas fa-filter"></i> Apply Filter
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Document No.</th>
+            <th>Item</th>
+            <th>Type</th>
+            <th>In Qty</th>
+            <th>Out Qty</th>
+            <th>Balance</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let entry of ledgerEntries">
+            <td>{{ entry.date }}</td>
+            <td><strong>{{ entry.docNo }}</strong></td>
+            <td>{{ entry.item }}</td>
+            <td>
+              <span class="badge" [ngClass]="getTypeClass(entry.type)">{{ entry.type }}</span>
+            </td>
+            <td class="qty-in">{{ entry.inQty > 0 ? '+' + entry.inQty : '-' }}</td>
+            <td class="qty-out">{{ entry.outQty > 0 ? '-' + entry.outQty : '-' }}</td>
+            <td><strong>{{ entry.balance }}</strong></td>
+            <td [class.positive]="entry.value > 0" [class.negative]="entry.value < 0">
+              {{ entry.value > 0 ? '+' : '' }}${{ entry.value }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

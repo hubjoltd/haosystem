@@ -1,0 +1,77 @@
+<div class="inventory-page">
+  <div class="page-header">
+    <div>
+      <h1>Warehouse & Bin Management</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Inventory</span>
+        <span>/</span>
+        <span>Warehouse</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="openModal('bin')">
+        <i class="fas fa-plus"></i> Add Bin
+      </button>
+      <button class="btn btn-primary" (click)="openModal('warehouse')">
+        <i class="fas fa-plus"></i> Add Warehouse
+      </button>
+    </div>
+  </div>
+
+  <div class="warehouse-list">
+    <div class="warehouse-card" *ngFor="let warehouse of warehouses">
+      <div class="warehouse-header" (click)="toggleWarehouse(warehouse.id)">
+        <div class="warehouse-info">
+          <div class="warehouse-icon">
+            <i class="fas fa-warehouse"></i>
+          </div>
+          <div class="warehouse-details">
+            <h3>{{ warehouse.name }}</h3>
+            <p>{{ warehouse.code }} - {{ warehouse.location }}</p>
+          </div>
+        </div>
+        <div class="warehouse-stats">
+          <div class="usage-info">
+            <span class="usage-text">{{ warehouse.used }} / {{ warehouse.capacity }}</span>
+            <div class="usage-bar">
+              <div class="usage-fill" 
+                   [style.width.%]="getUsagePercent(warehouse.used, warehouse.capacity)"
+                   [ngClass]="getUsageClass(warehouse.used, warehouse.capacity)"></div>
+            </div>
+          </div>
+          <i class="fas fa-chevron-down expand-icon" [class.rotated]="expandedWarehouse === warehouse.id"></i>
+        </div>
+      </div>
+
+      <div class="bins-section" *ngIf="expandedWarehouse === warehouse.id">
+        <div class="bins-header">
+          <h4>Bins ({{ warehouse.bins.length }})</h4>
+          <button class="btn btn-sm btn-primary">
+            <i class="fas fa-plus"></i> Add Bin
+          </button>
+        </div>
+        <div class="bins-grid">
+          <div class="bin-card" *ngFor="let bin of warehouse.bins">
+            <div class="bin-header">
+              <strong>{{ bin.code }}</strong>
+              <div class="bin-actions">
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+              </div>
+            </div>
+            <p>{{ bin.name }}</p>
+            <div class="bin-usage">
+              <span>{{ bin.used }} / {{ bin.capacity }}</span>
+              <div class="usage-bar small">
+                <div class="usage-fill" 
+                     [style.width.%]="getUsagePercent(bin.used, bin.capacity)"
+                     [ngClass]="getUsageClass(bin.used, bin.capacity)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

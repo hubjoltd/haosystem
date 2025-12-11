@@ -1,0 +1,96 @@
+<div class="inventory-page">
+  <div class="page-header">
+    <div>
+      <h1>Inventory Valuation Engine</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Inventory</span>
+        <span>/</span>
+        <span>Valuation</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3 class="card-title">Valuation Methods</h3>
+      <div class="method-list">
+        <div class="method-item" 
+             *ngFor="let method of valuationMethods"
+             [class.active]="method.active"
+             (click)="setValuationMethod(method.id)">
+          <div class="method-radio">
+            <span class="radio-dot" *ngIf="method.active"></span>
+          </div>
+          <div class="method-info">
+            <h4>{{ method.name }}</h4>
+            <p>{{ method.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card total-value-card">
+      <div class="total-value">
+        <i class="fas fa-coins"></i>
+        <div class="value-info">
+          <span>Total Inventory Value</span>
+          <h2>${{ totalValue.toLocaleString() }}</h2>
+        </div>
+      </div>
+      <div class="value-breakdown">
+        <div class="breakdown-item">
+          <span>Raw Materials</span>
+          <strong>$3,000</strong>
+        </div>
+        <div class="breakdown-item">
+          <span>Finished Goods</span>
+          <strong>$26,000</strong>
+        </div>
+        <div class="breakdown-item">
+          <span>Packaging</span>
+          <strong>$2,500</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <h3>Item Valuation Details</h3>
+      <button class="btn btn-primary btn-sm">
+        <i class="fas fa-download"></i> Export
+      </button>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Avg. Cost</th>
+            <th>Total Value</th>
+            <th>Method</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of valuationData">
+            <td>{{ item.item }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>${{ item.avgCost }}</td>
+            <td><strong>${{ item.totalValue.toLocaleString() }}</strong></td>
+            <td><span class="badge badge-info">{{ item.method }}</span></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3"><strong>Total</strong></td>
+            <td><strong>${{ totalValue.toLocaleString() }}</strong></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>

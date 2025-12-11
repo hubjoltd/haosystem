@@ -1,0 +1,163 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1>Finance Settings</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Settings</span>
+        <span>/</span>
+        <span>Finance</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab === 'tax'" (click)="setActiveTab('tax')">Tax Rates</button>
+    <button class="tab" [class.active]="activeTab === 'currency'" (click)="setActiveTab('currency')">Currencies</button>
+    <button class="tab" [class.active]="activeTab === 'payment'" (click)="setActiveTab('payment')">Payment Modes</button>
+    <button class="tab" [class.active]="activeTab === 'expense'" (click)="setActiveTab('expense')">Expense Categories</button>
+  </div>
+
+  <div class="card" *ngIf="activeTab === 'tax'">
+    <div class="card-header-row">
+      <h3>Tax Rates</h3>
+      <button class="btn btn-primary btn-sm" (click)="openModal('tax')">
+        <i class="fas fa-plus"></i> Add Tax Rate
+      </button>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Rate (%)</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let tax of taxRates">
+            <td>{{ tax.name }}</td>
+            <td>{{ tax.rate }}%</td>
+            <td>{{ tax.type }}</td>
+            <td><span class="badge badge-success">{{ tax.status }}</span></td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="activeTab === 'currency'">
+    <div class="card-header-row">
+      <h3>Currencies</h3>
+      <button class="btn btn-primary btn-sm" (click)="openModal('currency')">
+        <i class="fas fa-plus"></i> Add Currency
+      </button>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Symbol</th>
+            <th>Default</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let currency of currencies">
+            <td>{{ currency.code }}</td>
+            <td>{{ currency.name }}</td>
+            <td>{{ currency.symbol }}</td>
+            <td>
+              <span class="badge" [ngClass]="currency.isDefault ? 'badge-success' : 'badge-info'">
+                {{ currency.isDefault ? 'Yes' : 'No' }}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="activeTab === 'payment'">
+    <div class="card-header-row">
+      <h3>Payment Modes</h3>
+      <button class="btn btn-primary btn-sm" (click)="openModal('payment')">
+        <i class="fas fa-plus"></i> Add Payment Mode
+      </button>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let mode of paymentModes">
+            <td>{{ mode.name }}</td>
+            <td>{{ mode.description }}</td>
+            <td><span class="badge badge-success">{{ mode.status }}</span></td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="activeTab === 'expense'">
+    <div class="card-header-row">
+      <h3>Expense Categories</h3>
+      <button class="btn btn-primary btn-sm" (click)="openModal('expense')">
+        <i class="fas fa-plus"></i> Add Category
+      </button>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let category of expenseCategories">
+            <td>{{ category.name }}</td>
+            <td>{{ category.description }}</td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

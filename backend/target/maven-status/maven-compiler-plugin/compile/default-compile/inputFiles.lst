@@ -1,0 +1,9 @@
+/home/runner/workspace/backend/src/main/java/com/erp/repository/WarehouseRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/Warehouse.java
+/home/runner/workspace/backend/src/main/java/com/erp/ErpApplication.java
+/home/runner/workspace/backend/src/main/java/com/erp/config/CorsConfig.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/ApiController.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/Item.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/CustomerRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/Customer.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/ItemRepository.java

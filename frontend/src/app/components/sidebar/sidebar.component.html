@@ -1,0 +1,56 @@
+<aside class="sidebar" [class.collapsed]="collapsed">
+  <div class="sidebar-header">
+    <div class="logo">
+      <i class="fas fa-cube"></i>
+      <span *ngIf="!collapsed">ERP System</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul class="nav-list">
+      <ng-container *ngFor="let item of menuItems">
+        <li class="nav-item" [class.active]="isActive(item.route)" [class.has-active-child]="hasActiveChild(item)">
+          <a class="nav-link" (click)="toggleMenu(item)" [title]="item.label">
+            <i [class]="item.icon"></i>
+            <span *ngIf="!collapsed">{{ item.label }}</span>
+            <i *ngIf="item.children && !collapsed" 
+               class="fas fa-chevron-down expand-icon" 
+               [class.rotated]="item.expanded"></i>
+          </a>
+          
+          <ul class="sub-menu" *ngIf="item.children && item.expanded && !collapsed">
+            <ng-container *ngFor="let child of item.children">
+              <li class="nav-item" [class.active]="isActive(child.route)" [class.has-active-child]="hasActiveChild(child)">
+                <a class="nav-link" (click)="toggleMenu(child)">
+                  <i [class]="child.icon"></i>
+                  <span>{{ child.label }}</span>
+                  <i *ngIf="child.children" 
+                     class="fas fa-chevron-down expand-icon" 
+                     [class.rotated]="child.expanded"></i>
+                </a>
+                
+                <ul class="sub-menu nested" *ngIf="child.children && child.expanded">
+                  <li *ngFor="let subChild of child.children" 
+                      class="nav-item" 
+                      [class.active]="isActive(subChild.route)">
+                    <a class="nav-link" (click)="toggleMenu(subChild)">
+                      <i [class]="subChild.icon"></i>
+                      <span>{{ subChild.label }}</span>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ng-container>
+          </ul>
+        </li>
+      </ng-container>
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a class="logout-btn" (click)="logout()" [title]="'Logout'">
+      <i class="fas fa-sign-out-alt"></i>
+      <span *ngIf="!collapsed">Logout</span>
+    </a>
+  </div>
+</aside>

@@ -1,0 +1,55 @@
+<div class="stock-page">
+  <div class="page-header">
+    <div>
+      <h1>Stock Transfer</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Stock Movement</span>
+        <span>/</span>
+        <span>Transfer</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> New Transfer
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Transfer No.</th>
+            <th>Date</th>
+            <th>From Warehouse</th>
+            <th>To Warehouse</th>
+            <th>Items</th>
+            <th>Total Qty</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let transfer of transferList">
+            <td><strong>{{ transfer.id }}</strong></td>
+            <td>{{ transfer.date }}</td>
+            <td>{{ transfer.fromWarehouse }}</td>
+            <td>{{ transfer.toWarehouse }}</td>
+            <td>{{ transfer.items }}</td>
+            <td>{{ transfer.totalQty }}</td>
+            <td>
+              <span class="badge" [ngClass]="getStatusClass(transfer.status)">{{ transfer.status }}</span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

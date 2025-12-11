@@ -1,0 +1,84 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1>Customer Settings</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Settings</span>
+        <span>/</span>
+        <span>Customer</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header-row">
+        <h3>Customer Groups</h3>
+        <button class="btn btn-primary btn-sm" (click)="openModal('group')">
+          <i class="fas fa-plus"></i> Add Group
+        </button>
+      </div>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Discount</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let group of customerGroups">
+              <td>{{ group.name }}</td>
+              <td>{{ group.description }}</td>
+              <td>{{ group.discount }}%</td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header-row">
+        <h3>Customer Statuses</h3>
+        <button class="btn btn-primary btn-sm" (click)="openModal('status')">
+          <i class="fas fa-plus"></i> Add Status
+        </button>
+      </div>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Color</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let status of customerStatuses">
+              <td>{{ status.name }}</td>
+              <td>
+                <span class="color-badge" [style.background]="status.color"></span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

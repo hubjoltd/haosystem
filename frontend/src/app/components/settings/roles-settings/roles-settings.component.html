@@ -1,0 +1,91 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1>Roles & Permissions</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Settings</span>
+        <span>/</span>
+        <span>Roles</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> Add Role
+    </button>
+  </div>
+
+  <div class="roles-layout">
+    <div class="card roles-list">
+      <h3>Roles</h3>
+      <div class="role-items">
+        <div 
+          class="role-item" 
+          *ngFor="let role of roles" 
+          [class.active]="selectedRole?.id === role.id"
+          (click)="selectRole(role)">
+          <div class="role-info">
+            <h4>{{ role.name }}</h4>
+            <p>{{ role.description }}</p>
+          </div>
+          <div class="role-meta">
+            <span class="user-count">{{ role.users }} users</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card permissions-panel">
+      <h3>Permissions <span *ngIf="selectedRole">- {{ selectedRole.name }}</span></h3>
+      <div class="permissions-grid" *ngIf="selectedRole">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Module</th>
+              <th>View</th>
+              <th>Create</th>
+              <th>Edit</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let perm of permissions">
+              <td>{{ perm.module }}</td>
+              <td>
+                <label class="toggle">
+                  <input type="checkbox" [checked]="perm.view" />
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td>
+                <label class="toggle">
+                  <input type="checkbox" [checked]="perm.create" />
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td>
+                <label class="toggle">
+                  <input type="checkbox" [checked]="perm.edit" />
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td>
+                <label class="toggle">
+                  <input type="checkbox" [checked]="perm.delete" />
+                  <span class="slider"></span>
+                </label>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="form-actions">
+          <button class="btn btn-primary">Save Permissions</button>
+        </div>
+      </div>
+      <div class="empty-state" *ngIf="!selectedRole">
+        <i class="fas fa-user-shield"></i>
+        <p>Select a role to manage permissions</p>
+      </div>
+    </div>
+  </div>
+</div>

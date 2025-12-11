@@ -1,0 +1,26 @@
+<div class="report-page">
+  <div class="page-header">
+    <div>
+      <h1>Stock Summary Report</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Stock Summary</span>
+      </div>
+    </div>
+    <button class="btn btn-primary"><i class="fas fa-download"></i> Export</button>
+  </div>
+  <div class="card">
+    <div class="filters-row">
+      <div class="form-group"><label>Warehouse</label><select class="form-control"><option value="">All Warehouses</option></select></div>
+      <div class="form-group"><label>Group</label><select class="form-control"><option value="">All Groups</option></select></div>
+      <button class="btn btn-primary filter-btn"><i class="fas fa-filter"></i> Generate</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Item Code</th><th>Item Name</th><th>Group</th><th>Unit</th><th>Opening</th><th>In</th><th>Out</th><th>Closing</th></tr></thead>
+        <tbody><tr *ngIf="reportData.length === 0"><td colspan="8" class="empty-state"><i class="fas fa-chart-bar"></i><p>Generate report to view data</p></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,20 @@
+<div class="report-page">
+  <div class="page-header">
+    <div><h1>Warehouse Stock Report</h1><div class="breadcrumb"><a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Warehouse Stock</span></div></div>
+    <button class="btn btn-primary"><i class="fas fa-download"></i> Export</button>
+  </div>
+  <div class="card">
+    <div class="filters-row">
+      <div class="form-group"><label>Warehouse</label><select class="form-control"><option value="">All Warehouses</option></select></div>
+      <button class="btn btn-primary filter-btn"><i class="fas fa-filter"></i> Generate</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Warehouse</th><th>Bin</th><th>Item</th><th>Quantity</th><th>Value</th></tr></thead>
+        <tbody><tr *ngIf="reportData.length === 0"><td colspan="5" class="empty-state"><i class="fas fa-warehouse"></i><p>Generate report to view data</p></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
