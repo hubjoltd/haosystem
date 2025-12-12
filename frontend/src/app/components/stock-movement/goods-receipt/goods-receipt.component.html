@@ -118,16 +118,24 @@
       <div class="form-row">
         <div class="form-group">
           <label>Receipt Type *</label>
-          <select [(ngModel)]="selectedGRN.receiptType" class="form-control" [disabled]="editMode">
+          <select [(ngModel)]="selectedGRN.receiptType" (change)="onReceiptTypeChange()" class="form-control" [disabled]="editMode">
             <option value="DIRECT">Direct Receipt</option>
-            <option value="PO">Purchase Order</option>
+            <option value="PO">From Purchase Order</option>
           </select>
         </div>
-        <div class="form-group" *ngIf="selectedGRN.receiptType === 'PO'">
-          <label>PO Number</label>
-          <input type="text" [(ngModel)]="selectedGRN.poNumber" class="form-control" placeholder="e.g., PO-000001" [disabled]="editMode">
+        <div class="form-group" *ngIf="selectedGRN.receiptType === 'PO' && !editMode">
+          <label>Select Purchase Order *</label>
+          <select [(ngModel)]="selectedPOId" (change)="onPOSelect()" class="form-control">
+            <option [ngValue]="null">-- Select PO --</option>
+            <option *ngFor="let po of getPOsWithItems()" [ngValue]="po.id">{{ po.referenceNumber }} - {{ po.supplierName || 'No Supplier' }}</option>
+          </select>
+          <small *ngIf="getPOsWithItems().length === 0" class="text-warning">No Purchase Orders available for receipt</small>
         </div>
-        <div class="form-group" *ngIf="selectedGRN.receiptType !== 'PO'">
+        <div class="form-group" *ngIf="selectedGRN.receiptType === 'PO' && editMode">
+          <label>PO Number</label>
+          <input type="text" [(ngModel)]="selectedGRN.poNumber" class="form-control" readonly>
+        </div>
+        <div class="form-group" *ngIf="selectedGRN.receiptType === 'DIRECT'">
           <label>Reference Number</label>
           <input type="text" [(ngModel)]="selectedGRN.referenceNumber" class="form-control" placeholder="e.g., Invoice #" [disabled]="editMode">
         </div>

@@ -71,6 +71,14 @@ export class PRFulfillmentService {
     return this.http.get<PRFulfillment[]>(this.baseUrl);
   }
 
+  getAllPOs(): Observable<PRFulfillment[]> {
+    return this.http.get<PRFulfillment[]>(`${this.baseUrl}/pos`);
+  }
+
+  getPOById(id: number): Observable<PRFulfillment> {
+    return this.http.get<PRFulfillment>(`${this.baseUrl}/pos/${id}`);
+  }
+
   getByPrId(prId: number): Observable<PRFulfillment[]> {
     return this.http.get<PRFulfillment[]>(`${this.baseUrl}/pr/${prId}`);
   }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PRFulfillmentService {
@@ -42,6 +43,14 @@ public class PRFulfillmentService {
 
     public List<PRFulfillment> getAll() {
         return fulfillmentRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    public List<PRFulfillment> getAllPOs() {
+        return fulfillmentRepository.findAllPOsWithItems();
+    }
+
+    public Optional<PRFulfillment> getById(Long id) {
+        return fulfillmentRepository.findByIdWithItems(id);
     }
 
     @Transactional

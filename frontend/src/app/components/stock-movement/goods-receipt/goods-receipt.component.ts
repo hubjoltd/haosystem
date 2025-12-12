@@ -4,6 +4,7 @@ import { StockMovementService, GoodsReceipt, GRNLine } from '../../../services/s
 import { ItemService } from '../../../services/item.service';
 import { WarehouseService } from '../../../services/warehouse.service';
 import { SupplierService } from '../../../services/supplier.service';
+import { PRFulfillmentService, PRFulfillment } from '../../../services/pr-fulfillment.service';
 
 interface GRNItem {
   itemId?: number;
@@ -52,13 +53,16 @@ export class GoodsReceiptComponent implements OnInit {
   items: any[] = [];
   warehouses: any[] = [];
   suppliers: any[] = [];
+  purchaseOrders: PRFulfillment[] = [];
+  selectedPOId: number | null = null;
 
   constructor(
     private settingsService: SettingsService,
     private stockMovementService: StockMovementService,
     private itemService: ItemService,
     private warehouseService: WarehouseService,
-    private supplierService: SupplierService
+    private supplierService: SupplierService,
+    private prFulfillmentService: PRFulfillmentService
   ) {}
 
   ngOnInit(): void {
@@ -78,6 +82,10 @@ export class GoodsReceiptComponent implements OnInit {
     this.supplierService.getAll().subscribe({
       next: (data) => this.suppliers = data,
       error: (err) => console.error('Error loading suppliers', err)
+    });
+    this.prFulfillmentService.getAllPOs().subscribe({
+      next: (data) => this.purchaseOrders = data,
+      error: (err) => console.error('Error loading POs', err)
     });
   }
 
@@ -153,6 +161,7 @@ export class GoodsReceiptComponent implements OnInit {
 
   openModal(grn?: GRN) {
     this.errorMessage = '';
+    this.selectedPOId = null;
     if (grn) {
       this.editMode = true;
       this.selectedGRN = JSON.parse(JSON.stringify(grn));
@@ -163,6 +172,52 @@ export class GoodsReceiptComponent implements OnInit {
       this.addItem();
     }
     this.showModal = true;
+  }
+
+  onReceiptTypeChange(): void {
+    if (this.selectedGRN.receiptType === 'DIRECT') {
+      this.selectedPOId = null;
+      this.selectedGRN.poNumber = '';
+      this.selectedGRN.items = [];
+      this.addItem();
+    }
+  }
+
+  onPOSelect(): void {
+    if (!this.selectedPOId) return;
+    
+    const selectedPO = this.purchaseOrders.find(po => po.id === this.selectedPOId);
+    if (selectedPO) {
+      this.selectedGRN.poNumber = selectedPO.referenceNumber;
+      this.selectedGRN.supplierId = selectedPO.supplierId;
+      this.errorMessage = '';
+      
+      if (selectedPO.warehouseId) {
+        this.selectedGRN.warehouseId = selectedPO.warehouseId;
+      }
+      
+      this.selectedGRN.items = (selectedPO.items || [])
+        .filter(item => item.itemId && item.fulfillQty && item.fulfillQty > 0)
+        .map(item => ({
+          itemId: item.itemId,
+          itemName: item.itemName || '',
+          itemCode: item.itemCode || '',
+          description: item.itemDescription || '',
+          quantity: item.fulfillQty || 0,
+          unitPrice: item.rate || 0,
+          amount: (item.fulfillQty || 0) * (item.rate || 0)
+        }));
+      
+      this.calculateTotals();
+    }
+  }
+
+  getPOsWithItems(): PRFulfillment[] {
+    return this.purchaseOrders.filter(po => {
+      if (!po.items || po.items.length === 0) return false;
+      const validItems = po.items.filter(item => item.itemId && item.fulfillQty && item.fulfillQty > 0);
+      return validItems.length > 0;
+    });
   }
 
   generateGRNNumber(): void {

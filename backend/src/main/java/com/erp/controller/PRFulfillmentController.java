@@ -31,6 +31,18 @@ public class PRFulfillmentController {
         return ResponseEntity.ok(fulfillmentService.getAll());
     }
 
+    @GetMapping("/pos")
+    public ResponseEntity<List<PRFulfillment>> getAllPOs() {
+        return ResponseEntity.ok(fulfillmentService.getAllPOs());
+    }
+
+    @GetMapping("/pos/{id}")
+    public ResponseEntity<PRFulfillment> getPOById(@PathVariable Long id) {
+        return fulfillmentService.getById(id)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping("/convert-to-po")
     public ResponseEntity<PRFulfillment> createPOFulfillment(@RequestBody PRFulfillment fulfillment) {
         return ResponseEntity.ok(fulfillmentService.createPOFulfillment(fulfillment));
