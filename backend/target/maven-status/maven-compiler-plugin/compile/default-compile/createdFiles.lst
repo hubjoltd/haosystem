@@ -52,7 +52,6 @@ com/erp/model/PRFulfillmentItem.class
 com/erp/controller/PrefixSettingsController.class
 com/erp/service/WarehouseService.class
 com/erp/model/GoodsReceipt.class
-com/erp/controller/HealthController.class
 com/erp/service/StockAdjustmentService.class
 com/erp/repository/StockAdjustmentRepository.class
 com/erp/service/InventoryLedgerService.class

@@ -104,7 +104,8 @@ cd frontend && npm start
 The frontend proxy routes `/api` calls to backend on port 8080.
 
 ### Deployment Configuration
-- **Build**: `cd backend && mvn clean package -DskipTests`
+- **Build**: Builds Angular frontend, copies to Spring Boot static resources, then packages the JAR
 - **Run**: `cd backend && PORT=5000 java -jar target/erp-backend-1.0.0.jar`
 - **Port**: Production runs on port 5000 (via PORT environment variable)
-- **Health Check**: Root endpoint `/` returns 200 with `{"status":"UP","message":"ERP API is running"}`
+- **Health Check**: Root endpoint `/` serves Angular app (returns 200 with HTML)
+- **Architecture**: Single-server deployment - Spring Boot serves both the Angular SPA and the REST API
