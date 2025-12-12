@@ -92,11 +92,19 @@ Components call `SettingsService.generatePrefixId(type)` on create modal open, w
 - **Angular CLI** (v21) - Build and development tooling
 - **TypeScript** (v5.9) - Type-safe JavaScript
 
-### Running the Application
+### Running the Application (Development)
 ```bash
-cd frontend
-npm install
-npm start  # Runs on port 5000 with host 0.0.0.0
+# Start backend (port 8080)
+cd backend && mvn spring-boot:run
+
+# Start frontend (port 5000)
+cd frontend && npm start
 ```
 
-The frontend expects a backend API to be running on port 8080 for full functionality.
+The frontend proxy routes `/api` calls to backend on port 8080.
+
+### Deployment Configuration
+- **Build**: `cd backend && mvn clean package -DskipTests`
+- **Run**: `cd backend && PORT=5000 java -jar target/erp-backend-1.0.0.jar`
+- **Port**: Production runs on port 5000 (via PORT environment variable)
+- **Health Check**: Root endpoint `/` returns 200 with `{"status":"UP","message":"ERP API is running"}`

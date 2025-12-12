@@ -57,13 +57,6 @@ public class ApiController {
     @Autowired
     private DashboardService dashboardService;
 
-    @GetMapping("/health")
-    public ResponseEntity<Map<String, String>> health() {
-        Map<String, String> response = new HashMap<>();
-        response.put("status", "UP");
-        response.put("message", "ERP API is running");
-        return ResponseEntity.ok(response);
-    }
 
     @GetMapping("/dashboard/stats")
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
