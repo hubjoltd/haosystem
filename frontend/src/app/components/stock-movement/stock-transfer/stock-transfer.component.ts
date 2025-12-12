@@ -1,19 +1,27 @@
 import { Component, OnInit } from '@angular/core';
 import { SettingsService } from '../../../services/settings.service';
+import { StockMovementService, StockTransfer, StockTransferLine } from '../../../services/stock-movement.service';
+import { ItemService } from '../../../services/item.service';
+import { WarehouseService } from '../../../services/warehouse.service';
 
 interface TransferItem {
+  itemId?: number;
   itemName: string;
+  itemCode?: string;
   description: string;
   quantity: number;
-  uom: string;
+  fromBinId?: number;
+  toBinId?: number;
 }
 
-interface StockTransfer {
-  id?: string;
+interface Transfer {
+  id?: number;
   transferNumber: string;
-  date: string;
-  fromWarehouse: string;
-  toWarehouse: string;
+  transferDate: string;
+  fromWarehouseId?: number;
+  fromWarehouse?: string;
+  toWarehouseId?: number;
+  toWarehouse?: string;
   items: TransferItem[];
   totalQty: number;
   status: string;
@@ -27,49 +35,105 @@ interface StockTransfer {
   styleUrls: ['./stock-transfer.component.scss']
 })
 export class StockTransferComponent implements OnInit {
-  transferList: StockTransfer[] = [];
+  transferList: Transfer[] = [];
   showModal: boolean = false;
   editMode: boolean = false;
-  selectedTransfer: StockTransfer = this.getEmptyTransfer();
+  selectedTransfer: Transfer = this.getEmptyTransfer();
   loading: boolean = false;
+  saving: boolean = false;
+  errorMessage: string = '';
 
-  constructor(private settingsService: SettingsService) {}
+  items: any[] = [];
+  warehouses: any[] = [];
+
+  constructor(
+    private settingsService: SettingsService,
+    private stockMovementService: StockMovementService,
+    private itemService: ItemService,
+    private warehouseService: WarehouseService
+  ) {}
 
   ngOnInit(): void {
     this.loadTransfers();
+    this.loadMasterData();
+  }
+
+  loadMasterData(): void {
+    this.itemService.getAll().subscribe({
+      next: (data: any[]) => this.items = data,
+      error: (err: any) => console.error('Error loading items', err)
+    });
+    this.warehouseService.getAll().subscribe({
+      next: (data: any[]) => this.warehouses = data,
+      error: (err: any) => console.error('Error loading warehouses', err)
+    });
   }
 
   loadTransfers(): void {
     this.loading = true;
-    this.transferList = [];
-    this.loading = false;
+    this.stockMovementService.getAllTransfers().subscribe({
+      next: (data: any[]) => {
+        this.transferList = data.map(transfer => ({
+          id: transfer.id,
+          transferNumber: transfer.transferNumber || '',
+          transferDate: transfer.transferDate || '',
+          fromWarehouseId: transfer.fromWarehouseId,
+          fromWarehouse: transfer.fromWarehouse || '',
+          toWarehouseId: transfer.toWarehouseId,
+          toWarehouse: transfer.toWarehouse || '',
+          totalQty: transfer.lines?.reduce((sum: number, line: any) => sum + (line.quantity || 0), 0) || 0,
+          status: transfer.status || 'Completed',
+          remarks: transfer.remarks || '',
+          items: transfer.lines?.map((line: any) => ({
+            itemId: line.itemId,
+            itemName: line.itemName || '',
+            itemCode: line.itemCode || '',
+            description: '',
+            quantity: line.quantity || 0,
+            fromBinId: line.fromBinId,
+            toBinId: line.toBinId
+          })) || []
+        }));
+        this.loading = false;
+      },
+      error: (err: any) => {
+        console.error('Error loading transfers', err);
+        this.transferList = [];
+        this.loading = false;
+      }
+    });
   }
 
-  getEmptyTransfer(): StockTransfer {
+  getEmptyTransfer(): Transfer {
     return {
       transferNumber: '',
-      date: new Date().toISOString().split('T')[0],
+      transferDate: new Date().toISOString().split('T')[0],
+      fromWarehouseId: undefined,
       fromWarehouse: '',
+      toWarehouseId: undefined,
       toWarehouse: '',
       items: [],
       totalQty: 0,
-      status: 'Draft'
+      status: 'Draft',
+      remarks: ''
     };
   }
 
   getEmptyItem(): TransferItem {
     return {
+      itemId: undefined,
       itemName: '',
+      itemCode: '',
       description: '',
-      quantity: 0,
-      uom: ''
+      quantity: 0
     };
   }
 
-  openModal(transfer?: StockTransfer) {
+  openModal(transfer?: Transfer) {
+    this.errorMessage = '';
     if (transfer) {
       this.editMode = true;
-      this.selectedTransfer = { ...transfer, items: [...transfer.items] };
+      this.selectedTransfer = JSON.parse(JSON.stringify(transfer));
     } else {
       this.editMode = false;
       this.selectedTransfer = this.getEmptyTransfer();
@@ -81,16 +145,17 @@ export class StockTransferComponent implements OnInit {
 
   generateTransferNumber(): void {
     this.settingsService.generatePrefixId('transfer').subscribe({
-      next: (transferNumber) => {
+      next: (transferNumber: string) => {
         this.selectedTransfer.transferNumber = transferNumber;
       },
-      error: (err) => console.error('Error generating transfer number', err)
+      error: (err: any) => console.error('Error generating transfer number', err)
     });
   }
 
   closeModal() {
     this.showModal = false;
     this.selectedTransfer = this.getEmptyTransfer();
+    this.errorMessage = '';
   }
 
   addItem(): void {
@@ -100,17 +165,96 @@ export class StockTransferComponent implements OnInit {
   removeItem(index: number): void {
     if (this.selectedTransfer.items.length > 1) {
       this.selectedTransfer.items.splice(index, 1);
+      this.calculateTotals();
+    }
+  }
+
+  onItemSelect(index: number): void {
+    const selectedItem = this.items.find(i => i.id === this.selectedTransfer.items[index].itemId);
+    if (selectedItem) {
+      this.selectedTransfer.items[index].itemName = selectedItem.name;
+      this.selectedTransfer.items[index].itemCode = selectedItem.code;
+      this.selectedTransfer.items[index].description = selectedItem.description || '';
     }
   }
 
   calculateTotals(): void {
-    this.selectedTransfer.totalQty = this.selectedTransfer.items.reduce((sum, item) => sum + item.quantity, 0);
+    this.selectedTransfer.totalQty = this.selectedTransfer.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
   }
 
   saveTransfer(): void {
     this.calculateTotals();
-    console.log('Saving transfer:', this.selectedTransfer);
-    this.closeModal();
+    
+    const validItems = this.selectedTransfer.items.filter(item => item.itemId && item.quantity > 0);
+    if (validItems.length === 0) {
+      this.errorMessage = 'Please add at least one item with quantity.';
+      return;
+    }
+
+    if (!this.selectedTransfer.fromWarehouseId) {
+      this.errorMessage = 'Please select a source warehouse.';
+      return;
+    }
+
+    if (!this.selectedTransfer.toWarehouseId) {
+      this.errorMessage = 'Please select a destination warehouse.';
+      return;
+    }
+
+    if (this.selectedTransfer.fromWarehouseId === this.selectedTransfer.toWarehouseId) {
+      this.errorMessage = 'Source and destination warehouse cannot be the same.';
+      return;
+    }
+
+    this.saving = true;
+    this.errorMessage = '';
+
+    const payload = {
+      transferDate: this.selectedTransfer.transferDate,
+      fromWarehouseId: this.selectedTransfer.fromWarehouseId,
+      toWarehouseId: this.selectedTransfer.toWarehouseId,
+      remarks: this.selectedTransfer.remarks,
+      lines: validItems.map(item => ({
+        itemId: item.itemId,
+        quantity: item.quantity,
+        fromBinId: item.fromBinId,
+        toBinId: item.toBinId
+      }))
+    };
+
+    this.stockMovementService.createTransfer(payload).subscribe({
+      next: () => {
+        this.saving = false;
+        this.loadTransfers();
+        this.closeModal();
+      },
+      error: (err: any) => {
+        this.saving = false;
+        this.errorMessage = err.error?.error || 'Error saving transfer';
+        console.error('Error saving transfer', err);
+      }
+    });
+  }
+
+  deleteTransfer(id: number): void {
+    if (confirm('Are you sure you want to delete this transfer?')) {
+      this.stockMovementService.deleteTransfer(id).subscribe({
+        next: () => this.loadTransfers(),
+        error: (err: any) => console.error('Error deleting transfer', err)
+      });
+    }
+  }
+
+  getCompletedCount(): number {
+    return this.transferList.filter(t => t.status === 'Completed').length;
+  }
+
+  getInTransitCount(): number {
+    return this.transferList.filter(t => t.status === 'In Transit').length;
+  }
+
+  getPendingCount(): number {
+    return this.transferList.filter(t => t.status === 'Pending' || t.status === 'Draft').length;
   }
 
   getStatusClass(status: string): string {

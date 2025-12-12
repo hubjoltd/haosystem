@@ -1,22 +1,31 @@
 import { Component, OnInit } from '@angular/core';
 import { SettingsService } from '../../../services/settings.service';
+import { StockMovementService, GoodsIssue, GoodsIssueLine } from '../../../services/stock-movement.service';
+import { ItemService } from '../../../services/item.service';
+import { WarehouseService } from '../../../services/warehouse.service';
 
 interface IssueItem {
+  itemId?: number;
   itemName: string;
+  itemCode?: string;
   description: string;
-  requestedQty: number;
-  issuedQty: number;
-  uom: string;
+  quantity: number;
+  unitPrice: number;
+  amount: number;
+  binId?: number;
 }
 
-interface GoodsIssue {
-  id?: string;
+interface Issue {
+  id?: number;
   issueNumber: string;
-  date: string;
-  department: string;
-  requestedBy: string;
+  issueDate: string;
+  warehouseId?: number;
+  warehouse?: string;
+  issueType?: string;
+  referenceNumber?: string;
   items: IssueItem[];
   totalQty: number;
+  totalValue: number;
   status: string;
   remarks?: string;
 }
@@ -28,50 +37,110 @@ interface GoodsIssue {
   styleUrls: ['./goods-issue.component.scss']
 })
 export class GoodsIssueComponent implements OnInit {
-  issueList: GoodsIssue[] = [];
+  issueList: Issue[] = [];
   showModal: boolean = false;
   editMode: boolean = false;
-  selectedIssue: GoodsIssue = this.getEmptyIssue();
+  selectedIssue: Issue = this.getEmptyIssue();
   loading: boolean = false;
+  saving: boolean = false;
+  errorMessage: string = '';
 
-  constructor(private settingsService: SettingsService) {}
+  items: any[] = [];
+  warehouses: any[] = [];
+  issueTypes: string[] = ['Internal Use', 'Sales', 'Return', 'Damaged', 'Other'];
+
+  constructor(
+    private settingsService: SettingsService,
+    private stockMovementService: StockMovementService,
+    private itemService: ItemService,
+    private warehouseService: WarehouseService
+  ) {}
 
   ngOnInit(): void {
     this.loadIssues();
+    this.loadMasterData();
+  }
+
+  loadMasterData(): void {
+    this.itemService.getAll().subscribe({
+      next: (data: any[]) => this.items = data,
+      error: (err: any) => console.error('Error loading items', err)
+    });
+    this.warehouseService.getAll().subscribe({
+      next: (data: any[]) => this.warehouses = data,
+      error: (err: any) => console.error('Error loading warehouses', err)
+    });
   }
 
   loadIssues(): void {
     this.loading = true;
-    this.issueList = [];
-    this.loading = false;
+    this.stockMovementService.getAllIssues().subscribe({
+      next: (data: any[]) => {
+        this.issueList = data.map(issue => ({
+          id: issue.id,
+          issueNumber: issue.issueNumber || '',
+          issueDate: issue.issueDate || '',
+          warehouseId: issue.warehouseId,
+          warehouse: issue.warehouse || '',
+          issueType: issue.issueType || '',
+          referenceNumber: issue.referenceNumber || '',
+          totalQty: issue.lines?.reduce((sum: number, line: any) => sum + (line.quantity || 0), 0) || 0,
+          totalValue: issue.totalValue || 0,
+          status: issue.status || 'Completed',
+          remarks: issue.remarks || '',
+          items: issue.lines?.map((line: any) => ({
+            itemId: line.itemId,
+            itemName: line.itemName || '',
+            itemCode: line.itemCode || '',
+            description: '',
+            quantity: line.quantity || 0,
+            unitPrice: line.unitPrice || 0,
+            amount: line.lineTotal || 0
+          })) || []
+        }));
+        this.loading = false;
+      },
+      error: (err: any) => {
+        console.error('Error loading issues', err);
+        this.issueList = [];
+        this.loading = false;
+      }
+    });
   }
 
-  getEmptyIssue(): GoodsIssue {
+  getEmptyIssue(): Issue {
     return {
       issueNumber: '',
-      date: new Date().toISOString().split('T')[0],
-      department: '',
-      requestedBy: '',
+      issueDate: new Date().toISOString().split('T')[0],
+      warehouseId: undefined,
+      warehouse: '',
+      issueType: 'Internal Use',
+      referenceNumber: '',
       items: [],
       totalQty: 0,
-      status: 'Draft'
+      totalValue: 0,
+      status: 'Draft',
+      remarks: ''
     };
   }
 
   getEmptyItem(): IssueItem {
     return {
+      itemId: undefined,
       itemName: '',
+      itemCode: '',
       description: '',
-      requestedQty: 0,
-      issuedQty: 0,
-      uom: ''
+      quantity: 0,
+      unitPrice: 0,
+      amount: 0
     };
   }
 
-  openModal(issue?: GoodsIssue) {
+  openModal(issue?: Issue) {
+    this.errorMessage = '';
     if (issue) {
       this.editMode = true;
-      this.selectedIssue = { ...issue, items: [...issue.items] };
+      this.selectedIssue = JSON.parse(JSON.stringify(issue));
     } else {
       this.editMode = false;
       this.selectedIssue = this.getEmptyIssue();
@@ -83,16 +152,17 @@ export class GoodsIssueComponent implements OnInit {
 
   generateIssueNumber(): void {
     this.settingsService.generatePrefixId('issue').subscribe({
-      next: (issueNumber) => {
+      next: (issueNumber: string) => {
         this.selectedIssue.issueNumber = issueNumber;
       },
-      error: (err) => console.error('Error generating issue number', err)
+      error: (err: any) => console.error('Error generating issue number', err)
     });
   }
 
   closeModal() {
     this.showModal = false;
     this.selectedIssue = this.getEmptyIssue();
+    this.errorMessage = '';
   }
 
   addItem(): void {
@@ -102,17 +172,95 @@ export class GoodsIssueComponent implements OnInit {
   removeItem(index: number): void {
     if (this.selectedIssue.items.length > 1) {
       this.selectedIssue.items.splice(index, 1);
+      this.calculateTotals();
     }
   }
 
+  onItemSelect(index: number): void {
+    const selectedItem = this.items.find(i => i.id === this.selectedIssue.items[index].itemId);
+    if (selectedItem) {
+      this.selectedIssue.items[index].itemName = selectedItem.name;
+      this.selectedIssue.items[index].itemCode = selectedItem.code;
+      this.selectedIssue.items[index].description = selectedItem.description || '';
+      this.selectedIssue.items[index].unitPrice = selectedItem.unitCost || 0;
+      this.calculateItemAmount(this.selectedIssue.items[index]);
+    }
+  }
+
+  calculateItemAmount(item: IssueItem): void {
+    item.amount = item.quantity * item.unitPrice;
+    this.calculateTotals();
+  }
+
   calculateTotals(): void {
-    this.selectedIssue.totalQty = this.selectedIssue.items.reduce((sum, item) => sum + item.issuedQty, 0);
+    this.selectedIssue.totalQty = this.selectedIssue.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    this.selectedIssue.totalValue = this.selectedIssue.items.reduce((sum, item) => sum + (item.amount || 0), 0);
   }
 
   saveIssue(): void {
     this.calculateTotals();
-    console.log('Saving issue:', this.selectedIssue);
-    this.closeModal();
+    
+    const validItems = this.selectedIssue.items.filter(item => item.itemId && item.quantity > 0);
+    if (validItems.length === 0) {
+      this.errorMessage = 'Please add at least one item with quantity.';
+      return;
+    }
+
+    if (!this.selectedIssue.warehouseId) {
+      this.errorMessage = 'Please select a warehouse.';
+      return;
+    }
+
+    this.saving = true;
+    this.errorMessage = '';
+
+    const payload = {
+      issueDate: this.selectedIssue.issueDate,
+      warehouseId: this.selectedIssue.warehouseId,
+      issueType: this.selectedIssue.issueType,
+      referenceNumber: this.selectedIssue.referenceNumber,
+      remarks: this.selectedIssue.remarks,
+      lines: validItems.map(item => ({
+        itemId: item.itemId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        binId: item.binId
+      }))
+    };
+
+    this.stockMovementService.createIssue(payload).subscribe({
+      next: () => {
+        this.saving = false;
+        this.loadIssues();
+        this.closeModal();
+      },
+      error: (err: any) => {
+        this.saving = false;
+        this.errorMessage = err.error?.error || 'Error saving issue';
+        console.error('Error saving issue', err);
+      }
+    });
+  }
+
+  deleteIssue(id: number): void {
+    if (confirm('Are you sure you want to delete this issue?')) {
+      this.stockMovementService.deleteIssue(id).subscribe({
+        next: () => this.loadIssues(),
+        error: (err: any) => console.error('Error deleting issue', err)
+      });
+    }
+  }
+
+  getTotalValue(): number {
+    return this.issueList.reduce((sum, issue) => sum + (issue.totalValue || 0), 0);
+  }
+
+  getCompletedCount(): number {
+    return this.issueList.filter(issue => issue.status === 'Completed').length;
+  }
+
+  getPendingCount(): number {
+    return this.issueList.filter(issue => issue.status === 'Pending' || issue.status === 'Draft').length;
   }
 
   getStatusClass(status: string): string {
