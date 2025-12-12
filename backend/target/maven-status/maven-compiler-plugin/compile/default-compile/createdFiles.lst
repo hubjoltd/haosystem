@@ -7,6 +7,7 @@ com/erp/service/GoodsReceiptService.class
 com/erp/service/BinService.class
 com/erp/security/JwtUtil.class
 com/erp/dto/RegisterRequest.class
+com/erp/model/PRFulfillment.class
 com/erp/model/Customer.class
 com/erp/config/CorsConfig.class
 com/erp/repository/GoodsIssueLineRepository.class
@@ -14,9 +15,12 @@ com/erp/service/UnitOfMeasureService.class
 com/erp/service/ItemService.class
 com/erp/model/Contract.class
 com/erp/service/AuditLogService.class
+com/erp/repository/PurchaseRequisitionItemRepository.class
+com/erp/model/PRFulfillmentItem.class
 com/erp/controller/PrefixSettingsController.class
 com/erp/service/WarehouseService.class
 com/erp/model/GoodsReceipt.class
+com/erp/controller/PurchaseRequisitionController.class
 com/erp/repository/UserRepository.class
 com/erp/service/DashboardService.class
 com/erp/service/StockAdjustmentService.class
@@ -28,6 +32,7 @@ com/erp/service/ContractService.class
 com/erp/service/ItemGroupService.class
 com/erp/repository/UnitOfMeasureRepository.class
 com/erp/model/Warehouse.class
+com/erp/repository/PRFulfillmentRepository.class
 com/erp/model/GeneralSettings.class
 com/erp/service/AuthService.class
 com/erp/model/StockTransferLine.class
@@ -37,6 +42,9 @@ com/erp/model/Bin.class
 com/erp/service/GoodsIssueService.class
 com/erp/model/ItemGroup.class
 com/erp/controller/AuthController.class
+com/erp/service/PurchaseRequisitionService.class
+com/erp/service/PRFulfillmentService.class
+com/erp/model/PurchaseRequisition.class
 com/erp/dto/LoginRequest.class
 com/erp/repository/GoodsIssueRepository.class
 com/erp/repository/PrefixSettingsRepository.class
@@ -58,11 +66,15 @@ com/erp/repository/StockTransferLineRepository.class
 com/erp/model/AuditLog.class
 com/erp/repository/InventoryLedgerRepository.class
 com/erp/model/GoodsReceiptLine.class
+com/erp/controller/PRFulfillmentController.class
 com/erp/repository/ContractRepository.class
+com/erp/repository/PRFulfillmentItemRepository.class
 com/erp/model/UnitOfMeasure.class
 com/erp/repository/GoodsReceiptRepository.class
 com/erp/repository/SupplierRepository.class
+com/erp/model/PurchaseRequisitionItem.class
 com/erp/ErpApplication.class
+com/erp/repository/PurchaseRequisitionRepository.class
 com/erp/model/GoodsIssue.class
 com/erp/config/SecurityConfig.class
 com/erp/repository/StockTransferRepository.class
