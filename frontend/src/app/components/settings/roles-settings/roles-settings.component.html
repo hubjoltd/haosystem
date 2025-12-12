@@ -1,91 +1,120 @@
 <div class="settings-page">
-  <div class="page-header">
-    <div>
-      <h1>Roles & Permissions</h1>
-      <div class="breadcrumb">
-        <a routerLink="/app">Home</a>
-        <span>/</span>
-        <span>Settings</span>
-        <span>/</span>
-        <span>Roles</span>
-      </div>
-    </div>
-    <button class="btn btn-primary" (click)="openModal()">
-      <i class="fas fa-plus"></i> Add Role
+  <div class="page-header-simple">
+    <button class="btn btn-primary btn-new-role" (click)="openModal()">
+      <i class="fas fa-plus"></i> New Role
     </button>
   </div>
 
-  <div class="roles-layout">
-    <div class="card roles-list">
-      <h3>Roles</h3>
-      <div class="role-items">
-        <div 
-          class="role-item" 
-          *ngFor="let role of roles" 
-          [class.active]="selectedRole?.id === role.id"
-          (click)="selectRole(role)">
-          <div class="role-info">
-            <h4>{{ role.name }}</h4>
-            <p>{{ role.description }}</p>
-          </div>
-          <div class="role-meta">
-            <span class="user-count">{{ role.users }} users</span>
-          </div>
+  <div class="card">
+    <div class="table-toolbar">
+      <div class="toolbar-left">
+        <select [(ngModel)]="pageSize" class="page-size-select">
+          <option [value]="10">10</option>
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+        <button class="btn btn-sm btn-outline" (click)="exportData()">Export</button>
+        <button class="btn btn-sm btn-icon" (click)="refresh()">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+      <div class="toolbar-right">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" [(ngModel)]="searchQuery" placeholder="Search..." />
         </div>
       </div>
     </div>
 
-    <div class="card permissions-panel">
-      <h3>Permissions <span *ngIf="selectedRole">- {{ selectedRole.name }}</span></h3>
-      <div class="permissions-grid" *ngIf="selectedRole">
-        <table class="table">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="sortable">Role Name <i class="fas fa-sort-up"></i></th>
+            <th>Options</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="paginatedRoles.length === 0">
+            <td colspan="2" class="empty-state">No roles found</td>
+          </tr>
+          <tr *ngFor="let role of paginatedRoles">
+            <td>
+              <div class="role-name-cell">
+                <strong>{{ role.name }}</strong>
+                <span class="total-users">Total Users: {{ role.totalUsers }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-icon" (click)="openModal(role)" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-icon btn-danger-icon" (click)="deleteRole(role)" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <div class="showing-entries">
+        Showing {{ startEntry }} to {{ endEntry }} of {{ filteredRoles.length }} entries
+      </div>
+      <div class="pagination">
+        <button class="btn btn-sm btn-outline" (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+        <span class="page-number">{{ currentPage }}</span>
+        <button class="btn btn-sm btn-outline" (click)="nextPage()" [disabled]="currentPage >= totalPages">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editMode ? 'Edit Role' : 'Add New Role' }}</h2>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="required">Role Name</label>
+        <input type="text" [(ngModel)]="selectedRole.name" class="form-control" placeholder="Enter role name">
+      </div>
+
+      <div class="permissions-section">
+        <table class="permissions-table">
           <thead>
             <tr>
-              <th>Module</th>
-              <th>View</th>
-              <th>Create</th>
-              <th>Edit</th>
-              <th>Delete</th>
+              <th>features</th>
+              <th>Capabilities</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let perm of permissions">
-              <td>{{ perm.module }}</td>
-              <td>
-                <label class="toggle">
-                  <input type="checkbox" [checked]="perm.view" />
-                  <span class="slider"></span>
-                </label>
-              </td>
-              <td>
-                <label class="toggle">
-                  <input type="checkbox" [checked]="perm.create" />
-                  <span class="slider"></span>
-                </label>
-              </td>
-              <td>
-                <label class="toggle">
-                  <input type="checkbox" [checked]="perm.edit" />
-                  <span class="slider"></span>
-                </label>
-              </td>
-              <td>
-                <label class="toggle">
-                  <input type="checkbox" [checked]="perm.delete" />
-                  <span class="slider"></span>
-                </label>
+            <tr *ngFor="let perm of rolePermissions">
+              <td class="feature-name">{{ perm.feature }}</td>
+              <td class="capabilities-cell">
+                <div class="capability-list">
+                  <label *ngFor="let cap of perm.capabilities" class="checkbox-label">
+                    <input type="checkbox" [(ngModel)]="cap.checked">
+                    <span>{{ cap.name }}</span>
+                  </label>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
-        <div class="form-actions">
-          <button class="btn btn-primary">Save Permissions</button>
-        </div>
       </div>
-      <div class="empty-state" *ngIf="!selectedRole">
-        <i class="fas fa-user-shield"></i>
-        <p>Select a role to manage permissions</p>
-      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveRole()">
+        {{ editMode ? 'Update Role' : 'Save Role' }}
+      </button>
     </div>
   </div>
 </div>
