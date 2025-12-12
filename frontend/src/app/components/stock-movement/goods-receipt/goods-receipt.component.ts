@@ -1,4 +1,28 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { SettingsService } from '../../../services/settings.service';
+
+interface GRNItem {
+  itemName: string;
+  description: string;
+  orderedQty: number;
+  receivedQty: number;
+  uom: string;
+  rate: number;
+  amount: number;
+}
+
+interface GRN {
+  id?: string;
+  grnNumber: string;
+  date: string;
+  supplier: string;
+  poRef: string;
+  items: GRNItem[];
+  totalQty: number;
+  totalValue: number;
+  status: string;
+  remarks?: string;
+}
 
 @Component({
   selector: 'app-goods-receipt',
@@ -6,18 +30,102 @@ import { Component } from '@angular/core';
   templateUrl: './goods-receipt.component.html',
   styleUrls: ['./goods-receipt.component.scss']
 })
-export class GoodsReceiptComponent {
-  grnList = [
-    { id: 'GRN-001', date: '2024-01-15', supplier: 'Global Supplies Inc.', poRef: 'PO-001', items: 5, totalQty: 150, totalValue: 12500, status: 'Completed' },
-    { id: 'GRN-002', date: '2024-01-18', supplier: 'Steel Works Ltd', poRef: 'PO-002', items: 3, totalQty: 500, totalValue: 1000, status: 'Completed' },
-    { id: 'GRN-003', date: '2024-01-20', supplier: 'Office Plus', poRef: 'PO-003', items: 8, totalQty: 200, totalValue: 3500, status: 'Pending' },
-    { id: 'GRN-004', date: '2024-01-22', supplier: 'Furniture World', poRef: 'PO-004', items: 2, totalQty: 20, totalValue: 4000, status: 'Draft' }
-  ];
-
+export class GoodsReceiptComponent implements OnInit {
+  grnList: GRN[] = [];
   showModal: boolean = false;
+  editMode: boolean = false;
+  selectedGRN: GRN = this.getEmptyGRN();
+  loading: boolean = false;
 
-  openModal() { this.showModal = true; }
-  closeModal() { this.showModal = false; }
+  constructor(private settingsService: SettingsService) {}
+
+  ngOnInit(): void {
+    this.loadGRNs();
+  }
+
+  loadGRNs(): void {
+    this.loading = true;
+    this.grnList = [];
+    this.loading = false;
+  }
+
+  getEmptyGRN(): GRN {
+    return {
+      grnNumber: '',
+      date: new Date().toISOString().split('T')[0],
+      supplier: '',
+      poRef: '',
+      items: [],
+      totalQty: 0,
+      totalValue: 0,
+      status: 'Draft'
+    };
+  }
+
+  getEmptyItem(): GRNItem {
+    return {
+      itemName: '',
+      description: '',
+      orderedQty: 0,
+      receivedQty: 0,
+      uom: '',
+      rate: 0,
+      amount: 0
+    };
+  }
+
+  openModal(grn?: GRN) {
+    if (grn) {
+      this.editMode = true;
+      this.selectedGRN = { ...grn, items: [...grn.items] };
+    } else {
+      this.editMode = false;
+      this.selectedGRN = this.getEmptyGRN();
+      this.generateGRNNumber();
+      this.addItem();
+    }
+    this.showModal = true;
+  }
+
+  generateGRNNumber(): void {
+    this.settingsService.generatePrefixId('grn').subscribe({
+      next: (grnNumber) => {
+        this.selectedGRN.grnNumber = grnNumber;
+      },
+      error: (err) => console.error('Error generating GRN number', err)
+    });
+  }
+
+  closeModal() {
+    this.showModal = false;
+    this.selectedGRN = this.getEmptyGRN();
+  }
+
+  addItem(): void {
+    this.selectedGRN.items.push(this.getEmptyItem());
+  }
+
+  removeItem(index: number): void {
+    if (this.selectedGRN.items.length > 1) {
+      this.selectedGRN.items.splice(index, 1);
+    }
+  }
+
+  calculateItemAmount(item: GRNItem): void {
+    item.amount = item.receivedQty * item.rate;
+    this.calculateTotals();
+  }
+
+  calculateTotals(): void {
+    this.selectedGRN.totalQty = this.selectedGRN.items.reduce((sum, item) => sum + item.receivedQty, 0);
+    this.selectedGRN.totalValue = this.selectedGRN.items.reduce((sum, item) => sum + item.amount, 0);
+  }
+
+  saveGRN(): void {
+    this.calculateTotals();
+    console.log('Saving GRN:', this.selectedGRN);
+    this.closeModal();
+  }
 
   getStatusClass(status: string): string {
     const classes: { [key: string]: string } = {

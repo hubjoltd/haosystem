@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UnitOfMeasureService, UnitOfMeasure } from '../../../services/unit-of-measure.service';
+import { SettingsService } from '../../../services/settings.service';
 
 @Component({
   selector: 'app-units-of-measure',
@@ -17,7 +18,10 @@ export class UnitsOfMeasureComponent implements OnInit {
   loading: boolean = false;
   errorMessage: string = '';
 
-  constructor(private unitService: UnitOfMeasureService) {}
+  constructor(
+    private unitService: UnitOfMeasureService,
+    private settingsService: SettingsService
+  ) {}
 
   ngOnInit(): void {
     this.loadUnits();
@@ -62,8 +66,18 @@ export class UnitsOfMeasureComponent implements OnInit {
       this.editMode = false;
       this.selectedUnit = this.getEmptyUnit();
       this.selectedBaseUomId = null;
+      this.generateUnitCode();
     }
     this.showModal = true;
+  }
+
+  generateUnitCode(): void {
+    this.settingsService.generatePrefixId('unit').subscribe({
+      next: (code) => {
+        this.selectedUnit.code = code;
+      },
+      error: (err) => console.error('Error generating unit code', err)
+    });
   }
 
   closeModal() {

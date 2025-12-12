@@ -3,6 +3,7 @@ import { ItemService, Item } from '../../../services/item.service';
 import { ItemGroupService, ItemGroup } from '../../../services/item-group.service';
 import { UnitOfMeasureService, UnitOfMeasure } from '../../../services/unit-of-measure.service';
 import { SupplierService, Supplier } from '../../../services/supplier.service';
+import { SettingsService } from '../../../services/settings.service';
 
 @Component({
   selector: 'app-item-master',
@@ -30,7 +31,8 @@ export class ItemMasterComponent implements OnInit {
     private itemService: ItemService,
     private itemGroupService: ItemGroupService,
     private unitOfMeasureService: UnitOfMeasureService,
-    private supplierService: SupplierService
+    private supplierService: SupplierService,
+    private settingsService: SettingsService
   ) {}
 
   ngOnInit(): void {
@@ -102,8 +104,18 @@ export class ItemMasterComponent implements OnInit {
       this.selectedGroupId = null;
       this.selectedUomId = null;
       this.selectedSupplierId = null;
+      this.generateItemCode();
     }
     this.showModal = true;
+  }
+
+  generateItemCode(): void {
+    this.settingsService.generatePrefixId('item').subscribe({
+      next: (code) => {
+        this.selectedItem.code = code;
+      },
+      error: (err) => console.error('Error generating item code', err)
+    });
   }
 
   closeModal() {

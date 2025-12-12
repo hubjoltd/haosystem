@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ItemGroupService, ItemGroup } from '../../../services/item-group.service';
+import { SettingsService } from '../../../services/settings.service';
 
 @Component({
   selector: 'app-group-master',
@@ -17,7 +18,10 @@ export class GroupMasterComponent implements OnInit {
   errorMessage: string = '';
   canDeactivateInfo: { canDeactivate: boolean; itemCount: number } | null = null;
 
-  constructor(private groupService: ItemGroupService) {}
+  constructor(
+    private groupService: ItemGroupService,
+    private settingsService: SettingsService
+  ) {}
 
   ngOnInit(): void {
     this.loadGroups();
@@ -64,8 +68,18 @@ export class GroupMasterComponent implements OnInit {
     } else {
       this.editMode = false;
       this.selectedGroup = this.getEmptyGroup();
+      this.generateGroupCode();
     }
     this.showModal = true;
+  }
+
+  generateGroupCode(): void {
+    this.settingsService.generatePrefixId('group').subscribe({
+      next: (code) => {
+        this.selectedGroup.code = code;
+      },
+      error: (err) => console.error('Error generating group code', err)
+    });
   }
 
   checkCanDeactivate(id: number): void {

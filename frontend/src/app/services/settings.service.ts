@@ -90,4 +90,8 @@ export class SettingsService {
   savePrefixSettings(settings: PrefixSettings): Observable<PrefixSettings> {
     return this.http.post<PrefixSettings>(`${this.baseUrl}/prefixes`, settings);
   }
+
+  generatePrefixId(type: string): Observable<string> {
+    return this.http.get(`${this.baseUrl}/prefixes/generate/${type}`, { responseType: 'text' });
+  }
 }

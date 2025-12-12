@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { WarehouseService, Warehouse, Bin } from '../../../services/warehouse.service';
+import { SettingsService } from '../../../services/settings.service';
 
 @Component({
   selector: 'app-warehouse-bin',
@@ -19,7 +20,10 @@ export class WarehouseBinComponent implements OnInit {
   loading: boolean = false;
   errorMessage: string = '';
 
-  constructor(private warehouseService: WarehouseService) {}
+  constructor(
+    private warehouseService: WarehouseService,
+    private settingsService: SettingsService
+  ) {}
 
   ngOnInit(): void {
     this.loadWarehouses();
@@ -90,6 +94,7 @@ export class WarehouseBinComponent implements OnInit {
       } else {
         this.editMode = false;
         this.selectedWarehouse = this.getEmptyWarehouse();
+        this.generateWarehouseCode();
       }
     } else if (type === 'bin') {
       if (item) {
@@ -98,9 +103,28 @@ export class WarehouseBinComponent implements OnInit {
       } else {
         this.editMode = false;
         this.selectedBin = this.getEmptyBin();
+        this.generateBinCode();
       }
     }
     this.showModal = true;
+  }
+
+  generateWarehouseCode(): void {
+    this.settingsService.generatePrefixId('warehouse').subscribe({
+      next: (code) => {
+        this.selectedWarehouse.code = code;
+      },
+      error: (err) => console.error('Error generating warehouse code', err)
+    });
+  }
+
+  generateBinCode(): void {
+    this.settingsService.generatePrefixId('bin').subscribe({
+      next: (code) => {
+        this.selectedBin.code = code;
+      },
+      error: (err) => console.error('Error generating bin code', err)
+    });
   }
 
   closeModal() {
@@ -217,6 +241,7 @@ export class WarehouseBinComponent implements OnInit {
     this.modalType = 'bin';
     this.editMode = false;
     this.errorMessage = '';
+    this.generateBinCode();
     this.showModal = true;
   }
 

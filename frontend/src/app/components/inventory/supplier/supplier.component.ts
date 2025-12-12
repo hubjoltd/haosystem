@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SupplierService, Supplier } from '../../../services/supplier.service';
+import { SettingsService } from '../../../services/settings.service';
 
 @Component({
   selector: 'app-supplier',
@@ -15,7 +16,10 @@ export class SupplierComponent implements OnInit {
   selectedSupplier: Supplier = this.getEmptySupplier();
   loading: boolean = false;
 
-  constructor(private supplierService: SupplierService) {}
+  constructor(
+    private supplierService: SupplierService,
+    private settingsService: SettingsService
+  ) {}
 
   ngOnInit(): void {
     this.loadSuppliers();
@@ -63,8 +67,18 @@ export class SupplierComponent implements OnInit {
     } else {
       this.editMode = false;
       this.selectedSupplier = this.getEmptySupplier();
+      this.generateSupplierCode();
     }
     this.showModal = true;
+  }
+
+  generateSupplierCode(): void {
+    this.settingsService.generatePrefixId('supplier').subscribe({
+      next: (code) => {
+        this.selectedSupplier.code = code;
+      },
+      error: (err) => console.error('Error generating supplier code', err)
+    });
   }
 
   closeModal() {

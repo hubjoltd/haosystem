@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { PurchaseRequisitionService, PurchaseRequisition, PRItem, PRStatus } from '../../../services/purchase-requisition.service';
 import { UnitOfMeasureService, UnitOfMeasure } from '../../../services/unit-of-measure.service';
 import { ItemService, Item } from '../../../services/item.service';
+import { SettingsService } from '../../../services/settings.service';
 
 @Component({
   selector: 'app-purchase-requisition',
@@ -42,7 +43,8 @@ export class PurchaseRequisitionComponent implements OnInit {
     private prService: PurchaseRequisitionService,
     private unitService: UnitOfMeasureService,
     private itemService: ItemService,
-    private router: Router
+    private router: Router,
+    private settingsService: SettingsService
   ) {}
 
   ngOnInit(): void {
@@ -94,7 +96,7 @@ export class PurchaseRequisitionComponent implements OnInit {
   getEmptyPR(): PurchaseRequisition {
     const today = new Date().toISOString().split('T')[0];
     return {
-      prNumber: this.prService?.generatePRNumber() || '',
+      prNumber: '',
       prDate: today,
       requiredDate: '',
       requestedBy: 'Current User',
@@ -123,8 +125,20 @@ export class PurchaseRequisitionComponent implements OnInit {
   openNewModal(): void {
     this.isEditing = false;
     this.selectedPR = this.getEmptyPR();
-    this.selectedPR.prNumber = this.prService.generatePRNumber();
+    this.generatePRNumber();
     this.showModal = true;
+  }
+
+  generatePRNumber(): void {
+    this.settingsService.generatePrefixId('pr').subscribe({
+      next: (prNumber) => {
+        this.selectedPR.prNumber = prNumber;
+      },
+      error: (err) => {
+        console.error('Error generating PR number', err);
+        this.selectedPR.prNumber = this.prService.generatePRNumber();
+      }
+    });
   }
 
   openEditModal(pr: PurchaseRequisition): void {

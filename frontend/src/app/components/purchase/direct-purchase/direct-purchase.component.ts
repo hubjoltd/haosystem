@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { DirectPurchaseService, DirectPurchase, DirectPurchaseItem } from '../../../services/direct-purchase.service';
 import { SupplierService, Supplier } from '../../../services/supplier.service';
 import { UnitOfMeasureService, UnitOfMeasure } from '../../../services/unit-of-measure.service';
+import { SettingsService } from '../../../services/settings.service';
 
 @Component({
   selector: 'app-direct-purchase',
@@ -25,7 +26,8 @@ export class DirectPurchaseComponent implements OnInit {
     private directPurchaseService: DirectPurchaseService,
     private supplierService: SupplierService,
     private unitService: UnitOfMeasureService,
-    private router: Router
+    private router: Router,
+    private settingsService: SettingsService
   ) {}
 
   ngOnInit(): void {
@@ -103,9 +105,19 @@ export class DirectPurchaseComponent implements OnInit {
     } else {
       this.editMode = false;
       this.selectedPurchase = this.getEmptyPurchase();
+      this.generatePONumber();
       this.addItem();
     }
     this.showModal = true;
+  }
+
+  generatePONumber(): void {
+    this.settingsService.generatePrefixId('po').subscribe({
+      next: (poNumber) => {
+        this.selectedPurchase.poNumber = poNumber;
+      },
+      error: (err) => console.error('Error generating PO number', err)
+    });
   }
 
   closeModal() {
