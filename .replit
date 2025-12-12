@@ -59,3 +59,8 @@ expertMode = true
 deploymentTarget = "vm"
 run = ["java", "-jar", "backend/target/erp-backend-1.0.0.jar", "--server.port=5000"]
 build = ["npm", "run", "build"]
+
+[userenv]
+
+[userenv.production]
+PGSSLMODE = "require"
