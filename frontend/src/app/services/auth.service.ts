@@ -25,6 +25,7 @@ export interface AuthResponse {
   firstName: string;
   lastName: string;
   role: string;
+  permissions: string;
 }
 
 export interface CurrentUser {
@@ -33,6 +34,7 @@ export interface CurrentUser {
   firstName: string;
   lastName: string;
   role: string;
+  permissions: { [key: string]: string[] };
 }
 
 @Injectable({
@@ -55,6 +57,18 @@ export class AuthService {
     }
   }
 
+  private parsePermissions(permissionsStr: string): { [key: string]: string[] } {
+    if (!permissionsStr) return {};
+    if (permissionsStr === 'all') {
+      return { all: ['all'] };
+    }
+    try {
+      return JSON.parse(permissionsStr);
+    } catch {
+      return {};
+    }
+  }
+
   login(request: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.baseUrl}/login`, request).pipe(
       tap(response => {
@@ -64,7 +78,8 @@ export class AuthService {
           email: response.email,
           firstName: response.firstName,
           lastName: response.lastName,
-          role: response.role
+          role: response.role,
+          permissions: this.parsePermissions(response.permissions)
         };
         localStorage.setItem('user', JSON.stringify(user));
         this.currentUserSubject.next(user);
@@ -81,7 +96,8 @@ export class AuthService {
           email: response.email,
           firstName: response.firstName,
           lastName: response.lastName,
-          role: response.role
+          role: response.role,
+          permissions: this.parsePermissions(response.permissions)
         };
         localStorage.setItem('user', JSON.stringify(user));
         this.currentUserSubject.next(user);
@@ -112,18 +128,27 @@ export class AuthService {
     return user?.role === role;
   }
 
-  hasPermission(permission: string): boolean {
+  isAdmin(): boolean {
+    const user = this.getCurrentUser();
+    if (!user) return false;
+    return user.role === 'ADMIN' || (user.permissions?.['all']?.includes('all') ?? false);
+  }
+
+  hasFeatureAccess(feature: string): boolean {
     const user = this.getCurrentUser();
     if (!user) return false;
     
-    if (user.role === 'ADMIN') return true;
+    if (this.isAdmin()) return true;
     
-    const rolePermissions: { [key: string]: string[] } = {
-      'MANAGER': ['read', 'create', 'update', 'delete', 'reports'],
-      'STAFF': ['read', 'create', 'update'],
-      'VIEWER': ['read']
-    };
+    return !!user.permissions[feature] && user.permissions[feature].length > 0;
+  }
+
+  hasPermission(feature: string, permission: string): boolean {
+    const user = this.getCurrentUser();
+    if (!user) return false;
     
-    return rolePermissions[user.role]?.includes(permission) || false;
+    if (this.isAdmin()) return true;
+    
+    return user.permissions[feature]?.includes(permission) || false;
   }
 }

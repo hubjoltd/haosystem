@@ -7,16 +7,18 @@ public class AuthResponse {
     private String firstName;
     private String lastName;
     private String role;
+    private String permissions;
     
     public AuthResponse() {}
     
-    public AuthResponse(String token, String username, String email, String firstName, String lastName, String role) {
+    public AuthResponse(String token, String username, String email, String firstName, String lastName, String role, String permissions) {
         this.token = token;
         this.username = username;
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.role = role;
+        this.permissions = permissions;
     }
     
     public String getToken() { return token; }
@@ -31,4 +33,6 @@ public class AuthResponse {
     public void setLastName(String lastName) { this.lastName = lastName; }
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+    public String getPermissions() { return permissions; }
+    public void setPermissions(String permissions) { this.permissions = permissions; }
 }

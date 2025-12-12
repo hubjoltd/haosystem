@@ -48,10 +48,12 @@ export class AddStaffComponent implements OnInit {
   loadRoles(): void {
     this.staffService.getRoles().subscribe({
       next: (data) => {
+        console.log('Roles loaded:', data);
         this.roles = data;
       },
       error: (err) => {
         console.error('Error loading roles:', err);
+        this.roles = [];
       }
     });
   }

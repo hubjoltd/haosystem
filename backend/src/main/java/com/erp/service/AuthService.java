@@ -53,7 +53,8 @@ public class AuthService {
             user.getEmail(),
             user.getFirstName(),
             user.getLastName(),
-            user.getRole().getName()
+            user.getRole().getName(),
+            user.getRole().getPermissions()
         );
     }
     
@@ -99,7 +100,8 @@ public class AuthService {
             user.getEmail(),
             user.getFirstName(),
             user.getLastName(),
-            role.getName()
+            role.getName(),
+            role.getPermissions()
         );
     }
     
