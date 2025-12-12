@@ -12,6 +12,8 @@ public class Role {
     @Column(unique = true)
     private String name;
     private String description;
+    
+    @Column(columnDefinition = "TEXT")
     private String permissions;
     
     public Role() {}
