@@ -40,7 +40,7 @@ The application uses a hierarchical component structure:
 1. **Dashboard** - Overview statistics and charts
 2. **Settings** - General, Finance (tax rates, currencies, payment modes, expense categories), Customer, Contract, Roles, Staff Management, **Prefix Settings** (auto-generation configuration for all modules)
 3. **Inventory** - Group Master, Item Master, Units of Measure, Warehouse/Bin Management, Suppliers, Valuation, Ledger
-4. **Stock Movement** - Goods Receipt (GRN), Goods Issue, Stock Transfer, Stock Adjustments with Approval Workflow (Pending -> Approved/Rejected)
+4. **Stock Movement** - Goods Receipt (GRN with PO-triggered or Direct Receipt options), Goods Issue, Stock Transfer, Stock Adjustments with Approval Workflow (Pending -> Approved/Rejected)
 5. **Customer & Contract Management** - CRUD operations with search and filtering
 6. **Purchase Order Management** - Purchase Requisition, PR Fulfillment (Convert to PO, Stock Issue, Material Transfer), Direct Purchase (components scaffolded, awaiting design implementation)
 7. **Audit Trails & Logging** - Comprehensive audit tracking with three sub-sections:
