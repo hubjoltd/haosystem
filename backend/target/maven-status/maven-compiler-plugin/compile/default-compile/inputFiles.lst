@@ -77,6 +77,8 @@
 /home/runner/workspace/backend/src/main/java/com/erp/service/SettingsService.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/ItemGroupRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/StockAdjustmentRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/ValuationCostLayerRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/ValuationCostLayer.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Role.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Supplier.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/UserRepository.java

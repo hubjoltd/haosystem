@@ -20,6 +20,8 @@ interface GRN {
   id?: number;
   grnNumber: string;
   receiptDate: string;
+  receiptType: string;
+  poNumber?: string;
   supplierId?: number;
   supplier?: string;
   warehouseId?: number;
@@ -83,20 +85,22 @@ export class GoodsReceiptComponent implements OnInit {
     this.loading = true;
     this.stockMovementService.getAllGRN().subscribe({
       next: (data) => {
-        this.grnList = data.map(grn => ({
+        this.grnList = data.map((grn: any) => ({
           id: grn.id,
           grnNumber: grn.grnNumber || '',
           receiptDate: grn.receiptDate || '',
+          receiptType: grn.receiptType || 'DIRECT',
+          poNumber: grn.poNumber || '',
           supplierId: grn.supplierId,
           supplier: grn.supplier || '',
           warehouseId: grn.warehouseId,
           warehouse: grn.warehouse || '',
           referenceNumber: grn.referenceNumber || '',
-          totalQty: grn.lines?.reduce((sum, line) => sum + (line.quantity || 0), 0) || 0,
+          totalQty: grn.lines?.reduce((sum: number, line: any) => sum + (line.quantity || 0), 0) || 0,
           totalValue: grn.totalValue || 0,
           status: grn.status || 'Completed',
           remarks: grn.remarks || '',
-          items: grn.lines?.map(line => ({
+          items: grn.lines?.map((line: any) => ({
             itemId: line.itemId,
             itemName: line.itemName || '',
             itemCode: line.itemCode || '',
@@ -120,6 +124,8 @@ export class GoodsReceiptComponent implements OnInit {
     return {
       grnNumber: '',
       receiptDate: new Date().toISOString().split('T')[0],
+      receiptType: 'DIRECT',
+      poNumber: '',
       supplierId: undefined,
       supplier: '',
       warehouseId: undefined,
@@ -225,6 +231,8 @@ export class GoodsReceiptComponent implements OnInit {
 
     const payload = {
       receiptDate: this.selectedGRN.receiptDate,
+      receiptType: this.selectedGRN.receiptType,
+      poNumber: this.selectedGRN.poNumber,
       supplierId: this.selectedGRN.supplierId,
       warehouseId: this.selectedGRN.warehouseId,
       referenceNumber: this.selectedGRN.referenceNumber,

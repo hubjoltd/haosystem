@@ -54,9 +54,9 @@
           <tr>
             <th>GRN No.</th>
             <th>Date</th>
+            <th>Type</th>
             <th>Supplier</th>
             <th>Warehouse</th>
-            <th>Reference</th>
             <th>Total Qty</th>
             <th>Total Value</th>
             <th>Status</th>
@@ -70,9 +70,13 @@
           <tr *ngFor="let grn of grnList">
             <td><strong>{{ grn.grnNumber }}</strong></td>
             <td>{{ grn.receiptDate }}</td>
+            <td>
+              <span class="badge" [ngClass]="grn.receiptType === 'PO' ? 'badge-info' : 'badge-secondary'">
+                {{ grn.receiptType === 'PO' ? 'Purchase Order' : 'Direct' }}
+              </span>
+            </td>
             <td>{{ grn.supplier || '-' }}</td>
             <td>{{ grn.warehouse || '-' }}</td>
-            <td>{{ grn.referenceNumber || '-' }}</td>
             <td>{{ grn.totalQty }}</td>
             <td>${{ grn.totalValue | number:'1.2-2' }}</td>
             <td>
@@ -113,12 +117,23 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label>Supplier</label>
-          <select [(ngModel)]="selectedGRN.supplierId" class="form-control" [disabled]="editMode">
-            <option [ngValue]="undefined">-- Select Supplier --</option>
-            <option *ngFor="let supplier of suppliers" [ngValue]="supplier.id">{{ supplier.name }}</option>
+          <label>Receipt Type *</label>
+          <select [(ngModel)]="selectedGRN.receiptType" class="form-control" [disabled]="editMode">
+            <option value="DIRECT">Direct Receipt</option>
+            <option value="PO">Purchase Order</option>
           </select>
         </div>
+        <div class="form-group" *ngIf="selectedGRN.receiptType === 'PO'">
+          <label>PO Number</label>
+          <input type="text" [(ngModel)]="selectedGRN.poNumber" class="form-control" placeholder="e.g., PO-000001" [disabled]="editMode">
+        </div>
+        <div class="form-group" *ngIf="selectedGRN.receiptType !== 'PO'">
+          <label>Reference Number</label>
+          <input type="text" [(ngModel)]="selectedGRN.referenceNumber" class="form-control" placeholder="e.g., Invoice #" [disabled]="editMode">
+        </div>
+      </div>
+
+      <div class="form-row">
         <div class="form-group">
           <label>Warehouse *</label>
           <select [(ngModel)]="selectedGRN.warehouseId" class="form-control" [disabled]="editMode">
@@ -126,13 +141,16 @@
             <option *ngFor="let warehouse of warehouses" [ngValue]="warehouse.id">{{ warehouse.name }}</option>
           </select>
         </div>
+        <div class="form-group">
+          <label>Supplier</label>
+          <select [(ngModel)]="selectedGRN.supplierId" class="form-control" [disabled]="editMode">
+            <option [ngValue]="undefined">-- Select Supplier --</option>
+            <option *ngFor="let supplier of suppliers" [ngValue]="supplier.id">{{ supplier.name }}</option>
+          </select>
+        </div>
       </div>
 
       <div class="form-row">
-        <div class="form-group">
-          <label>Reference Number (PO/Invoice)</label>
-          <input type="text" [(ngModel)]="selectedGRN.referenceNumber" class="form-control" placeholder="e.g., PO-001" [disabled]="editMode">
-        </div>
         <div class="form-group">
           <label>Remarks</label>
           <input type="text" [(ngModel)]="selectedGRN.remarks" class="form-control" [disabled]="editMode">

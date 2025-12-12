@@ -26,6 +26,9 @@ public class GoodsReceiptService {
     @Autowired
     private InventoryLedgerRepository inventoryLedgerRepository;
     
+    @Autowired
+    private ValuationCostLayerRepository valuationCostLayerRepository;
+    
     public List<GoodsReceipt> findAll() {
         return goodsReceiptRepository.findAll();
     }
@@ -41,7 +44,9 @@ public class GoodsReceiptService {
     @Transactional
     public GoodsReceipt save(GoodsReceipt grn, List<GoodsReceiptLine> lines) {
         grn.setCreatedAt(LocalDate.now());
-        grn.setGrnNumber(generateGrnNumber());
+        if (grn.getGrnNumber() == null || grn.getGrnNumber().isEmpty()) {
+            grn.setGrnNumber(generateGrnNumber());
+        }
         GoodsReceipt savedGrn = goodsReceiptRepository.save(grn);
         
         BigDecimal totalValue = BigDecimal.ZERO;
@@ -69,6 +74,18 @@ public class GoodsReceiptService {
             ledger.setTotalValue(line.getLineTotal());
             ledger.setTransactionDate(LocalDateTime.now());
             inventoryLedgerRepository.save(ledger);
+            
+            ValuationCostLayer costLayer = new ValuationCostLayer();
+            costLayer.setItem(item);
+            costLayer.setWarehouse(grn.getWarehouse());
+            costLayer.setReferenceType("GRN");
+            costLayer.setReferenceNumber(savedGrn.getGrnNumber());
+            costLayer.setQuantityIn(line.getQuantity());
+            costLayer.setQuantityRemaining(line.getQuantity());
+            costLayer.setUnitCost(line.getUnitPrice());
+            costLayer.setTotalValue(line.getLineTotal());
+            costLayer.setCreatedAt(LocalDateTime.now());
+            valuationCostLayerRepository.save(costLayer);
         }
         
         savedGrn.setTotalValue(totalValue);

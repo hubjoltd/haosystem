@@ -58,6 +58,8 @@ public class StockMovementController {
             grnMap.put("supplierId", grn.getSupplier() != null ? grn.getSupplier().getId() : null);
             grnMap.put("warehouse", grn.getWarehouse() != null ? grn.getWarehouse().getName() : null);
             grnMap.put("warehouseId", grn.getWarehouse() != null ? grn.getWarehouse().getId() : null);
+            grnMap.put("receiptType", grn.getReceiptType());
+            grnMap.put("poNumber", grn.getPoNumber());
             grnMap.put("referenceNumber", grn.getReferenceNumber());
             grnMap.put("totalValue", grn.getTotalValue());
             grnMap.put("status", grn.getStatus());
@@ -96,6 +98,8 @@ public class StockMovementController {
                 grnMap.put("supplierId", grn.getSupplier() != null ? grn.getSupplier().getId() : null);
                 grnMap.put("warehouse", grn.getWarehouse() != null ? grn.getWarehouse().getName() : null);
                 grnMap.put("warehouseId", grn.getWarehouse() != null ? grn.getWarehouse().getId() : null);
+                grnMap.put("receiptType", grn.getReceiptType());
+                grnMap.put("poNumber", grn.getPoNumber());
                 grnMap.put("referenceNumber", grn.getReferenceNumber());
                 grnMap.put("totalValue", grn.getTotalValue());
                 grnMap.put("status", grn.getStatus());
@@ -144,6 +148,8 @@ public class StockMovementController {
                 warehouseRepository.findById(warehouseId).ifPresent(grn::setWarehouse);
             }
             
+            grn.setReceiptType(request.get("receiptType") != null ? request.get("receiptType").toString() : "DIRECT");
+            grn.setPoNumber(request.get("poNumber") != null ? request.get("poNumber").toString() : null);
             grn.setReferenceNumber(request.get("referenceNumber") != null ? request.get("referenceNumber").toString() : null);
             grn.setRemarks(request.get("remarks") != null ? request.get("remarks").toString() : null);
             grn.setStatus("Completed");

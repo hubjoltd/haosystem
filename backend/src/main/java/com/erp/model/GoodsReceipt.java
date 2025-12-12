@@ -23,6 +23,8 @@ public class GoodsReceipt {
     private Warehouse warehouse;
     
     private LocalDate receiptDate;
+    private String receiptType;
+    private String poNumber;
     private String referenceNumber;
     private String remarks;
     private BigDecimal totalValue;
@@ -41,6 +43,10 @@ public class GoodsReceipt {
     public void setWarehouse(Warehouse warehouse) { this.warehouse = warehouse; }
     public LocalDate getReceiptDate() { return receiptDate; }
     public void setReceiptDate(LocalDate receiptDate) { this.receiptDate = receiptDate; }
+    public String getReceiptType() { return receiptType; }
+    public void setReceiptType(String receiptType) { this.receiptType = receiptType; }
+    public String getPoNumber() { return poNumber; }
+    public void setPoNumber(String poNumber) { this.poNumber = poNumber; }
     public String getReferenceNumber() { return referenceNumber; }
     public void setReferenceNumber(String referenceNumber) { this.referenceNumber = referenceNumber; }
     public String getRemarks() { return remarks; }
