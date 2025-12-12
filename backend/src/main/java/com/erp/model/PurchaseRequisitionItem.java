@@ -10,6 +10,12 @@ public class PurchaseRequisitionItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "item_id")
+    private Long itemId;
+
+    @Column(name = "item_code")
+    private String itemCode;
+
     @Column(name = "item_name")
     private String itemName;
 
@@ -40,6 +46,12 @@ public class PurchaseRequisitionItem {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public Long getItemId() { return itemId; }
+    public void setItemId(Long itemId) { this.itemId = itemId; }
+
+    public String getItemCode() { return itemCode; }
+    public void setItemCode(String itemCode) { this.itemCode = itemCode; }
 
     public String getItemName() { return itemName; }
     public void setItemName(String itemName) { this.itemName = itemName; }

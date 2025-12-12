@@ -8,6 +8,8 @@ export type PRItemStatus = 'Pending' | 'Partially Fulfilled' | 'Fully Fulfilled'
 
 export interface PRItem {
   id?: number;
+  itemId?: number;
+  itemCode?: string;
   itemName: string;
   itemDescription: string;
   quantity: number;

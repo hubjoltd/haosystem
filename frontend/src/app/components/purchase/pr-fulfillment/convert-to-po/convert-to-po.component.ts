@@ -92,6 +92,8 @@ export class ConvertToPoComponent implements OnInit {
       })
       .map((item, index) => ({
         prItemId: item.id || index,
+        itemId: item.itemId,
+        itemCode: item.itemCode,
         itemName: item.itemName,
         itemDescription: item.itemDescription,
         requestedQty: item.quantity,

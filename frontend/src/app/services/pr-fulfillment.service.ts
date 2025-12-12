@@ -8,6 +8,8 @@ export type FulfillmentType = 'PO' | 'Stock Issue' | 'Material Transfer';
 export interface FulfillmentItem {
   id?: number;
   prItemId: number;
+  itemId?: number;
+  itemCode?: string;
   itemName: string;
   itemDescription?: string;
   requestedQty: number;

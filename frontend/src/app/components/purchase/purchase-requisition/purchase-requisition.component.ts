@@ -112,6 +112,8 @@ export class PurchaseRequisitionComponent implements OnInit {
 
   getEmptyItem(): PRItem {
     return {
+      itemId: undefined,
+      itemCode: '',
       itemName: '',
       itemDescription: '',
       quantity: 0,
@@ -172,6 +174,8 @@ export class PurchaseRequisitionComponent implements OnInit {
   onItemSelect(index: number): void {
     const selectedItem = this.items.find(i => i.name === this.selectedPR.items[index].itemName);
     if (selectedItem) {
+      this.selectedPR.items[index].itemId = selectedItem.id;
+      this.selectedPR.items[index].itemCode = selectedItem.code || '';
       this.selectedPR.items[index].itemDescription = selectedItem.description || '';
       this.selectedPR.items[index].uom = selectedItem.unitOfMeasure?.symbol || selectedItem.unitOfMeasure?.code || '';
     }
