@@ -37,18 +37,30 @@ public class RoleController {
     }
     
     @PostMapping
-    public ResponseEntity<Role> createRole(@RequestBody Role role) {
-        Role saved = roleService.save(role);
-        return ResponseEntity.ok(saved);
+    public ResponseEntity<?> createRole(@RequestBody Role role) {
+        try {
+            Role saved = roleService.save(role);
+            return ResponseEntity.ok(saved);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "A role with this name already exists");
+            return ResponseEntity.badRequest().body(error);
+        }
     }
     
     @PutMapping("/{id}")
     public ResponseEntity<?> updateRole(@PathVariable Long id, @RequestBody Role role) {
         return roleService.findById(id)
             .map(existing -> {
-                role.setId(id);
-                Role updated = roleService.save(role);
-                return ResponseEntity.ok(updated);
+                try {
+                    role.setId(id);
+                    Role updated = roleService.save(role);
+                    return ResponseEntity.ok((Object)updated);
+                } catch (org.springframework.dao.DataIntegrityViolationException e) {
+                    Map<String, String> error = new HashMap<>();
+                    error.put("error", "A role with this name already exists");
+                    return ResponseEntity.badRequest().body((Object)error);
+                }
             })
             .orElse(ResponseEntity.notFound().build());
     }
