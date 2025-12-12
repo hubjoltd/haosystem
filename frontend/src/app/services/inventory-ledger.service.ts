@@ -1,12 +1,24 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
+export interface LedgerItem {
+  id: number;
+  code: string;
+  name: string;
+}
+
+export interface LedgerWarehouse {
+  id: number;
+  code: string;
+  name: string;
+}
 
 export interface InventoryLedger {
   id?: number;
-  item?: any;
-  warehouse?: any;
-  bin?: any;
+  item?: LedgerItem;
+  warehouse?: LedgerWarehouse;
+  bin?: { id: number; code: string; name: string };
   transactionType: string;
   referenceNumber: string;
   quantityIn: number;
@@ -18,6 +30,13 @@ export interface InventoryLedger {
   remarks: string;
 }
 
+export interface LedgerFilter {
+  itemId?: number;
+  warehouseId?: number;
+  startDate?: string;
+  endDate?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -26,8 +45,15 @@ export class InventoryLedgerService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(): Observable<InventoryLedger[]> {
-    return this.http.get<InventoryLedger[]>(this.baseUrl);
+  getAll(filter?: LedgerFilter): Observable<InventoryLedger[]> {
+    let params = new HttpParams();
+    if (filter) {
+      if (filter.itemId) params = params.set('itemId', filter.itemId.toString());
+      if (filter.warehouseId) params = params.set('warehouseId', filter.warehouseId.toString());
+      if (filter.startDate) params = params.set('startDate', filter.startDate);
+      if (filter.endDate) params = params.set('endDate', filter.endDate);
+    }
+    return this.http.get<InventoryLedger[]>(this.baseUrl, { params });
   }
 
   getByItem(itemId: number): Observable<InventoryLedger[]> {

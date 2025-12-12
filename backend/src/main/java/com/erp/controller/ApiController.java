@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api")
@@ -476,8 +477,14 @@ public class ApiController {
     }
     
     @GetMapping("/inventory/ledger")
-    public ResponseEntity<List<InventoryLedger>> getInventoryLedger() {
-        return ResponseEntity.ok(inventoryLedgerService.findAll());
+    public ResponseEntity<List<InventoryLedger>> getInventoryLedger(
+            @RequestParam(required = false) Long itemId,
+            @RequestParam(required = false) Long warehouseId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        LocalDateTime start = startDate != null ? LocalDateTime.parse(startDate + "T00:00:00") : null;
+        LocalDateTime end = endDate != null ? LocalDateTime.parse(endDate + "T23:59:59") : null;
+        return ResponseEntity.ok(inventoryLedgerService.findWithFilters(itemId, warehouseId, start, end));
     }
     
     @GetMapping("/inventory/ledger/item/{itemId}")

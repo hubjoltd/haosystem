@@ -14,22 +14,26 @@ public class InventoryLedgerService {
     private InventoryLedgerRepository inventoryLedgerRepository;
     
     public List<InventoryLedger> findAll() {
-        return inventoryLedgerRepository.findAll();
+        return inventoryLedgerRepository.findAllByOrderByTransactionDateDesc();
     }
     
     public List<InventoryLedger> findByItemId(Long itemId) {
-        return inventoryLedgerRepository.findByItemId(itemId);
+        return inventoryLedgerRepository.findByItemIdOrderByTransactionDateDesc(itemId);
     }
     
     public List<InventoryLedger> findByWarehouseId(Long warehouseId) {
-        return inventoryLedgerRepository.findByWarehouseId(warehouseId);
+        return inventoryLedgerRepository.findByWarehouseIdOrderByTransactionDateDesc(warehouseId);
     }
     
     public List<InventoryLedger> findByDateRange(LocalDateTime start, LocalDateTime end) {
-        return inventoryLedgerRepository.findByTransactionDateBetween(start, end);
+        return inventoryLedgerRepository.findByTransactionDateBetweenOrderByTransactionDateDesc(start, end);
     }
     
     public List<InventoryLedger> findByItemAndDateRange(Long itemId, LocalDateTime start, LocalDateTime end) {
-        return inventoryLedgerRepository.findByItemIdAndTransactionDateBetween(itemId, start, end);
+        return inventoryLedgerRepository.findByItemIdAndTransactionDateBetweenOrderByTransactionDateDesc(itemId, start, end);
+    }
+    
+    public List<InventoryLedger> findWithFilters(Long itemId, Long warehouseId, LocalDateTime startDate, LocalDateTime endDate) {
+        return inventoryLedgerRepository.findWithFilters(itemId, warehouseId, startDate, endDate);
     }
 }

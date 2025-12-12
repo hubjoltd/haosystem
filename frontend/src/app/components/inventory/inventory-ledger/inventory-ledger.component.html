@@ -10,8 +10,8 @@
         <span>Ledger</span>
       </div>
     </div>
-    <button class="btn btn-primary">
-      <i class="fas fa-download"></i> Export
+    <button class="btn btn-primary" (click)="exportLedger()">
+      <i class="fas fa-download"></i> Export CSV
     </button>
   </div>
 
@@ -19,11 +19,16 @@
     <div class="filters-row">
       <div class="form-group">
         <label>Item</label>
-        <select class="form-control" [(ngModel)]="selectedItem">
-          <option value="">All Items</option>
-          <option value="laptop">Laptop Dell XPS</option>
-          <option value="chair">Office Chair</option>
-          <option value="paper">A4 Paper Ream</option>
+        <select class="form-control" [(ngModel)]="selectedItemId">
+          <option [ngValue]="null">All Items</option>
+          <option *ngFor="let item of items" [ngValue]="item.id">{{ item.code }} - {{ item.name }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Warehouse</label>
+        <select class="form-control" [(ngModel)]="selectedWarehouseId">
+          <option [ngValue]="null">All Warehouses</option>
+          <option *ngFor="let wh of warehouses" [ngValue]="wh.id">{{ wh.code }} - {{ wh.name }}</option>
         </select>
       </div>
       <div class="form-group">
@@ -34,44 +39,83 @@
         <label>To Date</label>
         <input type="date" class="form-control" [(ngModel)]="dateTo" />
       </div>
-      <button class="btn btn-primary filter-btn">
-        <i class="fas fa-filter"></i> Apply Filter
-      </button>
+      <div class="filter-buttons">
+        <button class="btn btn-primary" (click)="applyFilter()">
+          <i class="fas fa-filter"></i> Apply
+        </button>
+        <button class="btn btn-secondary" (click)="clearFilters()">
+          <i class="fas fa-times"></i> Clear
+        </button>
+      </div>
     </div>
   </div>
 
   <div class="card">
     <div class="table-container">
+      <div *ngIf="loading" class="loading-overlay">
+        <div class="spinner"></div>
+        <span>Loading ledger entries...</span>
+      </div>
       <table class="table">
         <thead>
           <tr>
             <th>Date</th>
             <th>Document No.</th>
             <th>Item</th>
-            <th>Type</th>
-            <th>In Qty</th>
-            <th>Out Qty</th>
-            <th>Balance</th>
-            <th>Value</th>
+            <th>Transaction Type</th>
+            <th class="text-right">In Qty</th>
+            <th class="text-right">Out Qty</th>
+            <th class="text-right">Balance Qty</th>
+            <th class="text-right">Rate</th>
+            <th class="text-right">Value</th>
+            <th>Warehouse</th>
+            <th>Reference</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let entry of ledgerEntries">
-            <td>{{ entry.date }}</td>
-            <td><strong>{{ entry.docNo }}</strong></td>
-            <td>{{ entry.item }}</td>
+          <tr *ngIf="ledgerEntries.length === 0 && !loading">
+            <td colspan="11" class="text-center text-muted">No ledger entries found</td>
+          </tr>
+          <tr *ngFor="let entry of ledgerEntries" class="ledger-row" (click)="drillDown(entry)">
+            <td>{{ formatDate(entry.transactionDate) }}</td>
             <td>
-              <span class="badge" [ngClass]="getTypeClass(entry.type)">{{ entry.type }}</span>
+              <a class="doc-link">{{ entry.referenceNumber }}</a>
             </td>
-            <td class="qty-in">{{ entry.inQty > 0 ? '+' + entry.inQty : '-' }}</td>
-            <td class="qty-out">{{ entry.outQty > 0 ? '-' + entry.outQty : '-' }}</td>
-            <td><strong>{{ entry.balance }}</strong></td>
-            <td [class.positive]="entry.value > 0" [class.negative]="entry.value < 0">
-              {{ entry.value > 0 ? '+' : '' }}${{ entry.value }}
+            <td>
+              <div class="item-info">
+                <span class="item-code">{{ entry.item?.code }}</span>
+                <span class="item-name">{{ entry.item?.name }}</span>
+              </div>
             </td>
+            <td>
+              <span class="badge" [ngClass]="getTypeClass(entry.transactionType)">
+                {{ getTypeLabel(entry.transactionType) }}
+              </span>
+            </td>
+            <td class="text-right qty-in">
+              {{ entry.quantityIn > 0 ? '+' + entry.quantityIn : '-' }}
+            </td>
+            <td class="text-right qty-out">
+              {{ entry.quantityOut > 0 ? '-' + entry.quantityOut : '-' }}
+            </td>
+            <td class="text-right">
+              <strong>{{ entry.balanceQuantity }}</strong>
+            </td>
+            <td class="text-right">{{ formatCurrency(entry.unitValue) }}</td>
+            <td class="text-right" [class.positive]="entry.totalValue > 0" [class.negative]="entry.totalValue < 0">
+              {{ formatCurrency(entry.totalValue) }}
+            </td>
+            <td>{{ entry.warehouse?.name || '-' }}</td>
+            <td>{{ entry.remarks || '-' }}</td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="ledger-summary" *ngIf="ledgerEntries.length > 0">
+      <span class="summary-item">
+        <strong>Total Entries:</strong> {{ ledgerEntries.length }}
+      </span>
     </div>
   </div>
 </div>
