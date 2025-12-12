@@ -65,30 +65,16 @@ public class PRFulfillmentService {
 
     @Transactional
     public PRFulfillment createFulfillment(PRFulfillment fulfillment) {
-        PurchaseRequisition pr = null;
-        if (fulfillment.getPrId() != null) {
-            pr = prRepository.findById(fulfillment.getPrId())
-                .orElseThrow(() -> new RuntimeException("PR not found with id: " + fulfillment.getPrId()));
-        }
-
         if (fulfillment.getItems() != null) {
             for (PRFulfillmentItem item : fulfillment.getItems()) {
                 item.setPrFulfillment(fulfillment);
                 
-                if (item.getPrItemId() != null && item.getFulfillQty() != null && item.getFulfillQty() > 0 && pr != null) {
-                    for (PurchaseRequisitionItem prItem : pr.getItems()) {
-                        if (prItem.getId() != null && prItem.getId().equals(item.getPrItemId())) {
-                            double currentFulfilled = prItem.getFulfilledQuantity() != null ? prItem.getFulfilledQuantity() : 0;
-                            prItem.setFulfilledQuantity(currentFulfilled + item.getFulfillQty());
-                            
-                            double requested = prItem.getQuantity() != null ? prItem.getQuantity() : 0;
-                            if (prItem.getFulfilledQuantity() >= requested) {
-                                prItem.setStatus("Fully Fulfilled");
-                            } else if (prItem.getFulfilledQuantity() > 0) {
-                                prItem.setStatus("Partially Fulfilled");
-                            }
-                            break;
-                        }
+                if (item.getPrItemId() != null && item.getFulfillQty() != null && item.getFulfillQty() > 0) {
+                    PurchaseRequisitionItem prItem = prItemRepository.findById(item.getPrItemId()).orElse(null);
+                    if (prItem != null) {
+                        double currentFulfilled = prItem.getFulfilledQuantity() != null ? prItem.getFulfilledQuantity() : 0;
+                        prItem.setFulfilledQuantity(currentFulfilled + item.getFulfillQty());
+                        prItemRepository.save(prItem);
                     }
                 }
             }
@@ -96,31 +82,8 @@ public class PRFulfillmentService {
         
         PRFulfillment saved = fulfillmentRepository.save(fulfillment);
         
-        if (pr != null) {
-            boolean allFulfilled = true;
-            boolean anyFulfilled = false;
-            
-            for (PurchaseRequisitionItem prItem : pr.getItems()) {
-                double fulfilled = prItem.getFulfilledQuantity() != null ? prItem.getFulfilledQuantity() : 0;
-                double requested = prItem.getQuantity() != null ? prItem.getQuantity() : 0;
-                
-                if (fulfilled >= requested) {
-                    anyFulfilled = true;
-                } else if (fulfilled > 0) {
-                    anyFulfilled = true;
-                    allFulfilled = false;
-                } else {
-                    allFulfilled = false;
-                }
-            }
-            
-            if (allFulfilled && !pr.getItems().isEmpty()) {
-                pr.setStatus("Fully Fulfilled");
-            } else if (anyFulfilled) {
-                pr.setStatus("Partially Fulfilled");
-            }
-            
-            prRepository.save(pr);
+        if (fulfillment.getPrId() != null) {
+            prService.updateFulfillmentStatus(fulfillment.getPrId());
         }
         
         return saved;
