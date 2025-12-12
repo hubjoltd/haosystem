@@ -30,6 +30,7 @@ com/erp/service/ValuationService$ConsumptionResult.class
 com/erp/model/Role.class
 com/erp/repository/GoodsReceiptLineRepository.class
 com/erp/repository/FinanceSettingsRepository.class
+com/erp/config/WebConfig.class
 com/erp/model/User.class
 com/erp/controller/ApiController.class
 com/erp/repository/StockTransferLineRepository.class
@@ -37,6 +38,7 @@ com/erp/controller/PRFulfillmentController.class
 com/erp/model/GoodsReceiptLine.class
 com/erp/service/ValuationService.class
 com/erp/repository/StockTransferRepository.class
+com/erp/config/WebConfig$1.class
 com/erp/repository/CustomerRepository.class
 com/erp/repository/WarehouseRepository.class
 com/erp/model/InventoryLedger.class

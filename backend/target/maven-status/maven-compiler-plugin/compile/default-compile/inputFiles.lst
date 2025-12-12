@@ -5,6 +5,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/AuditLogRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/GoodsReceiptService.java
 /home/runner/workspace/backend/src/main/java/com/erp/config/CorsConfig.java
+/home/runner/workspace/backend/src/main/java/com/erp/config/WebConfig.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/StockTransferService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/GoodsReceipt.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/PrefixSettingsController.java
