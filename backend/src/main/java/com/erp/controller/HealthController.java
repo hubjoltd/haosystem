@@ -2,7 +2,6 @@ package com.erp.controller;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,13 +31,18 @@ public class HealthController {
     }
     
     @RequestMapping(value = "/", method = {RequestMethod.GET, RequestMethod.HEAD})
-    public ResponseEntity<?> root(@RequestHeader(value = HttpHeaders.ACCEPT, defaultValue = "") String accept) {
-        if (accept.contains("text/html")) {
+    public ResponseEntity<?> root(
+            @RequestHeader(value = "Sec-Fetch-Mode", defaultValue = "") String secFetchMode,
+            @RequestHeader(value = "Sec-Fetch-Dest", defaultValue = "") String secFetchDest) {
+        
+        if ("navigate".equals(secFetchMode) && "document".equals(secFetchDest)) {
             Resource index = new ClassPathResource("static/index.html");
             return ResponseEntity.ok()
                     .contentType(MediaType.TEXT_HTML)
                     .body(index);
         }
-        return ResponseEntity.ok("OK");
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_PLAIN)
+                .body("OK");
     }
 }
