@@ -58,4 +58,4 @@ expertMode = true
 [deployment]
 deploymentTarget = "vm"
 run = ["java", "-jar", "backend/target/erp-backend-1.0.0.jar", "--server.port=5000"]
-build = ["bash", "-c", "cd frontend && npm run build && cp -r dist/frontend/browser/* ../backend/src/main/resources/static/ && cd ../backend && mvn clean package -DskipTests"]
+build = ["bash", "-c", "cd frontend && npm install && npm run build && cp -r dist/frontend/browser/* ../backend/src/main/resources/static/ && cd ../backend && mvn clean package -DskipTests"]
