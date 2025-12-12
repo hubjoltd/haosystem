@@ -96,7 +96,7 @@
 </div>
 
 <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
-  <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+  <div class="modal modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ editMode ? 'View' : 'New' }} Goods Receipt Note</h2>
       <button class="close-btn" (click)="closeModal()">&times;</button>
