@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
+import { RoleService, Role } from '../../../../services/role.service';
 
 interface Permission {
   feature: string;
@@ -14,8 +15,10 @@ interface Permission {
 })
 export class AddRoleComponent implements OnInit {
   roleName: string = '';
+  roleDescription: string = '';
   editMode: boolean = false;
   roleId: number | null = null;
+  saving: boolean = false;
 
   featurePermissions: Permission[] = [
     { feature: 'Dashboard', capabilities: [
@@ -140,25 +143,104 @@ export class AddRoleComponent implements OnInit {
     ]}
   ];
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(
+    private router: Router, 
+    private route: ActivatedRoute,
+    private roleService: RoleService
+  ) {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.editMode = true;
       this.roleId = parseInt(id);
+      this.loadRole();
     }
   }
 
-  saveRole() {
+  loadRole(): void {
+    if (this.roleId) {
+      this.roleService.getById(this.roleId).subscribe({
+        next: (role) => {
+          this.roleName = role.name;
+          this.roleDescription = role.description || '';
+          if (role.permissions) {
+            this.parsePermissions(role.permissions);
+          }
+        },
+        error: (err) => {
+          console.error('Error loading role:', err);
+        }
+      });
+    }
+  }
+
+  parsePermissions(permissionsStr: string): void {
+    try {
+      const permissions = JSON.parse(permissionsStr);
+      for (const perm of this.featurePermissions) {
+        const featurePerms = permissions[perm.feature];
+        if (featurePerms) {
+          for (const cap of perm.capabilities) {
+            cap.checked = featurePerms.includes(cap.name);
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error parsing permissions:', e);
+    }
+  }
+
+  getPermissionsJson(): string {
+    const permissions: { [key: string]: string[] } = {};
+    for (const perm of this.featurePermissions) {
+      const checkedCaps = perm.capabilities
+        .filter(c => c.checked)
+        .map(c => c.name);
+      if (checkedCaps.length > 0) {
+        permissions[perm.feature] = checkedCaps;
+      }
+    }
+    return JSON.stringify(permissions);
+  }
+
+  saveRole(): void {
     if (!this.roleName.trim()) {
       alert('Role name is required');
       return;
     }
-    this.router.navigate(['/app/settings/roles']);
+
+    this.saving = true;
+    const role: Role = {
+      name: this.roleName,
+      description: this.roleDescription,
+      permissions: this.getPermissionsJson()
+    };
+
+    if (this.editMode && this.roleId) {
+      this.roleService.update(this.roleId, role).subscribe({
+        next: () => {
+          this.router.navigate(['/app/settings/roles']);
+        },
+        error: (err) => {
+          alert(err.error?.error || 'Error updating role');
+          this.saving = false;
+        }
+      });
+    } else {
+      this.roleService.create(role).subscribe({
+        next: () => {
+          this.router.navigate(['/app/settings/roles']);
+        },
+        error: (err) => {
+          alert(err.error?.error || 'Error creating role');
+          this.saving = false;
+        }
+      });
+    }
   }
 
-  cancel() {
+  cancel(): void {
     this.router.navigate(['/app/settings/roles']);
   }
 }

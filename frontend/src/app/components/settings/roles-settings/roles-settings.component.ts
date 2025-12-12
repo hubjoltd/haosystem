@@ -1,11 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-
-interface Role {
-  id?: number;
-  name: string;
-  totalUsers: number;
-}
+import { RoleService, Role } from '../../../services/role.service';
 
 @Component({
   selector: 'app-roles-settings',
@@ -14,20 +9,32 @@ interface Role {
   styleUrls: ['./roles-settings.component.scss']
 })
 export class RolesSettingsComponent implements OnInit {
-  roles: Role[] = [
-    { id: 1, name: 'Admin', totalUsers: 2 },
-    { id: 2, name: 'Manager', totalUsers: 5 },
-    { id: 3, name: 'Staff', totalUsers: 10 },
-    { id: 4, name: 'Viewer', totalUsers: 3 }
-  ];
+  roles: Role[] = [];
+  loading: boolean = false;
 
   searchQuery: string = '';
   pageSize: number = 25;
   currentPage: number = 1;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private roleService: RoleService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loadRoles();
+  }
+
+  loadRoles(): void {
+    this.loading = true;
+    this.roleService.getAll().subscribe({
+      next: (data) => {
+        this.roles = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading roles:', err);
+        this.loading = false;
+      }
+    });
+  }
 
   get filteredRoles(): Role[] {
     let filtered = this.roles;
@@ -56,35 +63,42 @@ export class RolesSettingsComponent implements OnInit {
     return Math.min(this.currentPage * this.pageSize, this.filteredRoles.length);
   }
 
-  addRole() {
+  addRole(): void {
     this.router.navigate(['/app/settings/roles/add']);
   }
 
-  editRole(role: Role) {
+  editRole(role: Role): void {
     this.router.navigate(['/app/settings/roles/edit', role.id]);
   }
 
-  deleteRole(role: Role) {
+  deleteRole(role: Role): void {
     if (confirm(`Are you sure you want to delete the role "${role.name}"?`)) {
-      this.roles = this.roles.filter(r => r.id !== role.id);
+      this.roleService.delete(role.id!).subscribe({
+        next: () => {
+          this.loadRoles();
+        },
+        error: (err) => {
+          alert(err.error?.error || 'Error deleting role');
+        }
+      });
     }
   }
 
-  exportData() {
+  exportData(): void {
     console.log('Export roles data');
   }
 
-  refresh() {
-    console.log('Refresh roles data');
+  refresh(): void {
+    this.loadRoles();
   }
 
-  previousPage() {
+  previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
     }
   }
 
-  nextPage() {
+  nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
     }

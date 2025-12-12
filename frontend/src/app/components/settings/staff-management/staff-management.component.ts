@@ -1,15 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-
-interface Staff {
-  id?: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-  lastLogin: string;
-  active: boolean;
-}
+import { StaffService, Staff } from '../../../services/staff.service';
 
 @Component({
   selector: 'app-staff-management',
@@ -18,30 +9,39 @@ interface Staff {
   styleUrls: ['./staff-management.component.scss']
 })
 export class StaffManagementComponent implements OnInit {
-  staff: Staff[] = [
-    { id: 1, firstName: 'ABDUL', lastName: 'AZEEZ', email: 'azeez032001@gmail.com', role: 'Ganesh', lastLogin: 'Never', active: true },
-    { id: 2, firstName: 'bhuvana', lastName: 'bharathi', email: 'bhuvanabharathi1999@gmail.com', role: 'Ganesh', lastLogin: 'Never', active: true },
-    { id: 3, firstName: 'bhuvana', lastName: 'bharahi', email: 'bhuvanabharathi199bhu@gmail.com', role: '', lastLogin: 'Never', active: true },
-    { id: 4, firstName: 'Bhuvana', lastName: 'Bharathi', email: 'bhuvanabharathi19@gmail.com', role: '', lastLogin: 'Never', active: true },
-    { id: 5, firstName: 'Ganesh', lastName: 'Inventory', email: 'sigma.blgr@gmail.com', role: 'Ganesh', lastLogin: '2 days ago', active: true },
-    { id: 6, firstName: 'manoj', lastName: 'kumar', email: '2703abdul@gmail.com', role: '', lastLogin: 'Never', active: true },
-    { id: 7, firstName: 'Revathi', lastName: 'Admin', email: 'superadmin@essentiatechs.com', role: '', lastLogin: '5 hrs ago', active: true }
-  ];
+  staff: Staff[] = [];
+  loading: boolean = false;
 
   searchQuery: string = '';
   pageSize: number = 25;
   currentPage: number = 1;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private staffService: StaffService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loadStaff();
+  }
+
+  loadStaff(): void {
+    this.loading = true;
+    this.staffService.getAll().subscribe({
+      next: (data) => {
+        this.staff = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading staff:', err);
+        this.loading = false;
+      }
+    });
+  }
 
   get filteredStaff(): Staff[] {
     if (!this.searchQuery) return this.staff;
     return this.staff.filter(s => 
-      s.firstName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-      s.lastName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-      s.email.toLowerCase().includes(this.searchQuery.toLowerCase())
+      (s.firstName?.toLowerCase() || '').includes(this.searchQuery.toLowerCase()) ||
+      (s.lastName?.toLowerCase() || '').includes(this.searchQuery.toLowerCase()) ||
+      (s.email?.toLowerCase() || '').includes(this.searchQuery.toLowerCase())
     );
   }
 
@@ -63,32 +63,39 @@ export class StaffManagementComponent implements OnInit {
   }
 
   getFullName(member: Staff): string {
-    return `${member.firstName} ${member.lastName}`.trim();
+    return `${member.firstName || ''} ${member.lastName || ''}`.trim();
   }
 
-  addStaff() {
+  addStaff(): void {
     this.router.navigate(['/app/settings/staff/add']);
   }
 
-  toggleActive(member: Staff) {
-    member.active = !member.active;
+  toggleActive(member: Staff): void {
+    this.staffService.toggleActive(member.id!).subscribe({
+      next: () => {
+        member.active = !member.active;
+      },
+      error: (err) => {
+        console.error('Error toggling active status:', err);
+      }
+    });
   }
 
-  exportData() {
+  exportData(): void {
     console.log('Export staff data');
   }
 
-  refresh() {
-    console.log('Refresh staff data');
+  refresh(): void {
+    this.loadStaff();
   }
 
-  previousPage() {
+  previousPage(): void {
     if (this.currentPage > 1) {
       this.currentPage--;
     }
   }
 
-  nextPage() {
+  nextPage(): void {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
     }

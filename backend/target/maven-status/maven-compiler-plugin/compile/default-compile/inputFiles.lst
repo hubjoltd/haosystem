@@ -32,6 +32,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/controller/StockMovementController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Contract.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PRFulfillmentItem.java
+/home/runner/workspace/backend/src/main/java/com/erp/service/StaffService.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/StockAdjustmentService.java
 /home/runner/workspace/backend/src/main/java/com/erp/security/JwtAuthFilter.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/SupplierRepository.java
@@ -51,6 +52,8 @@
 /home/runner/workspace/backend/src/main/java/com/erp/model/Customer.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/PRFulfillmentRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/GoodsIssueService.java
+/home/runner/workspace/backend/src/main/java/com/erp/service/RoleService.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/RoleController.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/ItemRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GoodsReceiptLineRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/PRFulfillmentService.java
@@ -66,6 +69,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/controller/AuthController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/GoodsIssue.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GeneralSettingsRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/StaffController.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/ContractService.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/SupplierService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Bin.java
