@@ -73,7 +73,7 @@
         <label>Role</label>
         <select [(ngModel)]="staff.role" class="form-control">
           <option value="">Select Role</option>
-          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+          <option *ngFor="let role of roles" [value]="role.name">{{ role.name }}</option>
         </select>
       </div>
     </div>
@@ -84,7 +84,7 @@
         <label>Assigned Role</label>
         <select [(ngModel)]="staff.role" class="form-control">
           <option value="">Select Role</option>
-          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+          <option *ngFor="let role of roles" [value]="role.name">{{ role.name }}</option>
         </select>
       </div>
     </div>
