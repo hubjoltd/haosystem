@@ -14,6 +14,7 @@ com/erp/service/UnitOfMeasureService.class
 com/erp/service/ItemService.class
 com/erp/model/Contract.class
 com/erp/service/AuditLogService.class
+com/erp/controller/PrefixSettingsController.class
 com/erp/service/WarehouseService.class
 com/erp/model/GoodsReceipt.class
 com/erp/repository/UserRepository.class
@@ -38,6 +39,7 @@ com/erp/model/ItemGroup.class
 com/erp/controller/AuthController.class
 com/erp/dto/LoginRequest.class
 com/erp/repository/GoodsIssueRepository.class
+com/erp/repository/PrefixSettingsRepository.class
 com/erp/repository/ItemGroupRepository.class
 com/erp/repository/GoodsReceiptLineRepository.class
 com/erp/model/Item.class
@@ -45,6 +47,8 @@ com/erp/model/Role.class
 com/erp/repository/FinanceSettingsRepository.class
 com/erp/service/SettingsService.class
 com/erp/repository/RoleRepository.class
+com/erp/model/PrefixSettings.class
+com/erp/service/PrefixSettingsService.class
 com/erp/repository/BinRepository.class
 com/erp/model/User.class
 com/erp/service/CustomerService.class

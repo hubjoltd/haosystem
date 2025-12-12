@@ -41,7 +41,8 @@ export class SidebarComponent {
         { icon: 'fas fa-user-cog', label: 'Customer Settings', route: '/app/settings/customer' },
         { icon: 'fas fa-file-contract', label: 'Contract Settings', route: '/app/settings/contract' },
         { icon: 'fas fa-user-shield', label: 'Roles Settings', route: '/app/settings/roles' },
-        { icon: 'fas fa-users-cog', label: 'Staff Management', route: '/app/settings/staff' }
+        { icon: 'fas fa-users-cog', label: 'Staff Management', route: '/app/settings/staff' },
+        { icon: 'fas fa-hashtag', label: 'Prefix Settings', route: '/app/settings/prefixes' }
       ]
     },
     { icon: 'fas fa-users', label: 'Customer Management', route: '/app/customers' },

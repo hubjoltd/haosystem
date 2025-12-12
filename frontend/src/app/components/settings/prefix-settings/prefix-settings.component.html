@@ -1,0 +1,155 @@
+<div class="prefix-settings-container">
+  <div class="page-header">
+    <h2>Prefix Settings</h2>
+    <p class="subtitle">Configure auto-generated ID prefixes for inventory and purchase modules</p>
+  </div>
+
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading settings...</p>
+  </div>
+
+  <form *ngIf="!loading" (ngSubmit)="saveSettings()" class="settings-form">
+    <div class="settings-section">
+      <h3 class="section-title">
+        <i class="fas fa-boxes"></i>
+        Inventory Prefixes
+      </h3>
+      
+      <div class="prefix-grid">
+        <div class="prefix-card">
+          <label>Item Master</label>
+          <div class="prefix-inputs">
+            <input type="text" [(ngModel)]="settings.itemPrefix" name="itemPrefix" placeholder="ITM-" class="prefix-input">
+            <input type="number" [(ngModel)]="settings.itemNextNumber" name="itemNextNumber" min="1" class="number-input">
+          </div>
+          <span class="preview">Preview: {{ formatPreview(settings.itemPrefix, settings.itemNextNumber) }}</span>
+        </div>
+
+        <div class="prefix-card">
+          <label>Group Master</label>
+          <div class="prefix-inputs">
+            <input type="text" [(ngModel)]="settings.groupPrefix" name="groupPrefix" placeholder="GRP-" class="prefix-input">
+            <input type="number" [(ngModel)]="settings.groupNextNumber" name="groupNextNumber" min="1" class="number-input">
+          </div>
+          <span class="preview">Preview: {{ formatPreview(settings.groupPrefix, settings.groupNextNumber) }}</span>
+        </div>
+
+        <div class="prefix-card">
+          <label>Warehouse</label>
+          <div class="prefix-inputs">
+            <input type="text" [(ngModel)]="settings.warehousePrefix" name="warehousePrefix" placeholder="WH-" class="prefix-input">
+            <input type="number" [(ngModel)]="settings.warehouseNextNumber" name="warehouseNextNumber" min="1" class="number-input">
+          </div>
+          <span class="preview">Preview: {{ formatPreview(settings.warehousePrefix, settings.warehouseNextNumber) }}</span>
+        </div>
+
+        <div class="prefix-card">
+          <label>Bin Location</label>
+          <div class="prefix-inputs">
+            <input type="text" [(ngModel)]="settings.binPrefix" name="binPrefix" placeholder="BIN-" class="prefix-input">
+            <input type="number" [(ngModel)]="settings.binNextNumber" name="binNextNumber" min="1" class="number-input">
+          </div>
+          <span class="preview">Preview: {{ formatPreview(settings.binPrefix, settings.binNextNumber) }}</span>
+        </div>
+
+        <div class="prefix-card">
+          <label>Supplier</label>
+          <div class="prefix-inputs">
+            <input type="text" [(ngModel)]="settings.supplierPrefix" name="supplierPrefix" placeholder="SUP-" class="prefix-input">
+            <input type="number" [(ngModel)]="settings.supplierNextNumber" name="supplierNextNumber" min="1" class="number-input">
+          </div>
+          <span class="preview">Preview: {{ formatPreview(settings.supplierPrefix, settings.supplierNextNumber) }}</span>
+        </div>
+
+        <div class="prefix-card">
+          <label>Unit of Measure</label>
+          <div class="prefix-inputs">
+            <input type="text" [(ngModel)]="settings.unitPrefix" name="unitPrefix" placeholder="UOM-" class="prefix-input">
+            <input type="number" [(ngModel)]="settings.unitNextNumber" name="unitNextNumber" min="1" class="number-input">
+          </div>
+          <span class="preview">Preview: {{ formatPreview(settings.unitPrefix, settings.unitNextNumber) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3 class="section-title">
+        <i class="fas fa-shopping-cart"></i>
+        Purchase Prefixes
+      </h3>
+      
+      <div class="prefix-grid">
+        <div class="prefix-card">
+          <label>Purchase Requisition</label>
+          <div class="prefix-inputs">
+            <input type="text" [(ngModel)]="settings.prPrefix" name="prPrefix" placeholder="PR-" class="prefix-input">
+            <input type="number" [(ngModel)]="settings.prNextNumber" name="prNextNumber" min="1" class="number-input">
+          </div>
+          <span class="preview">Preview: {{ formatPreview(settings.prPrefix, settings.prNextNumber) }}</span>
+        </div>
+
+        <div class="prefix-card">
+          <label>Purchase Order</label>
+          <div class="prefix-inputs">
+            <input type="text" [(ngModel)]="settings.poPrefix" name="poPrefix" placeholder="PO-" class="prefix-input">
+            <input type="number" [(ngModel)]="settings.poNextNumber" name="poNextNumber" min="1" class="number-input">
+          </div>
+          <span class="preview">Preview: {{ formatPreview(settings.poPrefix, settings.poNextNumber) }}</span>
+        </div>
+
+        <div class="prefix-card">
+          <label>Goods Receipt Note</label>
+          <div class="prefix-inputs">
+            <input type="text" [(ngModel)]="settings.grnPrefix" name="grnPrefix" placeholder="GRN-" class="prefix-input">
+            <input type="number" [(ngModel)]="settings.grnNextNumber" name="grnNextNumber" min="1" class="number-input">
+          </div>
+          <span class="preview">Preview: {{ formatPreview(settings.grnPrefix, settings.grnNextNumber) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3 class="section-title">
+        <i class="fas fa-exchange-alt"></i>
+        Stock Movement Prefixes
+      </h3>
+      
+      <div class="prefix-grid">
+        <div class="prefix-card">
+          <label>Goods Issue</label>
+          <div class="prefix-inputs">
+            <input type="text" [(ngModel)]="settings.issuePrefix" name="issuePrefix" placeholder="GI-" class="prefix-input">
+            <input type="number" [(ngModel)]="settings.issueNextNumber" name="issueNextNumber" min="1" class="number-input">
+          </div>
+          <span class="preview">Preview: {{ formatPreview(settings.issuePrefix, settings.issueNextNumber) }}</span>
+        </div>
+
+        <div class="prefix-card">
+          <label>Stock Transfer</label>
+          <div class="prefix-inputs">
+            <input type="text" [(ngModel)]="settings.transferPrefix" name="transferPrefix" placeholder="ST-" class="prefix-input">
+            <input type="number" [(ngModel)]="settings.transferNextNumber" name="transferNextNumber" min="1" class="number-input">
+          </div>
+          <span class="preview">Preview: {{ formatPreview(settings.transferPrefix, settings.transferNextNumber) }}</span>
+        </div>
+
+        <div class="prefix-card">
+          <label>Stock Adjustment</label>
+          <div class="prefix-inputs">
+            <input type="text" [(ngModel)]="settings.adjustmentPrefix" name="adjustmentPrefix" placeholder="ADJ-" class="prefix-input">
+            <input type="number" [(ngModel)]="settings.adjustmentNextNumber" name="adjustmentNextNumber" min="1" class="number-input">
+          </div>
+          <span class="preview">Preview: {{ formatPreview(settings.adjustmentPrefix, settings.adjustmentNextNumber) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="saving">
+        <i class="fas fa-save"></i>
+        {{ saving ? 'Saving...' : 'Save Settings' }}
+      </button>
+    </div>
+  </form>
+</div>

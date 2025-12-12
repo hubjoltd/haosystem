@@ -61,6 +61,7 @@ import { PurchaseAuditsComponent } from './components/audit-trails/purchase-audi
 
 import { PrPrintComponent } from './components/purchase/pr-print/pr-print.component';
 import { PoPrintComponent } from './components/purchase/po-print/po-print.component';
+import { PrefixSettingsComponent } from './components/settings/prefix-settings/prefix-settings.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -81,6 +82,7 @@ const routes: Routes = [
       { path: 'settings/contract', component: ContractSettingsComponent },
       { path: 'settings/roles', component: RolesSettingsComponent },
       { path: 'settings/staff', component: StaffManagementComponent },
+      { path: 'settings/prefixes', component: PrefixSettingsComponent },
       { path: 'customers', component: CustomerManagementComponent },
       { path: 'contracts', component: ContractManagementComponent },
       { path: 'inventory/groups', component: GroupMasterComponent },

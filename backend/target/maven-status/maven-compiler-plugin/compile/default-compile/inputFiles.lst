@@ -5,6 +5,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/config/CorsConfig.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/StockTransferService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/GoodsReceipt.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/PrefixSettingsController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/GeneralSettings.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/AuthService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/StockAdjustment.java
@@ -21,6 +22,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/service/UnitOfMeasureService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Item.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/CustomerRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/service/PrefixSettingsService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Contract.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/StockAdjustmentService.java
 /home/runner/workspace/backend/src/main/java/com/erp/security/JwtAuthFilter.java
@@ -46,6 +48,8 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/UnitOfMeasureRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Warehouse.java
 /home/runner/workspace/backend/src/main/java/com/erp/ErpApplication.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/PrefixSettingsRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/PrefixSettings.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/ItemGroupService.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/AuthController.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GeneralSettingsRepository.java

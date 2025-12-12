@@ -28,6 +28,37 @@ export interface FinanceSettings {
   fiscalYearStart: string;
 }
 
+export interface PrefixSettings {
+  id?: number;
+  // Inventory Prefixes
+  itemPrefix: string;
+  itemNextNumber: number;
+  groupPrefix: string;
+  groupNextNumber: number;
+  warehousePrefix: string;
+  warehouseNextNumber: number;
+  binPrefix: string;
+  binNextNumber: number;
+  supplierPrefix: string;
+  supplierNextNumber: number;
+  unitPrefix: string;
+  unitNextNumber: number;
+  // Purchase Prefixes
+  prPrefix: string;
+  prNextNumber: number;
+  poPrefix: string;
+  poNextNumber: number;
+  grnPrefix: string;
+  grnNextNumber: number;
+  // Stock Movement Prefixes
+  issuePrefix: string;
+  issueNextNumber: number;
+  transferPrefix: string;
+  transferNextNumber: number;
+  adjustmentPrefix: string;
+  adjustmentNextNumber: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -50,5 +81,13 @@ export class SettingsService {
 
   saveFinanceSettings(settings: FinanceSettings): Observable<FinanceSettings> {
     return this.http.post<FinanceSettings>(`${this.baseUrl}/finance`, settings);
+  }
+
+  getPrefixSettings(): Observable<PrefixSettings> {
+    return this.http.get<PrefixSettings>(`${this.baseUrl}/prefixes`);
+  }
+
+  savePrefixSettings(settings: PrefixSettings): Observable<PrefixSettings> {
+    return this.http.post<PrefixSettings>(`${this.baseUrl}/prefixes`, settings);
   }
 }
