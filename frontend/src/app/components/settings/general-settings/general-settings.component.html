@@ -58,6 +58,23 @@
     </div>
   </div>
 
+  <div class="card">
+    <h3 class="card-title">Inventory Valuation</h3>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Valuation Method</label>
+        <select class="form-control" [(ngModel)]="settings.valuationMethod">
+          <option *ngFor="let vm of valuationMethods" [value]="vm.value">{{ vm.label }}</option>
+        </select>
+        <small class="form-text">
+          <strong>FIFO:</strong> Oldest stock is consumed first. 
+          <strong>LIFO:</strong> Newest stock is consumed first.
+          <strong>Weighted Average:</strong> Uses average cost of all layers.
+        </small>
+      </div>
+    </div>
+  </div>
+
   <div class="form-actions">
     <button class="btn btn-secondary">Cancel</button>
     <button class="btn btn-primary" (click)="saveSettings()" [disabled]="saving">

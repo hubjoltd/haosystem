@@ -8,8 +8,8 @@
 /home/runner/workspace/backend/src/main/java/com/erp/service/StockTransferService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/GoodsReceipt.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/PrefixSettingsController.java
-/home/runner/workspace/backend/src/main/java/com/erp/model/GeneralSettings.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PurchaseRequisition.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/GeneralSettings.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/StockAdjustment.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/AuthService.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/StockTransferRepository.java
@@ -39,6 +39,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GoodsIssueRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/config/SecurityConfig.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/ItemService.java
+/home/runner/workspace/backend/src/main/java/com/erp/service/ValuationService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/StockTransfer.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GoodsReceiptRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/DashboardService.java
@@ -51,8 +52,8 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GoodsIssueLineRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Customer.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/PRFulfillmentRepository.java
-/home/runner/workspace/backend/src/main/java/com/erp/service/GoodsIssueService.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/RoleService.java
+/home/runner/workspace/backend/src/main/java/com/erp/service/GoodsIssueService.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/RoleController.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/ItemRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GoodsReceiptLineRepository.java

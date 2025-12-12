@@ -18,8 +18,11 @@ public class GeneralSettings {
     private String dateFormat;
     private String timezone;
     private String logoPath;
+    private String valuationMethod; // FIFO, LIFO, WEIGHTED_AVERAGE
     
-    public GeneralSettings() {}
+    public GeneralSettings() {
+        this.valuationMethod = "FIFO"; // Default valuation method
+    }
     
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -41,4 +44,6 @@ public class GeneralSettings {
     public void setTimezone(String timezone) { this.timezone = timezone; }
     public String getLogoPath() { return logoPath; }
     public void setLogoPath(String logoPath) { this.logoPath = logoPath; }
+    public String getValuationMethod() { return valuationMethod != null ? valuationMethod : "FIFO"; }
+    public void setValuationMethod(String valuationMethod) { this.valuationMethod = valuationMethod; }
 }

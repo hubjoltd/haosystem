@@ -17,7 +17,8 @@ export class GeneralSettingsComponent implements OnInit {
     currency: 'USD',
     dateFormat: 'DD/MM/YYYY',
     timezone: 'UTC',
-    logoPath: ''
+    logoPath: '',
+    valuationMethod: 'FIFO'
   };
   
   saving: boolean = false;
@@ -26,6 +27,11 @@ export class GeneralSettingsComponent implements OnInit {
   timezones = ['UTC', 'America/New_York', 'Europe/London', 'Asia/Tokyo', 'Australia/Sydney'];
   dateFormats = ['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'];
   currencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD'];
+  valuationMethods = [
+    { value: 'FIFO', label: 'FIFO (First In, First Out)' },
+    { value: 'LIFO', label: 'LIFO (Last In, First Out)' },
+    { value: 'WEIGHTED_AVERAGE', label: 'Weighted Average Cost' }
+  ];
 
   constructor(private settingsService: SettingsService) {}
 

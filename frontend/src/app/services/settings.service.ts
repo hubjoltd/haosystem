@@ -13,6 +13,7 @@ export interface GeneralSettings {
   dateFormat: string;
   timezone: string;
   logoPath: string;
+  valuationMethod: string; // FIFO, LIFO, WEIGHTED_AVERAGE
 }
 
 export interface FinanceSettings {

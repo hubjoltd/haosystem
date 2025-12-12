@@ -26,6 +26,9 @@ public class GoodsIssueService {
     @Autowired
     private InventoryLedgerRepository inventoryLedgerRepository;
     
+    @Autowired
+    private ValuationService valuationService;
+    
     public List<GoodsIssue> findAll() {
         return goodsIssueRepository.findAll();
     }
@@ -47,8 +50,21 @@ public class GoodsIssueService {
         BigDecimal totalValue = BigDecimal.ZERO;
         for (GoodsIssueLine line : lines) {
             line.setGoodsIssue(savedIssue);
-            line.setLineTotal(line.getUnitPrice().multiply(BigDecimal.valueOf(line.getQuantity())));
-            totalValue = totalValue.add(line.getLineTotal());
+            
+            // Use valuation engine to consume stock and get actual cost
+            ValuationService.ConsumptionResult consumption = valuationService.consumeStock(
+                line.getItem().getId(),
+                issue.getWarehouse() != null ? issue.getWarehouse().getId() : null,
+                line.getQuantity()
+            );
+            
+            // Use calculated cost from valuation engine instead of provided unit price
+            BigDecimal actualUnitCost = consumption.getUnitCost();
+            BigDecimal actualTotalCost = consumption.getTotalCost();
+            
+            line.setUnitPrice(actualUnitCost);
+            line.setLineTotal(actualTotalCost);
+            totalValue = totalValue.add(actualTotalCost);
             goodsIssueLineRepository.save(line);
             
             Item item = line.getItem();
@@ -60,14 +76,15 @@ public class GoodsIssueService {
             ledger.setItem(item);
             ledger.setWarehouse(issue.getWarehouse());
             ledger.setBin(line.getBin());
-            ledger.setTransactionType("ISSUE");
+            ledger.setTransactionType("GOODS_ISSUE");
             ledger.setReferenceNumber(savedIssue.getIssueNumber());
             ledger.setQuantityIn(0);
             ledger.setQuantityOut(line.getQuantity());
             ledger.setBalanceQuantity(newStock);
-            ledger.setUnitValue(line.getUnitPrice());
-            ledger.setTotalValue(line.getLineTotal());
+            ledger.setUnitValue(actualUnitCost);
+            ledger.setTotalValue(actualTotalCost);
             ledger.setTransactionDate(LocalDateTime.now());
+            ledger.setRemarks("Valuation: " + valuationService.getValuationMethod());
             inventoryLedgerRepository.save(ledger);
         }
         
