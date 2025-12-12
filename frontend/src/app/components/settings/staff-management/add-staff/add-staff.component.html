@@ -1,0 +1,99 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1>{{ editMode ? 'Edit Staff Member' : 'Add New Staff Member' }}</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <a routerLink="/app/settings/staff">Staff Management</a>
+        <span>/</span>
+        <span>{{ editMode ? 'Edit' : 'Add New' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab === 'profile'" (click)="setTab('profile')">Profile</button>
+      <button class="tab" [class.active]="activeTab === 'permissions'" (click)="setTab('permissions')">Permissions</button>
+    </div>
+
+    <div class="tab-content" *ngIf="activeTab === 'profile'">
+      <div class="checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="staff.isAdmin">
+          <span>Administrator</span>
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" [checked]="!staff.isStaffMember" (change)="staff.isStaffMember = !staff.isStaffMember">
+          <span>Not Staff Member</span>
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label>Profile Image</label>
+        <div class="file-input">
+          <input type="file" id="profileImage" accept="image/*">
+          <label for="profileImage" class="file-label">
+            <span class="choose-file">Choose File</span>
+            <span class="file-name">No file chosen</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="required">First Name</label>
+        <input type="text" [(ngModel)]="staff.firstName" class="form-control" placeholder="Enter first name">
+      </div>
+
+      <div class="form-group">
+        <label class="required">Last Name</label>
+        <input type="text" [(ngModel)]="staff.lastName" class="form-control" placeholder="Enter last name">
+      </div>
+
+      <div class="form-group">
+        <label class="required">Email</label>
+        <input type="email" [(ngModel)]="staff.email" class="form-control" placeholder="Enter email address">
+      </div>
+
+      <div class="form-group">
+        <label>Hourly Rate</label>
+        <div class="input-with-suffix">
+          <input type="number" [(ngModel)]="staff.hourlyRate" class="form-control" placeholder="0">
+          <span class="suffix">₹</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" [(ngModel)]="staff.phone" class="form-control" placeholder="Enter phone number">
+      </div>
+
+      <div class="form-group">
+        <label>Role</label>
+        <select [(ngModel)]="staff.role" class="form-control">
+          <option value="">Select Role</option>
+          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="tab-content" *ngIf="activeTab === 'permissions'">
+      <p class="permissions-note">Permissions are managed through the role assigned to this staff member.</p>
+      <div class="form-group">
+        <label>Assigned Role</label>
+        <select [(ngModel)]="staff.role" class="form-control">
+          <option value="">Select Role</option>
+          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-secondary" (click)="cancel()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveStaff()">
+        {{ editMode ? 'Update Staff' : 'Save Staff' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,9 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-
-interface Permission {
-  feature: string;
-  capabilities: { name: string; checked: boolean }[];
-}
+import { Router } from '@angular/router';
 
 interface Role {
   id?: number;
@@ -25,81 +21,13 @@ export class RolesSettingsComponent implements OnInit {
     { id: 4, name: 'Viewer', totalUsers: 3 }
   ];
 
-  featurePermissions: Permission[] = [
-    { feature: 'Bulk PDF Export', capabilities: [{ name: 'View(Global)', checked: false }] },
-    { feature: 'Contracts', capabilities: [
-      { name: 'View (Own)', checked: false },
-      { name: 'View(Global)', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false },
-      { name: 'View All Templates', checked: false }
-    ]},
-    { feature: 'Credit Notes', capabilities: [
-      { name: 'View (Own)', checked: false },
-      { name: 'View(Global)', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false }
-    ]},
-    { feature: 'Customers', capabilities: [
-      { name: 'View (Own)', checked: false },
-      { name: 'View(Global)', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false }
-    ]},
-    { feature: 'Dashboard', capabilities: [
-      { name: 'View(Global)', checked: false }
-    ]},
-    { feature: 'Inventory', capabilities: [
-      { name: 'View (Own)', checked: false },
-      { name: 'View(Global)', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false }
-    ]},
-    { feature: 'Reports', capabilities: [
-      { name: 'View (Own)', checked: false },
-      { name: 'View(Global)', checked: false },
-      { name: 'Export', checked: false }
-    ]},
-    { feature: 'Settings', capabilities: [
-      { name: 'View(Global)', checked: false },
-      { name: 'Edit', checked: false }
-    ]},
-    { feature: 'Stock Movement', capabilities: [
-      { name: 'View (Own)', checked: false },
-      { name: 'View(Global)', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false },
-      { name: 'Approve', checked: false }
-    ]},
-    { feature: 'Purchase Orders', capabilities: [
-      { name: 'View (Own)', checked: false },
-      { name: 'View(Global)', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false },
-      { name: 'Approve', checked: false }
-    ]}
-  ];
-
-  showModal: boolean = false;
-  editMode: boolean = false;
-  selectedRole: Role = this.getEmptyRole();
-  rolePermissions: Permission[] = [];
-  
   searchQuery: string = '';
   pageSize: number = 25;
   currentPage: number = 1;
 
-  ngOnInit(): void {}
+  constructor(private router: Router) {}
 
-  getEmptyRole(): Role {
-    return { name: '', totalUsers: 0 };
-  }
+  ngOnInit(): void {}
 
   get filteredRoles(): Role[] {
     let filtered = this.roles;
@@ -128,39 +56,12 @@ export class RolesSettingsComponent implements OnInit {
     return Math.min(this.currentPage * this.pageSize, this.filteredRoles.length);
   }
 
-  openModal(role?: Role) {
-    if (role) {
-      this.editMode = true;
-      this.selectedRole = { ...role };
-    } else {
-      this.editMode = false;
-      this.selectedRole = this.getEmptyRole();
-    }
-    this.rolePermissions = JSON.parse(JSON.stringify(this.featurePermissions));
-    this.showModal = true;
+  addRole() {
+    this.router.navigate(['/app/settings/roles/add']);
   }
 
-  closeModal() {
-    this.showModal = false;
-    this.selectedRole = this.getEmptyRole();
-  }
-
-  saveRole() {
-    if (!this.selectedRole.name.trim()) {
-      alert('Role name is required');
-      return;
-    }
-
-    if (this.editMode && this.selectedRole.id) {
-      const index = this.roles.findIndex(r => r.id === this.selectedRole.id);
-      if (index >= 0) {
-        this.roles[index] = { ...this.selectedRole };
-      }
-    } else {
-      const newId = Math.max(...this.roles.map(r => r.id || 0), 0) + 1;
-      this.roles.push({ ...this.selectedRole, id: newId });
-    }
-    this.closeModal();
+  editRole(role: Role) {
+    this.router.navigate(['/app/settings/roles/edit', role.id]);
   }
 
   deleteRole(role: Role) {

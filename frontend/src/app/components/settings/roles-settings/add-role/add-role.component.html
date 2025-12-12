@@ -1,0 +1,52 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1>{{ editMode ? 'Edit Role' : 'Add New Role' }}</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <a routerLink="/app/settings/roles">Roles</a>
+        <span>/</span>
+        <span>{{ editMode ? 'Edit' : 'Add New' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="form-group">
+      <label class="required">Role Name</label>
+      <input type="text" [(ngModel)]="roleName" class="form-control" placeholder="Enter role name">
+    </div>
+
+    <div class="permissions-section">
+      <table class="permissions-table">
+        <thead>
+          <tr>
+            <th>features</th>
+            <th>Capabilities</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let perm of featurePermissions">
+            <td class="feature-name">{{ perm.feature }}</td>
+            <td class="capabilities-cell">
+              <div class="capability-list">
+                <label *ngFor="let cap of perm.capabilities" class="checkbox-label">
+                  <input type="checkbox" [(ngModel)]="cap.checked">
+                  <span>{{ cap.name }}</span>
+                </label>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-secondary" (click)="cancel()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveRole()">
+        {{ editMode ? 'Update Role' : 'Save Role' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,73 @@
+.settings-page {
+  .card {
+    margin-bottom: 24px;
+  }
+}
+
+.permissions-section {
+  margin-top: 24px;
+}
+
+.permissions-table {
+  width: 100%;
+  border-collapse: collapse;
+  
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  th {
+    background: var(--bg-color);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  .feature-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    width: 40%;
+  }
+  
+  .capabilities-cell {
+    width: 60%;
+  }
+}
+
+.capability-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+  }
+}
+
+.required::before {
+  content: '*';
+  color: var(--danger-color);
+  margin-right: 4px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
+}
