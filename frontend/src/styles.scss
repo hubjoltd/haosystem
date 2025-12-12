@@ -323,7 +323,8 @@ html, body {
   z-index: 1000;
 }
 
-.modal {
+.modal,
+.modal-content {
   background: white;
   border-radius: 12px;
   padding: 24px;
@@ -331,10 +332,12 @@ html, body {
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
 
-.modal-lg {
-  max-width: 800px;
+.modal-lg,
+.modal-content.modal-lg {
+  max-width: 900px;
 }
 
 .modal-header {
