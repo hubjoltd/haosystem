@@ -41,6 +41,10 @@ export class WarehouseService {
 
   constructor(private http: HttpClient) {}
 
+  getAll(): Observable<Warehouse[]> {
+    return this.http.get<Warehouse[]>(this.warehouseUrl);
+  }
+
   getAllWarehouses(): Observable<Warehouse[]> {
     return this.http.get<Warehouse[]>(this.warehouseUrl);
   }

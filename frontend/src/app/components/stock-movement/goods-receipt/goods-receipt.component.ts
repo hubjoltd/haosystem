@@ -70,8 +70,8 @@ export class GoodsReceiptComponent implements OnInit {
       error: (err) => console.error('Error loading items', err)
     });
     this.warehouseService.getAll().subscribe({
-      next: (data) => this.warehouses = data,
-      error: (err) => console.error('Error loading warehouses', err)
+      next: (data: any[]) => this.warehouses = data,
+      error: (err: any) => console.error('Error loading warehouses', err)
     });
     this.supplierService.getAll().subscribe({
       next: (data) => this.suppliers = data,
