@@ -1,3 +1,153 @@
 <div class="page-container">
-  <!-- Convert to Purchase Order - Implementation pending -->
+  <div class="page-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="cancel()">
+        <i class="fa fa-arrow-left"></i>
+      </button>
+      <h1>Convert to Purchase Order</h1>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <i class="fa fa-spinner fa-spin"></i>
+    <span>Loading PR details...</span>
+  </div>
+
+  <div class="content" *ngIf="!loading && pr">
+    <div class="info-cards">
+      <div class="info-card pr-info">
+        <h3>Purchase Requisition Details</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">PR Number:</span>
+            <span class="value">{{ pr.prNumber }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">PR Date:</span>
+            <span class="value">{{ formatDate(pr.prDate) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Required Date:</span>
+            <span class="value">{{ formatDate(pr.requiredDate) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Department:</span>
+            <span class="value">{{ pr.department }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Requested By:</span>
+            <span class="value">{{ pr.requestedBy }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Purpose:</span>
+            <span class="value">{{ pr.purpose || '-' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-card po-info">
+        <h3>Purchase Order Details</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>PO Number</label>
+            <input type="text" class="form-control" [(ngModel)]="poNumber" readonly />
+          </div>
+          <div class="form-group">
+            <label>Supplier *</label>
+            <select class="form-control" [(ngModel)]="selectedSupplierId" (change)="onSupplierChange()" required>
+              <option [value]="0">Select Supplier</option>
+              <option *ngFor="let supplier of suppliers" [value]="supplier.id">{{ supplier.name }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Payment Terms</label>
+            <input type="text" class="form-control" [(ngModel)]="paymentTerms" placeholder="e.g., Net 30" />
+          </div>
+          <div class="form-group">
+            <label>Expected Delivery Date *</label>
+            <input type="date" class="form-control" [(ngModel)]="expectedDeliveryDate" required />
+          </div>
+          <div class="form-group full-width">
+            <label>Remarks</label>
+            <textarea class="form-control" [(ngModel)]="remarks" rows="2" placeholder="Additional notes..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="items-section">
+      <div class="section-header">
+        <h3>Select Items for Purchase Order</h3>
+        <span class="selected-count">{{ getSelectedItemsCount() }} of {{ fulfillmentItems.length }} items selected</span>
+      </div>
+
+      <div class="items-table-container">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;">
+                <input type="checkbox" (change)="toggleSelectAll($event)" />
+              </th>
+              <th>Item Name</th>
+              <th>Description</th>
+              <th style="width: 80px;">Requested</th>
+              <th style="width: 80px;">Fulfilled</th>
+              <th style="width: 80px;">Pending</th>
+              <th style="width: 80px;">UOM</th>
+              <th style="width: 100px;">Qty to Order *</th>
+              <th style="width: 100px;">Rate *</th>
+              <th style="width: 120px;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of fulfillmentItems" [class.selected]="item.selected">
+              <td>
+                <input type="checkbox" [(ngModel)]="item.selected" (change)="onItemSelectionChange(item)" />
+              </td>
+              <td>{{ item.itemName }}</td>
+              <td>{{ item.itemDescription || '-' }}</td>
+              <td class="text-center">{{ item.requestedQty }}</td>
+              <td class="text-center">{{ item.fulfilledQty }}</td>
+              <td class="text-center pending-qty">{{ item.pendingQty }}</td>
+              <td class="text-center">{{ item.uom }}</td>
+              <td>
+                <input type="number" class="form-control" 
+                       [(ngModel)]="item.fulfillQty" 
+                       [disabled]="!item.selected"
+                       [max]="item.pendingQty"
+                       min="1"
+                       (input)="calculateItemAmount(item)" />
+              </td>
+              <td>
+                <input type="number" class="form-control" 
+                       [(ngModel)]="item.rate" 
+                       [disabled]="!item.selected"
+                       min="0"
+                       step="0.01"
+                       (input)="calculateItemAmount(item)" />
+              </td>
+              <td class="text-right amount">
+                {{ item.selected ? (item.amount | number:'1.2-2') : '-' }}
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td colspan="9" class="text-right"><strong>Total Amount:</strong></td>
+              <td class="text-right total-amount"><strong>{{ getTotalAmount() | number:'1.2-2' }}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="action-footer">
+      <button class="btn-secondary" (click)="cancel()">Cancel</button>
+      <button class="btn-primary" (click)="createPO()" [disabled]="!isValid() || saving">
+        <i class="fa fa-file-invoice" *ngIf="!saving"></i>
+        <i class="fa fa-spinner fa-spin" *ngIf="saving"></i>
+        {{ saving ? 'Creating PO...' : 'Create Purchase Order' }}
+      </button>
+    </div>
+  </div>
 </div>
