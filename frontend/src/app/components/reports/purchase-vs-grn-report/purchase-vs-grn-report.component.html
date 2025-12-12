@@ -21,6 +21,13 @@
   <div class="card">
     <div class="filters-row">
       <div class="form-group">
+        <label>Supplier</label>
+        <select class="form-control" [(ngModel)]="selectedSupplier">
+          <option value="">All Suppliers</option>
+          <option *ngFor="let s of suppliers" [value]="s.name">{{ s.name }}</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label>From Date</label>
         <input type="date" class="form-control" [(ngModel)]="fromDate" />
       </div>
@@ -28,16 +35,32 @@
         <label>To Date</label>
         <input type="date" class="form-control" [(ngModel)]="toDate" />
       </div>
-      <div class="form-group">
-        <label>Supplier</label>
-        <select class="form-control" [(ngModel)]="selectedSupplier">
-          <option value="">All Suppliers</option>
-          <option *ngFor="let s of suppliers" [value]="s.name">{{ s.name }}</option>
-        </select>
-      </div>
       <button class="btn btn-primary filter-btn" (click)="generateReport()" [disabled]="loading">
         <i class="fas fa-filter"></i> {{ loading ? 'Generating...' : 'Generate' }}
       </button>
+    </div>
+  </div>
+  <div class="card" *ngIf="reportData.length > 0">
+    <div class="summary-row">
+      <div class="summary-item">
+        <span class="label">Total PO Qty:</span>
+        <span class="value">{{ totalPOQty }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Total GRN Qty:</span>
+        <span class="value text-success">{{ totalGRNQty }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Pending Qty:</span>
+        <span class="value text-warning">{{ totalPending }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Fulfillment Rate:</span>
+        <span class="value" [class.text-success]="totalPOQty > 0 && (totalGRNQty / totalPOQty) >= 0.9"
+              [class.text-warning]="totalPOQty > 0 && (totalGRNQty / totalPOQty) < 0.9">
+          {{ totalPOQty > 0 ? ((totalGRNQty / totalPOQty) * 100 | number:'1.1-1') : 0 }}%
+        </span>
+      </div>
     </div>
   </div>
   <div class="card">
@@ -46,35 +69,56 @@
         <thead>
           <tr>
             <th>PO Number</th>
+            <th>PO Date</th>
             <th>Supplier</th>
-            <th>PO Qty</th>
-            <th>GRN Qty</th>
-            <th>Pending</th>
-            <th>Status</th>
+            <th class="text-right">PO Qty</th>
+            <th class="text-right">GRN Qty</th>
+            <th class="text-right">Pending</th>
+            <th class="text-center">GRNs</th>
+            <th class="text-center">Status</th>
+            <th class="text-center">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngIf="reportData.length === 0 && !loading">
-            <td colspan="6" class="empty-state">
-              <i class="fas fa-file-invoice"></i>
-              <p>Generate report to view data</p>
+            <td colspan="9" class="empty-state">
+              <i class="fas fa-exchange-alt"></i>
+              <p>Generate report to view purchase vs GRN comparison</p>
             </td>
           </tr>
           <tr *ngIf="loading">
-            <td colspan="6" class="empty-state">
+            <td colspan="9" class="empty-state">
               <i class="fas fa-spinner fa-spin"></i>
               <p>Loading...</p>
             </td>
           </tr>
           <tr *ngFor="let row of reportData">
-            <td>{{ row.poNumber }}</td>
+            <td class="link-text" (click)="drillDownToPO(row)">{{ row.poNumber }}</td>
+            <td>{{ row.poDate | date:'shortDate' }}</td>
             <td>{{ row.supplier }}</td>
-            <td>{{ row.poQty }}</td>
-            <td>{{ row.grnQty }}</td>
-            <td>{{ row.pending }}</td>
-            <td><span class="badge" [ngClass]="getStatusClass(row.status)">{{ row.status }}</span></td>
+            <td class="text-right">{{ row.poQty }}</td>
+            <td class="text-right text-success">{{ row.grnQty }}</td>
+            <td class="text-right" [class.text-warning]="row.pendingQty > 0">{{ row.pendingQty }}</td>
+            <td class="text-center">{{ row.grnCount }}</td>
+            <td class="text-center">
+              <span class="badge" [ngClass]="getStatusClass(row.status)">{{ row.status }}</span>
+            </td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-outline" (click)="drillDownToGRN(row)" title="View GRNs">
+                <i class="fas fa-eye"></i>
+              </button>
+            </td>
           </tr>
         </tbody>
+        <tfoot *ngIf="reportData.length > 0">
+          <tr class="total-row">
+            <td colspan="3" class="text-right"><strong>Totals:</strong></td>
+            <td class="text-right"><strong>{{ totalPOQty }}</strong></td>
+            <td class="text-right"><strong>{{ totalGRNQty }}</strong></td>
+            <td class="text-right"><strong>{{ totalPending }}</strong></td>
+            <td colspan="3"></td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   </div>

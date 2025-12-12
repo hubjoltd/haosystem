@@ -21,6 +21,20 @@
   <div class="card">
     <div class="filters-row">
       <div class="form-group">
+        <label>Item</label>
+        <select class="form-control" [(ngModel)]="selectedItem">
+          <option value="">All Items</option>
+          <option *ngFor="let item of items" [value]="item.id">{{ item.name }} ({{ item.code }})</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Warehouse</label>
+        <select class="form-control" [(ngModel)]="selectedWarehouse">
+          <option value="">All Warehouses</option>
+          <option *ngFor="let w of warehouses" [value]="w.id">{{ w.name }}</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label>From Date</label>
         <input type="date" class="form-control" [(ngModel)]="fromDate" />
       </div>
@@ -39,37 +53,41 @@
         <thead>
           <tr>
             <th>Date</th>
-            <th>Document</th>
+            <th>Document No</th>
             <th>Item</th>
             <th>Type</th>
-            <th>In</th>
-            <th>Out</th>
-            <th>Balance</th>
-            <th>Value</th>
+            <th>Warehouse</th>
+            <th class="text-right">In</th>
+            <th class="text-right">Out</th>
+            <th class="text-right">Balance</th>
+            <th class="text-right">Rate</th>
+            <th class="text-right">Value</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngIf="reportData.length === 0 && !loading">
-            <td colspan="8" class="empty-state">
+            <td colspan="10" class="empty-state">
               <i class="fas fa-book-open"></i>
               <p>Generate report to view data</p>
             </td>
           </tr>
           <tr *ngIf="loading">
-            <td colspan="8" class="empty-state">
+            <td colspan="10" class="empty-state">
               <i class="fas fa-spinner fa-spin"></i>
               <p>Loading...</p>
             </td>
           </tr>
-          <tr *ngFor="let row of reportData">
-            <td>{{ row.date }}</td>
-            <td>{{ row.document }}</td>
-            <td>{{ row.item }}</td>
-            <td>{{ row.type }}</td>
-            <td>{{ row.stockIn }}</td>
-            <td>{{ row.stockOut }}</td>
-            <td>{{ row.balance }}</td>
-            <td>{{ row.value | number:'1.2-2' }}</td>
+          <tr *ngFor="let row of reportData" class="clickable-row" (click)="drillDown(row)">
+            <td>{{ row.date | date:'shortDate' }}</td>
+            <td class="link-text">{{ row.documentNo }}</td>
+            <td>{{ row.itemCode }} - {{ row.itemName }}</td>
+            <td>{{ row.transactionType }}</td>
+            <td>{{ row.warehouse }}</td>
+            <td class="text-right">{{ row.quantityIn }}</td>
+            <td class="text-right">{{ row.quantityOut }}</td>
+            <td class="text-right">{{ row.balance }}</td>
+            <td class="text-right">{{ row.rate | number:'1.2-2' }}</td>
+            <td class="text-right">{{ row.value | number:'1.2-2' }}</td>
           </tr>
         </tbody>
       </table>

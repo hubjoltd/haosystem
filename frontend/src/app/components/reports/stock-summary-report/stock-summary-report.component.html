@@ -21,22 +21,57 @@
   <div class="card">
     <div class="filters-row">
       <div class="form-group">
-        <label>Warehouse</label>
-        <select class="form-control" [(ngModel)]="selectedWarehouse">
-          <option value="">All Warehouses</option>
-          <option *ngFor="let w of warehouses" [value]="w.code">{{ w.name }}</option>
-        </select>
-      </div>
-      <div class="form-group">
         <label>Group</label>
         <select class="form-control" [(ngModel)]="selectedGroup">
           <option value="">All Groups</option>
           <option *ngFor="let g of groups" [value]="g.name">{{ g.name }}</option>
         </select>
       </div>
+      <div class="form-group">
+        <label>Warehouse</label>
+        <select class="form-control" [(ngModel)]="selectedWarehouse">
+          <option value="">All Warehouses</option>
+          <option *ngFor="let w of warehouses" [value]="w.id">{{ w.name }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Supplier</label>
+        <select class="form-control" [(ngModel)]="selectedSupplier">
+          <option value="">All Suppliers</option>
+          <option *ngFor="let s of suppliers" [value]="s.name">{{ s.name }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>From Date</label>
+        <input type="date" class="form-control" [(ngModel)]="fromDate" />
+      </div>
+      <div class="form-group">
+        <label>To Date</label>
+        <input type="date" class="form-control" [(ngModel)]="toDate" />
+      </div>
       <button class="btn btn-primary filter-btn" (click)="generateReport()" [disabled]="loading">
         <i class="fas fa-filter"></i> {{ loading ? 'Generating...' : 'Generate' }}
       </button>
+    </div>
+  </div>
+  <div class="card" *ngIf="reportData.length > 0">
+    <div class="summary-row">
+      <div class="summary-item">
+        <span class="label">Total Opening:</span>
+        <span class="value">{{ totalOpening }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Total In:</span>
+        <span class="value text-success">{{ totalIn }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Total Out:</span>
+        <span class="value text-danger">{{ totalOut }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Total Closing:</span>
+        <span class="value">{{ totalClosing }}</span>
+      </div>
     </div>
   </div>
   <div class="card">
@@ -47,22 +82,25 @@
             <th>Item Code</th>
             <th>Item Name</th>
             <th>Group</th>
+            <th>Supplier</th>
             <th>Unit</th>
-            <th>Opening</th>
-            <th>In</th>
-            <th>Out</th>
-            <th>Closing</th>
+            <th class="text-right">Opening</th>
+            <th class="text-right">In</th>
+            <th class="text-right">Out</th>
+            <th class="text-right">Closing</th>
+            <th class="text-right">Unit Cost</th>
+            <th class="text-right">Value</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngIf="reportData.length === 0 && !loading">
-            <td colspan="8" class="empty-state">
+            <td colspan="11" class="empty-state">
               <i class="fas fa-chart-bar"></i>
               <p>Generate report to view data</p>
             </td>
           </tr>
           <tr *ngIf="loading">
-            <td colspan="8" class="empty-state">
+            <td colspan="11" class="empty-state">
               <i class="fas fa-spinner fa-spin"></i>
               <p>Loading...</p>
             </td>
@@ -71,11 +109,14 @@
             <td>{{ row.code }}</td>
             <td>{{ row.name }}</td>
             <td>{{ row.group }}</td>
+            <td>{{ row.supplier }}</td>
             <td>{{ row.unit }}</td>
-            <td>{{ row.opening }}</td>
-            <td>{{ row.stockIn }}</td>
-            <td>{{ row.stockOut }}</td>
-            <td>{{ row.closing }}</td>
+            <td class="text-right">{{ row.opening }}</td>
+            <td class="text-right text-success">{{ row.stockIn }}</td>
+            <td class="text-right text-danger">{{ row.stockOut }}</td>
+            <td class="text-right">{{ row.closing }}</td>
+            <td class="text-right">{{ row.unitCost | number:'1.2-2' }}</td>
+            <td class="text-right">{{ row.value | number:'1.2-2' }}</td>
           </tr>
         </tbody>
       </table>

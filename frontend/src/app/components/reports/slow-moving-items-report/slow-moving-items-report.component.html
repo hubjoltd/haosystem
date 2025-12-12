@@ -27,6 +27,21 @@
           <option [value]="60">60 Days</option>
           <option [value]="90">90 Days</option>
           <option [value]="180">180 Days</option>
+          <option [value]="365">1 Year</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Group</label>
+        <select class="form-control" [(ngModel)]="selectedGroup">
+          <option value="">All Groups</option>
+          <option *ngFor="let g of groups" [value]="g.name">{{ g.name }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Warehouse</label>
+        <select class="form-control" [(ngModel)]="selectedWarehouse">
+          <option value="">All Warehouses</option>
+          <option *ngFor="let w of warehouses" [value]="w.name">{{ w.name }}</option>
         </select>
       </div>
       <button class="btn btn-primary filter-btn" (click)="generateReport()" [disabled]="loading">
@@ -38,11 +53,11 @@
     <div class="summary-row">
       <div class="summary-item">
         <span class="label">Slow-Moving Items:</span>
-        <span class="value">{{ reportData.length }}</span>
+        <span class="value text-warning">{{ totalItems }}</span>
       </div>
-      <div class="summary-item">
+      <div class="summary-item highlight">
         <span class="label">Total Value at Risk:</span>
-        <span class="value">{{ totalValue | number:'1.2-2' }}</span>
+        <span class="value text-danger">{{ totalValue | number:'1.2-2' }}</span>
       </div>
     </div>
   </div>
@@ -53,21 +68,24 @@
           <tr>
             <th>Item Code</th>
             <th>Item Name</th>
+            <th>Group</th>
+            <th>Warehouse</th>
             <th>Last Movement</th>
-            <th>Days Idle</th>
-            <th>Current Stock</th>
-            <th>Value</th>
+            <th class="text-right">Days Idle</th>
+            <th class="text-right">Current Stock</th>
+            <th class="text-right">Unit Cost</th>
+            <th class="text-right">Value</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngIf="reportData.length === 0 && !loading">
-            <td colspan="6" class="empty-state">
+            <td colspan="9" class="empty-state">
               <i class="fas fa-hourglass-half"></i>
-              <p>Generate report to view data</p>
+              <p>Generate report to view slow-moving items</p>
             </td>
           </tr>
           <tr *ngIf="loading">
-            <td colspan="6" class="empty-state">
+            <td colspan="9" class="empty-state">
               <i class="fas fa-spinner fa-spin"></i>
               <p>Loading...</p>
             </td>
@@ -75,12 +93,21 @@
           <tr *ngFor="let row of reportData">
             <td>{{ row.code }}</td>
             <td>{{ row.name }}</td>
+            <td>{{ row.group }}</td>
+            <td>{{ row.warehouse }}</td>
             <td>{{ row.lastMovement }}</td>
-            <td>{{ row.daysIdle }}</td>
-            <td>{{ row.currentStock | number:'1.0-2' }}</td>
-            <td>{{ row.value | number:'1.2-2' }}</td>
+            <td class="text-right" [class.text-danger]="row.daysIdle !== 'N/A' && row.daysIdle > 90">{{ row.daysIdle }}</td>
+            <td class="text-right">{{ row.currentStock | number:'1.0-2' }}</td>
+            <td class="text-right">{{ row.unitCost | number:'1.2-2' }}</td>
+            <td class="text-right">{{ row.value | number:'1.2-2' }}</td>
           </tr>
         </tbody>
+        <tfoot *ngIf="reportData.length > 0">
+          <tr class="total-row">
+            <td colspan="8" class="text-right"><strong>Total Value at Risk:</strong></td>
+            <td class="text-right"><strong>{{ totalValue | number:'1.2-2' }}</strong></td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   </div>

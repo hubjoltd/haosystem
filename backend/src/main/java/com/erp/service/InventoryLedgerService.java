@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class InventoryLedgerService {
@@ -34,6 +35,32 @@ public class InventoryLedgerService {
     }
     
     public List<InventoryLedger> findWithFilters(Long itemId, Long warehouseId, LocalDateTime startDate, LocalDateTime endDate) {
-        return inventoryLedgerRepository.findWithFilters(itemId, warehouseId, startDate, endDate);
+        List<InventoryLedger> result = inventoryLedgerRepository.findAllByOrderByTransactionDateDesc();
+        
+        if (itemId != null) {
+            result = result.stream()
+                .filter(l -> l.getItem() != null && itemId.equals(l.getItem().getId()))
+                .collect(Collectors.toList());
+        }
+        
+        if (warehouseId != null) {
+            result = result.stream()
+                .filter(l -> l.getWarehouse() != null && warehouseId.equals(l.getWarehouse().getId()))
+                .collect(Collectors.toList());
+        }
+        
+        if (startDate != null) {
+            result = result.stream()
+                .filter(l -> l.getTransactionDate() != null && !l.getTransactionDate().isBefore(startDate))
+                .collect(Collectors.toList());
+        }
+        
+        if (endDate != null) {
+            result = result.stream()
+                .filter(l -> l.getTransactionDate() != null && !l.getTransactionDate().isAfter(endDate))
+                .collect(Collectors.toList());
+        }
+        
+        return result;
     }
 }
