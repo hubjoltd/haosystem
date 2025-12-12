@@ -57,7 +57,7 @@ expertMode = true
 
 [deployment]
 deploymentTarget = "vm"
-run = ["java", "-jar", "backend/target/erp-backend-1.0.0.jar", "--server.port=5000"]
+run = ["java", "-jar", "backend/target/erp-backend-1.0.0.jar"]
 build = ["npm", "run", "build"]
 
 [userenv]
