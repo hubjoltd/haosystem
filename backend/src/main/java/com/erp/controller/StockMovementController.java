@@ -609,14 +609,26 @@ public class StockMovementController {
             }
             adjustment.setReason(reason);
             
-            adjustment.setStatus("Completed");
+            adjustment.setStatus("Pending");
             
-            StockAdjustment saved = stockAdjustmentService.save(adjustment);
+            Item item = adjustment.getItem();
+            int currentStock = item.getCurrentStock() != null ? item.getCurrentStock() : 0;
+            adjustment.setQuantityBefore(currentStock);
+            
+            int estimatedAfter;
+            if ("INCREASE".equals(adjustmentType)) {
+                estimatedAfter = currentStock + quantityAdjusted;
+            } else {
+                estimatedAfter = currentStock - quantityAdjusted;
+            }
+            adjustment.setQuantityAfter(estimatedAfter);
+            
+            StockAdjustment saved = stockAdjustmentService.saveWithoutStockUpdate(adjustment);
             return ResponseEntity.ok(Map.of(
                 "id", saved.getId(), 
                 "adjustmentNumber", saved.getAdjustmentNumber(),
-                "quantityBefore", saved.getQuantityBefore(),
-                "quantityAfter", saved.getQuantityAfter()
+                "quantityBefore", currentStock,
+                "quantityAfter", estimatedAfter
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -627,5 +639,47 @@ public class StockMovementController {
     public ResponseEntity<Void> deleteAdjustment(@PathVariable Long id) {
         stockAdjustmentService.delete(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/adjustments/{id}/approve")
+    public ResponseEntity<?> approveAdjustment(@PathVariable Long id) {
+        try {
+            StockAdjustment adjustment = stockAdjustmentService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Adjustment not found"));
+            
+            if (!"Pending".equals(adjustment.getStatus())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Only pending adjustments can be approved"));
+            }
+            
+            adjustment.setStatus("Approved");
+            StockAdjustment saved = stockAdjustmentService.save(adjustment);
+            
+            return ResponseEntity.ok(Map.of(
+                "id", saved.getId(),
+                "status", saved.getStatus(),
+                "quantityAfter", saved.getQuantityAfter()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/adjustments/{id}/reject")
+    public ResponseEntity<?> rejectAdjustment(@PathVariable Long id) {
+        try {
+            StockAdjustment adjustment = stockAdjustmentService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Adjustment not found"));
+            
+            if (!"Pending".equals(adjustment.getStatus())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Only pending adjustments can be rejected"));
+            }
+            
+            adjustment.setStatus("Rejected");
+            stockAdjustmentService.saveWithoutStockUpdate(adjustment);
+            
+            return ResponseEntity.ok(Map.of("id", adjustment.getId(), "status", "Rejected"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

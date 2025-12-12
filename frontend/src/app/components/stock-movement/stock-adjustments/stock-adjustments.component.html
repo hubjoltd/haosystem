@@ -15,6 +15,37 @@
     </button>
   </div>
 
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon blue"><i class="fas fa-sliders-h"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ adjustments.length }}</span>
+        <span class="stat-label">Total Adjustments</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green"><i class="fas fa-arrow-up"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getIncreaseCount() }}</span>
+        <span class="stat-label">Increases</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon red"><i class="fas fa-arrow-down"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getDecreaseCount() }}</span>
+        <span class="stat-label">Decreases</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getPendingCount() }}</span>
+        <span class="stat-label">Pending Approval</span>
+      </div>
+    </div>
+  </div>
+
   <div class="card">
     <div class="table-container">
       <table class="table">
@@ -23,22 +54,141 @@
             <th>Adjustment No.</th>
             <th>Date</th>
             <th>Item</th>
-            <th>Adjustment Type</th>
-            <th>Quantity</th>
+            <th>Type</th>
+            <th>Before</th>
+            <th>Adjusted</th>
+            <th>After</th>
             <th>Reason</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngIf="adjustments.length === 0">
-            <td colspan="8" class="empty-state">
+          <tr *ngIf="loading">
+            <td colspan="10" class="text-center">Loading...</td>
+          </tr>
+          <tr *ngIf="!loading && adjustments.length === 0">
+            <td colspan="10" class="empty-state">
               <i class="fas fa-inbox"></i>
               <p>No adjustments found</p>
             </td>
           </tr>
+          <tr *ngFor="let adj of adjustments">
+            <td><strong>{{ adj.adjustmentNumber }}</strong></td>
+            <td>{{ adj.adjustmentDate }}</td>
+            <td>{{ adj.itemName }}</td>
+            <td>
+              <span class="badge" [ngClass]="getTypeClass(adj.adjustmentType)">{{ adj.adjustmentType }}</span>
+            </td>
+            <td>{{ adj.quantityBefore }}</td>
+            <td>{{ adj.quantityAdjusted }}</td>
+            <td>{{ adj.quantityAfter }}</td>
+            <td>{{ adj.reason }}</td>
+            <td>
+              <span class="badge" [ngClass]="getStatusClass(adj.status)">{{ adj.status }}</span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary" (click)="openModal(adj)" title="View"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm btn-success" (click)="approveAdjustment(adj.id!)" *ngIf="adj.status === 'Pending'" title="Approve"><i class="fas fa-check"></i></button>
+                <button class="btn btn-sm btn-warning" (click)="rejectAdjustment(adj.id!)" *ngIf="adj.status === 'Pending'" title="Reject"><i class="fas fa-times"></i></button>
+                <button class="btn btn-sm btn-danger" (click)="deleteAdjustment(adj.id!)" *ngIf="adj.status === 'Pending'" title="Delete"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editMode ? 'View Adjustment' : 'New Stock Adjustment' }}</h2>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Adjustment Number</label>
+          <input type="text" [(ngModel)]="selectedAdjustment.adjustmentNumber" readonly class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" [(ngModel)]="selectedAdjustment.adjustmentDate" class="form-control" [disabled]="editMode">
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Item *</label>
+          <select [(ngModel)]="selectedAdjustment.itemId" (change)="onItemSelect()" class="form-control" [disabled]="editMode">
+            <option [ngValue]="undefined">Select Item</option>
+            <option *ngFor="let item of items" [ngValue]="item.id">{{ item.code }} - {{ item.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Warehouse *</label>
+          <select [(ngModel)]="selectedAdjustment.warehouseId" class="form-control" [disabled]="editMode">
+            <option [ngValue]="undefined">Select Warehouse</option>
+            <option *ngFor="let wh of warehouses" [ngValue]="wh.id">{{ wh.name }}</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Adjustment Type *</label>
+          <select [(ngModel)]="selectedAdjustment.adjustmentType" (change)="calculateQuantityAfter()" class="form-control" [disabled]="editMode">
+            <option *ngFor="let type of adjustmentTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Reason *</label>
+          <select [(ngModel)]="selectedAdjustment.reason" class="form-control" [disabled]="editMode">
+            <option *ngFor="let reason of reasons" [value]="reason">{{ reason }}</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Current Stock</label>
+          <input type="number" [(ngModel)]="selectedAdjustment.quantityBefore" readonly class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Quantity to Adjust *</label>
+          <input type="number" [(ngModel)]="selectedAdjustment.quantityAdjusted" (ngModelChange)="calculateQuantityAfter()" class="form-control" min="1" [disabled]="editMode">
+        </div>
+        <div class="form-group">
+          <label>New Stock</label>
+          <input type="number" [(ngModel)]="selectedAdjustment.quantityAfter" readonly class="form-control">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Remarks</label>
+        <textarea [(ngModel)]="selectedAdjustment.remarks" class="form-control" rows="2" [disabled]="editMode"></textarea>
+      </div>
+
+      <div class="info-box" *ngIf="selectedAdjustment.itemId && !editMode">
+        <i class="fas fa-info-circle"></i>
+        <span *ngIf="selectedAdjustment.adjustmentType === 'INCREASE'">
+          Stock will increase from {{ selectedAdjustment.quantityBefore }} to {{ selectedAdjustment.quantityAfter }}
+        </span>
+        <span *ngIf="selectedAdjustment.adjustmentType === 'DECREASE'">
+          Stock will decrease from {{ selectedAdjustment.quantityBefore }} to {{ selectedAdjustment.quantityAfter }}
+        </span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">{{ editMode ? 'Close' : 'Cancel' }}</button>
+      <button class="btn btn-primary" (click)="saveAdjustment()" *ngIf="!editMode" [disabled]="saving">
+        {{ saving ? 'Saving...' : 'Save Adjustment' }}
+      </button>
     </div>
   </div>
 </div>

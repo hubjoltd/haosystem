@@ -174,4 +174,12 @@ export class StockMovementService {
   deleteAdjustment(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/adjustments/${id}`);
   }
+
+  approveAdjustment(id: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/adjustments/${id}/approve`, {});
+  }
+
+  rejectAdjustment(id: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/adjustments/${id}/reject`, {});
+  }
 }

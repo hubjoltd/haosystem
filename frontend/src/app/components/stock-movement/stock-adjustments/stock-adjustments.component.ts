@@ -237,6 +237,34 @@ export class StockAdjustmentsComponent implements OnInit {
     }
   }
 
+  approveAdjustment(id: number): void {
+    if (confirm('Are you sure you want to approve this adjustment? This will update the stock levels.')) {
+      this.stockMovementService.approveAdjustment(id).subscribe({
+        next: () => {
+          this.loadAdjustments();
+        },
+        error: (err: any) => {
+          console.error('Error approving adjustment', err);
+          alert(err.error?.error || 'Error approving adjustment');
+        }
+      });
+    }
+  }
+
+  rejectAdjustment(id: number): void {
+    if (confirm('Are you sure you want to reject this adjustment?')) {
+      this.stockMovementService.rejectAdjustment(id).subscribe({
+        next: () => {
+          this.loadAdjustments();
+        },
+        error: (err: any) => {
+          console.error('Error rejecting adjustment', err);
+          alert(err.error?.error || 'Error rejecting adjustment');
+        }
+      });
+    }
+  }
+
   getIncreaseCount(): number {
     return this.adjustments.filter(a => a.adjustmentType === 'INCREASE').length;
   }

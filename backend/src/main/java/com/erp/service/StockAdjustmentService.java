@@ -33,8 +33,14 @@ public class StockAdjustmentService {
     
     @Transactional
     public StockAdjustment save(StockAdjustment adjustment) {
-        adjustment.setCreatedAt(LocalDate.now());
-        adjustment.setAdjustmentNumber(generateAdjustmentNumber());
+        boolean isNew = adjustment.getId() == null;
+        
+        if (isNew) {
+            adjustment.setCreatedAt(LocalDate.now());
+            if (adjustment.getAdjustmentNumber() == null || adjustment.getAdjustmentNumber().isEmpty()) {
+                adjustment.setAdjustmentNumber(generateAdjustmentNumber());
+            }
+        }
         
         Item item = adjustment.getItem();
         int currentStock = item.getCurrentStock() != null ? item.getCurrentStock() : 0;
@@ -88,5 +94,17 @@ public class StockAdjustmentService {
     
     public void delete(Long id) {
         stockAdjustmentRepository.deleteById(id);
+    }
+    
+    @Transactional
+    public StockAdjustment saveWithoutStockUpdate(StockAdjustment adjustment) {
+        if (adjustment.getAdjustmentNumber() == null || adjustment.getAdjustmentNumber().isEmpty()) {
+            adjustment.setAdjustmentNumber(generateAdjustmentNumber());
+        }
+        if (adjustment.getCreatedAt() == null) {
+            adjustment.setCreatedAt(LocalDate.now());
+        }
+        
+        return stockAdjustmentRepository.save(adjustment);
     }
 }

@@ -15,6 +15,37 @@
     </button>
   </div>
 
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon blue"><i class="fas fa-file-export"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ issueList.length }}</span>
+        <span class="stat-label">Total Issues</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getCompletedCount() }}</span>
+        <span class="stat-label">Completed</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getPendingCount() }}</span>
+        <span class="stat-label">Pending</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon purple"><i class="fas fa-dollar-sign"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getTotalValue() | number:'1.2-2' }}</span>
+        <span class="stat-label">Total Value</span>
+      </div>
+    </div>
+  </div>
+
   <div class="card">
     <div class="table-container">
       <table class="table">
@@ -22,35 +53,152 @@
           <tr>
             <th>Issue No.</th>
             <th>Date</th>
-            <th>Department</th>
-            <th>Requested By</th>
+            <th>Warehouse</th>
+            <th>Type</th>
             <th>Items</th>
             <th>Total Qty</th>
+            <th>Total Value</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
+          <tr *ngIf="loading">
+            <td colspan="9" class="text-center">Loading...</td>
+          </tr>
+          <tr *ngIf="!loading && issueList.length === 0">
+            <td colspan="9" class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>No issues found</p>
+            </td>
+          </tr>
           <tr *ngFor="let issue of issueList">
-            <td><strong>{{ issue.id }}</strong></td>
-            <td>{{ issue.date }}</td>
-            <td>{{ issue.department }}</td>
-            <td>{{ issue.requestedBy }}</td>
-            <td>{{ issue.items }}</td>
+            <td><strong>{{ issue.issueNumber }}</strong></td>
+            <td>{{ issue.issueDate }}</td>
+            <td>{{ issue.warehouse }}</td>
+            <td>{{ issue.issueType }}</td>
+            <td>{{ issue.items.length }} items</td>
             <td>{{ issue.totalQty }}</td>
+            <td>{{ issue.totalValue | number:'1.2-2' }}</td>
             <td>
               <span class="badge" [ngClass]="getStatusClass(issue.status)">{{ issue.status }}</span>
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn btn-sm btn-secondary"><i class="fas fa-eye"></i></button>
-                <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-sm btn-primary"><i class="fas fa-print"></i></button>
+                <button class="btn btn-sm btn-secondary" (click)="openModal(issue)"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm btn-danger" (click)="deleteIssue(issue.id!)"><i class="fas fa-trash"></i></button>
               </div>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editMode ? 'View Issue' : 'New Goods Issue' }}</h2>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Issue Number</label>
+          <input type="text" [(ngModel)]="selectedIssue.issueNumber" readonly class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Issue Date *</label>
+          <input type="date" [(ngModel)]="selectedIssue.issueDate" class="form-control" [disabled]="editMode">
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Warehouse *</label>
+          <select [(ngModel)]="selectedIssue.warehouseId" class="form-control" [disabled]="editMode">
+            <option [ngValue]="undefined">Select Warehouse</option>
+            <option *ngFor="let wh of warehouses" [ngValue]="wh.id">{{ wh.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Issue Type</label>
+          <select [(ngModel)]="selectedIssue.issueType" class="form-control" [disabled]="editMode">
+            <option *ngFor="let type of issueTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Reference Number</label>
+          <input type="text" [(ngModel)]="selectedIssue.referenceNumber" class="form-control" [disabled]="editMode">
+        </div>
+        <div class="form-group">
+          <label>Remarks</label>
+          <input type="text" [(ngModel)]="selectedIssue.remarks" class="form-control" [disabled]="editMode">
+        </div>
+      </div>
+
+      <div class="items-section">
+        <div class="section-header">
+          <h3>Items</h3>
+          <button class="btn btn-sm btn-secondary" (click)="addItem()" *ngIf="!editMode">
+            <i class="fas fa-plus"></i> Add Item
+          </button>
+        </div>
+        
+        <table class="table items-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Quantity</th>
+              <th>Unit Price</th>
+              <th>Amount</th>
+              <th *ngIf="!editMode">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of selectedIssue.items; let i = index">
+              <td>
+                <select [(ngModel)]="item.itemId" (change)="onItemSelect(i)" class="form-control" [disabled]="editMode">
+                  <option [ngValue]="undefined">Select Item</option>
+                  <option *ngFor="let it of items" [ngValue]="it.id">{{ it.code }} - {{ it.name }}</option>
+                </select>
+              </td>
+              <td>
+                <input type="number" [(ngModel)]="item.quantity" (ngModelChange)="calculateItemAmount(item)" class="form-control" min="1" [disabled]="editMode">
+              </td>
+              <td>
+                <input type="number" [(ngModel)]="item.unitPrice" (ngModelChange)="calculateItemAmount(item)" class="form-control" step="0.01" [disabled]="editMode">
+              </td>
+              <td>{{ item.amount | number:'1.2-2' }}</td>
+              <td *ngIf="!editMode">
+                <button class="btn btn-sm btn-danger" (click)="removeItem(i)" [disabled]="selectedIssue.items.length <= 1">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2"><strong>Totals:</strong></td>
+              <td><strong>{{ selectedIssue.totalQty }}</strong></td>
+              <td><strong>{{ selectedIssue.totalValue | number:'1.2-2' }}</strong></td>
+              <td *ngIf="!editMode"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">{{ editMode ? 'Close' : 'Cancel' }}</button>
+      <button class="btn btn-primary" (click)="saveIssue()" *ngIf="!editMode" [disabled]="saving">
+        {{ saving ? 'Saving...' : 'Save Issue' }}
+      </button>
     </div>
   </div>
 </div>
