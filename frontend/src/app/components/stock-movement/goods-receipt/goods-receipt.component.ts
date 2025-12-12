@@ -1,22 +1,30 @@
 import { Component, OnInit } from '@angular/core';
 import { SettingsService } from '../../../services/settings.service';
+import { StockMovementService, GoodsReceipt, GRNLine } from '../../../services/stock-movement.service';
+import { ItemService } from '../../../services/item.service';
+import { WarehouseService } from '../../../services/warehouse.service';
+import { SupplierService } from '../../../services/supplier.service';
 
 interface GRNItem {
+  itemId?: number;
   itemName: string;
+  itemCode?: string;
   description: string;
-  orderedQty: number;
-  receivedQty: number;
-  uom: string;
-  rate: number;
+  quantity: number;
+  unitPrice: number;
   amount: number;
+  binId?: number;
 }
 
 interface GRN {
-  id?: string;
+  id?: number;
   grnNumber: string;
-  date: string;
-  supplier: string;
-  poRef: string;
+  receiptDate: string;
+  supplierId?: number;
+  supplier?: string;
+  warehouseId?: number;
+  warehouse?: string;
+  referenceNumber?: string;
   items: GRNItem[];
   totalQty: number;
   totalValue: number;
@@ -36,48 +44,112 @@ export class GoodsReceiptComponent implements OnInit {
   editMode: boolean = false;
   selectedGRN: GRN = this.getEmptyGRN();
   loading: boolean = false;
+  saving: boolean = false;
+  errorMessage: string = '';
 
-  constructor(private settingsService: SettingsService) {}
+  items: any[] = [];
+  warehouses: any[] = [];
+  suppliers: any[] = [];
+
+  constructor(
+    private settingsService: SettingsService,
+    private stockMovementService: StockMovementService,
+    private itemService: ItemService,
+    private warehouseService: WarehouseService,
+    private supplierService: SupplierService
+  ) {}
 
   ngOnInit(): void {
     this.loadGRNs();
+    this.loadMasterData();
+  }
+
+  loadMasterData(): void {
+    this.itemService.getAll().subscribe({
+      next: (data) => this.items = data,
+      error: (err) => console.error('Error loading items', err)
+    });
+    this.warehouseService.getAll().subscribe({
+      next: (data) => this.warehouses = data,
+      error: (err) => console.error('Error loading warehouses', err)
+    });
+    this.supplierService.getAll().subscribe({
+      next: (data) => this.suppliers = data,
+      error: (err) => console.error('Error loading suppliers', err)
+    });
   }
 
   loadGRNs(): void {
     this.loading = true;
-    this.grnList = [];
-    this.loading = false;
+    this.stockMovementService.getAllGRN().subscribe({
+      next: (data) => {
+        this.grnList = data.map(grn => ({
+          id: grn.id,
+          grnNumber: grn.grnNumber || '',
+          receiptDate: grn.receiptDate || '',
+          supplierId: grn.supplierId,
+          supplier: grn.supplier || '',
+          warehouseId: grn.warehouseId,
+          warehouse: grn.warehouse || '',
+          referenceNumber: grn.referenceNumber || '',
+          totalQty: grn.lines?.reduce((sum, line) => sum + (line.quantity || 0), 0) || 0,
+          totalValue: grn.totalValue || 0,
+          status: grn.status || 'Completed',
+          remarks: grn.remarks || '',
+          items: grn.lines?.map(line => ({
+            itemId: line.itemId,
+            itemName: line.itemName || '',
+            itemCode: line.itemCode || '',
+            description: '',
+            quantity: line.quantity || 0,
+            unitPrice: line.unitPrice || 0,
+            amount: line.lineTotal || 0
+          })) || []
+        }));
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading GRNs', err);
+        this.grnList = [];
+        this.loading = false;
+      }
+    });
   }
 
   getEmptyGRN(): GRN {
     return {
       grnNumber: '',
-      date: new Date().toISOString().split('T')[0],
+      receiptDate: new Date().toISOString().split('T')[0],
+      supplierId: undefined,
       supplier: '',
-      poRef: '',
+      warehouseId: undefined,
+      warehouse: '',
+      referenceNumber: '',
       items: [],
       totalQty: 0,
       totalValue: 0,
-      status: 'Draft'
+      status: 'Draft',
+      remarks: ''
     };
   }
 
   getEmptyItem(): GRNItem {
     return {
+      itemId: undefined,
       itemName: '',
+      itemCode: '',
       description: '',
-      orderedQty: 0,
-      receivedQty: 0,
-      uom: '',
-      rate: 0,
+      quantity: 0,
+      unitPrice: 0,
       amount: 0
     };
   }
 
   openModal(grn?: GRN) {
+    this.errorMessage = '';
     if (grn) {
       this.editMode = true;
-      this.selectedGRN = { ...grn, items: [...grn.items] };
+      this.selectedGRN = JSON.parse(JSON.stringify(grn));
     } else {
       this.editMode = false;
       this.selectedGRN = this.getEmptyGRN();
@@ -99,6 +171,7 @@ export class GoodsReceiptComponent implements OnInit {
   closeModal() {
     this.showModal = false;
     this.selectedGRN = this.getEmptyGRN();
+    this.errorMessage = '';
   }
 
   addItem(): void {
@@ -108,23 +181,95 @@ export class GoodsReceiptComponent implements OnInit {
   removeItem(index: number): void {
     if (this.selectedGRN.items.length > 1) {
       this.selectedGRN.items.splice(index, 1);
+      this.calculateTotals();
+    }
+  }
+
+  onItemSelect(index: number): void {
+    const selectedItem = this.items.find(i => i.id === this.selectedGRN.items[index].itemId);
+    if (selectedItem) {
+      this.selectedGRN.items[index].itemName = selectedItem.name;
+      this.selectedGRN.items[index].itemCode = selectedItem.code;
+      this.selectedGRN.items[index].description = selectedItem.description || '';
+      this.selectedGRN.items[index].unitPrice = selectedItem.unitCost || 0;
+      this.calculateItemAmount(this.selectedGRN.items[index]);
     }
   }
 
   calculateItemAmount(item: GRNItem): void {
-    item.amount = item.receivedQty * item.rate;
+    item.amount = item.quantity * item.unitPrice;
     this.calculateTotals();
   }
 
   calculateTotals(): void {
-    this.selectedGRN.totalQty = this.selectedGRN.items.reduce((sum, item) => sum + item.receivedQty, 0);
-    this.selectedGRN.totalValue = this.selectedGRN.items.reduce((sum, item) => sum + item.amount, 0);
+    this.selectedGRN.totalQty = this.selectedGRN.items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    this.selectedGRN.totalValue = this.selectedGRN.items.reduce((sum, item) => sum + (item.amount || 0), 0);
   }
 
   saveGRN(): void {
     this.calculateTotals();
-    console.log('Saving GRN:', this.selectedGRN);
-    this.closeModal();
+    
+    const validItems = this.selectedGRN.items.filter(item => item.itemId && item.quantity > 0);
+    if (validItems.length === 0) {
+      this.errorMessage = 'Please add at least one item with quantity.';
+      return;
+    }
+
+    if (!this.selectedGRN.warehouseId) {
+      this.errorMessage = 'Please select a warehouse.';
+      return;
+    }
+
+    this.saving = true;
+    this.errorMessage = '';
+
+    const payload = {
+      receiptDate: this.selectedGRN.receiptDate,
+      supplierId: this.selectedGRN.supplierId,
+      warehouseId: this.selectedGRN.warehouseId,
+      referenceNumber: this.selectedGRN.referenceNumber,
+      remarks: this.selectedGRN.remarks,
+      lines: validItems.map(item => ({
+        itemId: item.itemId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        binId: item.binId
+      }))
+    };
+
+    this.stockMovementService.createGRN(payload).subscribe({
+      next: () => {
+        this.saving = false;
+        this.loadGRNs();
+        this.closeModal();
+      },
+      error: (err) => {
+        this.saving = false;
+        this.errorMessage = err.error?.error || 'Error saving GRN';
+        console.error('Error saving GRN', err);
+      }
+    });
+  }
+
+  deleteGRN(id: number): void {
+    if (confirm('Are you sure you want to delete this GRN?')) {
+      this.stockMovementService.deleteGRN(id).subscribe({
+        next: () => this.loadGRNs(),
+        error: (err) => console.error('Error deleting GRN', err)
+      });
+    }
+  }
+
+  getTotalValue(): number {
+    return this.grnList.reduce((sum, grn) => sum + (grn.totalValue || 0), 0);
+  }
+
+  getCompletedCount(): number {
+    return this.grnList.filter(grn => grn.status === 'Completed').length;
+  }
+
+  getPendingCount(): number {
+    return this.grnList.filter(grn => grn.status === 'Pending' || grn.status === 'Draft').length;
   }
 
   getStatusClass(status: string): string {

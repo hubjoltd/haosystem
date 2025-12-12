@@ -26,21 +26,21 @@
     <div class="stat-card">
       <div class="icon success"><i class="fas fa-check-circle"></i></div>
       <div class="info">
-        <h3>2</h3>
+        <h3>{{ getCompletedCount() }}</h3>
         <p>Completed</p>
       </div>
     </div>
     <div class="stat-card">
       <div class="icon warning"><i class="fas fa-clock"></i></div>
       <div class="info">
-        <h3>1</h3>
+        <h3>{{ getPendingCount() }}</h3>
         <p>Pending</p>
       </div>
     </div>
     <div class="stat-card">
       <div class="icon info"><i class="fas fa-dollar-sign"></i></div>
       <div class="info">
-        <h3>$21,000</h3>
+        <h3>${{ getTotalValue() | number:'1.2-2' }}</h3>
         <p>Total Value</p>
       </div>
     </div>
@@ -48,14 +48,15 @@
 
   <div class="card">
     <div class="table-container">
-      <table class="table">
+      <div *ngIf="loading" class="loading-spinner">Loading...</div>
+      <table class="table" *ngIf="!loading">
         <thead>
           <tr>
             <th>GRN No.</th>
             <th>Date</th>
             <th>Supplier</th>
-            <th>PO Reference</th>
-            <th>Items</th>
+            <th>Warehouse</th>
+            <th>Reference</th>
             <th>Total Qty</th>
             <th>Total Value</th>
             <th>Status</th>
@@ -63,27 +64,141 @@
           </tr>
         </thead>
         <tbody>
+          <tr *ngIf="grnList.length === 0">
+            <td colspan="9" class="text-center">No GRNs found. Click "New GRN" to create one.</td>
+          </tr>
           <tr *ngFor="let grn of grnList">
-            <td><strong>{{ grn.id }}</strong></td>
-            <td>{{ grn.date }}</td>
-            <td>{{ grn.supplier }}</td>
-            <td>{{ grn.poRef }}</td>
-            <td>{{ grn.items }}</td>
+            <td><strong>{{ grn.grnNumber }}</strong></td>
+            <td>{{ grn.receiptDate }}</td>
+            <td>{{ grn.supplier || '-' }}</td>
+            <td>{{ grn.warehouse || '-' }}</td>
+            <td>{{ grn.referenceNumber || '-' }}</td>
             <td>{{ grn.totalQty }}</td>
-            <td>${{ grn.totalValue.toLocaleString() }}</td>
+            <td>${{ grn.totalValue | number:'1.2-2' }}</td>
             <td>
               <span class="badge" [ngClass]="getStatusClass(grn.status)">{{ grn.status }}</span>
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn btn-sm btn-secondary"><i class="fas fa-eye"></i></button>
-                <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-sm btn-primary"><i class="fas fa-print"></i></button>
+                <button class="btn btn-sm btn-secondary" (click)="openModal(grn)" title="View"><i class="fas fa-eye"></i></button>
+                <button class="btn btn-sm btn-danger" (click)="deleteGRN(grn.id!)" title="Delete"><i class="fas fa-trash"></i></button>
               </div>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editMode ? 'View' : 'New' }} Goods Receipt Note</h2>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>GRN Number</label>
+          <input type="text" [(ngModel)]="selectedGRN.grnNumber" readonly class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Receipt Date *</label>
+          <input type="date" [(ngModel)]="selectedGRN.receiptDate" class="form-control" [disabled]="editMode">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Supplier</label>
+          <select [(ngModel)]="selectedGRN.supplierId" class="form-control" [disabled]="editMode">
+            <option [ngValue]="undefined">-- Select Supplier --</option>
+            <option *ngFor="let supplier of suppliers" [ngValue]="supplier.id">{{ supplier.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Warehouse *</label>
+          <select [(ngModel)]="selectedGRN.warehouseId" class="form-control" [disabled]="editMode">
+            <option [ngValue]="undefined">-- Select Warehouse --</option>
+            <option *ngFor="let warehouse of warehouses" [ngValue]="warehouse.id">{{ warehouse.name }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Reference Number (PO/Invoice)</label>
+          <input type="text" [(ngModel)]="selectedGRN.referenceNumber" class="form-control" placeholder="e.g., PO-001" [disabled]="editMode">
+        </div>
+        <div class="form-group">
+          <label>Remarks</label>
+          <input type="text" [(ngModel)]="selectedGRN.remarks" class="form-control" [disabled]="editMode">
+        </div>
+      </div>
+
+      <div class="items-section">
+        <div class="items-header">
+          <h3>Line Items</h3>
+          <button class="btn btn-sm btn-secondary" (click)="addItem()" *ngIf="!editMode">
+            <i class="fas fa-plus"></i> Add Item
+          </button>
+        </div>
+
+        <table class="table items-table">
+          <thead>
+            <tr>
+              <th>Item *</th>
+              <th>Quantity *</th>
+              <th>Unit Cost *</th>
+              <th>Amount</th>
+              <th *ngIf="!editMode">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of selectedGRN.items; let i = index">
+              <td>
+                <select [(ngModel)]="item.itemId" (change)="onItemSelect(i)" class="form-control" [disabled]="editMode">
+                  <option [ngValue]="undefined">-- Select Item --</option>
+                  <option *ngFor="let inv of items" [ngValue]="inv.id">{{ inv.code }} - {{ inv.name }}</option>
+                </select>
+              </td>
+              <td>
+                <input type="number" [(ngModel)]="item.quantity" (ngModelChange)="calculateItemAmount(item)" class="form-control" min="1" [disabled]="editMode">
+              </td>
+              <td>
+                <input type="number" [(ngModel)]="item.unitPrice" (ngModelChange)="calculateItemAmount(item)" class="form-control" min="0" step="0.01" [disabled]="editMode">
+              </td>
+              <td>
+                <input type="text" [value]="item.amount | number:'1.2-2'" class="form-control" readonly>
+              </td>
+              <td *ngIf="!editMode">
+                <button class="btn btn-sm btn-danger" (click)="removeItem(i)" [disabled]="selectedGRN.items.length === 1">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="totals-row">
+              <td><strong>Totals</strong></td>
+              <td><strong>{{ selectedGRN.totalQty }}</strong></td>
+              <td></td>
+              <td><strong>${{ selectedGRN.totalValue | number:'1.2-2' }}</strong></td>
+              <td *ngIf="!editMode"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">{{ editMode ? 'Close' : 'Cancel' }}</button>
+      <button class="btn btn-primary" (click)="saveGRN()" *ngIf="!editMode" [disabled]="saving">
+        <span *ngIf="saving">Saving...</span>
+        <span *ngIf="!saving">Save GRN</span>
+      </button>
     </div>
   </div>
 </div>
