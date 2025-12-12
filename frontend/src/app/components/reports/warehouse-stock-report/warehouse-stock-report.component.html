@@ -1,19 +1,84 @@
 <div class="report-page">
   <div class="page-header">
-    <div><h1>Warehouse Stock Report</h1><div class="breadcrumb"><a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Warehouse Stock</span></div></div>
-    <button class="btn btn-primary"><i class="fas fa-download"></i> Export</button>
+    <div>
+      <h1>Warehouse Stock Report</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Warehouse Stock</span>
+      </div>
+    </div>
+    <div class="export-buttons">
+      <button class="btn btn-success" (click)="exportToExcel()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-excel"></i> Excel
+      </button>
+      <button class="btn btn-danger" (click)="exportToPDF()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-pdf"></i> PDF
+      </button>
+      <button class="btn btn-info" (click)="exportToCSV()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-csv"></i> CSV
+      </button>
+    </div>
   </div>
   <div class="card">
     <div class="filters-row">
-      <div class="form-group"><label>Warehouse</label><select class="form-control"><option value="">All Warehouses</option></select></div>
-      <button class="btn btn-primary filter-btn"><i class="fas fa-filter"></i> Generate</button>
+      <div class="form-group">
+        <label>Warehouse</label>
+        <select class="form-control" [(ngModel)]="selectedWarehouse">
+          <option value="">All Warehouses</option>
+          <option *ngFor="let w of warehouses" [value]="w.name">{{ w.name }}</option>
+        </select>
+      </div>
+      <button class="btn btn-primary filter-btn" (click)="generateReport()" [disabled]="loading">
+        <i class="fas fa-filter"></i> {{ loading ? 'Generating...' : 'Generate' }}
+      </button>
+    </div>
+  </div>
+  <div class="card" *ngIf="reportData.length > 0">
+    <div class="summary-row">
+      <div class="summary-item">
+        <span class="label">Total Items:</span>
+        <span class="value">{{ reportData.length }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Total Value:</span>
+        <span class="value">{{ totalValue | number:'1.2-2' }}</span>
+      </div>
     </div>
   </div>
   <div class="card">
     <div class="table-container">
       <table class="table">
-        <thead><tr><th>Warehouse</th><th>Bin</th><th>Item</th><th>Quantity</th><th>Value</th></tr></thead>
-        <tbody><tr *ngIf="reportData.length === 0"><td colspan="5" class="empty-state"><i class="fas fa-warehouse"></i><p>Generate report to view data</p></td></tr></tbody>
+        <thead>
+          <tr>
+            <th>Warehouse</th>
+            <th>Bin</th>
+            <th>Item Code</th>
+            <th>Item Name</th>
+            <th>Quantity</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="reportData.length === 0 && !loading">
+            <td colspan="6" class="empty-state">
+              <i class="fas fa-warehouse"></i>
+              <p>Generate report to view data</p>
+            </td>
+          </tr>
+          <tr *ngIf="loading">
+            <td colspan="6" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading...</p>
+            </td>
+          </tr>
+          <tr *ngFor="let row of reportData">
+            <td>{{ row.warehouse }}</td>
+            <td>{{ row.bin }}</td>
+            <td>{{ row.itemCode }}</td>
+            <td>{{ row.item }}</td>
+            <td>{{ row.quantity | number:'1.0-2' }}</td>
+            <td>{{ row.value | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </div>

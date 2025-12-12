@@ -1,3 +1,72 @@
-<div class="page-container">
-  <!-- PR Item Pending Report - Implementation pending -->
+<div class="report-page">
+  <div class="page-header">
+    <div>
+      <h1>PR Item Pending Report</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>PR Pending</span>
+      </div>
+    </div>
+    <div class="export-buttons">
+      <button class="btn btn-success" (click)="exportToExcel()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-excel"></i> Excel
+      </button>
+      <button class="btn btn-danger" (click)="exportToPDF()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-pdf"></i> PDF
+      </button>
+      <button class="btn btn-info" (click)="exportToCSV()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-csv"></i> CSV
+      </button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="filters-row">
+      <button class="btn btn-primary filter-btn" (click)="generateReport()" [disabled]="loading">
+        <i class="fas fa-sync"></i> {{ loading ? 'Loading...' : 'Refresh' }}
+      </button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>PR Number</th>
+            <th>PR Date</th>
+            <th>Item Code</th>
+            <th>Item Name</th>
+            <th>Department</th>
+            <th>Requested</th>
+            <th>Fulfilled</th>
+            <th>Pending</th>
+            <th>Unit</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="reportData.length === 0 && !loading">
+            <td colspan="9" class="empty-state">
+              <i class="fas fa-check-circle"></i>
+              <p>No pending PR items found</p>
+            </td>
+          </tr>
+          <tr *ngIf="loading">
+            <td colspan="9" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading...</p>
+            </td>
+          </tr>
+          <tr *ngFor="let row of reportData">
+            <td>{{ row.prNumber }}</td>
+            <td>{{ row.prDate }}</td>
+            <td>{{ row.itemCode }}</td>
+            <td>{{ row.itemName }}</td>
+            <td>{{ row.department }}</td>
+            <td>{{ row.requestedQty }}</td>
+            <td>{{ row.fulfilledQty }}</td>
+            <td><strong>{{ row.pendingQty }}</strong></td>
+            <td>{{ row.unit }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

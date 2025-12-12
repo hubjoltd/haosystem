@@ -1,19 +1,84 @@
 <div class="report-page">
   <div class="page-header">
-    <div><h1>Group-wise Stock Report</h1><div class="breadcrumb"><a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Group-wise</span></div></div>
-    <button class="btn btn-primary"><i class="fas fa-download"></i> Export</button>
+    <div>
+      <h1>Group-wise Stock Report</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Group-wise</span>
+      </div>
+    </div>
+    <div class="export-buttons">
+      <button class="btn btn-success" (click)="exportToExcel()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-excel"></i> Excel
+      </button>
+      <button class="btn btn-danger" (click)="exportToPDF()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-pdf"></i> PDF
+      </button>
+      <button class="btn btn-info" (click)="exportToCSV()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-csv"></i> CSV
+      </button>
+    </div>
   </div>
   <div class="card">
     <div class="filters-row">
-      <div class="form-group"><label>Group</label><select class="form-control"><option value="">All Groups</option></select></div>
-      <button class="btn btn-primary filter-btn"><i class="fas fa-filter"></i> Generate</button>
+      <div class="form-group">
+        <label>Group</label>
+        <select class="form-control" [(ngModel)]="selectedGroup">
+          <option value="">All Groups</option>
+          <option *ngFor="let g of groups" [value]="g.name">{{ g.name }}</option>
+        </select>
+      </div>
+      <button class="btn btn-primary filter-btn" (click)="generateReport()" [disabled]="loading">
+        <i class="fas fa-filter"></i> {{ loading ? 'Generating...' : 'Generate' }}
+      </button>
+    </div>
+  </div>
+  <div class="card" *ngIf="reportData.length > 0">
+    <div class="summary-row">
+      <div class="summary-item">
+        <span class="label">Total Groups:</span>
+        <span class="value">{{ reportData.length }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Total Quantity:</span>
+        <span class="value">{{ totalQuantity | number:'1.0-2' }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Total Value:</span>
+        <span class="value">{{ totalValue | number:'1.2-2' }}</span>
+      </div>
     </div>
   </div>
   <div class="card">
     <div class="table-container">
       <table class="table">
-        <thead><tr><th>Group</th><th>Items Count</th><th>Total Quantity</th><th>Total Value</th></tr></thead>
-        <tbody><tr *ngIf="reportData.length === 0"><td colspan="4" class="empty-state"><i class="fas fa-sitemap"></i><p>Generate report to view data</p></td></tr></tbody>
+        <thead>
+          <tr>
+            <th>Group</th>
+            <th>Items Count</th>
+            <th>Total Quantity</th>
+            <th>Total Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="reportData.length === 0 && !loading">
+            <td colspan="4" class="empty-state">
+              <i class="fas fa-sitemap"></i>
+              <p>Generate report to view data</p>
+            </td>
+          </tr>
+          <tr *ngIf="loading">
+            <td colspan="4" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading...</p>
+            </td>
+          </tr>
+          <tr *ngFor="let row of reportData">
+            <td>{{ row.group }}</td>
+            <td>{{ row.itemsCount }}</td>
+            <td>{{ row.totalQuantity | number:'1.0-2' }}</td>
+            <td>{{ row.totalValue | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </div>

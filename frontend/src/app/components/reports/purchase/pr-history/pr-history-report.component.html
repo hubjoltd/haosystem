@@ -1,3 +1,87 @@
-<div class="page-container">
-  <!-- PR Fulfillment History Report - Implementation pending -->
+<div class="report-page">
+  <div class="page-header">
+    <div>
+      <h1>PR Fulfillment History Report</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>PR History</span>
+      </div>
+    </div>
+    <div class="export-buttons">
+      <button class="btn btn-success" (click)="exportToExcel()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-excel"></i> Excel
+      </button>
+      <button class="btn btn-danger" (click)="exportToPDF()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-pdf"></i> PDF
+      </button>
+      <button class="btn btn-info" (click)="exportToCSV()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-csv"></i> CSV
+      </button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="filters-row">
+      <div class="form-group">
+        <label>Fulfillment Type</label>
+        <select class="form-control" [(ngModel)]="selectedType">
+          <option value="">All Types</option>
+          <option value="Convert to PO">Convert to PO</option>
+          <option value="Stock Issue">Stock Issue</option>
+          <option value="Material Transfer">Material Transfer</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>From Date</label>
+        <input type="date" class="form-control" [(ngModel)]="fromDate" />
+      </div>
+      <div class="form-group">
+        <label>To Date</label>
+        <input type="date" class="form-control" [(ngModel)]="toDate" />
+      </div>
+      <button class="btn btn-primary filter-btn" (click)="generateReport()" [disabled]="loading">
+        <i class="fas fa-filter"></i> {{ loading ? 'Generating...' : 'Generate' }}
+      </button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Reference #</th>
+            <th>PR Number</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Performed By</th>
+            <th>Supplier/Warehouse</th>
+            <th>Items</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="reportData.length === 0 && !loading">
+            <td colspan="8" class="empty-state">
+              <i class="fas fa-history"></i>
+              <p>Generate report to view data</p>
+            </td>
+          </tr>
+          <tr *ngIf="loading">
+            <td colspan="8" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading...</p>
+            </td>
+          </tr>
+          <tr *ngFor="let row of reportData">
+            <td>{{ row.referenceNumber }}</td>
+            <td>{{ row.prNumber }}</td>
+            <td>{{ row.fulfillmentDate }}</td>
+            <td><span class="badge" [ngClass]="getTypeClass(row.fulfillmentType)">{{ row.fulfillmentType }}</span></td>
+            <td>{{ row.performedBy }}</td>
+            <td>{{ row.supplierName !== '-' ? row.supplierName : row.warehouseName }}</td>
+            <td>{{ row.itemCount }}</td>
+            <td>{{ row.totalAmount | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

@@ -1,3 +1,90 @@
-<div class="page-container">
-  <!-- PR List Report - Implementation pending -->
+<div class="report-page">
+  <div class="page-header">
+    <div>
+      <h1>Purchase Requisition List Report</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>PR List</span>
+      </div>
+    </div>
+    <div class="export-buttons">
+      <button class="btn btn-success" (click)="exportToExcel()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-excel"></i> Excel
+      </button>
+      <button class="btn btn-danger" (click)="exportToPDF()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-pdf"></i> PDF
+      </button>
+      <button class="btn btn-info" (click)="exportToCSV()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-csv"></i> CSV
+      </button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="filters-row">
+      <div class="form-group">
+        <label>Status</label>
+        <select class="form-control" [(ngModel)]="selectedStatus">
+          <option value="">All Statuses</option>
+          <option value="Draft">Draft</option>
+          <option value="Submitted">Submitted</option>
+          <option value="Approved">Approved</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Partially Fulfilled">Partially Fulfilled</option>
+          <option value="Fully Fulfilled">Fully Fulfilled</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>From Date</label>
+        <input type="date" class="form-control" [(ngModel)]="fromDate" />
+      </div>
+      <div class="form-group">
+        <label>To Date</label>
+        <input type="date" class="form-control" [(ngModel)]="toDate" />
+      </div>
+      <button class="btn btn-primary filter-btn" (click)="generateReport()" [disabled]="loading">
+        <i class="fas fa-filter"></i> {{ loading ? 'Generating...' : 'Generate' }}
+      </button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>PR Number</th>
+            <th>Date</th>
+            <th>Required Date</th>
+            <th>Department</th>
+            <th>Requested By</th>
+            <th>Items</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="reportData.length === 0 && !loading">
+            <td colspan="8" class="empty-state">
+              <i class="fas fa-file-alt"></i>
+              <p>Generate report to view data</p>
+            </td>
+          </tr>
+          <tr *ngIf="loading">
+            <td colspan="8" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading...</p>
+            </td>
+          </tr>
+          <tr *ngFor="let row of reportData">
+            <td>{{ row.prNumber }}</td>
+            <td>{{ row.prDate }}</td>
+            <td>{{ row.requiredDate }}</td>
+            <td>{{ row.department }}</td>
+            <td>{{ row.requestedBy }}</td>
+            <td>{{ row.itemCount }}</td>
+            <td>{{ row.totalAmount | number:'1.2-2' }}</td>
+            <td><span class="badge" [ngClass]="getStatusClass(row.status)">{{ row.status }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

@@ -13,7 +13,8 @@ export class InventoryValuationReportComponent implements OnInit {
   items: Item[] = [];
   totalValue: number = 0;
   loading: boolean = false;
-  valuationMethod: string = 'cost';
+  valuationMethod: string = 'fifo';
+  asOfDate: string = '';
 
   constructor(
     private itemService: ItemService,

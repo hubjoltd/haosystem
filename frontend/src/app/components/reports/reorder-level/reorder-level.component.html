@@ -1,13 +1,69 @@
 <div class="report-page">
   <div class="page-header">
-    <div><h1>Reorder Level Report</h1><div class="breadcrumb"><a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Reorder Level</span></div></div>
-    <button class="btn btn-primary"><i class="fas fa-download"></i> Export</button>
+    <div>
+      <h1>Reorder Level Report</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Reorder Level</span>
+      </div>
+    </div>
+    <div class="export-buttons">
+      <button class="btn btn-success" (click)="exportToExcel()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-excel"></i> Excel
+      </button>
+      <button class="btn btn-danger" (click)="exportToPDF()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-pdf"></i> PDF
+      </button>
+      <button class="btn btn-info" (click)="exportToCSV()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-csv"></i> CSV
+      </button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="filters-row">
+      <button class="btn btn-primary filter-btn" (click)="generateReport()" [disabled]="loading">
+        <i class="fas fa-sync"></i> {{ loading ? 'Refreshing...' : 'Refresh' }}
+      </button>
+    </div>
   </div>
   <div class="card">
     <div class="table-container">
       <table class="table">
-        <thead><tr><th>Item Code</th><th>Item Name</th><th>Current Stock</th><th>Reorder Level</th><th>Status</th><th>Action</th></tr></thead>
-        <tbody><tr *ngIf="reportData.length === 0"><td colspan="6" class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>No items below reorder level</p></td></tr></tbody>
+        <thead>
+          <tr>
+            <th>Item Code</th>
+            <th>Item Name</th>
+            <th>Group</th>
+            <th>Unit</th>
+            <th>Current Stock</th>
+            <th>Reorder Level</th>
+            <th>Shortage</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="reportData.length === 0 && !loading">
+            <td colspan="8" class="empty-state">
+              <i class="fas fa-check-circle"></i>
+              <p>No items below reorder level</p>
+            </td>
+          </tr>
+          <tr *ngIf="loading">
+            <td colspan="8" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading...</p>
+            </td>
+          </tr>
+          <tr *ngFor="let row of reportData">
+            <td>{{ row.code }}</td>
+            <td>{{ row.name }}</td>
+            <td>{{ row.group }}</td>
+            <td>{{ row.unit }}</td>
+            <td>{{ row.currentStock }}</td>
+            <td>{{ row.reorderLevel }}</td>
+            <td>{{ row.shortage }}</td>
+            <td><span class="badge" [ngClass]="getStatusClass(row.status)">{{ row.status }}</span></td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </div>

@@ -1,19 +1,86 @@
 <div class="report-page">
   <div class="page-header">
-    <div><h1>Slow / Non-Moving Items Report</h1><div class="breadcrumb"><a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Slow Moving</span></div></div>
-    <button class="btn btn-primary"><i class="fas fa-download"></i> Export</button>
+    <div>
+      <h1>Slow / Non-Moving Items Report</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Slow Moving</span>
+      </div>
+    </div>
+    <div class="export-buttons">
+      <button class="btn btn-success" (click)="exportToExcel()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-excel"></i> Excel
+      </button>
+      <button class="btn btn-danger" (click)="exportToPDF()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-pdf"></i> PDF
+      </button>
+      <button class="btn btn-info" (click)="exportToCSV()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-csv"></i> CSV
+      </button>
+    </div>
   </div>
   <div class="card">
     <div class="filters-row">
-      <div class="form-group"><label>Days Without Movement</label><select class="form-control"><option>30 Days</option><option>60 Days</option><option>90 Days</option></select></div>
-      <button class="btn btn-primary filter-btn"><i class="fas fa-filter"></i> Generate</button>
+      <div class="form-group">
+        <label>Days Without Movement</label>
+        <select class="form-control" [(ngModel)]="daysWithoutMovement">
+          <option [value]="30">30 Days</option>
+          <option [value]="60">60 Days</option>
+          <option [value]="90">90 Days</option>
+          <option [value]="180">180 Days</option>
+        </select>
+      </div>
+      <button class="btn btn-primary filter-btn" (click)="generateReport()" [disabled]="loading">
+        <i class="fas fa-filter"></i> {{ loading ? 'Generating...' : 'Generate' }}
+      </button>
+    </div>
+  </div>
+  <div class="card" *ngIf="reportData.length > 0">
+    <div class="summary-row">
+      <div class="summary-item">
+        <span class="label">Slow-Moving Items:</span>
+        <span class="value">{{ reportData.length }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Total Value at Risk:</span>
+        <span class="value">{{ totalValue | number:'1.2-2' }}</span>
+      </div>
     </div>
   </div>
   <div class="card">
     <div class="table-container">
       <table class="table">
-        <thead><tr><th>Item Code</th><th>Item Name</th><th>Last Movement</th><th>Days Idle</th><th>Current Stock</th><th>Value</th></tr></thead>
-        <tbody><tr *ngIf="reportData.length === 0"><td colspan="6" class="empty-state"><i class="fas fa-hourglass-half"></i><p>Generate report to view data</p></td></tr></tbody>
+        <thead>
+          <tr>
+            <th>Item Code</th>
+            <th>Item Name</th>
+            <th>Last Movement</th>
+            <th>Days Idle</th>
+            <th>Current Stock</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="reportData.length === 0 && !loading">
+            <td colspan="6" class="empty-state">
+              <i class="fas fa-hourglass-half"></i>
+              <p>Generate report to view data</p>
+            </td>
+          </tr>
+          <tr *ngIf="loading">
+            <td colspan="6" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading...</p>
+            </td>
+          </tr>
+          <tr *ngFor="let row of reportData">
+            <td>{{ row.code }}</td>
+            <td>{{ row.name }}</td>
+            <td>{{ row.lastMovement }}</td>
+            <td>{{ row.daysIdle }}</td>
+            <td>{{ row.currentStock | number:'1.0-2' }}</td>
+            <td>{{ row.value | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </div>

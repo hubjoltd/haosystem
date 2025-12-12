@@ -65,6 +65,10 @@ export class PRFulfillmentService {
 
   constructor(private http: HttpClient) {}
 
+  getAll(): Observable<PRFulfillment[]> {
+    return this.http.get<PRFulfillment[]>(this.baseUrl);
+  }
+
   getByPrId(prId: number): Observable<PRFulfillment[]> {
     return this.http.get<PRFulfillment[]>(`${this.baseUrl}/pr/${prId}`);
   }

@@ -1,3 +1,88 @@
-<div class="page-container">
-  <!-- Stock Issue/Transfer Report - Implementation pending -->
+<div class="report-page">
+  <div class="page-header">
+    <div>
+      <h1>Stock Issue / Transfer Report</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Stock Issue/Transfer</span>
+      </div>
+    </div>
+    <div class="export-buttons">
+      <button class="btn btn-success" (click)="exportToExcel()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-excel"></i> Excel
+      </button>
+      <button class="btn btn-danger" (click)="exportToPDF()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-pdf"></i> PDF
+      </button>
+      <button class="btn btn-info" (click)="exportToCSV()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-csv"></i> CSV
+      </button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="filters-row">
+      <div class="form-group">
+        <label>Type</label>
+        <select class="form-control" [(ngModel)]="selectedType">
+          <option value="">All Types</option>
+          <option value="Stock Issue">Stock Issue</option>
+          <option value="Material Transfer">Material Transfer</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>From Date</label>
+        <input type="date" class="form-control" [(ngModel)]="fromDate" />
+      </div>
+      <div class="form-group">
+        <label>To Date</label>
+        <input type="date" class="form-control" [(ngModel)]="toDate" />
+      </div>
+      <button class="btn btn-primary filter-btn" (click)="generateReport()" [disabled]="loading">
+        <i class="fas fa-filter"></i> {{ loading ? 'Generating...' : 'Generate' }}
+      </button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Reference #</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>PR Number</th>
+            <th>Warehouse</th>
+            <th>Source</th>
+            <th>Target</th>
+            <th>Performed By</th>
+            <th>Items</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="reportData.length === 0 && !loading">
+            <td colspan="9" class="empty-state">
+              <i class="fas fa-exchange-alt"></i>
+              <p>Generate report to view data</p>
+            </td>
+          </tr>
+          <tr *ngIf="loading">
+            <td colspan="9" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading...</p>
+            </td>
+          </tr>
+          <tr *ngFor="let row of reportData">
+            <td>{{ row.referenceNumber }}</td>
+            <td>{{ row.date }}</td>
+            <td><span class="badge" [ngClass]="getTypeClass(row.type)">{{ row.type }}</span></td>
+            <td>{{ row.prNumber }}</td>
+            <td>{{ row.warehouse }}</td>
+            <td>{{ row.sourceLocation }}</td>
+            <td>{{ row.targetLocation }}</td>
+            <td>{{ row.performedBy }}</td>
+            <td>{{ row.itemCount }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>

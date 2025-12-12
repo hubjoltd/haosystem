@@ -1,21 +1,80 @@
 <div class="report-page">
   <div class="page-header">
-    <div><h1>Item Movement Report</h1><div class="breadcrumb"><a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Item Movement</span></div></div>
-    <button class="btn btn-primary"><i class="fas fa-download"></i> Export</button>
+    <div>
+      <h1>Item Movement Report</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a><span>/</span><span>Reports</span><span>/</span><span>Item Movement</span>
+      </div>
+    </div>
+    <div class="export-buttons">
+      <button class="btn btn-success" (click)="exportToExcel()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-excel"></i> Excel
+      </button>
+      <button class="btn btn-danger" (click)="exportToPDF()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-pdf"></i> PDF
+      </button>
+      <button class="btn btn-info" (click)="exportToCSV()" [disabled]="reportData.length === 0">
+        <i class="fas fa-file-csv"></i> CSV
+      </button>
+    </div>
   </div>
   <div class="card">
     <div class="filters-row">
-      <div class="form-group"><label>Item</label><select class="form-control"><option value="">Select Item</option></select></div>
-      <div class="form-group"><label>From Date</label><input type="date" class="form-control" /></div>
-      <div class="form-group"><label>To Date</label><input type="date" class="form-control" /></div>
-      <button class="btn btn-primary filter-btn"><i class="fas fa-filter"></i> Generate</button>
+      <div class="form-group">
+        <label>Item</label>
+        <select class="form-control" [(ngModel)]="selectedItem">
+          <option value="">Select Item</option>
+          <option *ngFor="let item of items" [value]="item.code">{{ item.name }} ({{ item.code }})</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>From Date</label>
+        <input type="date" class="form-control" [(ngModel)]="fromDate" />
+      </div>
+      <div class="form-group">
+        <label>To Date</label>
+        <input type="date" class="form-control" [(ngModel)]="toDate" />
+      </div>
+      <button class="btn btn-primary filter-btn" (click)="generateReport()" [disabled]="loading">
+        <i class="fas fa-filter"></i> {{ loading ? 'Generating...' : 'Generate' }}
+      </button>
     </div>
   </div>
   <div class="card">
     <div class="table-container">
       <table class="table">
-        <thead><tr><th>Date</th><th>Document</th><th>Type</th><th>In</th><th>Out</th><th>Balance</th></tr></thead>
-        <tbody><tr *ngIf="reportData.length === 0"><td colspan="6" class="empty-state"><i class="fas fa-chart-line"></i><p>Generate report to view data</p></td></tr></tbody>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Document</th>
+            <th>Type</th>
+            <th>In</th>
+            <th>Out</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="reportData.length === 0 && !loading">
+            <td colspan="6" class="empty-state">
+              <i class="fas fa-chart-line"></i>
+              <p>Generate report to view data</p>
+            </td>
+          </tr>
+          <tr *ngIf="loading">
+            <td colspan="6" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading...</p>
+            </td>
+          </tr>
+          <tr *ngFor="let row of reportData">
+            <td>{{ row.date }}</td>
+            <td>{{ row.document }}</td>
+            <td>{{ row.type }}</td>
+            <td>{{ row.stockIn }}</td>
+            <td>{{ row.stockOut }}</td>
+            <td>{{ row.balance }}</td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </div>

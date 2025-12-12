@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ExportService } from '../../../../services/export.service';
 
 @Component({
   selector: 'app-direct-purchase-report',
@@ -6,4 +7,33 @@ import { Component } from '@angular/core';
   templateUrl: './direct-purchase-report.component.html',
   styleUrls: ['./direct-purchase-report.component.scss']
 })
-export class DirectPurchaseReportComponent {}
+export class DirectPurchaseReportComponent implements OnInit {
+  reportData: any[] = [];
+  loading: boolean = false;
+  fromDate: string = '';
+  toDate: string = '';
+
+  constructor(private exportService: ExportService) {}
+
+  ngOnInit(): void {}
+
+  generateReport(): void {
+    this.loading = true;
+    setTimeout(() => {
+      this.reportData = [];
+      this.loading = false;
+    }, 500);
+  }
+
+  exportToExcel(): void {
+    this.exportService.exportToExcel(this.reportData, 'direct-purchase-report');
+  }
+
+  exportToPDF(): void {
+    this.exportService.exportToPDF(this.reportData, 'direct-purchase-report', 'Direct Purchase Report');
+  }
+
+  exportToCSV(): void {
+    this.exportService.exportToCSV(this.reportData, 'direct-purchase-report');
+  }
+}
