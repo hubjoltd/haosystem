@@ -128,6 +128,7 @@ public class StaffService {
         return users.stream().map(user -> {
             Map<String, Object> userMap = new HashMap<>();
             userMap.put("id", user.getId());
+            userMap.put("username", user.getUsername());
             userMap.put("firstName", user.getFirstName());
             userMap.put("lastName", user.getLastName());
             userMap.put("email", user.getEmail());

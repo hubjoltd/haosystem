@@ -32,6 +32,7 @@
         <thead>
           <tr>
             <th class="sortable">Full Name <i class="fas fa-sort-up"></i></th>
+            <th>Username</th>
             <th>Email</th>
             <th>Role</th>
             <th>Last Login</th>
@@ -40,15 +41,16 @@
         </thead>
         <tbody>
           <tr *ngIf="paginatedStaff.length === 0">
-            <td colspan="5" class="empty-state">No staff members found</td>
+            <td colspan="6" class="empty-state">No staff members found</td>
           </tr>
           <tr *ngFor="let member of paginatedStaff">
             <td>
               <div class="staff-cell">
-                <div class="avatar">{{ member.firstName.charAt(0) }}</div>
+                <div class="avatar">{{ member.firstName?.charAt(0) || '?' }}</div>
                 <span>{{ getFullName(member) }}</span>
               </div>
             </td>
+            <td><code>{{ member.username }}</code></td>
             <td>{{ member.email }}</td>
             <td>{{ member.role }}</td>
             <td>{{ member.lastLogin }}</td>

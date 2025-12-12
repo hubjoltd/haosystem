@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 export interface Staff {
   id?: number;
+  username?: string;
   firstName: string;
   lastName: string;
   email: string;
