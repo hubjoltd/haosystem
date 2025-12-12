@@ -29,6 +29,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/CustomerRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/PrefixSettingsService.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/PurchaseRequisitionService.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/HealthController.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/StockMovementController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Contract.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PRFulfillmentItem.java
