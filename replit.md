@@ -4,7 +4,7 @@
 
 This is an enterprise resource planning (ERP) web application built with Angular 21 for the frontend. The system provides comprehensive business management capabilities including inventory management, customer management, contract management, and administrative settings. The application features a dark teal and white professional UI theme with a responsive sidebar dashboard layout.
 
-The backend is intended to be Spring Boot (Java), but is not yet implemented in this repository. The frontend is fully developed and communicates with a `/api` endpoint expecting RESTful services.
+The backend is fully implemented with Spring Boot (Java) on port 8080, providing RESTful API services with PostgreSQL database integration. The system includes Prefix Settings with auto-generation of IDs across all inventory and purchase modules.
 
 ## User Preferences
 
@@ -38,7 +38,7 @@ The application uses a hierarchical component structure:
 
 ### Key Feature Modules
 1. **Dashboard** - Overview statistics and charts
-2. **Settings** - General, Finance (tax rates, currencies, payment modes, expense categories), Customer, Contract, Roles, Staff Management
+2. **Settings** - General, Finance (tax rates, currencies, payment modes, expense categories), Customer, Contract, Roles, Staff Management, **Prefix Settings** (auto-generation configuration for all modules)
 3. **Inventory** - Group Master, Item Master, Units of Measure, Warehouse/Bin Management, Suppliers, Valuation, Ledger
 4. **Stock Movement** - Goods Receipt (GRN), Goods Issue, Stock Transfer, Adjustments
 5. **Customer & Contract Management** - CRUD operations with search and filtering
@@ -65,10 +65,11 @@ The application uses a hierarchical component structure:
 - **Font Awesome** (CDN) - Icon library
 - **Google Fonts Poppins** (CDN) - Typography
 
-### Backend Integration (Not Yet Implemented)
-- **Expected**: Spring Boot REST API on port 8080
+### Backend Integration (Implemented)
+- **Spring Boot REST API** on port 8080 with PostgreSQL database
 - **Proxy Configuration**: `frontend/proxy.conf.json` routes `/api` to `localhost:8080`
-- API endpoints expected:
+- **22 JPA Repository interfaces** for data persistence
+- API endpoints:
   - `/api/auth/login`, `/api/auth/register`
   - `/api/customers`, `/api/contracts`
   - `/api/inventory/items`, `/api/inventory/groups`, `/api/inventory/units`, `/api/inventory/warehouses`, `/api/inventory/bins`, `/api/inventory/suppliers`
@@ -76,6 +77,15 @@ The application uses a hierarchical component structure:
   - `/api/settings/general`, `/api/settings/finance`
   - `/api/dashboard/stats`
   - `/api/audit` (with filters for module, action, date range, entity type)
+  - `/api/settings/prefixes`, `/api/settings/prefixes/generate/{type}` (prefix settings and ID auto-generation)
+
+### Auto-Generation with Prefix Settings
+All inventory and purchase modules support automatic ID generation based on configurable prefix settings:
+- **Inventory**: Item Code, Group Code, Warehouse Code, Bin Code, Supplier Code, UOM Code
+- **Purchase**: PR Number, PO Number
+- **Stock Movement**: GRN Number, Issue Number, Transfer Number, Adjustment Number
+
+Components call `SettingsService.generatePrefixId(type)` on create modal open, with fallback to service-level generation if prefix API fails.
 
 ### Development Tools
 - **Vitest** - Unit testing framework
