@@ -26,6 +26,7 @@ export class AddStaffComponent implements OnInit {
     active: true
   };
 
+  password: string = '';
   roles: any[] = [];
 
   constructor(
@@ -86,7 +87,17 @@ export class AddStaffComponent implements OnInit {
       return;
     }
 
+    if (!this.editMode && (!this.password || this.password.length < 6)) {
+      alert('Password must be at least 6 characters');
+      return;
+    }
+
     this.saving = true;
+
+    const staffData: any = { ...this.staff };
+    if (!this.editMode && this.password) {
+      staffData.password = this.password;
+    }
 
     if (this.editMode && this.staffId) {
       this.staffService.update(this.staffId, this.staff).subscribe({
@@ -99,7 +110,7 @@ export class AddStaffComponent implements OnInit {
         }
       });
     } else {
-      this.staffService.create(this.staff).subscribe({
+      this.staffService.create(staffData).subscribe({
         next: () => {
           this.router.navigate(['/app/settings/staff']);
         },

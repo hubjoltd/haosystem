@@ -61,8 +61,8 @@ public class StaffService {
         }
         user.setUsername(username);
         
-        String tempPassword = "Welcome@123";
-        user.setPassword(passwordEncoder.encode(tempPassword));
+        String password = staffData.get("password") != null ? (String) staffData.get("password") : "Welcome@123";
+        user.setPassword(passwordEncoder.encode(password));
         
         if (staffData.get("roleId") != null) {
             Long roleId = Long.valueOf(staffData.get("roleId").toString());
