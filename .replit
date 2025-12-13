@@ -56,7 +56,7 @@ externalPort = 8080
 expertMode = true
 
 [deployment]
-deploymentTarget = "vm"
+deploymentTarget = "cloudrun"
 run = ["bash", "-c", "PORT=5000 java -jar backend/target/erp-backend-1.0.0.jar"]
 build = ["npm", "run", "build"]
 
