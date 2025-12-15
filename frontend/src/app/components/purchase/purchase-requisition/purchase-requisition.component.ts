@@ -198,6 +198,10 @@ export class PurchaseRequisitionComponent implements OnInit {
       this.selectedPR.items = [this.getEmptyItem()];
     }
     this.showModal = true;
+    this.viewTabActive = 'purchaseOrders';
+    if (pr.status === 'Approved' || pr.status === 'Partially Fulfilled' || pr.status === 'Fully Fulfilled') {
+      this.loadViewTabData();
+    }
   }
 
   viewPR(pr: PurchaseRequisition): void {
@@ -207,6 +211,9 @@ export class PurchaseRequisitionComponent implements OnInit {
   closeModal(): void {
     this.showModal = false;
     this.selectedPR = this.getEmptyPR();
+    this.purchaseOrders = [];
+    this.stockFulfillments = [];
+    this.materialTransfers = [];
   }
 
   addItem(): void {

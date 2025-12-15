@@ -716,6 +716,101 @@
           </table>
         </div>
       </div>
+
+      <div class="view-tabs-section" *ngIf="isEditing && (selectedPR.status === 'Approved' || selectedPR.status === 'Partially Fulfilled' || selectedPR.status === 'Fully Fulfilled')">
+        <div class="tabs">
+          <button class="tab-btn" [class.active]="viewTabActive === 'purchaseOrders'" (click)="viewTabActive = 'purchaseOrders'">
+            <i class="fa fa-file-invoice"></i> Purchase Orders ({{ purchaseOrders.length }})
+          </button>
+          <button class="tab-btn" [class.active]="viewTabActive === 'stockFulfillments'" (click)="viewTabActive = 'stockFulfillments'">
+            <i class="fa fa-box"></i> Stock Fulfillments ({{ stockFulfillments.length }})
+          </button>
+          <button class="tab-btn" [class.active]="viewTabActive === 'materialTransfers'" (click)="viewTabActive = 'materialTransfers'">
+            <i class="fa fa-exchange-alt"></i> Material Transfers ({{ materialTransfers.length }})
+          </button>
+        </div>
+
+        <div class="tab-content" *ngIf="viewTabActive === 'purchaseOrders'">
+          <div class="empty-tab" *ngIf="purchaseOrders.length === 0">
+            <i class="fa fa-file-invoice"></i>
+            <p>No purchase orders created for this PR yet.</p>
+          </div>
+          <table class="data-table" *ngIf="purchaseOrders.length > 0">
+            <thead>
+              <tr>
+                <th>PO Number</th>
+                <th>Date</th>
+                <th>Supplier</th>
+                <th>Items</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let po of purchaseOrders">
+                <td>{{ po.poNumber }}</td>
+                <td>{{ formatDate(po.poDate) }}</td>
+                <td>{{ po.supplierName }}</td>
+                <td>{{ po.itemCount || po.items?.length || 0 }}</td>
+                <td><span class="status-badge" [ngClass]="getStatusClass(po.status)">{{ po.status }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tab-content" *ngIf="viewTabActive === 'stockFulfillments'">
+          <div class="empty-tab" *ngIf="stockFulfillments.length === 0">
+            <i class="fa fa-box"></i>
+            <p>No stock fulfillments for this PR yet.</p>
+          </div>
+          <table class="data-table" *ngIf="stockFulfillments.length > 0">
+            <thead>
+              <tr>
+                <th>Fulfillment #</th>
+                <th>Date</th>
+                <th>Warehouse</th>
+                <th>Supplier</th>
+                <th>Items</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let sf of stockFulfillments">
+                <td>{{ sf.fulfillmentNumber }}</td>
+                <td>{{ formatDate(sf.fulfillmentDate) }}</td>
+                <td>{{ sf.warehouseName || '-' }}</td>
+                <td>{{ sf.supplierName || '-' }}</td>
+                <td>{{ sf.items?.length || 0 }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tab-content" *ngIf="viewTabActive === 'materialTransfers'">
+          <div class="empty-tab" *ngIf="materialTransfers.length === 0">
+            <i class="fa fa-exchange-alt"></i>
+            <p>No material transfers for this PR yet.</p>
+          </div>
+          <table class="data-table" *ngIf="materialTransfers.length > 0">
+            <thead>
+              <tr>
+                <th>Transfer #</th>
+                <th>Date</th>
+                <th>Project</th>
+                <th>Supplier</th>
+                <th>Items</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let mt of materialTransfers">
+                <td>{{ mt.transferNumber }}</td>
+                <td>{{ formatDate(mt.transferDate) }}</td>
+                <td>{{ mt.projectName || '-' }}</td>
+                <td>{{ mt.supplierName || '-' }}</td>
+                <td>{{ mt.items?.length || 0 }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" (click)="closeModal()">Cancel</button>
