@@ -82,7 +82,8 @@ The application uses a hierarchical component structure:
   - `/api/stock-movement/grn`, `/api/stock-movement/issues`, `/api/stock-movement/transfers`, `/api/stock-movement/adjustments`
   - `/api/settings/general`, `/api/settings/finance`
   - `/api/dashboard/stats`
-  - `/api/audit` (with filters for module, action, date range, entity type)
+  - `/api/audit` (with filters for module, modules, action, entityType, performedBy, startDate, endDate, search)
+  - `/api/audit/entity/{entityType}/{entityId}` (get audits for specific entity)
   - `/api/notifications` (user notifications with mark as read, delete)
   - `/api/settings/prefixes`, `/api/settings/prefixes/generate/{type}` (prefix settings and ID auto-generation)
 
