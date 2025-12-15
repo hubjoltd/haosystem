@@ -56,6 +56,17 @@ The application uses a hierarchical component structure:
 9. **Reports** - Reorganized into sub-sections:
    - **Inventory Reports**: Stock Summary, Inventory Valuation, Item Movement, Stock Ledger, Group-wise Stock, Warehouse Stock, Reorder Level, Slow-Moving Items, Purchase vs GRN
    - **Purchase Reports**: PR List, PR Item Pending, PR Fulfillment History, PO List, Direct Purchase, Stock Issue/Transfer (components scaffolded, awaiting design implementation)
+10. **HR Management** - Human Resources module with Organization Structure:
+   - **Organization Structure** (Phase 1 Complete):
+     - Departments - with location and cost center assignment
+     - Locations - physical office locations
+     - Job Roles - job role definitions
+     - Grades - employee grade levels
+     - Designations - job titles and designations
+     - Cost Centers - financial cost center tracking
+     - Expense Centers - expense allocation centers
+   - **Employee Master** (Phase 2 Pending): Employee list, personal details, employment details
+   - **Document Management** (Phase 3 Pending): Document types, employee documents, expiry tracking
 
 ### Routing
 - Root path redirects to login
@@ -74,7 +85,7 @@ The application uses a hierarchical component structure:
 ### Backend Integration (Implemented)
 - **Spring Boot REST API** on port 8080 with PostgreSQL database
 - **Proxy Configuration**: `frontend/proxy.conf.json` routes `/api` to `localhost:8080`
-- **22 JPA Repository interfaces** for data persistence
+- **42 JPA Repository interfaces** for data persistence (includes HR organization entities)
 - API endpoints:
   - `/api/auth/login`, `/api/auth/register`
   - `/api/customers`, `/api/contracts`
@@ -86,6 +97,7 @@ The application uses a hierarchical component structure:
   - `/api/audit/entity/{entityType}/{entityId}` (get audits for specific entity)
   - `/api/notifications` (user notifications with mark as read, delete)
   - `/api/settings/prefixes`, `/api/settings/prefixes/generate/{type}` (prefix settings and ID auto-generation)
+  - `/api/organization/departments`, `/api/organization/locations`, `/api/organization/job-roles`, `/api/organization/grades`, `/api/organization/designations`, `/api/organization/cost-centers`, `/api/organization/expense-centers` (HR organization structure CRUD)
 
 ### Auto-Generation with Prefix Settings
 All inventory and purchase modules support automatic ID generation based on configurable prefix settings:
