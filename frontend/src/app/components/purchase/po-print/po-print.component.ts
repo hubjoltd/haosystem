@@ -13,11 +13,11 @@ export class PoPrintComponent implements OnInit {
   poId: number = 0;
   loading: boolean = true;
   
-  companyName: string = 'Thendral Supermarket';
-  companyTagline: string = 'Supermarket';
+  companyName: string = 'Hao System';
+  companyTagline: string = 'Enterprise Solutions';
   companyAddress: string = 'No 23/2, SBI Colony, Ragavendra Nagar, Chennai - 600124';
   companyPhone: string = '+91-7869825463';
-  companyEmail: string = 'purchase-team@thendral.com';
+  companyEmail: string = 'purchase-team@haosystem.com';
   companyGstin: string = '33APFSDF1ZV';
   
   billToAddress: string = 'No 23/2, SBI Colony.\nRagavendra Nagar, Chennai - 600124';

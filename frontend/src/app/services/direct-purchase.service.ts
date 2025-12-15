@@ -4,12 +4,15 @@ import { Observable } from 'rxjs';
 
 export interface DirectPurchaseItem {
   id?: number;
+  itemCode?: string;
   itemName: string;
   description: string;
+  hsnCode?: string;
   quantity: number;
   uom: string;
   unit?: string;
   rate: number;
+  taxRate?: number;
   amount: number;
   remarks: string;
 }
