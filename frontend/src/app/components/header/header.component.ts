@@ -38,7 +38,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     
     this.loadNotifications();
     this.pollSubscription = this.userNotificationService.startPolling(30000).subscribe({
-      next: (result) => this.unreadCount = result.count,
+      next: (result) => {
+        this.unreadCount = result.count;
+        this.loadNotifications();
+      },
       error: () => {}
     });
   }

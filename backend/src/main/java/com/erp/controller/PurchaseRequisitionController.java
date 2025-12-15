@@ -1,9 +1,14 @@
 package com.erp.controller;
 
 import com.erp.model.PurchaseRequisition;
+import com.erp.model.User;
+import com.erp.repository.UserRepository;
 import com.erp.service.PurchaseRequisitionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,6 +21,17 @@ public class PurchaseRequisitionController {
 
     @Autowired
     private PurchaseRequisitionService prService;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    private User getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+            return null;
+        }
+        return userRepository.findByUsername(auth.getName()).orElse(null);
+    }
 
     @GetMapping
     public ResponseEntity<List<PurchaseRequisition>> getAll() {
@@ -60,8 +76,14 @@ public class PurchaseRequisitionController {
 
     @PostMapping("/{id}/submit")
     public ResponseEntity<PurchaseRequisition> submit(@PathVariable Long id) {
+        User user = getCurrentUser();
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
         try {
-            return ResponseEntity.ok(prService.submit(id, "Admin", 1L));
+            String submittedBy = user.getFirstName() != null && user.getLastName() != null ? 
+                    user.getFirstName() + " " + user.getLastName() : user.getUsername();
+            return ResponseEntity.ok(prService.submit(id, submittedBy, user.getId()));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
@@ -69,8 +91,14 @@ public class PurchaseRequisitionController {
 
     @PostMapping("/{id}/approve")
     public ResponseEntity<PurchaseRequisition> approve(@PathVariable Long id) {
+        User user = getCurrentUser();
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
         try {
-            return ResponseEntity.ok(prService.approve(id, "Admin", 1L));
+            String approvedBy = user.getFirstName() != null && user.getLastName() != null ? 
+                    user.getFirstName() + " " + user.getLastName() : user.getUsername();
+            return ResponseEntity.ok(prService.approve(id, approvedBy, user.getId()));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }
@@ -78,9 +106,15 @@ public class PurchaseRequisitionController {
 
     @PostMapping("/{id}/reject")
     public ResponseEntity<PurchaseRequisition> reject(@PathVariable Long id, @RequestBody(required = false) Map<String, String> body) {
+        User user = getCurrentUser();
+        if (user == null) {
+            return ResponseEntity.status(401).build();
+        }
         try {
+            String rejectedBy = user.getFirstName() != null && user.getLastName() != null ? 
+                    user.getFirstName() + " " + user.getLastName() : user.getUsername();
             String reason = body != null ? body.get("reason") : null;
-            return ResponseEntity.ok(prService.reject(id, "Admin", 1L, reason));
+            return ResponseEntity.ok(prService.reject(id, rejectedBy, user.getId(), reason));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
         }

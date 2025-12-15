@@ -54,10 +54,21 @@ public class UserNotificationService {
         }
     }
     
+    public static class NotificationNotFoundException extends RuntimeException {
+        public NotificationNotFoundException(String message) { super(message); }
+    }
+    
+    public static class NotificationForbiddenException extends RuntimeException {
+        public NotificationForbiddenException(String message) { super(message); }
+    }
+    
     @Transactional
-    public UserNotification markAsRead(Long notificationId) {
+    public UserNotification markAsRead(Long notificationId, String username) {
         UserNotification notification = notificationRepository.findById(notificationId)
-            .orElseThrow(() -> new RuntimeException("Notification not found"));
+            .orElseThrow(() -> new NotificationNotFoundException("Notification not found"));
+        if (!notification.getRecipientUsername().equals(username)) {
+            throw new NotificationForbiddenException("Not authorized to access this notification");
+        }
         notification.setRead(true);
         notification.setReadAt(LocalDateTime.now());
         return notificationRepository.save(notification);
@@ -75,7 +86,12 @@ public class UserNotificationService {
     }
     
     @Transactional
-    public void deleteNotification(Long notificationId) {
+    public void deleteNotification(Long notificationId, String username) {
+        UserNotification notification = notificationRepository.findById(notificationId)
+            .orElseThrow(() -> new NotificationNotFoundException("Notification not found"));
+        if (!notification.getRecipientUsername().equals(username)) {
+            throw new NotificationForbiddenException("Not authorized to delete this notification");
+        }
         notificationRepository.deleteById(notificationId);
     }
 }

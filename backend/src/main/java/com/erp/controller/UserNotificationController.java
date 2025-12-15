@@ -4,6 +4,7 @@ import com.erp.model.UserNotification;
 import com.erp.service.UserNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,10 @@ public class UserNotificationController {
     
     private String getCurrentUsername() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth != null ? auth.getName() : null;
+        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+            return null;
+        }
+        return auth.getName();
     }
     
     @GetMapping
@@ -56,7 +60,17 @@ public class UserNotificationController {
     
     @PutMapping("/{id}/read")
     public ResponseEntity<UserNotification> markAsRead(@PathVariable Long id) {
-        return ResponseEntity.ok(notificationService.markAsRead(id));
+        String username = getCurrentUsername();
+        if (username == null) {
+            return ResponseEntity.status(401).build();
+        }
+        try {
+            return ResponseEntity.ok(notificationService.markAsRead(id, username));
+        } catch (UserNotificationService.NotificationNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (UserNotificationService.NotificationForbiddenException e) {
+            return ResponseEntity.status(403).build();
+        }
     }
     
     @PutMapping("/read-all")
@@ -71,7 +85,17 @@ public class UserNotificationController {
     
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteNotification(@PathVariable Long id) {
-        notificationService.deleteNotification(id);
-        return ResponseEntity.ok().build();
+        String username = getCurrentUsername();
+        if (username == null) {
+            return ResponseEntity.status(401).build();
+        }
+        try {
+            notificationService.deleteNotification(id, username);
+            return ResponseEntity.ok().build();
+        } catch (UserNotificationService.NotificationNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (UserNotificationService.NotificationForbiddenException e) {
+            return ResponseEntity.status(403).build();
+        }
     }
 }
