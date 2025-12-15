@@ -144,6 +144,47 @@ export class SidebarComponent implements OnInit {
         { icon: 'fas fa-boxes', label: 'Inventory Audits', route: '/app/audit/inventory' },
         { icon: 'fas fa-shopping-cart', label: 'Purchase Audits', route: '/app/audit/purchase' }
       ]
+    },
+    {
+      icon: 'fas fa-user-tie',
+      label: 'HR Management',
+      expanded: false,
+      permissionKey: 'HR Management',
+      children: [
+        {
+          icon: 'fas fa-users',
+          label: 'Employee Master',
+          expanded: false,
+          children: [
+            { icon: 'fas fa-id-card', label: 'Employee List', route: '/app/hr/employees' },
+            { icon: 'fas fa-user-plus', label: 'Add Employee', route: '/app/hr/employees/new' }
+          ]
+        },
+        {
+          icon: 'fas fa-sitemap',
+          label: 'Organization Structure',
+          expanded: false,
+          children: [
+            { icon: 'fas fa-building', label: 'Departments', route: '/app/hr/organization/departments' },
+            { icon: 'fas fa-map-marker-alt', label: 'Locations', route: '/app/hr/organization/locations' },
+            { icon: 'fas fa-briefcase', label: 'Job Roles', route: '/app/hr/organization/job-roles' },
+            { icon: 'fas fa-layer-group', label: 'Grades', route: '/app/hr/organization/grades' },
+            { icon: 'fas fa-id-badge', label: 'Designations', route: '/app/hr/organization/designations' },
+            { icon: 'fas fa-chart-pie', label: 'Cost Centers', route: '/app/hr/organization/cost-centers' },
+            { icon: 'fas fa-money-bill-wave', label: 'Expense Centers', route: '/app/hr/organization/expense-centers' }
+          ]
+        },
+        {
+          icon: 'fas fa-folder-open',
+          label: 'Document Management',
+          expanded: false,
+          children: [
+            { icon: 'fas fa-file-alt', label: 'Document Types', route: '/app/hr/documents/types' },
+            { icon: 'fas fa-folder', label: 'Employee Documents', route: '/app/hr/documents/employee' },
+            { icon: 'fas fa-bell', label: 'Expiry Reminders', route: '/app/hr/documents/reminders' }
+          ]
+        }
+      ]
     }
   ];
 

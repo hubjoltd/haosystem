@@ -1,0 +1,138 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1>Locations</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>HR Management</span>
+        <span>/</span>
+        <span>Organization</span>
+        <span>/</span>
+        <span>Locations</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> Add Location
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>City</th>
+            <th>Country</th>
+            <th>Phone</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="locations.length === 0">
+            <td colspan="8" class="text-center">No locations found. Click "Add Location" to create one.</td>
+          </tr>
+          <tr *ngFor="let item of locations">
+            <td>{{ item.code }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.locationType || '-' }}</td>
+            <td>{{ item.city || '-' }}</td>
+            <td>{{ item.country || '-' }}</td>
+            <td>{{ item.phone || '-' }}</td>
+            <td>
+              <span class="badge" [class.badge-success]="item.active" [class.badge-secondary]="!item.active">
+                {{ item.active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary" (click)="openEditModal(item)"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger" (click)="delete(item)"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditMode ? 'Edit' : 'Add' }} Location</h3>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="save()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Code *</label>
+            <input type="text" [(ngModel)]="editing.code" name="code" required placeholder="Enter location code">
+          </div>
+          <div class="form-group">
+            <label>Name *</label>
+            <input type="text" [(ngModel)]="editing.name" name="name" required placeholder="Enter location name">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Location Type</label>
+            <select [(ngModel)]="editing.locationType" name="locationType">
+              <option value="">-- Select Type --</option>
+              <option *ngFor="let type of locationTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="editing.email" name="email" placeholder="Enter email">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Address</label>
+          <textarea [(ngModel)]="editing.address" name="address" placeholder="Enter address"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>City</label>
+            <input type="text" [(ngModel)]="editing.city" name="city" placeholder="Enter city">
+          </div>
+          <div class="form-group">
+            <label>State</label>
+            <input type="text" [(ngModel)]="editing.state" name="state" placeholder="Enter state">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Country</label>
+            <input type="text" [(ngModel)]="editing.country" name="country" placeholder="Enter country">
+          </div>
+          <div class="form-group">
+            <label>ZIP Code</label>
+            <input type="text" [(ngModel)]="editing.zipCode" name="zipCode" placeholder="Enter ZIP code">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="text" [(ngModel)]="editing.phone" name="phone" placeholder="Enter phone number">
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label" style="margin-top: 30px;">
+              <input type="checkbox" [(ngModel)]="editing.active" name="active">
+              Active
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Save' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

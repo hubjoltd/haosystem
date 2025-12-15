@@ -77,6 +77,14 @@ import { AddRoleComponent } from './components/settings/roles-settings/add-role/
 import { AddStaffComponent } from './components/settings/staff-management/add-staff/add-staff.component';
 import { NotificationComponent } from './components/notification/notification.component';
 
+import { DepartmentsComponent } from './components/hr/organization/departments/departments.component';
+import { LocationsComponent } from './components/hr/organization/locations/locations.component';
+import { JobRolesComponent } from './components/hr/organization/job-roles/job-roles.component';
+import { GradesComponent } from './components/hr/organization/grades/grades.component';
+import { DesignationsComponent } from './components/hr/organization/designations/designations.component';
+import { CostCentersComponent } from './components/hr/organization/cost-centers/cost-centers.component';
+import { ExpenseCentersComponent } from './components/hr/organization/expense-centers/expense-centers.component';
+
 @NgModule({
   declarations: [
     App,
@@ -137,7 +145,14 @@ import { NotificationComponent } from './components/notification/notification.co
     PrefixSettingsComponent,
     AddRoleComponent,
     AddStaffComponent,
-    NotificationComponent
+    NotificationComponent,
+    DepartmentsComponent,
+    LocationsComponent,
+    JobRolesComponent,
+    GradesComponent,
+    DesignationsComponent,
+    CostCentersComponent,
+    ExpenseCentersComponent
   ],
   imports: [
     BrowserModule,

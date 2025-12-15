@@ -3,6 +3,7 @@ com/erp/service/SupplierService.class
 com/erp/repository/CustomerStatusRepository.class
 com/erp/repository/PRMaterialTransferRepository.class
 com/erp/model/GoodsIssueLine.class
+com/erp/model/ExpenseCenter.class
 com/erp/security/JwtUtil.class
 com/erp/model/PurchaseInvoiceItem.class
 com/erp/config/CorsConfig.class
@@ -11,9 +12,11 @@ com/erp/service/StaffService.class
 com/erp/controller/AuditController.class
 com/erp/repository/ValuationCostLayerRepository.class
 com/erp/repository/GoodsIssueLineRepository.class
+com/erp/repository/GradeRepository.class
 com/erp/service/UnitOfMeasureService.class
 com/erp/controller/UserNotificationController.class
 com/erp/model/Contract.class
+com/erp/model/JobRole.class
 com/erp/repository/PurchaseRequisitionItemRepository.class
 com/erp/model/ValuationCostLayer.class
 com/erp/controller/PurchaseRequisitionController.class
@@ -22,9 +25,11 @@ com/erp/service/DashboardService.class
 com/erp/controller/StaffController.class
 com/erp/service/ValuationService$LayerConsumption.class
 com/erp/dto/AuthResponse.class
+com/erp/model/CostCenter.class
 com/erp/model/CustomerStatus.class
 com/erp/model/Warehouse.class
 com/erp/repository/PRFulfillmentRepository.class
+com/erp/repository/DepartmentRepository.class
 com/erp/model/PRStockFulfillment.class
 com/erp/model/GeneralSettings.class
 com/erp/controller/RoleController.class
@@ -36,6 +41,7 @@ com/erp/model/PurchaseRequisition.class
 com/erp/repository/PrefixSettingsRepository.class
 com/erp/repository/ItemGroupRepository.class
 com/erp/service/ValuationService$ConsumptionResult.class
+com/erp/repository/ExpenseCenterRepository.class
 com/erp/model/Role.class
 com/erp/repository/GoodsReceiptLineRepository.class
 com/erp/repository/CustomerGroupRepository.class
@@ -44,6 +50,7 @@ com/erp/config/WebConfig.class
 com/erp/model/User.class
 com/erp/controller/ApiController.class
 com/erp/repository/StockTransferLineRepository.class
+com/erp/model/Department.class
 com/erp/controller/PRFulfillmentController.class
 com/erp/model/GoodsReceiptLine.class
 com/erp/service/UserNotificationService$NotificationForbiddenException.class
@@ -61,8 +68,10 @@ com/erp/service/GoodsReceiptService.class
 com/erp/dto/RegisterRequest.class
 com/erp/model/PRFulfillment.class
 com/erp/controller/PurchaseInvoiceController.class
+com/erp/model/Grade.class
 com/erp/service/ItemService.class
 com/erp/service/AuditLogService.class
+com/erp/repository/JobRoleRepository.class
 com/erp/model/PRFulfillmentItem.class
 com/erp/controller/PrefixSettingsController.class
 com/erp/model/ContractStatus.class
@@ -86,6 +95,7 @@ com/erp/service/AuthService.class
 com/erp/model/StockTransferLine.class
 com/erp/model/PRMaterialTransfer.class
 com/erp/model/PurchaseInvoice.class
+com/erp/repository/DesignationRepository.class
 com/erp/repository/AuditLogRepository.class
 com/erp/repository/ItemRepository.class
 com/erp/service/UserNotificationService$NotificationNotFoundException.class
@@ -94,12 +104,15 @@ com/erp/model/ItemGroup.class
 com/erp/service/PurchaseRequisitionService.class
 com/erp/service/PRFulfillmentService.class
 com/erp/repository/GoodsIssueRepository.class
+com/erp/repository/CostCenterRepository.class
+com/erp/model/Designation.class
 com/erp/model/Item.class
 com/erp/service/SettingsService.class
 com/erp/model/PrefixSettings.class
 com/erp/repository/RoleRepository.class
 com/erp/service/PrefixSettingsService.class
 com/erp/controller/ContractSettingsController.class
+com/erp/repository/LocationRepository.class
 com/erp/repository/BinRepository.class
 com/erp/service/CustomerService.class
 com/erp/service/StockTransferService.class
@@ -108,6 +121,7 @@ com/erp/repository/PRStockFulfillmentRepository.class
 com/erp/model/AuditLog.class
 com/erp/repository/InventoryLedgerRepository.class
 com/erp/model/PRMaterialTransferItem.class
+com/erp/model/Location.class
 com/erp/repository/ContractRepository.class
 com/erp/repository/PRFulfillmentItemRepository.class
 com/erp/service/RoleService.class
@@ -119,6 +133,7 @@ com/erp/ErpApplication.class
 com/erp/model/GoodsIssue.class
 com/erp/repository/PurchaseRequisitionRepository.class
 com/erp/config/SecurityConfig.class
+com/erp/controller/OrganizationController.class
 com/erp/service/UserNotificationService.class
 com/erp/service/ValuationService$InsufficientInventoryException.class
 com/erp/controller/StockMovementController.class

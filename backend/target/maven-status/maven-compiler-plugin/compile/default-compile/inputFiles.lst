@@ -1,5 +1,6 @@
 /home/runner/workspace/backend/src/main/java/com/erp/controller/PurchaseRequisitionController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/ContractStatus.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/Department.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/InventoryLedgerRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/AuditLogRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PurchaseInvoice.java
@@ -15,6 +16,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/model/InventoryLedger.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PurchaseRequisitionItem.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/ItemGroup.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/OrganizationController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Item.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/UnitOfMeasureService.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/PurchaseRequisitionService.java
@@ -32,6 +34,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/dto/RegisterRequest.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/FinanceSettings.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PRMaterialTransferItem.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/DesignationRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/PRFulfillmentController.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/ContractStatusRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GoodsIssueLineRepository.java
@@ -47,11 +50,14 @@
 /home/runner/workspace/backend/src/main/java/com/erp/service/SupplierService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Bin.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PurchaseInvoiceItem.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/JobRole.java
 /home/runner/workspace/backend/src/main/java/com/erp/dto/LoginRequest.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/Location.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/SettingsService.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/ItemGroupRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/ValuationCostLayerRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/ValuationCostLayer.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/ExpenseCenter.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/PurchaseInvoiceRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Role.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/UserRepository.java
@@ -75,6 +81,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/dto/AuthResponse.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/ApiController.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/CustomerSettingsController.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/Grade.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/WarehouseService.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/PurchaseRequisitionRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/PurchaseInvoiceController.java
@@ -91,6 +98,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/service/DashboardService.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/InventoryLedgerService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/ContractType.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/GradeRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/PRFulfillmentItemRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/security/JwtUtil.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Customer.java
@@ -101,6 +109,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/model/CustomerGroup.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/FinanceSettingsRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/UnitOfMeasureRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/DepartmentRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/ErpApplication.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PrefixSettings.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/PrefixSettingsRepository.java
@@ -109,13 +118,19 @@
 /home/runner/workspace/backend/src/main/java/com/erp/service/ItemGroupService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/GoodsIssue.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GeneralSettingsRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/CostCenterRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/StaffController.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/ContractService.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/PRStockFulfillmentRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/JobRoleRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/CostCenter.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/LocationRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/StockAdjustmentRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/ExpenseCenterRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Supplier.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/CustomerService.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/StockTransferLineRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PRFulfillment.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/BinRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/UserNotification.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/Designation.java

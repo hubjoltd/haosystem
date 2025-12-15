@@ -66,6 +66,14 @@ import { PrefixSettingsComponent } from './components/settings/prefix-settings/p
 import { AddRoleComponent } from './components/settings/roles-settings/add-role/add-role.component';
 import { AddStaffComponent } from './components/settings/staff-management/add-staff/add-staff.component';
 
+import { DepartmentsComponent } from './components/hr/organization/departments/departments.component';
+import { LocationsComponent } from './components/hr/organization/locations/locations.component';
+import { JobRolesComponent } from './components/hr/organization/job-roles/job-roles.component';
+import { GradesComponent } from './components/hr/organization/grades/grades.component';
+import { DesignationsComponent } from './components/hr/organization/designations/designations.component';
+import { CostCentersComponent } from './components/hr/organization/cost-centers/cost-centers.component';
+import { ExpenseCentersComponent } from './components/hr/organization/expense-centers/expense-centers.component';
+
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
@@ -128,7 +136,14 @@ const routes: Routes = [
       { path: 'audit/purchase', component: PurchaseAuditsComponent },
       { path: 'purchase/requisition/:id/print', component: PrPrintComponent },
       { path: 'purchase/direct/:id/print', component: PoPrintComponent },
-      { path: 'purchase/invoices', component: PurchaseInvoiceComponent }
+      { path: 'purchase/invoices', component: PurchaseInvoiceComponent },
+      { path: 'hr/organization/departments', component: DepartmentsComponent },
+      { path: 'hr/organization/locations', component: LocationsComponent },
+      { path: 'hr/organization/job-roles', component: JobRolesComponent },
+      { path: 'hr/organization/grades', component: GradesComponent },
+      { path: 'hr/organization/designations', component: DesignationsComponent },
+      { path: 'hr/organization/cost-centers', component: CostCentersComponent },
+      { path: 'hr/organization/expense-centers', component: ExpenseCentersComponent }
     ]
   }
 ];
