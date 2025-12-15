@@ -48,6 +48,7 @@
         <thead>
           <tr>
             <th>PO Number</th>
+            <th>PR Ref</th>
             <th>PO Type</th>
             <th>Supplier</th>
             <th>Created Date</th>
@@ -58,19 +59,20 @@
         </thead>
         <tbody>
           <tr *ngIf="loading">
-            <td colspan="7" class="empty-state">
+            <td colspan="8" class="empty-state">
               <i class="fas fa-spinner fa-spin"></i>
               <p>Loading...</p>
             </td>
           </tr>
           <tr *ngIf="!loading && filteredPurchases.length === 0">
-            <td colspan="7" class="empty-state">
+            <td colspan="8" class="empty-state">
               <i class="fas fa-cart-plus"></i>
               <p>No entries found</p>
             </td>
           </tr>
           <tr *ngFor="let purchase of filteredPurchases">
             <td><strong>{{ purchase.poNumber || 'Draft' }}</strong></td>
+            <td>{{ purchase.prNumber || '-' }}</td>
             <td>{{ purchase.poType }}</td>
             <td>{{ purchase.supplierName }}</td>
             <td>{{ formatDate(purchase.createdDate) }}</td>
@@ -108,6 +110,10 @@
               <span class="badge" [ngClass]="getStatusClass(purchase.status)">{{ purchase.status }}</span>
             </div>
             <div class="card-supplier">{{ purchase.supplierName }}</div>
+            <div class="card-pr-ref" *ngIf="purchase.prNumber">
+              <span class="label">PR Ref:</span>
+              <span class="value">{{ purchase.prNumber }}</span>
+            </div>
             <div class="card-details">
               <div class="detail-row">
                 <span class="label">Created:</span>
@@ -155,6 +161,10 @@
               <span class="badge" [ngClass]="getStatusClass(purchase.status)">{{ purchase.status }}</span>
             </div>
             <div class="card-supplier">{{ purchase.supplierName }}</div>
+            <div class="card-pr-ref" *ngIf="purchase.prNumber">
+              <span class="label">PR Ref:</span>
+              <span class="value">{{ purchase.prNumber }}</span>
+            </div>
             <div class="card-details">
               <div class="detail-row">
                 <span class="label">Created:</span>
@@ -199,6 +209,10 @@
               <span class="badge" [ngClass]="getStatusClass(purchase.status)">{{ purchase.status }}</span>
             </div>
             <div class="card-supplier">{{ purchase.supplierName }}</div>
+            <div class="card-pr-ref" *ngIf="purchase.prNumber">
+              <span class="label">PR Ref:</span>
+              <span class="value">{{ purchase.prNumber }}</span>
+            </div>
             <div class="card-details">
               <div class="detail-row">
                 <span class="label">Created:</span>

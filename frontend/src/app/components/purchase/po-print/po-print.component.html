@@ -21,6 +21,10 @@
           <span class="label">PO Number</span>
           <span class="value">{{ po.poNumber }}</span>
         </div>
+        <div class="po-number-box pr-ref" *ngIf="po.prNumber">
+          <span class="label">PR Reference</span>
+          <span class="value">{{ po.prNumber }}</span>
+        </div>
       </div>
     </div>
 

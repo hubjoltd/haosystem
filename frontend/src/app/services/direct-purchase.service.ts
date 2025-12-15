@@ -17,6 +17,8 @@ export interface DirectPurchaseItem {
 export interface DirectPurchase {
   id?: number;
   poNumber?: string;
+  prNumber?: string;
+  prId?: number;
   poType: string;
   poDate?: string;
   expectedDate?: string;
