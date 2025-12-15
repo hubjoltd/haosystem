@@ -31,14 +31,17 @@
             </tr>
           </thead>
           <tbody>
+            <tr *ngIf="customerGroups.length === 0">
+              <td colspan="4" class="text-center">No customer groups found. Click "Add Group" to create one.</td>
+            </tr>
             <tr *ngFor="let group of customerGroups">
               <td>{{ group.name }}</td>
               <td>{{ group.description }}</td>
               <td>{{ group.discount }}%</td>
               <td>
                 <div class="action-buttons">
-                  <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
-                  <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                  <button class="btn btn-sm btn-secondary" (click)="openEditModal('group', group)"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteGroup(group)"><i class="fas fa-trash"></i></button>
                 </div>
               </td>
             </tr>
@@ -64,6 +67,9 @@
             </tr>
           </thead>
           <tbody>
+            <tr *ngIf="customerStatuses.length === 0">
+              <td colspan="3" class="text-center">No customer statuses found. Click "Add Status" to create one.</td>
+            </tr>
             <tr *ngFor="let status of customerStatuses">
               <td>{{ status.name }}</td>
               <td>
@@ -71,14 +77,61 @@
               </td>
               <td>
                 <div class="action-buttons">
-                  <button class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></button>
-                  <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                  <button class="btn btn-sm btn-secondary" (click)="openEditModal('status', status)"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteStatus(status)"><i class="fas fa-trash"></i></button>
                 </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditMode ? 'Edit' : 'Add' }} {{ modalType === 'group' ? 'Customer Group' : 'Customer Status' }}</h3>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Group Form -->
+      <form *ngIf="modalType === 'group'" (ngSubmit)="saveGroup()">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" [(ngModel)]="editingGroup.name" name="name" required placeholder="Enter group name">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" [(ngModel)]="editingGroup.description" name="description" placeholder="Enter description">
+        </div>
+        <div class="form-group">
+          <label>Discount (%)</label>
+          <input type="number" [(ngModel)]="editingGroup.discount" name="discount" min="0" max="100" placeholder="Enter discount percentage">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Save' }}</button>
+        </div>
+      </form>
+      
+      <!-- Status Form -->
+      <form *ngIf="modalType === 'status'" (ngSubmit)="saveStatus()">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" [(ngModel)]="editingStatus.name" name="name" required placeholder="Enter status name">
+        </div>
+        <div class="form-group">
+          <label>Color</label>
+          <input type="color" [(ngModel)]="editingStatus.color" name="color">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Save' }}</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

@@ -1,4 +1,5 @@
 com/erp/service/SupplierService.class
+com/erp/repository/CustomerStatusRepository.class
 com/erp/repository/PRMaterialTransferRepository.class
 com/erp/model/GoodsIssueLine.class
 com/erp/security/JwtUtil.class
@@ -20,6 +21,7 @@ com/erp/service/DashboardService.class
 com/erp/controller/StaffController.class
 com/erp/service/ValuationService$LayerConsumption.class
 com/erp/dto/AuthResponse.class
+com/erp/model/CustomerStatus.class
 com/erp/model/Warehouse.class
 com/erp/repository/PRFulfillmentRepository.class
 com/erp/model/PRStockFulfillment.class
@@ -35,6 +37,7 @@ com/erp/repository/ItemGroupRepository.class
 com/erp/service/ValuationService$ConsumptionResult.class
 com/erp/model/Role.class
 com/erp/repository/GoodsReceiptLineRepository.class
+com/erp/repository/CustomerGroupRepository.class
 com/erp/repository/FinanceSettingsRepository.class
 com/erp/config/WebConfig.class
 com/erp/model/User.class
@@ -63,9 +66,11 @@ com/erp/controller/PrefixSettingsController.class
 com/erp/service/WarehouseService.class
 com/erp/model/GoodsReceipt.class
 com/erp/repository/UserNotificationRepository.class
+com/erp/controller/CustomerSettingsController.class
 com/erp/controller/HealthController.class
 com/erp/service/StockAdjustmentService.class
 com/erp/repository/StockAdjustmentRepository.class
+com/erp/model/CustomerGroup.class
 com/erp/service/InventoryLedgerService.class
 com/erp/security/JwtAuthFilter.class
 com/erp/service/PurchaseInvoiceService.class
