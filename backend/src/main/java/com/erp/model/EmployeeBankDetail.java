@@ -20,6 +20,8 @@ public class EmployeeBankDetail {
     private String accountType;
     private String ifscCode;
     private String swiftCode;
+    private String routingNumber;
+    private String paymentMethod;
     
     private Boolean isPrimary = false;
     private Boolean active = true;
@@ -56,6 +58,10 @@ public class EmployeeBankDetail {
     public void setIfscCode(String ifscCode) { this.ifscCode = ifscCode; }
     public String getSwiftCode() { return swiftCode; }
     public void setSwiftCode(String swiftCode) { this.swiftCode = swiftCode; }
+    public String getRoutingNumber() { return routingNumber; }
+    public void setRoutingNumber(String routingNumber) { this.routingNumber = routingNumber; }
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
     public Boolean getIsPrimary() { return isPrimary; }
     public void setIsPrimary(Boolean isPrimary) { this.isPrimary = isPrimary; }
     public Boolean getActive() { return active; }

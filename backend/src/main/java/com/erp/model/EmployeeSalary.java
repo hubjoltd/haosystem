@@ -34,6 +34,10 @@ public class EmployeeSalary {
     private BigDecimal netSalary;
     private BigDecimal ctcAnnual;
     
+    private BigDecimal hourlyRate;
+    private String payFrequency;
+    private String changeReason;
+    
     private LocalDate effectiveFrom;
     private LocalDate effectiveTo;
     
@@ -93,6 +97,12 @@ public class EmployeeSalary {
     public void setNetSalary(BigDecimal netSalary) { this.netSalary = netSalary; }
     public BigDecimal getCtcAnnual() { return ctcAnnual; }
     public void setCtcAnnual(BigDecimal ctcAnnual) { this.ctcAnnual = ctcAnnual; }
+    public BigDecimal getHourlyRate() { return hourlyRate; }
+    public void setHourlyRate(BigDecimal hourlyRate) { this.hourlyRate = hourlyRate; }
+    public String getPayFrequency() { return payFrequency; }
+    public void setPayFrequency(String payFrequency) { this.payFrequency = payFrequency; }
+    public String getChangeReason() { return changeReason; }
+    public void setChangeReason(String changeReason) { this.changeReason = changeReason; }
     public LocalDate getEffectiveFrom() { return effectiveFrom; }
     public void setEffectiveFrom(LocalDate effectiveFrom) { this.effectiveFrom = effectiveFrom; }
     public LocalDate getEffectiveTo() { return effectiveTo; }

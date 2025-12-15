@@ -154,7 +154,32 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   setTab(tab: string) {
+    if (this.isNewEmployee && ['bank', 'salary', 'ctcHistory', 'assets', 'documents'].includes(tab)) {
+      return;
+    }
     this.activeTab = tab;
+  }
+
+  getPayFrequencyLabel(frequency: string | undefined): string {
+    const labels: { [key: string]: string } = {
+      'WEEKLY': 'Weekly',
+      'BI_WEEKLY': 'Bi-Weekly',
+      'SEMI_MONTHLY': 'Semi-Monthly',
+      'MONTHLY': 'Monthly'
+    };
+    return frequency ? labels[frequency] || frequency : '-';
+  }
+
+  getChangeReasonLabel(reason: string | undefined): string {
+    const labels: { [key: string]: string } = {
+      'NEW_HIRE': 'New Hire',
+      'PROMOTION': 'Promotion',
+      'INCREMENT': 'Annual Increment',
+      'REVISION': 'Salary Revision',
+      'TRANSFER': 'Transfer',
+      'CORRECTION': 'Correction'
+    };
+    return reason ? labels[reason] || reason : '-';
   }
 
   toggleEditMode() {

@@ -89,6 +89,7 @@
   gap: 4px;
   border-bottom: 2px solid #e0e0e0;
   margin-bottom: 24px;
+  flex-wrap: wrap;
 
   button {
     background: transparent;
@@ -100,6 +101,12 @@
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
     transition: all 0.2s;
+
+    &.disabled {
+      color: #bbb;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
 
     &:hover {
       color: #008080;
@@ -141,11 +148,36 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
 
   h3 {
     color: #333;
     font-size: 16px;
     margin: 0;
+  }
+
+  .section-description {
+    width: 100%;
+    color: #666;
+    font-size: 13px;
+    margin: 0;
+  }
+}
+
+.info-banner {
+  background: #e8f4f8;
+  border: 1px solid #b8d4e3;
+  border-radius: 6px;
+  padding: 12px 16px;
+  color: #31708f;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+
+  i {
+    font-size: 16px;
   }
 }
 

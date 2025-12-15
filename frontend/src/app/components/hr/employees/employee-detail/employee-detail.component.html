@@ -28,12 +28,11 @@
   <div class="tabs">
     <button [class.active]="activeTab === 'personal'" (click)="setTab('personal')">Personal Info</button>
     <button [class.active]="activeTab === 'employment'" (click)="setTab('employment')">Employment</button>
-    <button [class.active]="activeTab === 'bank'" (click)="setTab('bank')" *ngIf="!isNewEmployee">Bank Details</button>
-    <button [class.active]="activeTab === 'salary'" (click)="setTab('salary')" *ngIf="!isNewEmployee">Salary</button>
-    <button [class.active]="activeTab === 'education'" (click)="setTab('education')" *ngIf="!isNewEmployee">Education</button>
-    <button [class.active]="activeTab === 'experience'" (click)="setTab('experience')" *ngIf="!isNewEmployee">Experience</button>
-    <button [class.active]="activeTab === 'assets'" (click)="setTab('assets')" *ngIf="!isNewEmployee">Assets</button>
-    <button [class.active]="activeTab === 'documents'" (click)="setTab('documents')" *ngIf="!isNewEmployee">Documents</button>
+    <button [class.active]="activeTab === 'bank'" (click)="setTab('bank')" [class.disabled]="isNewEmployee">Bank Details</button>
+    <button [class.active]="activeTab === 'salary'" (click)="setTab('salary')" [class.disabled]="isNewEmployee">Salary</button>
+    <button [class.active]="activeTab === 'ctcHistory'" (click)="setTab('ctcHistory')" [class.disabled]="isNewEmployee">CTC History</button>
+    <button [class.active]="activeTab === 'assets'" (click)="setTab('assets')" [class.disabled]="isNewEmployee">Assets</button>
+    <button [class.active]="activeTab === 'documents'" (click)="setTab('documents')" [class.disabled]="isNewEmployee">Documents</button>
   </div>
 
   <div class="tab-content" *ngIf="activeTab === 'personal'">
@@ -55,18 +54,6 @@
         <div class="form-group">
           <label>Last Name *</label>
           <input type="text" [(ngModel)]="employee.lastName" [disabled]="!isEditMode" />
-        </div>
-        <div class="form-group">
-          <label>Email *</label>
-          <input type="email" [(ngModel)]="employee.email" [disabled]="!isEditMode" />
-        </div>
-        <div class="form-group">
-          <label>Phone</label>
-          <input type="text" [(ngModel)]="employee.phone" [disabled]="!isEditMode" />
-        </div>
-        <div class="form-group">
-          <label>Mobile</label>
-          <input type="text" [(ngModel)]="employee.mobile" [disabled]="!isEditMode" />
         </div>
         <div class="form-group">
           <label>Date of Birth</label>
@@ -92,10 +79,6 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Nationality</label>
-          <input type="text" [(ngModel)]="employee.nationality" [disabled]="!isEditMode" />
-        </div>
-        <div class="form-group">
           <label>Blood Group</label>
           <select [(ngModel)]="employee.bloodGroup" [disabled]="!isEditMode">
             <option value="">Select</option>
@@ -113,15 +96,146 @@
     </div>
 
     <div class="form-section">
-      <h3>Address Information</h3>
+      <h3>Identification & Work Authorization</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>SSN</label>
+          <input type="text" [(ngModel)]="employee.ssn" [disabled]="!isEditMode" placeholder="XXX-XX-XXXX" />
+        </div>
+        <div class="form-group">
+          <label>National ID</label>
+          <input type="text" [(ngModel)]="employee.nationalId" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Citizenship</label>
+          <input type="text" [(ngModel)]="employee.citizenship" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Nationality</label>
+          <input type="text" [(ngModel)]="employee.nationality" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Passport Number</label>
+          <input type="text" [(ngModel)]="employee.passportNumber" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Passport Expiry</label>
+          <input type="date" [(ngModel)]="employee.passportExpiry" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Visa Type</label>
+          <select [(ngModel)]="employee.visaType" [disabled]="!isEditMode">
+            <option value="">Select</option>
+            <option value="H1B">H-1B</option>
+            <option value="L1">L-1</option>
+            <option value="F1_OPT">F-1 OPT</option>
+            <option value="F1_CPT">F-1 CPT</option>
+            <option value="H4_EAD">H-4 EAD</option>
+            <option value="GREEN_CARD">Green Card</option>
+            <option value="US_CITIZEN">US Citizen</option>
+            <option value="TN">TN Visa</option>
+            <option value="E2">E-2</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Visa Expiry</label>
+          <input type="date" [(ngModel)]="employee.visaExpiry" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>I-9 Status</label>
+          <select [(ngModel)]="employee.i9Status" [disabled]="!isEditMode">
+            <option value="">Select</option>
+            <option value="PENDING">Pending</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="REVERIFIED">Re-verified</option>
+            <option value="EXPIRED">Expired</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>I-9 Expiry Date</label>
+          <input type="date" [(ngModel)]="employee.i9ExpiryDate" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Work Authorization Type</label>
+          <select [(ngModel)]="employee.workAuthorizationType" [disabled]="!isEditMode">
+            <option value="">Select</option>
+            <option value="US_CITIZEN">US Citizen</option>
+            <option value="PERMANENT_RESIDENT">Permanent Resident</option>
+            <option value="WORK_VISA">Work Visa</option>
+            <option value="EAD">EAD</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Contact Information</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" [(ngModel)]="employee.email" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" [(ngModel)]="employee.phone" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Mobile</label>
+          <input type="text" [(ngModel)]="employee.mobile" [disabled]="!isEditMode" />
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Permanent Address</h3>
       <div class="form-grid">
         <div class="form-group full-width">
-          <label>Permanent Address</label>
+          <label>Street Address</label>
           <textarea [(ngModel)]="employee.permanentAddress" [disabled]="!isEditMode" rows="2"></textarea>
         </div>
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" [(ngModel)]="employee.permanentCity" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>State</label>
+          <input type="text" [(ngModel)]="employee.permanentState" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Country</label>
+          <input type="text" [(ngModel)]="employee.permanentCountry" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Zip Code</label>
+          <input type="text" [(ngModel)]="employee.permanentZipCode" [disabled]="!isEditMode" />
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Current Address</h3>
+      <div class="form-grid">
         <div class="form-group full-width">
-          <label>Current Address</label>
+          <label>Street Address</label>
           <textarea [(ngModel)]="employee.currentAddress" [disabled]="!isEditMode" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" [(ngModel)]="employee.currentCity" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>State</label>
+          <input type="text" [(ngModel)]="employee.currentState" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Country</label>
+          <input type="text" [(ngModel)]="employee.currentCountry" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Zip Code</label>
+          <input type="text" [(ngModel)]="employee.currentZipCode" [disabled]="!isEditMode" />
         </div>
       </div>
     </div>
@@ -216,6 +330,9 @@
           <select [(ngModel)]="employee.employmentType" [disabled]="!isEditMode">
             <option value="FULL_TIME">Full Time</option>
             <option value="PART_TIME">Part Time</option>
+            <option value="W2">W-2 Employee</option>
+            <option value="1099">1099 Contractor</option>
+            <option value="UNION">Union Employee</option>
             <option value="CONTRACT">Contract</option>
             <option value="INTERN">Intern</option>
             <option value="CONSULTANT">Consultant</option>
@@ -337,6 +454,49 @@
       </tbody>
     </table>
     <p class="no-data" *ngIf="salaryHistory.length === 0">No salary records</p>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'ctcHistory'">
+    <div class="section-header">
+      <h3>CTC History</h3>
+      <p class="section-description">Version-wise salary history with change justification</p>
+    </div>
+    <div class="info-banner" *ngIf="isNewEmployee">
+      <i class="fas fa-info-circle"></i>
+      Save employee first to add CTC history records.
+    </div>
+    <table class="data-table" *ngIf="salaryHistory.length > 0 && !isNewEmployee">
+      <thead>
+        <tr>
+          <th>Version</th>
+          <th>Effective From</th>
+          <th>Effective To</th>
+          <th>CTC (Annual)</th>
+          <th>Pay Frequency</th>
+          <th>Change Reason</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of salaryHistory; let i = index" [class.current-row]="s.isCurrent">
+          <td>v{{ salaryHistory.length - i }}</td>
+          <td>{{ s.effectiveFrom }}</td>
+          <td>{{ s.effectiveTo || '-' }}</td>
+          <td>{{ s.ctcAnnual | number:'1.0-0' }}</td>
+          <td>{{ getPayFrequencyLabel(s.payFrequency) }}</td>
+          <td>
+            <span class="badge" [ngClass]="{
+              'badge-success': s.changeReason === 'PROMOTION',
+              'badge-primary': s.changeReason === 'INCREMENT',
+              'badge-info': s.changeReason === 'REVISION' || s.changeReason === 'NEW_HIRE',
+              'badge-warning': s.changeReason === 'TRANSFER' || s.changeReason === 'CORRECTION'
+            }">{{ getChangeReasonLabel(s.changeReason) }}</span>
+          </td>
+          <td>{{ s.remarks || '-' }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="no-data" *ngIf="salaryHistory.length === 0 && !isNewEmployee">No CTC history records</p>
   </div>
 
   <div class="tab-content" *ngIf="activeTab === 'education'">
@@ -552,6 +712,19 @@
         <input type="text" [(ngModel)]="editingBank.swiftCode" />
       </div>
       <div class="form-group">
+        <label>Routing Number</label>
+        <input type="text" [(ngModel)]="editingBank.routingNumber" placeholder="9-digit routing number" />
+      </div>
+      <div class="form-group">
+        <label>Payment Method</label>
+        <select [(ngModel)]="editingBank.paymentMethod">
+          <option value="">Select</option>
+          <option value="DIRECT_DEPOSIT">Direct Deposit</option>
+          <option value="CHECK">Check</option>
+          <option value="WIRE">Wire Transfer</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label class="checkbox-label">
           <input type="checkbox" [(ngModel)]="editingBank.isPrimary" /> Primary Account
         </label>
@@ -627,6 +800,32 @@
         <div class="form-group">
           <label>CTC (Annual)</label>
           <input type="number" [(ngModel)]="editingSalary.ctcAnnual" />
+        </div>
+        <div class="form-group">
+          <label>Hourly Rate</label>
+          <input type="number" [(ngModel)]="editingSalary.hourlyRate" step="0.01" />
+        </div>
+        <div class="form-group">
+          <label>Pay Frequency</label>
+          <select [(ngModel)]="editingSalary.payFrequency">
+            <option value="">Select</option>
+            <option value="WEEKLY">Weekly</option>
+            <option value="BI_WEEKLY">Bi-Weekly</option>
+            <option value="SEMI_MONTHLY">Semi-Monthly</option>
+            <option value="MONTHLY">Monthly</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Change Reason</label>
+          <select [(ngModel)]="editingSalary.changeReason">
+            <option value="">Select</option>
+            <option value="NEW_HIRE">New Hire</option>
+            <option value="PROMOTION">Promotion</option>
+            <option value="INCREMENT">Annual Increment</option>
+            <option value="REVISION">Salary Revision</option>
+            <option value="TRANSFER">Transfer</option>
+            <option value="CORRECTION">Correction</option>
+          </select>
         </div>
         <div class="form-group full-width">
           <label>Remarks</label>

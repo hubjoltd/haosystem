@@ -94,6 +94,18 @@ public class Employee {
     private String passportNumber;
     private LocalDate passportExpiry;
     
+    private String ssn;
+    private String nationalId;
+    private String citizenship;
+    private String visaType;
+    private LocalDate visaExpiry;
+    private String i9Status;
+    private LocalDate i9ExpiryDate;
+    private String workAuthorizationType;
+    
+    private Integer probationMonths;
+    private Integer noticePeriodDays;
+    
     private Boolean active = true;
     
     private LocalDateTime createdAt;
@@ -206,6 +218,26 @@ public class Employee {
     public void setPassportNumber(String passportNumber) { this.passportNumber = passportNumber; }
     public LocalDate getPassportExpiry() { return passportExpiry; }
     public void setPassportExpiry(LocalDate passportExpiry) { this.passportExpiry = passportExpiry; }
+    public String getSsn() { return ssn; }
+    public void setSsn(String ssn) { this.ssn = ssn; }
+    public String getNationalId() { return nationalId; }
+    public void setNationalId(String nationalId) { this.nationalId = nationalId; }
+    public String getCitizenship() { return citizenship; }
+    public void setCitizenship(String citizenship) { this.citizenship = citizenship; }
+    public String getVisaType() { return visaType; }
+    public void setVisaType(String visaType) { this.visaType = visaType; }
+    public LocalDate getVisaExpiry() { return visaExpiry; }
+    public void setVisaExpiry(LocalDate visaExpiry) { this.visaExpiry = visaExpiry; }
+    public String getI9Status() { return i9Status; }
+    public void setI9Status(String i9Status) { this.i9Status = i9Status; }
+    public LocalDate getI9ExpiryDate() { return i9ExpiryDate; }
+    public void setI9ExpiryDate(LocalDate i9ExpiryDate) { this.i9ExpiryDate = i9ExpiryDate; }
+    public String getWorkAuthorizationType() { return workAuthorizationType; }
+    public void setWorkAuthorizationType(String workAuthorizationType) { this.workAuthorizationType = workAuthorizationType; }
+    public Integer getProbationMonths() { return probationMonths; }
+    public void setProbationMonths(Integer probationMonths) { this.probationMonths = probationMonths; }
+    public Integer getNoticePeriodDays() { return noticePeriodDays; }
+    public void setNoticePeriodDays(Integer noticePeriodDays) { this.noticePeriodDays = noticePeriodDays; }
     public Boolean getActive() { return active; }
     public void setActive(Boolean active) { this.active = active; }
     public LocalDateTime getCreatedAt() { return createdAt; }
