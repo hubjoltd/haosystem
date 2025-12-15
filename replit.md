@@ -1,4 +1,4 @@
-# ERP System - Angular Frontend
+# Hao System - Angular Frontend
 
 ## Overview
 

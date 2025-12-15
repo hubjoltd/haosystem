@@ -21,7 +21,7 @@ export class PrPrintComponent implements OnInit {
   pr: PurchaseRequisition | null = null;
   prId: number = 0;
   loading: boolean = true;
-  companyName: string = 'ERP System';
+  companyName: string = 'Hao System';
   companyAddress: string = '123 Business Street, City, Country';
   
   fulfillmentHistory: FulfillmentHistory[] = [];
