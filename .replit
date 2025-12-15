@@ -58,7 +58,7 @@ expertMode = true
 [deployment]
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "cd backend && PORT=5000 java -jar target/erp-backend-1.0.0.jar"]
-build = ["bash", "-c", "cd frontend && npm run build && cp -r dist/browser/* ../backend/src/main/resources/static/ && cd ../backend && mvn package -DskipTests"]
+build = ["bash", "-c", "cd frontend && npm run build && cp -r dist/frontend/browser/* ../backend/src/main/resources/static/ && cd ../backend && mvn package -DskipTests"]
 
 [userenv]
 
