@@ -135,13 +135,16 @@
             <span class="progress-text">{{ calculateFulfillmentProgress(pr) }}% Fulfilled</span>
           </div>
           <div class="card-actions-row">
+            <button class="btn-action view" (click)="openViewModal(pr); $event.stopPropagation()" title="View History">
+              <i class="fa fa-eye"></i>
+            </button>
             <button class="btn-action convert" (click)="convertToPO(pr, $event)" title="Convert to PO">
               <i class="fa fa-file-invoice"></i>
             </button>
-            <button class="btn-action stock" (click)="fulfillFromStock(pr, $event)" title="Fulfill from Stock">
+            <button class="btn-action stock" (click)="openStockFulfillmentModal(pr, $event)" title="Fulfill from Stock">
               <i class="fa fa-box"></i>
             </button>
-            <button class="btn-action transfer" (click)="materialTransfer(pr, $event)" title="Material Transfer">
+            <button class="btn-action transfer" (click)="openMaterialTransferModal(pr, $event)" title="Material Transfer">
               <i class="fa fa-exchange-alt"></i>
             </button>
           </div>
@@ -173,13 +176,16 @@
             <span class="progress-text">{{ calculateFulfillmentProgress(pr) }}% Fulfilled</span>
           </div>
           <div class="card-actions-row">
+            <button class="btn-action view" (click)="openViewModal(pr); $event.stopPropagation()" title="View History">
+              <i class="fa fa-eye"></i>
+            </button>
             <button class="btn-action convert" (click)="convertToPO(pr, $event)" title="Convert to PO">
               <i class="fa fa-file-invoice"></i>
             </button>
-            <button class="btn-action stock" (click)="fulfillFromStock(pr, $event)" title="Fulfill from Stock">
+            <button class="btn-action stock" (click)="openStockFulfillmentModal(pr, $event)" title="Fulfill from Stock">
               <i class="fa fa-box"></i>
             </button>
-            <button class="btn-action transfer" (click)="materialTransfer(pr, $event)" title="Material Transfer">
+            <button class="btn-action transfer" (click)="openMaterialTransferModal(pr, $event)" title="Material Transfer">
               <i class="fa fa-exchange-alt"></i>
             </button>
           </div>
@@ -307,13 +313,16 @@
                 <button class="btn-icon reject" (click)="rejectPR(pr, $event)" title="Reject" *ngIf="canApproveReject(pr)">
                   <i class="fa fa-times"></i>
                 </button>
+                <button class="btn-icon view" (click)="openViewModal(pr); $event.stopPropagation()" title="View History" *ngIf="canConvertToPO(pr)">
+                  <i class="fa fa-eye"></i>
+                </button>
                 <button class="btn-icon convert" (click)="convertToPO(pr, $event)" title="Convert to PO" *ngIf="canConvertToPO(pr)">
                   <i class="fa fa-file-invoice"></i>
                 </button>
-                <button class="btn-icon stock" (click)="fulfillFromStock(pr, $event)" title="Fulfill from Stock" *ngIf="canFulfillFromStock(pr)">
+                <button class="btn-icon stock" (click)="openStockFulfillmentModal(pr, $event)" title="Fulfill from Stock" *ngIf="canFulfillFromStock(pr)">
                   <i class="fa fa-box"></i>
                 </button>
-                <button class="btn-icon transfer" (click)="materialTransfer(pr, $event)" title="Material Transfer" *ngIf="canMaterialTransfer(pr)">
+                <button class="btn-icon transfer" (click)="openMaterialTransferModal(pr, $event)" title="Material Transfer" *ngIf="canMaterialTransfer(pr)">
                   <i class="fa fa-exchange-alt"></i>
                 </button>
                 <span class="completed-label" *ngIf="isCompleted(pr)">
@@ -471,13 +480,16 @@
         <i class="fa fa-times"></i> Reject
       </button>
       
+      <button class="btn-secondary" (click)="openViewModal(selectedPR)" *ngIf="canConvertToPO(selectedPR)">
+        <i class="fa fa-eye"></i> View History
+      </button>
       <button class="btn-primary" (click)="convertToPO(selectedPR)" *ngIf="canConvertToPO(selectedPR)">
         <i class="fa fa-file-invoice"></i> Convert to PO
       </button>
-      <button class="btn-secondary" (click)="fulfillFromStock(selectedPR)" *ngIf="canFulfillFromStock(selectedPR)">
+      <button class="btn-secondary" (click)="openStockFulfillmentModal(selectedPR)" *ngIf="canFulfillFromStock(selectedPR)">
         <i class="fa fa-box"></i> Fulfill from Stock
       </button>
-      <button class="btn-secondary" (click)="materialTransfer(selectedPR)" *ngIf="canMaterialTransfer(selectedPR)">
+      <button class="btn-secondary" (click)="openMaterialTransferModal(selectedPR)" *ngIf="canMaterialTransfer(selectedPR)">
         <i class="fa fa-exchange-alt"></i> Material Transfer
       </button>
       
@@ -488,6 +500,263 @@
       <span class="rejected-message" *ngIf="isRejected(selectedPR)">
         <i class="fa fa-times-circle"></i> This requisition was rejected
       </span>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>PR History - {{ selectedPR.prNumber }}</h2>
+      <button class="close-btn" (click)="closeViewModal()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs">
+        <button class="tab-btn" [class.active]="viewTabActive === 'purchaseOrders'" (click)="viewTabActive = 'purchaseOrders'">
+          <i class="fa fa-file-invoice"></i> Purchase Orders ({{ purchaseOrders.length }})
+        </button>
+        <button class="tab-btn" [class.active]="viewTabActive === 'stockFulfillments'" (click)="viewTabActive = 'stockFulfillments'">
+          <i class="fa fa-box"></i> Stock Fulfillments ({{ stockFulfillments.length }})
+        </button>
+        <button class="tab-btn" [class.active]="viewTabActive === 'materialTransfers'" (click)="viewTabActive = 'materialTransfers'">
+          <i class="fa fa-exchange-alt"></i> Material Transfers ({{ materialTransfers.length }})
+        </button>
+      </div>
+
+      <div class="tab-content" *ngIf="viewTabActive === 'purchaseOrders'">
+        <div class="empty-tab" *ngIf="purchaseOrders.length === 0">
+          <i class="fa fa-file-invoice"></i>
+          <p>No purchase orders created for this PR yet.</p>
+        </div>
+        <table class="data-table" *ngIf="purchaseOrders.length > 0">
+          <thead>
+            <tr>
+              <th>PO Number</th>
+              <th>Date</th>
+              <th>Supplier</th>
+              <th>Items</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let po of purchaseOrders">
+              <td>{{ po.poNumber }}</td>
+              <td>{{ formatDate(po.poDate) }}</td>
+              <td>{{ po.supplierName }}</td>
+              <td>{{ po.itemCount || po.items?.length || 0 }}</td>
+              <td><span class="status-badge">{{ po.status }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tab-content" *ngIf="viewTabActive === 'stockFulfillments'">
+        <div class="empty-tab" *ngIf="stockFulfillments.length === 0">
+          <i class="fa fa-box"></i>
+          <p>No stock fulfillments for this PR yet.</p>
+        </div>
+        <table class="data-table" *ngIf="stockFulfillments.length > 0">
+          <thead>
+            <tr>
+              <th>Fulfillment #</th>
+              <th>Date</th>
+              <th>Warehouse</th>
+              <th>Supplier</th>
+              <th>Items</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let sf of stockFulfillments">
+              <td>{{ sf.fulfillmentNumber }}</td>
+              <td>{{ formatDate(sf.fulfillmentDate) }}</td>
+              <td>{{ sf.warehouseName || '-' }}</td>
+              <td>{{ sf.supplierName || '-' }}</td>
+              <td>{{ sf.items?.length || 0 }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tab-content" *ngIf="viewTabActive === 'materialTransfers'">
+        <div class="empty-tab" *ngIf="materialTransfers.length === 0">
+          <i class="fa fa-exchange-alt"></i>
+          <p>No material transfers for this PR yet.</p>
+        </div>
+        <table class="data-table" *ngIf="materialTransfers.length > 0">
+          <thead>
+            <tr>
+              <th>Transfer #</th>
+              <th>Date</th>
+              <th>Project</th>
+              <th>Supplier</th>
+              <th>Items</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let mt of materialTransfers">
+              <td>{{ mt.transferNumber }}</td>
+              <td>{{ formatDate(mt.transferDate) }}</td>
+              <td>{{ mt.projectName || '-' }}</td>
+              <td>{{ mt.supplierName || '-' }}</td>
+              <td>{{ mt.items?.length || 0 }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeViewModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showStockFulfillmentModal" (click)="closeStockFulfillmentModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Stock Fulfillment - {{ selectedPR.prNumber }}</h2>
+      <button class="close-btn" (click)="closeStockFulfillmentModal()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Warehouse</label>
+          <select class="form-control" [(ngModel)]="selectedWarehouseId">
+            <option [value]="null">Select Warehouse</option>
+            <option *ngFor="let wh of warehouses" [value]="wh.id">{{ wh.name }} ({{ wh.code }})</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Supplier</label>
+          <select class="form-control" [(ngModel)]="selectedSupplierId">
+            <option [value]="null">Select Supplier</option>
+            <option *ngFor="let sup of suppliers" [value]="sup.id">{{ sup.name }}</option>
+          </select>
+        </div>
+        <div class="form-group full-width">
+          <label>Remarks</label>
+          <textarea class="form-control" [(ngModel)]="stockFulfillmentRemarks" placeholder="Enter remarks" rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="items-section">
+        <div class="section-header">
+          <h3>Select Items to Fulfill</h3>
+        </div>
+        <div class="items-table-container">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th style="width: 40px;">
+                  <input type="checkbox" (change)="toggleAllItems(stockFulfillmentItems, $event)" />
+                </th>
+                <th>Item Name</th>
+                <th style="width: 100px;">Required</th>
+                <th style="width: 100px;">Already Fulfilled</th>
+                <th style="width: 100px;">Remaining</th>
+                <th style="width: 100px;">Qty to Fulfill</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of stockFulfillmentItems">
+                <td>
+                  <input type="checkbox" [(ngModel)]="item.selected" />
+                </td>
+                <td>{{ item.itemName }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.fulfilledQuantity || 0 }}</td>
+                <td>{{ getRemainingQty(item) }}</td>
+                <td>
+                  <input type="number" class="form-control" [(ngModel)]="item.fulfillQty" 
+                         [max]="getRemainingQty(item)" min="0" [disabled]="!item.selected" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeStockFulfillmentModal()">Cancel</button>
+      <button class="btn-primary" (click)="saveStockFulfillment()">
+        <i class="fa fa-check"></i> Fulfill Selected Items
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showMaterialTransferModal" (click)="closeMaterialTransferModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Material Transfer - {{ selectedPR.prNumber }}</h2>
+      <button class="close-btn" (click)="closeMaterialTransferModal()">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Project Name</label>
+          <input type="text" class="form-control" [(ngModel)]="transferProjectName" placeholder="Enter project name" />
+        </div>
+        <div class="form-group">
+          <label>Supplier</label>
+          <select class="form-control" [(ngModel)]="transferSupplierId">
+            <option [value]="null">Select Supplier</option>
+            <option *ngFor="let sup of suppliers" [value]="sup.id">{{ sup.name }}</option>
+          </select>
+        </div>
+        <div class="form-group full-width">
+          <label>Remarks</label>
+          <textarea class="form-control" [(ngModel)]="materialTransferRemarks" placeholder="Enter remarks" rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="items-section">
+        <div class="section-header">
+          <h3>Select Items to Transfer</h3>
+        </div>
+        <div class="items-table-container">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th style="width: 40px;">
+                  <input type="checkbox" (change)="toggleAllItems(materialTransferItems, $event)" />
+                </th>
+                <th>Item Name</th>
+                <th style="width: 100px;">Required</th>
+                <th style="width: 100px;">Already Fulfilled</th>
+                <th style="width: 100px;">Remaining</th>
+                <th style="width: 100px;">Qty to Transfer</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of materialTransferItems">
+                <td>
+                  <input type="checkbox" [(ngModel)]="item.selected" />
+                </td>
+                <td>{{ item.itemName }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.fulfilledQuantity || 0 }}</td>
+                <td>{{ getRemainingQty(item) }}</td>
+                <td>
+                  <input type="number" class="form-control" [(ngModel)]="item.fulfillQty" 
+                         [max]="getRemainingQty(item)" min="0" [disabled]="!item.selected" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeMaterialTransferModal()">Cancel</button>
+      <button class="btn-primary" (click)="saveMaterialTransfer()">
+        <i class="fa fa-check"></i> Transfer Selected Items
+      </button>
     </div>
   </div>
 </div>

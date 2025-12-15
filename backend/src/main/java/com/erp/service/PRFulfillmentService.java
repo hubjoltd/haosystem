@@ -1,18 +1,14 @@
 package com.erp.service;
 
-import com.erp.model.PRFulfillment;
-import com.erp.model.PRFulfillmentItem;
-import com.erp.model.PurchaseRequisition;
-import com.erp.model.PurchaseRequisitionItem;
-import com.erp.model.Item;
-import com.erp.repository.PRFulfillmentRepository;
-import com.erp.repository.PurchaseRequisitionRepository;
-import com.erp.repository.PurchaseRequisitionItemRepository;
-import com.erp.repository.ItemRepository;
+import com.erp.model.*;
+import com.erp.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -151,6 +147,175 @@ public class PRFulfillmentService {
             prService.updateFulfillmentStatus(fulfillment.getPrId());
         }
         
+        return saved;
+    }
+
+    @Autowired
+    private PRStockFulfillmentRepository stockFulfillmentRepository;
+
+    @Autowired
+    private PRMaterialTransferRepository materialTransferRepository;
+
+    @Autowired
+    private WarehouseRepository warehouseRepository;
+
+    @Autowired
+    private SupplierRepository supplierRepository;
+
+    public List<PRStockFulfillment> getStockFulfillmentsByPrId(Long prId) {
+        return stockFulfillmentRepository.findByPrIdWithItems(prId);
+    }
+
+    public List<PRMaterialTransfer> getMaterialTransfersByPrId(Long prId) {
+        return materialTransferRepository.findByPrIdWithItems(prId);
+    }
+
+    public List<PRStockFulfillment> getAllStockFulfillments() {
+        return stockFulfillmentRepository.findAll();
+    }
+
+    public List<PRMaterialTransfer> getAllMaterialTransfers() {
+        return materialTransferRepository.findAll();
+    }
+
+    @Transactional
+    public PRStockFulfillment createNewStockFulfillment(PRStockFulfillment fulfillment) {
+        String prefix = "SF-";
+        Integer maxNum = stockFulfillmentRepository.findMaxNumberByPrefix(prefix);
+        int nextNum = (maxNum == null ? 0 : maxNum) + 1;
+        fulfillment.setFulfillmentNumber(prefix + String.format("%05d", nextNum));
+        
+        if (fulfillment.getFulfillmentDate() == null) {
+            fulfillment.setFulfillmentDate(LocalDate.now());
+        }
+
+        Long prId = fulfillment.getPrId();
+        if (prId != null) {
+            Optional<PurchaseRequisition> prOpt = prRepository.findById(prId);
+            prOpt.ifPresent(pr -> {
+                fulfillment.setPurchaseRequisition(pr);
+                fulfillment.setPrNumber(pr.getPrNumber());
+            });
+        }
+
+        Long warehouseId = fulfillment.getWarehouseId();
+        if (warehouseId != null) {
+            Optional<Warehouse> wh = warehouseRepository.findById(warehouseId);
+            wh.ifPresent(w -> {
+                fulfillment.setFromWarehouse(w);
+                fulfillment.setFromWarehouseName(w.getName());
+            });
+        }
+
+        Long supplierId = fulfillment.getSupplierId();
+        if (supplierId != null) {
+            Optional<Supplier> sup = supplierRepository.findById(supplierId);
+            sup.ifPresent(s -> {
+                fulfillment.setSupplier(s);
+                fulfillment.setSupplierName(s.getName());
+            });
+        }
+
+        if (fulfillment.getItems() == null || fulfillment.getItems().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stock fulfillment must have at least one item");
+        }
+
+        for (PRStockFulfillmentItem item : fulfillment.getItems()) {
+            item.setStockFulfillment(fulfillment);
+            
+            if (item.getPrItemId() != null && item.getFulfilledQuantity() != null && item.getFulfilledQuantity() > 0) {
+                PurchaseRequisitionItem prItem = prItemRepository.findById(item.getPrItemId()).orElse(null);
+                if (prItem != null) {
+                    item.setItemCode(prItem.getItemCode());
+                    item.setItemName(prItem.getItemName());
+                    item.setUom(prItem.getUom());
+                    item.setRequestedQuantity((double) prItem.getQuantity());
+                    
+                    double currentFulfilled = prItem.getFulfilledQuantity() != null ? prItem.getFulfilledQuantity() : 0;
+                    prItem.setFulfilledQuantity(currentFulfilled + item.getFulfilledQuantity());
+                    
+                    if (prItem.getFulfilledQuantity() >= prItem.getQuantity()) {
+                        prItem.setStatus("Fully Fulfilled");
+                    } else {
+                        prItem.setStatus("Partially Fulfilled");
+                    }
+                    prItemRepository.save(prItem);
+                }
+            }
+        }
+
+        PRStockFulfillment saved = stockFulfillmentRepository.save(fulfillment);
+
+        if (prId != null) {
+            prService.updateFulfillmentStatus(prId);
+        }
+
+        return saved;
+    }
+
+    @Transactional
+    public PRMaterialTransfer createNewMaterialTransfer(PRMaterialTransfer transfer) {
+        String prefix = "MT-";
+        Integer maxNum = materialTransferRepository.findMaxNumberByPrefix(prefix);
+        int nextNum = (maxNum == null ? 0 : maxNum) + 1;
+        transfer.setTransferNumber(prefix + String.format("%05d", nextNum));
+        
+        if (transfer.getTransferDate() == null) {
+            transfer.setTransferDate(LocalDate.now());
+        }
+
+        Long prId = transfer.getPrId();
+        if (prId != null) {
+            Optional<PurchaseRequisition> prOpt = prRepository.findById(prId);
+            prOpt.ifPresent(pr -> {
+                transfer.setPurchaseRequisition(pr);
+                transfer.setPrNumber(pr.getPrNumber());
+            });
+        }
+
+        Long supplierId = transfer.getSupplierId();
+        if (supplierId != null) {
+            Optional<Supplier> sup = supplierRepository.findById(supplierId);
+            sup.ifPresent(s -> {
+                transfer.setSupplier(s);
+                transfer.setSupplierName(s.getName());
+            });
+        }
+
+        if (transfer.getItems() == null || transfer.getItems().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Material transfer must have at least one item");
+        }
+
+        for (PRMaterialTransferItem item : transfer.getItems()) {
+            item.setMaterialTransfer(transfer);
+            
+            if (item.getPrItemId() != null && item.getTransferredQuantity() != null && item.getTransferredQuantity() > 0) {
+                PurchaseRequisitionItem prItem = prItemRepository.findById(item.getPrItemId()).orElse(null);
+                if (prItem != null) {
+                    item.setItemCode(prItem.getItemCode());
+                    item.setItemName(prItem.getItemName());
+                    item.setUom(prItem.getUom());
+                    item.setRequestedQuantity((double) prItem.getQuantity());
+                    
+                    double currentFulfilled = prItem.getFulfilledQuantity() != null ? prItem.getFulfilledQuantity() : 0;
+                    prItem.setFulfilledQuantity(currentFulfilled + item.getTransferredQuantity());
+                    
+                    if (prItem.getFulfilledQuantity() >= prItem.getQuantity()) {
+                        prItem.setStatus("Fully Fulfilled");
+                    } else {
+                        prItem.setStatus("Partially Fulfilled");
+                    }
+                    prItemRepository.save(prItem);
+                }
+            }
+        }
+
+        PRMaterialTransfer saved = materialTransferRepository.save(transfer);
+
+        if (prId != null) {
+            prService.updateFulfillmentStatus(prId);
+        }
+
         return saved;
     }
 }

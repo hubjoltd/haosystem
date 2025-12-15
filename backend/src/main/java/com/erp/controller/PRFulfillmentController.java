@@ -1,6 +1,8 @@
 package com.erp.controller;
 
 import com.erp.model.PRFulfillment;
+import com.erp.model.PRStockFulfillment;
+import com.erp.model.PRMaterialTransfer;
 import com.erp.service.PRFulfillmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -56,5 +58,35 @@ public class PRFulfillmentController {
     @PostMapping("/material-transfer")
     public ResponseEntity<PRFulfillment> createMaterialTransferFulfillment(@RequestBody PRFulfillment fulfillment) {
         return ResponseEntity.ok(fulfillmentService.createMaterialTransferFulfillment(fulfillment));
+    }
+
+    @GetMapping("/pr/{prId}/stock-fulfillments")
+    public ResponseEntity<List<PRStockFulfillment>> getStockFulfillmentsByPrId(@PathVariable Long prId) {
+        return ResponseEntity.ok(fulfillmentService.getStockFulfillmentsByPrId(prId));
+    }
+
+    @GetMapping("/pr/{prId}/material-transfers")
+    public ResponseEntity<List<PRMaterialTransfer>> getMaterialTransfersByPrId(@PathVariable Long prId) {
+        return ResponseEntity.ok(fulfillmentService.getMaterialTransfersByPrId(prId));
+    }
+
+    @GetMapping("/stock-fulfillments")
+    public ResponseEntity<List<PRStockFulfillment>> getAllStockFulfillments() {
+        return ResponseEntity.ok(fulfillmentService.getAllStockFulfillments());
+    }
+
+    @GetMapping("/material-transfers")
+    public ResponseEntity<List<PRMaterialTransfer>> getAllMaterialTransfers() {
+        return ResponseEntity.ok(fulfillmentService.getAllMaterialTransfers());
+    }
+
+    @PostMapping("/stock-fulfillment")
+    public ResponseEntity<PRStockFulfillment> createStockFulfillment(@RequestBody PRStockFulfillment fulfillment) {
+        return ResponseEntity.ok(fulfillmentService.createNewStockFulfillment(fulfillment));
+    }
+
+    @PostMapping("/material-transfer-new")
+    public ResponseEntity<PRMaterialTransfer> createMaterialTransfer(@RequestBody PRMaterialTransfer transfer) {
+        return ResponseEntity.ok(fulfillmentService.createNewMaterialTransfer(transfer));
     }
 }

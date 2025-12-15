@@ -1,4 +1,5 @@
 com/erp/service/SupplierService.class
+com/erp/repository/PRMaterialTransferRepository.class
 com/erp/model/GoodsIssueLine.class
 com/erp/security/JwtUtil.class
 com/erp/config/CorsConfig.class
@@ -18,6 +19,7 @@ com/erp/service/ValuationService$LayerConsumption.class
 com/erp/dto/AuthResponse.class
 com/erp/model/Warehouse.class
 com/erp/repository/PRFulfillmentRepository.class
+com/erp/model/PRStockFulfillment.class
 com/erp/model/GeneralSettings.class
 com/erp/controller/RoleController.class
 com/erp/model/Bin.class
@@ -44,8 +46,8 @@ com/erp/repository/WarehouseRepository.class
 com/erp/model/InventoryLedger.class
 com/erp/model/StockAdjustment.class
 com/erp/model/FinanceSettings.class
-com/erp/service/GoodsReceiptService.class
 com/erp/service/BinService.class
+com/erp/service/GoodsReceiptService.class
 com/erp/dto/RegisterRequest.class
 com/erp/model/PRFulfillment.class
 com/erp/service/ItemService.class
@@ -62,10 +64,12 @@ com/erp/security/JwtAuthFilter.class
 com/erp/service/ContractService.class
 com/erp/service/ItemGroupService.class
 com/erp/repository/UnitOfMeasureRepository.class
+com/erp/model/PRStockFulfillmentItem.class
 com/erp/service/AuthService.class
 com/erp/model/StockTransferLine.class
-com/erp/repository/AuditLogRepository.class
+com/erp/model/PRMaterialTransfer.class
 com/erp/repository/ItemRepository.class
+com/erp/repository/AuditLogRepository.class
 com/erp/controller/AuthController.class
 com/erp/model/ItemGroup.class
 com/erp/service/PurchaseRequisitionService.class
@@ -79,8 +83,10 @@ com/erp/service/PrefixSettingsService.class
 com/erp/repository/BinRepository.class
 com/erp/service/CustomerService.class
 com/erp/service/StockTransferService.class
+com/erp/repository/PRStockFulfillmentRepository.class
 com/erp/model/AuditLog.class
 com/erp/repository/InventoryLedgerRepository.class
+com/erp/model/PRMaterialTransferItem.class
 com/erp/repository/ContractRepository.class
 com/erp/repository/PRFulfillmentItemRepository.class
 com/erp/service/RoleService.class

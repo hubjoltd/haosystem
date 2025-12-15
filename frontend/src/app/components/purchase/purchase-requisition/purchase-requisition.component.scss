@@ -1061,3 +1061,82 @@
     max-height: 95vh;
   }
 }
+
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 20px;
+
+  .tab-btn {
+    background: transparent;
+    border: none;
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+
+    &:hover {
+      color: #008080;
+      background: rgba(0, 128, 128, 0.05);
+    }
+
+    &.active {
+      color: #008080;
+      border-bottom-color: #008080;
+      font-weight: 500;
+    }
+
+    i {
+      font-size: 14px;
+    }
+  }
+}
+
+.tab-content {
+  min-height: 200px;
+}
+
+.empty-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: #999;
+  text-align: center;
+
+  i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+.btn-action.view {
+  background: #17a2b8;
+  color: white;
+
+  &:hover {
+    background: #138496;
+  }
+}
+
+.btn-icon.view {
+  color: #17a2b8;
+
+  &:hover {
+    color: #138496;
+  }
+}

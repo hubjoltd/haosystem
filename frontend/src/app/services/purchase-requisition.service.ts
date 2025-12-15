@@ -19,6 +19,57 @@ export interface PRItem {
   status?: PRItemStatus;
 }
 
+export interface StockFulfillmentItem {
+  id?: number;
+  prItemId: number;
+  itemId: number;
+  itemCode?: string;
+  itemName?: string;
+  quantity: number;
+  uom?: string;
+}
+
+export interface StockFulfillment {
+  id?: number;
+  fulfillmentNumber?: string;
+  prId: number;
+  prNumber?: string;
+  warehouseId?: number;
+  warehouseName?: string;
+  supplierId?: number;
+  supplierName?: string;
+  fulfillmentDate?: string;
+  remarks?: string;
+  items: StockFulfillmentItem[];
+  createdAt?: string;
+  createdBy?: string;
+}
+
+export interface MaterialTransferItem {
+  id?: number;
+  prItemId: number;
+  itemId: number;
+  itemCode?: string;
+  itemName?: string;
+  quantity: number;
+  uom?: string;
+}
+
+export interface MaterialTransfer {
+  id?: number;
+  transferNumber?: string;
+  prId: number;
+  prNumber?: string;
+  projectName?: string;
+  supplierId?: number;
+  supplierName?: string;
+  transferDate?: string;
+  remarks?: string;
+  items: MaterialTransferItem[];
+  createdAt?: string;
+  createdBy?: string;
+}
+
 export interface PurchaseRequisition {
   id?: number;
   prNumber?: string;
@@ -55,6 +106,7 @@ export interface PurchaseRequisition {
 })
 export class PurchaseRequisitionService {
   private baseUrl = '/api/purchase/requisitions';
+  private fulfillmentUrl = '/api/purchase/fulfillment';
   private requisitionsSubject = new BehaviorSubject<PurchaseRequisition[]>([]);
   public requisitions$ = this.requisitionsSubject.asObservable();
 
@@ -107,5 +159,33 @@ export class PurchaseRequisitionService {
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
     return `${prefix}-${year}${month}${random}`;
+  }
+
+  getStockFulfillmentsByPrId(prId: number): Observable<StockFulfillment[]> {
+    return this.http.get<StockFulfillment[]>(`${this.fulfillmentUrl}/pr/${prId}/stock-fulfillments`);
+  }
+
+  getMaterialTransfersByPrId(prId: number): Observable<MaterialTransfer[]> {
+    return this.http.get<MaterialTransfer[]>(`${this.fulfillmentUrl}/pr/${prId}/material-transfers`);
+  }
+
+  getAllStockFulfillments(): Observable<StockFulfillment[]> {
+    return this.http.get<StockFulfillment[]>(`${this.fulfillmentUrl}/stock-fulfillments`);
+  }
+
+  getAllMaterialTransfers(): Observable<MaterialTransfer[]> {
+    return this.http.get<MaterialTransfer[]>(`${this.fulfillmentUrl}/material-transfers`);
+  }
+
+  createStockFulfillment(fulfillment: StockFulfillment): Observable<StockFulfillment> {
+    return this.http.post<StockFulfillment>(`${this.fulfillmentUrl}/stock-fulfillment`, fulfillment);
+  }
+
+  createMaterialTransfer(transfer: MaterialTransfer): Observable<MaterialTransfer> {
+    return this.http.post<MaterialTransfer>(`${this.fulfillmentUrl}/material-transfer-new`, transfer);
+  }
+
+  getPurchaseOrdersByPrId(prId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.fulfillmentUrl}/pr/${prId}/purchase-orders`);
   }
 }

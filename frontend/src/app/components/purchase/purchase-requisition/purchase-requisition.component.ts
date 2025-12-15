@@ -1,9 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { PurchaseRequisitionService, PurchaseRequisition, PRItem, PRStatus } from '../../../services/purchase-requisition.service';
+import { PurchaseRequisitionService, PurchaseRequisition, PRItem, PRStatus, StockFulfillment, StockFulfillmentItem, MaterialTransfer, MaterialTransferItem } from '../../../services/purchase-requisition.service';
 import { UnitOfMeasureService, UnitOfMeasure } from '../../../services/unit-of-measure.service';
 import { ItemService, Item } from '../../../services/item.service';
 import { SettingsService } from '../../../services/settings.service';
+import { WarehouseService, Warehouse } from '../../../services/warehouse.service';
+import { SupplierService, Supplier } from '../../../services/supplier.service';
+
+interface SelectablePRItem extends PRItem {
+  selected?: boolean;
+  fulfillQty?: number;
+}
 
 @Component({
   selector: 'app-purchase-requisition',
@@ -24,6 +31,8 @@ export class PurchaseRequisitionComponent implements OnInit {
   
   units: UnitOfMeasure[] = [];
   items: Item[] = [];
+  warehouses: Warehouse[] = [];
+  suppliers: Supplier[] = [];
   
   showModal = false;
   isEditing = false;
@@ -31,6 +40,24 @@ export class PurchaseRequisitionComponent implements OnInit {
   viewMode: 'kanban' | 'table' = 'kanban';
   
   selectedPR: PurchaseRequisition = this.getEmptyPR();
+  
+  showViewModal = false;
+  viewTabActive: 'purchaseOrders' | 'stockFulfillments' | 'materialTransfers' = 'purchaseOrders';
+  purchaseOrders: any[] = [];
+  stockFulfillments: StockFulfillment[] = [];
+  materialTransfers: MaterialTransfer[] = [];
+  
+  showStockFulfillmentModal = false;
+  stockFulfillmentItems: SelectablePRItem[] = [];
+  selectedWarehouseId: number | null = null;
+  selectedSupplierId: number | null = null;
+  stockFulfillmentRemarks = '';
+  
+  showMaterialTransferModal = false;
+  materialTransferItems: SelectablePRItem[] = [];
+  transferProjectName = '';
+  transferSupplierId: number | null = null;
+  materialTransferRemarks = '';
   
   sortOptions = [
     { value: 'date-created', label: 'Date Created' },
@@ -44,7 +71,9 @@ export class PurchaseRequisitionComponent implements OnInit {
     private unitService: UnitOfMeasureService,
     private itemService: ItemService,
     private router: Router,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private warehouseService: WarehouseService,
+    private supplierService: SupplierService
   ) {}
 
   ngOnInit(): void {
@@ -71,6 +100,16 @@ export class PurchaseRequisitionComponent implements OnInit {
     this.itemService.getActive().subscribe({
       next: (data) => this.items = data,
       error: () => this.items = []
+    });
+    
+    this.warehouseService.getActiveWarehouses().subscribe({
+      next: (data: Warehouse[]) => this.warehouses = data,
+      error: () => this.warehouses = []
+    });
+    
+    this.supplierService.getActive().subscribe({
+      next: (data) => this.suppliers = data,
+      error: () => this.suppliers = []
     });
   }
 
@@ -379,5 +418,164 @@ export class PurchaseRequisitionComponent implements OnInit {
     if (pr.id) {
       this.router.navigate(['/app/purchase/requisition', pr.id, 'print']);
     }
+  }
+
+  openViewModal(pr: PurchaseRequisition): void {
+    this.selectedPR = JSON.parse(JSON.stringify(pr));
+    this.viewTabActive = 'purchaseOrders';
+    this.showViewModal = true;
+    this.loadViewTabData();
+  }
+
+  closeViewModal(): void {
+    this.showViewModal = false;
+    this.purchaseOrders = [];
+    this.stockFulfillments = [];
+    this.materialTransfers = [];
+  }
+
+  loadViewTabData(): void {
+    if (!this.selectedPR.id) return;
+    
+    this.prService.getPurchaseOrdersByPrId(this.selectedPR.id).subscribe({
+      next: (data) => this.purchaseOrders = data,
+      error: () => this.purchaseOrders = []
+    });
+    
+    this.prService.getStockFulfillmentsByPrId(this.selectedPR.id).subscribe({
+      next: (data) => this.stockFulfillments = data,
+      error: () => this.stockFulfillments = []
+    });
+    
+    this.prService.getMaterialTransfersByPrId(this.selectedPR.id).subscribe({
+      next: (data) => this.materialTransfers = data,
+      error: () => this.materialTransfers = []
+    });
+  }
+
+  openStockFulfillmentModal(pr: PurchaseRequisition, event?: Event): void {
+    event?.stopPropagation();
+    if (!this.canFulfillFromStock(pr)) return;
+    
+    this.selectedPR = JSON.parse(JSON.stringify(pr));
+    this.stockFulfillmentItems = this.selectedPR.items
+      .filter(item => (item.quantity - (item.fulfilledQuantity || 0)) > 0)
+      .map(item => ({
+        ...item,
+        selected: false,
+        fulfillQty: item.quantity - (item.fulfilledQuantity || 0)
+      }));
+    this.selectedWarehouseId = null;
+    this.selectedSupplierId = null;
+    this.stockFulfillmentRemarks = '';
+    this.showStockFulfillmentModal = true;
+  }
+
+  closeStockFulfillmentModal(): void {
+    this.showStockFulfillmentModal = false;
+    this.stockFulfillmentItems = [];
+  }
+
+  saveStockFulfillment(): void {
+    const selectedItems = this.stockFulfillmentItems.filter(item => item.selected && item.fulfillQty && item.fulfillQty > 0);
+    
+    if (selectedItems.length === 0) {
+      alert('Please select at least one item to fulfill.');
+      return;
+    }
+    
+    if (!this.selectedWarehouseId && !this.selectedSupplierId) {
+      alert('Please select a warehouse or supplier.');
+      return;
+    }
+    
+    const fulfillment: StockFulfillment = {
+      prId: this.selectedPR.id!,
+      warehouseId: this.selectedWarehouseId || undefined,
+      supplierId: this.selectedSupplierId || undefined,
+      remarks: this.stockFulfillmentRemarks,
+      items: selectedItems.map(item => ({
+        prItemId: item.id!,
+        itemId: item.itemId!,
+        quantity: item.fulfillQty!
+      }))
+    };
+    
+    this.prService.createStockFulfillment(fulfillment).subscribe({
+      next: () => {
+        this.closeStockFulfillmentModal();
+        this.loadData();
+        alert('Stock fulfillment created successfully!');
+      },
+      error: (err) => {
+        console.error('Error creating stock fulfillment:', err);
+        alert('Error creating stock fulfillment. Please try again.');
+      }
+    });
+  }
+
+  openMaterialTransferModal(pr: PurchaseRequisition, event?: Event): void {
+    event?.stopPropagation();
+    if (!this.canMaterialTransfer(pr)) return;
+    
+    this.selectedPR = JSON.parse(JSON.stringify(pr));
+    this.materialTransferItems = this.selectedPR.items
+      .filter(item => (item.quantity - (item.fulfilledQuantity || 0)) > 0)
+      .map(item => ({
+        ...item,
+        selected: false,
+        fulfillQty: item.quantity - (item.fulfilledQuantity || 0)
+      }));
+    this.transferProjectName = '';
+    this.transferSupplierId = null;
+    this.materialTransferRemarks = '';
+    this.showMaterialTransferModal = true;
+  }
+
+  closeMaterialTransferModal(): void {
+    this.showMaterialTransferModal = false;
+    this.materialTransferItems = [];
+  }
+
+  saveMaterialTransfer(): void {
+    const selectedItems = this.materialTransferItems.filter(item => item.selected && item.fulfillQty && item.fulfillQty > 0);
+    
+    if (selectedItems.length === 0) {
+      alert('Please select at least one item to transfer.');
+      return;
+    }
+    
+    const transfer: MaterialTransfer = {
+      prId: this.selectedPR.id!,
+      projectName: this.transferProjectName,
+      supplierId: this.transferSupplierId || undefined,
+      remarks: this.materialTransferRemarks,
+      items: selectedItems.map(item => ({
+        prItemId: item.id!,
+        itemId: item.itemId!,
+        quantity: item.fulfillQty!
+      }))
+    };
+    
+    this.prService.createMaterialTransfer(transfer).subscribe({
+      next: () => {
+        this.closeMaterialTransferModal();
+        this.loadData();
+        alert('Material transfer created successfully!');
+      },
+      error: (err) => {
+        console.error('Error creating material transfer:', err);
+        alert('Error creating material transfer. Please try again.');
+      }
+    });
+  }
+
+  toggleAllItems(items: SelectablePRItem[], event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    items.forEach(item => item.selected = checked);
+  }
+
+  getRemainingQty(item: PRItem): number {
+    return item.quantity - (item.fulfilledQuantity || 0);
   }
 }
