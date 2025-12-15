@@ -31,8 +31,8 @@ com/erp/dto/AuthResponse.class
 com/erp/model/CostCenter.class
 com/erp/model/CustomerStatus.class
 com/erp/model/Warehouse.class
-com/erp/repository/PRFulfillmentRepository.class
 com/erp/repository/DepartmentRepository.class
+com/erp/repository/PRFulfillmentRepository.class
 com/erp/model/PRStockFulfillment.class
 com/erp/model/GeneralSettings.class
 com/erp/controller/RoleController.class
@@ -56,6 +56,7 @@ com/erp/model/User.class
 com/erp/service/DocumentExpiryScheduler.class
 com/erp/controller/ApiController.class
 com/erp/repository/StockTransferLineRepository.class
+com/erp/controller/MisDashboardController.class
 com/erp/model/Department.class
 com/erp/controller/PRFulfillmentController.class
 com/erp/model/GoodsReceiptLine.class

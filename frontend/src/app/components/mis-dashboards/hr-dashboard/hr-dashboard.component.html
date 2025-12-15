@@ -1,0 +1,210 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <div class="header-left">
+      <h1><i class="fas fa-users"></i> HR Dashboard</h1>
+      <p class="subtitle">Workforce analytics and insights</p>
+    </div>
+    <div class="header-actions">
+      <select [(ngModel)]="selectedPeriod" class="period-select">
+        <option value="week">This Week</option>
+        <option value="month">This Month</option>
+        <option value="quarter">This Quarter</option>
+        <option value="year">This Year</option>
+      </select>
+      <button class="btn-refresh" (click)="loadStats()">
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <i class="fas fa-spinner fa-spin"></i>
+    <span>Loading dashboard...</span>
+  </div>
+
+  <div *ngIf="!loading && stats" class="dashboard-content">
+    <div class="stats-row">
+      <div class="stat-card primary">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.totalHeadcount }}</span>
+          <span class="stat-label">Total Headcount</span>
+        </div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-icon"><i class="fas fa-user-check"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.activeEmployees }}</span>
+          <span class="stat-label">Active Employees</span>
+        </div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-icon"><i class="fas fa-user-plus"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.newHiresThisMonth }}</span>
+          <span class="stat-label">New Hires (Month)</span>
+        </div>
+      </div>
+      <div class="stat-card danger">
+        <div class="stat-icon"><i class="fas fa-user-minus"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.exitsThisMonth }}</span>
+          <span class="stat-label">Exits (Month)</span>
+        </div>
+      </div>
+      <div class="stat-card info">
+        <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.attritionRate }}%</span>
+          <span class="stat-label">Attrition Rate</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="card-header">
+          <h3><i class="fas fa-chart-line"></i> Hiring vs Exits Trend</h3>
+        </div>
+        <div class="card-body">
+          <div class="bar-chart">
+            <div class="chart-legend">
+              <span class="legend-item"><span class="dot success"></span> Hires</span>
+              <span class="legend-item"><span class="dot danger"></span> Exits</span>
+            </div>
+            <div class="chart-bars">
+              <div class="bar-group" *ngFor="let item of stats.monthlyHiringTrend">
+                <div class="bars">
+                  <div class="bar hire" [style.height.%]="(item.hires / 15) * 100"></div>
+                  <div class="bar exit" [style.height.%]="(item.exits / 15) * 100"></div>
+                </div>
+                <span class="bar-label">{{ item.month }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="card-header">
+          <h3><i class="fas fa-venus-mars"></i> Gender Diversity</h3>
+        </div>
+        <div class="card-body">
+          <div class="donut-chart-container">
+            <div class="donut-chart">
+              <svg viewBox="0 0 100 100">
+                <circle class="donut-segment male" cx="50" cy="50" r="40" 
+                  [style.stroke-dasharray]="getGenderPercentage('male') * 2.51 + ' 251'"
+                  stroke-dashoffset="0" />
+                <circle class="donut-segment female" cx="50" cy="50" r="40"
+                  [style.stroke-dasharray]="getGenderPercentage('female') * 2.51 + ' 251'"
+                  [style.stroke-dashoffset]="'-' + (getGenderPercentage('male') * 2.51)" />
+                <circle class="donut-segment other" cx="50" cy="50" r="40"
+                  [style.stroke-dasharray]="getGenderPercentage('other') * 2.51 + ' 251'"
+                  [style.stroke-dashoffset]="'-' + ((getGenderPercentage('male') + getGenderPercentage('female')) * 2.51)" />
+              </svg>
+              <div class="donut-center">
+                <span class="total">{{ stats.totalHeadcount }}</span>
+                <span class="label">Total</span>
+              </div>
+            </div>
+            <div class="donut-legend">
+              <div class="legend-item">
+                <span class="dot male"></span>
+                <span class="label">Male</span>
+                <span class="value">{{ stats.genderDiversity.male }} ({{ getGenderPercentage('male') }}%)</span>
+              </div>
+              <div class="legend-item">
+                <span class="dot female"></span>
+                <span class="label">Female</span>
+                <span class="value">{{ stats.genderDiversity.female }} ({{ getGenderPercentage('female') }}%)</span>
+              </div>
+              <div class="legend-item">
+                <span class="dot other"></span>
+                <span class="label">Other</span>
+                <span class="value">{{ stats.genderDiversity.other }} ({{ getGenderPercentage('other') }}%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="card-header">
+          <h3><i class="fas fa-building"></i> Department Distribution</h3>
+        </div>
+        <div class="card-body">
+          <div class="horizontal-bars">
+            <div class="h-bar-item" *ngFor="let dept of stats.departmentDistribution">
+              <span class="h-bar-label">{{ dept.department }}</span>
+              <div class="h-bar-track">
+                <div class="h-bar-fill" [style.width.%]="(dept.count / getMaxDepartmentCount()) * 100"></div>
+              </div>
+              <span class="h-bar-value">{{ dept.count }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="card-header">
+          <h3><i class="fas fa-birthday-cake"></i> Age Distribution</h3>
+        </div>
+        <div class="card-body">
+          <div class="age-chart">
+            <div class="age-bar" *ngFor="let age of stats.ageDistribution">
+              <div class="age-bar-fill" [style.height.%]="(age.count / 70) * 100"></div>
+              <span class="age-count">{{ age.count }}</span>
+              <span class="age-label">{{ age.range }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card small">
+        <div class="card-header">
+          <h3><i class="fas fa-briefcase"></i> Employment Types</h3>
+        </div>
+        <div class="card-body">
+          <div class="type-list">
+            <div class="type-item" *ngFor="let type of stats.employmentTypeDistribution">
+              <div class="type-info">
+                <span class="type-name">{{ type.type }}</span>
+                <span class="type-count">{{ type.count }}</span>
+              </div>
+              <div class="type-bar-track">
+                <div class="type-bar-fill" [style.width.%]="(type.count / stats.totalHeadcount) * 100"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="metrics-row">
+      <div class="metric-card">
+        <i class="fas fa-clock"></i>
+        <div class="metric-content">
+          <span class="metric-value">{{ stats.avgTenure }} yrs</span>
+          <span class="metric-label">Average Tenure</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <i class="fas fa-bed"></i>
+        <div class="metric-content">
+          <span class="metric-value">{{ stats.onLeave }}</span>
+          <span class="metric-label">On Leave Today</span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <i class="fas fa-chart-pie"></i>
+        <div class="metric-content">
+          <span class="metric-value">{{ stats.departmentDistribution.length }}</span>
+          <span class="metric-label">Departments</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

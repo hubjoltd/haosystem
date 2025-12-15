@@ -185,6 +185,19 @@ export class SidebarComponent implements OnInit {
           ]
         }
       ]
+    },
+    {
+      icon: 'fas fa-chart-pie',
+      label: 'MIS & Dashboards',
+      expanded: false,
+      permissionKey: 'MIS Dashboards',
+      children: [
+        { icon: 'fas fa-users', label: 'HR Dashboard', route: '/app/mis/hr-dashboard' },
+        { icon: 'fas fa-money-bill-wave', label: 'Payroll Dashboard', route: '/app/mis/payroll-dashboard' },
+        { icon: 'fas fa-calendar-check', label: 'Attendance Dashboard', route: '/app/mis/attendance-dashboard' },
+        { icon: 'fas fa-chart-line', label: 'Performance Dashboard', route: '/app/mis/performance-dashboard' },
+        { icon: 'fas fa-file-alt', label: 'Custom Report Builder', route: '/app/mis/report-builder' }
+      ]
     }
   ];
 

@@ -1,0 +1,162 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <div class="header-left">
+      <h1><i class="fas fa-money-bill-wave"></i> Payroll Dashboard</h1>
+      <p class="subtitle">Payroll costs and trends analysis</p>
+    </div>
+    <div class="header-actions">
+      <select [(ngModel)]="selectedPeriod" class="period-select">
+        <option value="month">This Month</option>
+        <option value="quarter">This Quarter</option>
+        <option value="year">This Year</option>
+      </select>
+      <button class="btn-refresh" (click)="loadStats()">
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <i class="fas fa-spinner fa-spin"></i>
+    <span>Loading dashboard...</span>
+  </div>
+
+  <div *ngIf="!loading && stats" class="dashboard-content">
+    <div class="stats-row">
+      <div class="stat-card primary">
+        <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ formatCurrency(stats.totalPayrollCost) }}</span>
+          <span class="stat-label">Total Payroll Cost</span>
+        </div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-icon"><i class="fas fa-user-tie"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ formatCurrency(stats.avgSalary) }}</span>
+          <span class="stat-label">Average Salary</span>
+        </div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-icon"><i class="fas fa-minus-circle"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ formatCurrency(stats.totalDeductions) }}</span>
+          <span class="stat-label">Total Deductions</span>
+        </div>
+      </div>
+      <div class="stat-card info">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ formatCurrency(stats.totalOvertimePay) }}</span>
+          <span class="stat-label">Overtime Pay</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card wide">
+        <div class="card-header">
+          <h3><i class="fas fa-chart-area"></i> Payroll Cost Trend</h3>
+        </div>
+        <div class="card-body">
+          <div class="payroll-trend-chart">
+            <div class="trend-bars">
+              <div class="trend-bar" *ngFor="let item of stats.payrollTrend">
+                <div class="bar-container">
+                  <div class="bar-fill" [style.height.%]="(item.cost / getMaxPayrollCost()) * 100"></div>
+                </div>
+                <div class="bar-info">
+                  <span class="cost">{{ formatCurrency(item.cost) }}</span>
+                  <span class="month">{{ item.month }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-row two-col">
+      <div class="chart-card">
+        <div class="card-header">
+          <h3><i class="fas fa-chart-pie"></i> Deductions Breakdown</h3>
+        </div>
+        <div class="card-body">
+          <div class="deductions-list">
+            <div class="deduction-item" *ngFor="let item of stats.deductionsBreakdown; let i = index">
+              <div class="deduction-info">
+                <span class="deduction-color" [style.background]="['#008080', '#00a0a0', '#00c0c0', '#4a90d9', '#6bb3f0', '#8dcfff'][i]"></span>
+                <span class="deduction-name">{{ item.category }}</span>
+              </div>
+              <div class="deduction-bar-container">
+                <div class="deduction-bar" [style.width.%]="(item.amount / getMaxDeduction()) * 100"
+                  [style.background]="['#008080', '#00a0a0', '#00c0c0', '#4a90d9', '#6bb3f0', '#8dcfff'][i]"></div>
+              </div>
+              <span class="deduction-value">{{ formatCurrency(item.amount) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="card-header">
+          <h3><i class="fas fa-clock"></i> Overtime Trend</h3>
+        </div>
+        <div class="card-body">
+          <div class="ot-chart">
+            <div class="chart-legend">
+              <span class="legend-item"><span class="dot hours"></span> Hours</span>
+              <span class="legend-item"><span class="dot cost"></span> Cost</span>
+            </div>
+            <div class="ot-bars">
+              <div class="ot-bar-group" *ngFor="let item of stats.overtimeTrend">
+                <div class="ot-values">
+                  <span class="hours-value">{{ item.hours }}h</span>
+                  <span class="cost-value">{{ formatCurrency(item.cost) }}</span>
+                </div>
+                <div class="ot-bar-stack">
+                  <div class="ot-bar hours" [style.height.%]="(item.hours / 600) * 100"></div>
+                </div>
+                <span class="ot-label">{{ item.month }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-row two-col">
+      <div class="chart-card">
+        <div class="card-header">
+          <h3><i class="fas fa-building"></i> Department Payroll</h3>
+        </div>
+        <div class="card-body">
+          <div class="dept-payroll">
+            <div class="dept-item" *ngFor="let dept of stats.departmentPayroll">
+              <span class="dept-name">{{ dept.department }}</span>
+              <div class="dept-bar-track">
+                <div class="dept-bar-fill" [style.width.%]="(dept.cost / getMaxDeptPayroll()) * 100"></div>
+              </div>
+              <span class="dept-value">{{ formatCurrency(dept.cost) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="card-header">
+          <h3><i class="fas fa-chart-bar"></i> Salary Distribution</h3>
+        </div>
+        <div class="card-body">
+          <div class="salary-dist">
+            <div class="salary-bar" *ngFor="let range of stats.salaryDistribution">
+              <div class="bar-fill" [style.height.%]="(range.count / 50) * 100"></div>
+              <span class="count">{{ range.count }}</span>
+              <span class="range">{{ range.range }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

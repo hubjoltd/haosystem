@@ -89,6 +89,12 @@ import { EmployeeDetailComponent } from './components/hr/employees/employee-deta
 import { DocumentTypesComponent } from './components/hr/documents/document-types/document-types.component';
 import { DocumentExpiryComponent } from './components/hr/documents/document-expiry/document-expiry.component';
 
+import { HRDashboardComponent } from './components/mis-dashboards/hr-dashboard/hr-dashboard.component';
+import { PayrollDashboardComponent } from './components/mis-dashboards/payroll-dashboard/payroll-dashboard.component';
+import { AttendanceDashboardComponent } from './components/mis-dashboards/attendance-dashboard/attendance-dashboard.component';
+import { PerformanceDashboardComponent } from './components/mis-dashboards/performance-dashboard/performance-dashboard.component';
+import { CustomReportBuilderComponent } from './components/mis-dashboards/custom-report-builder/custom-report-builder.component';
+
 @NgModule({
   declarations: [
     App,
@@ -160,7 +166,12 @@ import { DocumentExpiryComponent } from './components/hr/documents/document-expi
     EmployeeListComponent,
     EmployeeDetailComponent,
     DocumentTypesComponent,
-    DocumentExpiryComponent
+    DocumentExpiryComponent,
+    HRDashboardComponent,
+    PayrollDashboardComponent,
+    AttendanceDashboardComponent,
+    PerformanceDashboardComponent,
+    CustomReportBuilderComponent
   ],
   imports: [
     BrowserModule,

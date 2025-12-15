@@ -1,0 +1,200 @@
+<div class="report-builder-container">
+  <div class="builder-header">
+    <div class="header-left">
+      <h1><i class="fas fa-file-alt"></i> Custom Report Builder</h1>
+      <p class="subtitle">Build custom reports with drag and drop</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="clearSelection()">
+        <i class="fas fa-eraser"></i> Clear
+      </button>
+      <button class="btn-secondary" (click)="generatePreview()" [disabled]="selectedFields.length === 0">
+        <i class="fas fa-eye"></i> Preview
+      </button>
+      <button class="btn-primary" (click)="openSaveModal()" [disabled]="selectedFields.length === 0">
+        <i class="fas fa-save"></i> Save Template
+      </button>
+    </div>
+  </div>
+
+  <div class="builder-content">
+    <div class="fields-panel">
+      <div class="panel-header">
+        <h3><i class="fas fa-database"></i> Available Fields</h3>
+        <span class="field-count">{{ availableFields.length }} fields</span>
+      </div>
+      <div class="panel-body">
+        <div class="category-section" *ngFor="let category of categories">
+          <div class="category-header">
+            <i class="fas" [ngClass]="getFieldIcon(category)"></i>
+            <span>{{ category }}</span>
+            <span class="category-count">{{ getFieldsByCategory(category).length }}</span>
+          </div>
+          <div class="field-list">
+            <div class="field-item" 
+              *ngFor="let field of getFieldsByCategory(category)"
+              draggable="true"
+              (dragstart)="onDragStart($event, field)"
+              (click)="addField(field)">
+              <span class="field-name">{{ field.name }}</span>
+              <span class="field-type">{{ field.dataType }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="builder-panel"
+      (dragover)="onDragOver($event)"
+      (drop)="onDrop($event)">
+      <div class="panel-header">
+        <h3><i class="fas fa-columns"></i> Selected Columns</h3>
+        <span class="field-count">{{ selectedFields.length }} selected</span>
+      </div>
+      <div class="panel-body">
+        <div class="drop-zone" *ngIf="selectedFields.length === 0">
+          <i class="fas fa-hand-pointer"></i>
+          <p>Drag fields here or click to add</p>
+        </div>
+        <div class="selected-fields" *ngIf="selectedFields.length > 0">
+          <div class="selected-field" *ngFor="let field of selectedFields; let i = index">
+            <div class="field-handle">
+              <i class="fas fa-grip-vertical"></i>
+            </div>
+            <div class="field-info">
+              <span class="field-name">{{ field.name }}</span>
+              <span class="field-category">{{ field.category }}</span>
+            </div>
+            <div class="field-actions">
+              <button class="btn-icon" (click)="moveFieldUp(i)" [disabled]="i === 0">
+                <i class="fas fa-arrow-up"></i>
+              </button>
+              <button class="btn-icon" (click)="moveFieldDown(i)" [disabled]="i === selectedFields.length - 1">
+                <i class="fas fa-arrow-down"></i>
+              </button>
+              <button class="btn-icon remove" (click)="removeField(field)">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="export-section" *ngIf="selectedFields.length > 0">
+        <h4>Export Options</h4>
+        <div class="export-buttons">
+          <button class="export-btn csv" (click)="exportReport('csv')">
+            <i class="fas fa-file-csv"></i> CSV
+          </button>
+          <button class="export-btn excel" (click)="exportReport('excel')">
+            <i class="fas fa-file-excel"></i> Excel
+          </button>
+          <button class="export-btn pdf" (click)="exportReport('pdf')">
+            <i class="fas fa-file-pdf"></i> PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="templates-panel">
+      <div class="panel-header">
+        <h3><i class="fas fa-folder"></i> Saved Templates</h3>
+        <span class="field-count">{{ savedTemplates.length }} templates</span>
+      </div>
+      <div class="panel-body">
+        <div class="template-list">
+          <div class="template-item" *ngFor="let template of savedTemplates">
+            <div class="template-info" (click)="loadTemplate(template)">
+              <span class="template-name">{{ template.name }}</span>
+              <span class="template-desc">{{ template.description }}</span>
+              <span class="template-meta">{{ template.selectedFields.length }} fields</span>
+            </div>
+            <button class="btn-icon remove" (click)="deleteTemplate(template); $event.stopPropagation()">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+        <div class="no-templates" *ngIf="savedTemplates.length === 0">
+          <i class="fas fa-folder-open"></i>
+          <p>No saved templates</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showTemplateModal" (click)="closeTemplateModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ currentTemplate.id ? 'Update' : 'Save' }} Template</h2>
+      <button class="close-btn" (click)="closeTemplateModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Template Name *</label>
+        <input type="text" [(ngModel)]="currentTemplate.name" placeholder="Enter template name">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="currentTemplate.description" placeholder="Enter description"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Selected Fields</label>
+        <div class="fields-preview">
+          <span class="field-chip" *ngFor="let field of selectedFields">{{ field.name }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeTemplateModal()">Cancel</button>
+      <button class="btn-primary" (click)="saveTemplate()" [disabled]="!currentTemplate.name || saving">
+        <i class="fas fa-spinner fa-spin" *ngIf="saving"></i>
+        {{ saving ? 'Saving...' : 'Save Template' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showPreview" (click)="closePreview()">
+  <div class="modal-content preview-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Report Preview</h2>
+      <button class="close-btn" (click)="closePreview()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div *ngIf="loading" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <span>Loading preview...</span>
+      </div>
+      <div *ngIf="!loading && previewData.length > 0" class="preview-table-container">
+        <table class="preview-table">
+          <thead>
+            <tr>
+              <th *ngFor="let field of selectedFields">{{ field.name }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of previewData">
+              <td *ngFor="let field of selectedFields">{{ row[field.id] }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closePreview()">Close</button>
+      <div class="export-buttons">
+        <button class="export-btn csv" (click)="exportReport('csv')">
+          <i class="fas fa-file-csv"></i> Export CSV
+        </button>
+        <button class="export-btn excel" (click)="exportReport('excel')">
+          <i class="fas fa-file-excel"></i> Export Excel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
