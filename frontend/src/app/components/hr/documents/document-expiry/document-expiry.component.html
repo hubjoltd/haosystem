@@ -1,0 +1,219 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1>Document Expiry Dashboard</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>HR Management</span>
+        <span>/</span>
+        <span>Document Management</span>
+        <span>/</span>
+        <span>Expiry Reminders</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="runExpiryCheck()">
+      <i class="fas fa-sync"></i> Run Expiry Check
+    </button>
+  </div>
+
+  <div class="stats-cards">
+    <div class="stat-card warning" (click)="setActiveTab('expiring')">
+      <div class="stat-icon"><i class="fas fa-clock"></i></div>
+      <div class="stat-info">
+        <div class="stat-value">{{ expiringDocuments.length }}</div>
+        <div class="stat-label">Expiring Soon</div>
+      </div>
+    </div>
+    <div class="stat-card danger" (click)="setActiveTab('expired')">
+      <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+      <div class="stat-info">
+        <div class="stat-value">{{ expiredDocuments.length }}</div>
+        <div class="stat-label">Expired</div>
+      </div>
+    </div>
+    <div class="stat-card info" (click)="setActiveTab('pending')">
+      <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+      <div class="stat-info">
+        <div class="stat-value">{{ pendingVerification.length }}</div>
+        <div class="stat-label">Pending Verification</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab" [class.active]="activeTab === 'expiring'" (click)="setActiveTab('expiring')">
+        <i class="fas fa-clock"></i> Expiring Soon ({{ expiringDocuments.length }})
+      </button>
+      <button class="tab" [class.active]="activeTab === 'expired'" (click)="setActiveTab('expired')">
+        <i class="fas fa-exclamation-triangle"></i> Expired ({{ expiredDocuments.length }})
+      </button>
+      <button class="tab" [class.active]="activeTab === 'pending'" (click)="setActiveTab('pending')">
+        <i class="fas fa-hourglass-half"></i> Pending Verification ({{ pendingVerification.length }})
+      </button>
+    </div>
+
+    <div class="tab-content" *ngIf="activeTab === 'expiring'">
+      <div class="filter-bar">
+        <label>Show documents expiring within:</label>
+        <select [(ngModel)]="expiryDays" (change)="onExpiryDaysChange()">
+          <option [value]="7">7 days</option>
+          <option [value]="14">14 days</option>
+          <option [value]="30">30 days</option>
+          <option [value]="60">60 days</option>
+          <option [value]="90">90 days</option>
+        </select>
+      </div>
+
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Document Type</th>
+              <th>Document Number</th>
+              <th>Expiry Date</th>
+              <th>Days Left</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="expiringDocuments.length === 0">
+              <td colspan="7" class="text-center">No documents expiring within {{ expiryDays }} days.</td>
+            </tr>
+            <tr *ngFor="let doc of expiringDocuments" [class]="getExpiryClass(doc.expiryDate)">
+              <td>
+                <a class="employee-link" (click)="viewEmployee(doc)">
+                  {{ doc.employee?.firstName }} {{ doc.employee?.lastName }}
+                </a>
+                <div class="employee-code">{{ doc.employee?.employeeCode }}</div>
+              </td>
+              <td>{{ doc.documentType?.name }}</td>
+              <td>{{ doc.documentNumber || '-' }}</td>
+              <td>{{ formatDate(doc.expiryDate) }}</td>
+              <td>
+                <span class="days-badge" [class]="getExpiryClass(doc.expiryDate)">
+                  {{ getDaysUntilExpiry(doc.expiryDate) }} days
+                </span>
+              </td>
+              <td>
+                <span class="badge" [class.badge-success]="doc.verificationStatus === 'VERIFIED'"
+                      [class.badge-warning]="doc.verificationStatus === 'PENDING'"
+                      [class.badge-danger]="doc.verificationStatus === 'REJECTED'">
+                  {{ doc.verificationStatus }}
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-sm btn-secondary" (click)="viewEmployee(doc)" title="View Employee">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn btn-sm btn-info" (click)="resetReminder(doc)" title="Reset Reminder" *ngIf="doc.reminderSent">
+                    <i class="fas fa-bell-slash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-content" *ngIf="activeTab === 'expired'">
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Document Type</th>
+              <th>Document Number</th>
+              <th>Expired On</th>
+              <th>Days Overdue</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="expiredDocuments.length === 0">
+              <td colspan="6" class="text-center">No expired documents.</td>
+            </tr>
+            <tr *ngFor="let doc of expiredDocuments" class="expired">
+              <td>
+                <a class="employee-link" (click)="viewEmployee(doc)">
+                  {{ doc.employee?.firstName }} {{ doc.employee?.lastName }}
+                </a>
+                <div class="employee-code">{{ doc.employee?.employeeCode }}</div>
+              </td>
+              <td>{{ doc.documentType?.name }}</td>
+              <td>{{ doc.documentNumber || '-' }}</td>
+              <td>{{ formatDate(doc.expiryDate) }}</td>
+              <td>
+                <span class="days-badge expired">
+                  {{ -getDaysUntilExpiry(doc.expiryDate) }} days overdue
+                </span>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-sm btn-secondary" (click)="viewEmployee(doc)" title="View Employee">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn btn-sm btn-info" (click)="resetReminder(doc)" title="Reset Reminder" *ngIf="doc.reminderSent">
+                    <i class="fas fa-bell-slash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-content" *ngIf="activeTab === 'pending'">
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Document Type</th>
+              <th>Document Number</th>
+              <th>Uploaded</th>
+              <th>Uploaded By</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="pendingVerification.length === 0">
+              <td colspan="6" class="text-center">No documents pending verification.</td>
+            </tr>
+            <tr *ngFor="let doc of pendingVerification">
+              <td>
+                <a class="employee-link" (click)="viewEmployee(doc)">
+                  {{ doc.employee?.firstName }} {{ doc.employee?.lastName }}
+                </a>
+                <div class="employee-code">{{ doc.employee?.employeeCode }}</div>
+              </td>
+              <td>{{ doc.documentType?.name }}</td>
+              <td>{{ doc.documentNumber || '-' }}</td>
+              <td>{{ formatDate(doc.uploadedAt) }}</td>
+              <td>{{ doc.uploadedBy || '-' }}</td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-sm btn-success" (click)="verifyDocument(doc, 'VERIFIED')" title="Verify">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger" (click)="verifyDocument(doc, 'REJECTED')" title="Reject">
+                    <i class="fas fa-times"></i>
+                  </button>
+                  <button class="btn btn-sm btn-secondary" (click)="viewEmployee(doc)" title="View Employee">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

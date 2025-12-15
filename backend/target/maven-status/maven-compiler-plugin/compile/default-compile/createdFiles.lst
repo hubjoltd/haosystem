@@ -53,6 +53,7 @@ com/erp/repository/FinanceSettingsRepository.class
 com/erp/repository/EmployeeDocumentRepository.class
 com/erp/config/WebConfig.class
 com/erp/model/User.class
+com/erp/service/DocumentExpiryScheduler.class
 com/erp/controller/ApiController.class
 com/erp/repository/StockTransferLineRepository.class
 com/erp/model/Department.class

@@ -380,3 +380,27 @@
   padding: 16px 20px;
   border-top: 1px solid #eee;
 }
+
+.text-warning {
+  color: #f0ad4e;
+}
+
+.text-danger {
+  color: #dc3545;
+}
+
+tr.expiring {
+  background-color: #fff3cd;
+}
+
+tr.expired {
+  background-color: #f8d7da;
+}
+
+.btn-success {
+  color: #28a745;
+  
+  &:hover {
+    color: #1e7e34;
+  }
+}

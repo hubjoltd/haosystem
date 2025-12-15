@@ -1,0 +1,223 @@
+<div class="settings-page">
+  <div class="page-header">
+    <div>
+      <h1>Document Types</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>HR Management</span>
+        <span>/</span>
+        <span>Document Management</span>
+        <span>/</span>
+        <span>Document Types</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="initDefaultCategories()">
+        <i class="fas fa-magic"></i> Init Categories
+      </button>
+      <button class="btn btn-secondary" (click)="openCategoryModal()">
+        <i class="fas fa-folder-plus"></i> Add Category
+      </button>
+      <button class="btn btn-primary" (click)="openModal()">
+        <i class="fas fa-plus"></i> Add Document Type
+      </button>
+    </div>
+  </div>
+
+  <div class="card categories-section">
+    <h3>Document Categories</h3>
+    <div class="categories-grid">
+      <div class="category-card" *ngFor="let cat of categories" [class.inactive]="!cat.active">
+        <div class="category-info">
+          <div class="category-code">{{ cat.code }}</div>
+          <div class="category-name">{{ cat.name }}</div>
+          <div class="category-desc" *ngIf="cat.description">{{ cat.description }}</div>
+        </div>
+        <div class="category-actions">
+          <button class="btn btn-sm btn-secondary" (click)="openEditCategoryModal(cat)"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-sm btn-danger" (click)="deleteCategory(cat)"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <div class="category-card empty" *ngIf="categories.length === 0">
+        <p>No categories found. Click "Init Categories" to create default categories.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="filters">
+      <div class="filter-group">
+        <label>Filter by Category</label>
+        <select [(ngModel)]="selectedCategoryId" (change)="onCategoryChange()">
+          <option [ngValue]="null">All Categories</option>
+          <option *ngFor="let cat of categories" [ngValue]="cat.id">{{ cat.name }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Search</label>
+        <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()" placeholder="Search by name or code...">
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Mandatory</th>
+            <th>Has Expiry</th>
+            <th>Reminder Days</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="filteredTypes.length === 0">
+            <td colspan="8" class="text-center">No document types found.</td>
+          </tr>
+          <tr *ngFor="let item of filteredTypes">
+            <td>{{ item.code }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.category?.name || '-' }}</td>
+            <td>
+              <span class="badge" [class.badge-warning]="item.isMandatory" [class.badge-secondary]="!item.isMandatory">
+                {{ item.isMandatory ? 'Yes' : 'No' }}
+              </span>
+            </td>
+            <td>
+              <span class="badge" [class.badge-info]="item.hasExpiry" [class.badge-secondary]="!item.hasExpiry">
+                {{ item.hasExpiry ? 'Yes' : 'No' }}
+              </span>
+            </td>
+            <td>{{ item.hasExpiry ? item.defaultReminderDays + ' days' : '-' }}</td>
+            <td>
+              <span class="badge" [class.badge-success]="item.active" [class.badge-secondary]="!item.active">
+                {{ item.active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary" (click)="openEditModal(item)"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger" (click)="delete(item)"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditMode ? 'Edit' : 'Add' }} Document Type</h3>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="save()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Code *</label>
+            <input type="text" [(ngModel)]="editing.code" name="code" required placeholder="e.g., PASSPORT">
+          </div>
+          <div class="form-group">
+            <label>Name *</label>
+            <input type="text" [(ngModel)]="editing.name" name="name" required placeholder="e.g., Passport">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select [(ngModel)]="editing.category" name="category">
+            <option [ngValue]="null">-- Select Category --</option>
+            <option *ngFor="let cat of categories" [ngValue]="cat">{{ cat.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="editing.description" name="description" placeholder="Enter description"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="editing.isMandatory" name="isMandatory">
+              Mandatory Document
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="editing.hasExpiry" name="hasExpiry">
+              Has Expiry Date
+            </label>
+          </div>
+        </div>
+        <div class="form-row" *ngIf="editing.hasExpiry">
+          <div class="form-group">
+            <label>Default Reminder Days</label>
+            <input type="number" [(ngModel)]="editing.defaultReminderDays" name="defaultReminderDays" min="1" max="365">
+          </div>
+          <div class="form-group">
+            <label>Sort Order</label>
+            <input type="number" [(ngModel)]="editing.sortOrder" name="sortOrder" min="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="editing.active" name="active">
+            Active
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Save' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showCategoryModal" (click)="closeCategoryModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditCategoryMode ? 'Edit' : 'Add' }} Category</h3>
+      <button class="close-btn" (click)="closeCategoryModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="saveCategory()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Code *</label>
+            <input type="text" [(ngModel)]="editingCategory.code" name="catCode" required placeholder="e.g., ID_WORK">
+          </div>
+          <div class="form-group">
+            <label>Name *</label>
+            <input type="text" [(ngModel)]="editingCategory.name" name="catName" required placeholder="e.g., ID & Work Authorization">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="editingCategory.description" name="catDescription" placeholder="Enter description"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Sort Order</label>
+            <input type="number" [(ngModel)]="editingCategory.sortOrder" name="catSortOrder" min="0">
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="editingCategory.active" name="catActive">
+              Active
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeCategoryModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">{{ isEditCategoryMode ? 'Update' : 'Save' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

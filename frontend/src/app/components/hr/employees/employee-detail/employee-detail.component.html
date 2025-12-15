@@ -33,6 +33,7 @@
     <button [class.active]="activeTab === 'education'" (click)="setTab('education')" *ngIf="!isNewEmployee">Education</button>
     <button [class.active]="activeTab === 'experience'" (click)="setTab('experience')" *ngIf="!isNewEmployee">Experience</button>
     <button [class.active]="activeTab === 'assets'" (click)="setTab('assets')" *ngIf="!isNewEmployee">Assets</button>
+    <button [class.active]="activeTab === 'documents'" (click)="setTab('documents')" *ngIf="!isNewEmployee">Documents</button>
   </div>
 
   <div class="tab-content" *ngIf="activeTab === 'personal'">
@@ -460,6 +461,58 @@
     </table>
     <p class="no-data" *ngIf="assets.length === 0">No assets assigned</p>
   </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'documents'">
+    <div class="section-header">
+      <h3>Employee Documents</h3>
+      <button class="btn-primary btn-sm" (click)="openDocumentModal()">
+        <i class="fas fa-plus"></i> Add Document
+      </button>
+    </div>
+    <table class="data-table" *ngIf="documents.length > 0">
+      <thead>
+        <tr>
+          <th>Document Type</th>
+          <th>Document Number</th>
+          <th>Issue Date</th>
+          <th>Expiry Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let doc of documents" [class.expiring]="isDocumentExpiring(doc)" [class.expired]="isDocumentExpired(doc)">
+          <td>{{ doc.documentType?.name }}</td>
+          <td>{{ doc.documentNumber }}</td>
+          <td>{{ doc.issueDate }}</td>
+          <td>
+            <span [class.text-warning]="isDocumentExpiring(doc)" [class.text-danger]="isDocumentExpired(doc)">
+              {{ doc.expiryDate }}
+              <i class="fas fa-exclamation-triangle" *ngIf="isDocumentExpiring(doc) || isDocumentExpired(doc)"></i>
+            </span>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="{
+              'badge-warning': doc.verificationStatus === 'PENDING',
+              'badge-success': doc.verificationStatus === 'VERIFIED',
+              'badge-danger': doc.verificationStatus === 'REJECTED'
+            }">{{ doc.verificationStatus }}</span>
+          </td>
+          <td>
+            <button class="btn-icon btn-success" *ngIf="doc.verificationStatus === 'PENDING'" (click)="verifyDocument(doc, 'VERIFIED')" title="Verify">
+              <i class="fas fa-check"></i>
+            </button>
+            <button class="btn-icon btn-danger" *ngIf="doc.verificationStatus === 'PENDING'" (click)="verifyDocument(doc, 'REJECTED')" title="Reject">
+              <i class="fas fa-times"></i>
+            </button>
+            <button class="btn-icon" (click)="openDocumentModal(doc)"><i class="fas fa-edit"></i></button>
+            <button class="btn-icon btn-danger" (click)="deleteDocument(doc)"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="no-data" *ngIf="documents.length === 0">No documents uploaded</p>
+  </div>
 </div>
 
 <div class="modal-overlay" *ngIf="showBankModal" (click)="showBankModal = false">
@@ -757,6 +810,52 @@
     <div class="modal-footer">
       <button class="btn-secondary" (click)="showAssetModal = false">Cancel</button>
       <button class="btn-primary" (click)="saveAsset()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showDocumentModal" (click)="showDocumentModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditingSubItem ? 'Edit' : 'Add' }} Document</h3>
+      <button class="btn-close" (click)="showDocumentModal = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Document Type *</label>
+        <select [(ngModel)]="editingDocument.documentType" [compareWith]="compareById">
+          <option [ngValue]="null">Select Document Type</option>
+          <option *ngFor="let type of documentTypes" [ngValue]="type">{{ type.name }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Document Number</label>
+        <input type="text" [(ngModel)]="editingDocument.documentNumber" />
+      </div>
+      <div class="form-group">
+        <label>Issue Date</label>
+        <input type="date" [(ngModel)]="editingDocument.issueDate" />
+      </div>
+      <div class="form-group">
+        <label>Expiry Date</label>
+        <input type="date" [(ngModel)]="editingDocument.expiryDate" />
+      </div>
+      <div class="form-group">
+        <label>File URL</label>
+        <input type="text" [(ngModel)]="editingDocument.fileUrl" placeholder="Enter file URL or path" />
+      </div>
+      <div class="form-group">
+        <label>Reminder Days Before Expiry</label>
+        <input type="number" [(ngModel)]="editingDocument.reminderDays" min="1" />
+      </div>
+      <div class="form-group full-width">
+        <label>Remarks</label>
+        <textarea [(ngModel)]="editingDocument.remarks" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showDocumentModal = false">Cancel</button>
+      <button class="btn-primary" (click)="saveDocument()">Save</button>
     </div>
   </div>
 </div>

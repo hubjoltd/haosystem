@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import com.erp.service.DocumentExpiryScheduler;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,6 +30,9 @@ public class DocumentController {
     
     @Autowired
     private EmployeeRepository employeeRepository;
+    
+    @Autowired
+    private DocumentExpiryScheduler expiryScheduler;
 
     @GetMapping("/categories")
     public List<DocumentCategory> getAllCategories() {
@@ -246,5 +250,24 @@ public class DocumentController {
         }
         
         return ResponseEntity.ok("Initialized 6 document categories");
+    }
+
+    @PostMapping("/check-expiry")
+    public Map<String, Object> triggerExpiryCheck() {
+        int[] results = expiryScheduler.processExpiringDocuments();
+        Map<String, Object> result = new HashMap<>();
+        result.put("processed", results[0]);
+        result.put("notifications", results[1]);
+        return result;
+    }
+
+    @PutMapping("/{id}/reset-reminder")
+    public ResponseEntity<EmployeeDocument> resetReminder(@PathVariable Long id) {
+        return documentRepository.findById(id)
+                .map(document -> {
+                    document.setReminderSent(false);
+                    return ResponseEntity.ok(documentRepository.save(document));
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 }

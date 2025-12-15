@@ -117,4 +117,8 @@ export class EmployeeListComponent implements OnInit {
       default: return 'status-active';
     }
   }
+
+  get activeCount(): number {
+    return this.filteredEmployees.filter(emp => emp.active).length;
+  }
 }

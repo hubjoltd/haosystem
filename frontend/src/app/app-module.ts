@@ -86,6 +86,8 @@ import { CostCentersComponent } from './components/hr/organization/cost-centers/
 import { ExpenseCentersComponent } from './components/hr/organization/expense-centers/expense-centers.component';
 import { EmployeeListComponent } from './components/hr/employees/employee-list/employee-list.component';
 import { EmployeeDetailComponent } from './components/hr/employees/employee-detail/employee-detail.component';
+import { DocumentTypesComponent } from './components/hr/documents/document-types/document-types.component';
+import { DocumentExpiryComponent } from './components/hr/documents/document-expiry/document-expiry.component';
 
 @NgModule({
   declarations: [
@@ -156,7 +158,9 @@ import { EmployeeDetailComponent } from './components/hr/employees/employee-deta
     CostCentersComponent,
     ExpenseCentersComponent,
     EmployeeListComponent,
-    EmployeeDetailComponent
+    EmployeeDetailComponent,
+    DocumentTypesComponent,
+    DocumentExpiryComponent
   ],
   imports: [
     BrowserModule,

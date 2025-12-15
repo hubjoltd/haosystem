@@ -149,6 +149,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/model/Supplier.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/CustomerService.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/StockTransferLineRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/service/DocumentExpiryScheduler.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PRFulfillment.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/BinRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/UserNotification.java

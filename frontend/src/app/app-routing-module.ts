@@ -75,6 +75,8 @@ import { CostCentersComponent } from './components/hr/organization/cost-centers/
 import { ExpenseCentersComponent } from './components/hr/organization/expense-centers/expense-centers.component';
 import { EmployeeListComponent } from './components/hr/employees/employee-list/employee-list.component';
 import { EmployeeDetailComponent } from './components/hr/employees/employee-detail/employee-detail.component';
+import { DocumentTypesComponent } from './components/hr/documents/document-types/document-types.component';
+import { DocumentExpiryComponent } from './components/hr/documents/document-expiry/document-expiry.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -147,7 +149,9 @@ const routes: Routes = [
       { path: 'hr/organization/cost-centers', component: CostCentersComponent },
       { path: 'hr/organization/expense-centers', component: ExpenseCentersComponent },
       { path: 'hr/employees', component: EmployeeListComponent },
-      { path: 'hr/employees/:id', component: EmployeeDetailComponent }
+      { path: 'hr/employees/:id', component: EmployeeDetailComponent },
+      { path: 'hr/documents/types', component: DocumentTypesComponent },
+      { path: 'hr/documents/reminders', component: DocumentExpiryComponent }
     ]
   }
 ];

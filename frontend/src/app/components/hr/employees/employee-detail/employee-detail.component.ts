@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmployeeService, Employee, EmployeeBankDetail, EmployeeSalary, EmployeeEducation, EmployeeExperience, EmployeeAsset } from '../../../../services/employee.service';
 import { OrganizationService, Department, Designation, Grade, JobRole, Location, CostCenter, ExpenseCenter } from '../../../../services/organization.service';
+import { DocumentService, DocumentCategory, DocumentType, EmployeeDocument } from '../../../../services/document.service';
 
 @Component({
   selector: 'app-employee-detail',
@@ -21,6 +22,9 @@ export class EmployeeDetailComponent implements OnInit {
   education: EmployeeEducation[] = [];
   experience: EmployeeExperience[] = [];
   assets: EmployeeAsset[] = [];
+  documents: EmployeeDocument[] = [];
+  documentTypes: DocumentType[] = [];
+  documentCategories: DocumentCategory[] = [];
   
   departments: Department[] = [];
   designations: Designation[] = [];
@@ -36,12 +40,14 @@ export class EmployeeDetailComponent implements OnInit {
   showEducationModal = false;
   showExperienceModal = false;
   showAssetModal = false;
+  showDocumentModal = false;
   
   editingBank: EmployeeBankDetail = this.getEmptyBankDetail();
   editingSalary: EmployeeSalary = this.getEmptySalary();
   editingEducation: EmployeeEducation = this.getEmptyEducation();
   editingExperience: EmployeeExperience = this.getEmptyExperience();
   editingAsset: EmployeeAsset = this.getEmptyAsset();
+  editingDocument: EmployeeDocument = this.getEmptyDocument();
   isEditingSubItem = false;
 
   loading = false;
@@ -50,7 +56,8 @@ export class EmployeeDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private employeeService: EmployeeService,
-    private orgService: OrganizationService
+    private orgService: OrganizationService,
+    private documentService: DocumentService
   ) {}
 
   ngOnInit() {
@@ -78,6 +85,8 @@ export class EmployeeDetailComponent implements OnInit {
     this.orgService.getCostCenters().subscribe(data => this.costCenters = data);
     this.orgService.getExpenseCenters().subscribe(data => this.expenseCenters = data);
     this.employeeService.getActive().subscribe(data => this.employees = data);
+    this.documentService.getTypes().subscribe(data => this.documentTypes = data);
+    this.documentService.getCategories().subscribe(data => this.documentCategories = data);
   }
 
   loadEmployee() {
@@ -105,6 +114,7 @@ export class EmployeeDetailComponent implements OnInit {
     this.employeeService.getEducation(this.employeeId).subscribe(data => this.education = data);
     this.employeeService.getExperience(this.employeeId).subscribe(data => this.experience = data);
     this.employeeService.getAssets(this.employeeId).subscribe(data => this.assets = data);
+    this.documentService.getEmployeeDocuments(this.employeeId).subscribe(data => this.documents = data);
   }
 
   getEmptyEmployee(): Employee {
@@ -137,6 +147,10 @@ export class EmployeeDetailComponent implements OnInit {
 
   getEmptyAsset(): EmployeeAsset {
     return { assetType: '', assetName: '', approvalStatus: 'PENDING' };
+  }
+
+  getEmptyDocument(): EmployeeDocument {
+    return { verificationStatus: 'PENDING', reminderDays: 30 };
   }
 
   setTab(tab: string) {
@@ -328,5 +342,66 @@ export class EmployeeDetailComponent implements OnInit {
 
   compareById(obj1: any, obj2: any): boolean {
     return obj1 && obj2 ? obj1.id === obj2.id : obj1 === obj2;
+  }
+
+  openDocumentModal(item?: EmployeeDocument) {
+    this.isEditingSubItem = !!item;
+    this.editingDocument = item ? { ...item } : this.getEmptyDocument();
+    this.showDocumentModal = true;
+  }
+
+  saveDocument() {
+    if (!this.employeeId) return;
+    
+    if (this.isEditingSubItem && this.editingDocument.id) {
+      this.documentService.updateDocument(this.editingDocument.id, this.editingDocument).subscribe({
+        next: () => { this.showDocumentModal = false; this.loadSubData(); },
+        error: (err) => console.error('Error updating document:', err)
+      });
+    } else {
+      this.documentService.createDocument(this.employeeId, this.editingDocument).subscribe({
+        next: () => { this.showDocumentModal = false; this.loadSubData(); },
+        error: (err) => console.error('Error creating document:', err)
+      });
+    }
+  }
+
+  verifyDocument(item: EmployeeDocument, status: string) {
+    if (item.id) {
+      this.documentService.verifyDocument(item.id, status).subscribe({
+        next: () => this.loadSubData(),
+        error: (err) => console.error('Error verifying document:', err)
+      });
+    }
+  }
+
+  deleteDocument(item: EmployeeDocument) {
+    if (item.id && confirm('Delete this document?')) {
+      this.documentService.deleteDocument(item.id).subscribe({
+        next: () => this.loadSubData(),
+        error: (err) => console.error('Error deleting:', err)
+      });
+    }
+  }
+
+  getDocumentStatusClass(status: string): string {
+    switch (status) {
+      case 'VERIFIED': return 'status-verified';
+      case 'REJECTED': return 'status-rejected';
+      default: return 'status-pending';
+    }
+  }
+
+  isDocumentExpiring(doc: EmployeeDocument): boolean {
+    if (!doc.expiryDate) return false;
+    const expiry = new Date(doc.expiryDate);
+    const today = new Date();
+    const daysUntil = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    return daysUntil <= 30 && daysUntil > 0;
+  }
+
+  isDocumentExpired(doc: EmployeeDocument): boolean {
+    if (!doc.expiryDate) return false;
+    return new Date(doc.expiryDate) < new Date();
   }
 }
