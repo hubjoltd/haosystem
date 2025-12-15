@@ -58,6 +58,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/WarehouseRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/config/CorsConfig.java
 /home/runner/workspace/backend/src/main/java/com/erp/config/WebConfig.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/AuditController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/GeneralSettings.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PurchaseRequisition.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/StockTransferRepository.java

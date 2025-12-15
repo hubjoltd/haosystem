@@ -6,6 +6,7 @@ com/erp/model/PurchaseInvoiceItem.class
 com/erp/config/CorsConfig.class
 com/erp/model/Customer.class
 com/erp/service/StaffService.class
+com/erp/controller/AuditController.class
 com/erp/repository/ValuationCostLayerRepository.class
 com/erp/repository/GoodsIssueLineRepository.class
 com/erp/service/UnitOfMeasureService.class
@@ -76,8 +77,8 @@ com/erp/service/AuthService.class
 com/erp/model/StockTransferLine.class
 com/erp/model/PRMaterialTransfer.class
 com/erp/model/PurchaseInvoice.class
-com/erp/repository/ItemRepository.class
 com/erp/repository/AuditLogRepository.class
+com/erp/repository/ItemRepository.class
 com/erp/service/UserNotificationService$NotificationNotFoundException.class
 com/erp/controller/AuthController.class
 com/erp/model/ItemGroup.class
