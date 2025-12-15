@@ -1,3 +1,4 @@
+com/erp/model/ContractType.class
 com/erp/service/SupplierService.class
 com/erp/repository/CustomerStatusRepository.class
 com/erp/repository/PRMaterialTransferRepository.class
@@ -54,6 +55,7 @@ com/erp/repository/WarehouseRepository.class
 com/erp/model/InventoryLedger.class
 com/erp/model/StockAdjustment.class
 com/erp/model/FinanceSettings.class
+com/erp/repository/ContractStatusRepository.class
 com/erp/service/BinService.class
 com/erp/service/GoodsReceiptService.class
 com/erp/dto/RegisterRequest.class
@@ -63,10 +65,12 @@ com/erp/service/ItemService.class
 com/erp/service/AuditLogService.class
 com/erp/model/PRFulfillmentItem.class
 com/erp/controller/PrefixSettingsController.class
+com/erp/model/ContractStatus.class
 com/erp/service/WarehouseService.class
 com/erp/model/GoodsReceipt.class
 com/erp/repository/UserNotificationRepository.class
 com/erp/controller/CustomerSettingsController.class
+com/erp/repository/ContractTypeRepository.class
 com/erp/controller/HealthController.class
 com/erp/service/StockAdjustmentService.class
 com/erp/repository/StockAdjustmentRepository.class
@@ -95,6 +99,7 @@ com/erp/service/SettingsService.class
 com/erp/model/PrefixSettings.class
 com/erp/repository/RoleRepository.class
 com/erp/service/PrefixSettingsService.class
+com/erp/controller/ContractSettingsController.class
 com/erp/repository/BinRepository.class
 com/erp/service/CustomerService.class
 com/erp/service/StockTransferService.class
