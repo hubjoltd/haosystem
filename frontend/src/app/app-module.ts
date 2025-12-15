@@ -74,6 +74,7 @@ import { PoPrintComponent } from './components/purchase/po-print/po-print.compon
 import { PrefixSettingsComponent } from './components/settings/prefix-settings/prefix-settings.component';
 import { AddRoleComponent } from './components/settings/roles-settings/add-role/add-role.component';
 import { AddStaffComponent } from './components/settings/staff-management/add-staff/add-staff.component';
+import { NotificationComponent } from './components/notification/notification.component';
 
 @NgModule({
   declarations: [
@@ -133,7 +134,8 @@ import { AddStaffComponent } from './components/settings/staff-management/add-st
     PoPrintComponent,
     PrefixSettingsComponent,
     AddRoleComponent,
-    AddStaffComponent
+    AddStaffComponent,
+    NotificationComponent
   ],
   imports: [
     BrowserModule,

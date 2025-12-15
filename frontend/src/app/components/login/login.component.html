@@ -59,11 +59,6 @@
           <a href="#" class="forgot-link">Forgot Password?</a>
         </div>
 
-        <div class="error-message" *ngIf="errorMessage">
-          <i class="fas fa-exclamation-circle"></i>
-          {{ errorMessage }}
-        </div>
-
         <button type="submit" class="btn-login" [disabled]="isLoading">
           <span *ngIf="!isLoading">Sign In</span>
           <span *ngIf="isLoading"><i class="fas fa-spinner fa-spin"></i> Signing in...</span>

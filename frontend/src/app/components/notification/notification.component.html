@@ -1,0 +1,13 @@
+<div class="notification-container">
+  <div 
+    *ngFor="let notification of notifications" 
+    class="notification" 
+    [ngClass]="'notification-' + notification.type"
+    (click)="removeNotification(notification.id)">
+    <i class="fa" [ngClass]="getIcon(notification.type)"></i>
+    <span class="message">{{ notification.message }}</span>
+    <button class="close-btn" (click)="removeNotification(notification.id); $event.stopPropagation()">
+      <i class="fa fa-times"></i>
+    </button>
+  </div>
+</div>
