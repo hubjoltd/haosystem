@@ -4,6 +4,7 @@ com/erp/repository/CustomerStatusRepository.class
 com/erp/repository/PRMaterialTransferRepository.class
 com/erp/model/ExpenseCenter.class
 com/erp/model/GoodsIssueLine.class
+com/erp/repository/DocumentTypeRepository.class
 com/erp/security/JwtUtil.class
 com/erp/model/PurchaseInvoiceItem.class
 com/erp/config/CorsConfig.class
@@ -41,6 +42,7 @@ com/erp/model/UserNotification.class
 com/erp/dto/LoginRequest.class
 com/erp/model/PurchaseRequisition.class
 com/erp/repository/PrefixSettingsRepository.class
+com/erp/model/DocumentType.class
 com/erp/repository/ItemGroupRepository.class
 com/erp/service/ValuationService$ConsumptionResult.class
 com/erp/repository/ExpenseCenterRepository.class
@@ -48,6 +50,7 @@ com/erp/model/Role.class
 com/erp/repository/GoodsReceiptLineRepository.class
 com/erp/repository/CustomerGroupRepository.class
 com/erp/repository/FinanceSettingsRepository.class
+com/erp/repository/EmployeeDocumentRepository.class
 com/erp/config/WebConfig.class
 com/erp/model/User.class
 com/erp/controller/ApiController.class
@@ -101,6 +104,7 @@ com/erp/service/AuthService.class
 com/erp/model/StockTransferLine.class
 com/erp/model/PRMaterialTransfer.class
 com/erp/model/PurchaseInvoice.class
+com/erp/model/EmployeeDocument.class
 com/erp/repository/DesignationRepository.class
 com/erp/repository/AuditLogRepository.class
 com/erp/repository/ItemRepository.class
@@ -116,6 +120,7 @@ com/erp/model/Item.class
 com/erp/service/SettingsService.class
 com/erp/model/PrefixSettings.class
 com/erp/repository/RoleRepository.class
+com/erp/repository/DocumentCategoryRepository.class
 com/erp/service/PrefixSettingsService.class
 com/erp/controller/EmployeeController.class
 com/erp/model/EmployeeExperience.class
@@ -133,6 +138,7 @@ com/erp/model/AuditLog.class
 com/erp/repository/EmployeeExperienceRepository.class
 com/erp/repository/InventoryLedgerRepository.class
 com/erp/model/PRMaterialTransferItem.class
+com/erp/controller/DocumentController.class
 com/erp/model/Location.class
 com/erp/repository/ContractRepository.class
 com/erp/repository/PRFulfillmentItemRepository.class
@@ -152,4 +158,5 @@ com/erp/service/ValuationService$InsufficientInventoryException.class
 com/erp/controller/StockMovementController.class
 com/erp/model/Supplier.class
 com/erp/model/StockTransfer.class
+com/erp/model/DocumentCategory.class
 com/erp/repository/GeneralSettingsRepository.class
