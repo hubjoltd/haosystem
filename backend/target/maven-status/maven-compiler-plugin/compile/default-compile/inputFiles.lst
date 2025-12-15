@@ -27,8 +27,8 @@
 /home/runner/workspace/backend/src/main/java/com/erp/model/PRMaterialTransferItem.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/PRFulfillmentController.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GoodsIssueLineRepository.java
-/home/runner/workspace/backend/src/main/java/com/erp/service/RoleService.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/GoodsIssueService.java
+/home/runner/workspace/backend/src/main/java/com/erp/service/RoleService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PRStockFulfillment.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GoodsReceiptLineRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/BinService.java
@@ -52,8 +52,8 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/WarehouseRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/config/CorsConfig.java
 /home/runner/workspace/backend/src/main/java/com/erp/config/WebConfig.java
-/home/runner/workspace/backend/src/main/java/com/erp/model/PurchaseRequisition.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/GeneralSettings.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/PurchaseRequisition.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/StockTransferRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/GoodsReceiptLine.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/GoodsIssueLine.java
