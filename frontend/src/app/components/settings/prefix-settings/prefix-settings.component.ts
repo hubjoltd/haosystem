@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SettingsService, PrefixSettings } from '../../../services/settings.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-prefix-settings',
@@ -38,7 +39,7 @@ export class PrefixSettingsComponent implements OnInit {
   saving: boolean = false;
   loading: boolean = false;
 
-  constructor(private settingsService: SettingsService) {}
+  constructor(private settingsService: SettingsService, private notificationService: NotificationService) {}
 
   ngOnInit(): void {
     this.loadSettings();
@@ -66,12 +67,12 @@ export class PrefixSettingsComponent implements OnInit {
       next: (data) => {
         this.settings = data;
         this.saving = false;
-        alert('Prefix settings saved successfully!');
+        this.notificationService.success('Prefix settings saved successfully');
       },
       error: (err) => {
         console.error('Error saving prefix settings', err);
         this.saving = false;
-        alert('Error saving prefix settings');
+        this.notificationService.error('Error saving prefix settings');
       }
     });
   }

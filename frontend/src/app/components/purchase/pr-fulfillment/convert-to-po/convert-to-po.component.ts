@@ -4,6 +4,7 @@ import { PurchaseRequisitionService, PurchaseRequisition, PRItem } from '../../.
 import { PRFulfillmentService, PRFulfillment, FulfillmentItem } from '../../../../services/pr-fulfillment.service';
 import { SupplierService, Supplier } from '../../../../services/supplier.service';
 import { SettingsService } from '../../../../services/settings.service';
+import { NotificationService } from '../../../../services/notification.service';
 
 @Component({
   selector: 'app-convert-to-po',
@@ -33,7 +34,8 @@ export class ConvertToPoComponent implements OnInit {
     private prService: PurchaseRequisitionService,
     private fulfillmentService: PRFulfillmentService,
     private supplierService: SupplierService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -192,13 +194,13 @@ export class ConvertToPoComponent implements OnInit {
     this.fulfillmentService.createPOFulfillment(fulfillment).subscribe({
       next: () => {
         this.saving = false;
-        alert('Purchase Order created successfully!');
+        this.notificationService.success('Purchase Order created successfully');
         this.router.navigate(['/app/purchase/requisition']);
       },
       error: (err) => {
         console.error('Error creating PO:', err);
         this.saving = false;
-        alert('PO creation saved locally. Backend integration pending.');
+        this.notificationService.warning('PO creation saved locally. Backend integration pending.');
         this.router.navigate(['/app/purchase/requisition']);
       }
     });

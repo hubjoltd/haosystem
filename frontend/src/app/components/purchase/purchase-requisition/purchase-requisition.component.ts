@@ -6,6 +6,7 @@ import { ItemService, Item } from '../../../services/item.service';
 import { SettingsService } from '../../../services/settings.service';
 import { WarehouseService, Warehouse } from '../../../services/warehouse.service';
 import { SupplierService, Supplier } from '../../../services/supplier.service';
+import { NotificationService } from '../../../services/notification.service';
 
 interface SelectablePRItem extends PRItem {
   selected?: boolean;
@@ -80,7 +81,8 @@ export class PurchaseRequisitionComponent implements OnInit {
     private router: Router,
     private settingsService: SettingsService,
     private warehouseService: WarehouseService,
-    private supplierService: SupplierService
+    private supplierService: SupplierService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -240,7 +242,7 @@ export class PurchaseRequisitionComponent implements OnInit {
   saveRequisition(): void {
     const validItems = this.selectedPR.items.filter(item => item.itemName && item.quantity > 0);
     if (validItems.length === 0) {
-      alert('Please add at least one item with name and quantity.');
+      this.notificationService.error('Please add at least one item with name and quantity.');
       return;
     }
     this.selectedPR.items = validItems;
@@ -248,32 +250,46 @@ export class PurchaseRequisitionComponent implements OnInit {
     if (this.isEditing && this.selectedPR.id) {
       this.prService.update(this.selectedPR.id, this.selectedPR).subscribe({
         next: () => {
+          this.notificationService.success('Purchase requisition updated successfully');
           this.loadData();
           this.closeModal();
         },
-        error: (err) => console.error('Error updating PR:', err)
+        error: (err) => {
+          this.notificationService.error('Error updating PR');
+          console.error('Error updating PR:', err);
+        }
       });
     } else {
       this.prService.create(this.selectedPR).subscribe({
         next: () => {
+          this.notificationService.success('Purchase requisition created successfully');
           this.loadData();
           this.closeModal();
         },
-        error: (err) => console.error('Error creating PR:', err)
+        error: (err) => {
+          this.notificationService.error('Error creating PR');
+          console.error('Error creating PR:', err);
+        }
       });
     }
   }
 
   deletePR(pr: PurchaseRequisition): void {
     if (pr.status !== 'Draft') {
-      alert('Only Draft PRs can be deleted.');
+      this.notificationService.error('Only Draft PRs can be deleted.');
       return;
     }
     if (confirm(`Are you sure you want to delete ${pr.prNumber}?`)) {
       if (pr.id) {
         this.prService.delete(pr.id).subscribe({
-          next: () => this.loadData(),
-          error: (err) => console.error('Error deleting PR:', err)
+          next: () => {
+            this.notificationService.success('Purchase requisition deleted successfully');
+            this.loadData();
+          },
+          error: (err) => {
+            this.notificationService.error('Error deleting PR');
+            console.error('Error deleting PR:', err);
+          }
         });
       }
     }
@@ -487,12 +503,12 @@ export class PurchaseRequisitionComponent implements OnInit {
     const selectedItems = this.stockFulfillmentItems.filter(item => item.selected && item.fulfillQty && item.fulfillQty > 0);
     
     if (selectedItems.length === 0) {
-      alert('Please select at least one item to fulfill.');
+      this.notificationService.error('Please select at least one item to fulfill.');
       return;
     }
     
     if (!this.selectedWarehouseId && !this.selectedSupplierId) {
-      alert('Please select a warehouse or supplier.');
+      this.notificationService.error('Please select a warehouse or supplier.');
       return;
     }
     
@@ -518,11 +534,11 @@ export class PurchaseRequisitionComponent implements OnInit {
             setTimeout(() => this.loadInlineData(expandedPR), 500);
           }
         }
-        alert('Stock fulfillment created successfully!');
+        this.notificationService.success('Stock fulfillment created successfully');
       },
       error: (err) => {
         console.error('Error creating stock fulfillment:', err);
-        alert('Error creating stock fulfillment. Please try again.');
+        this.notificationService.error('Error creating stock fulfillment. Please try again.');
       }
     });
   }
@@ -554,7 +570,7 @@ export class PurchaseRequisitionComponent implements OnInit {
     const selectedItems = this.materialTransferItems.filter(item => item.selected && item.fulfillQty && item.fulfillQty > 0);
     
     if (selectedItems.length === 0) {
-      alert('Please select at least one item to transfer.');
+      this.notificationService.error('Please select at least one item to transfer.');
       return;
     }
     
@@ -580,11 +596,11 @@ export class PurchaseRequisitionComponent implements OnInit {
             setTimeout(() => this.loadInlineData(expandedPR), 500);
           }
         }
-        alert('Material transfer created successfully!');
+        this.notificationService.success('Material transfer created successfully');
       },
       error: (err) => {
         console.error('Error creating material transfer:', err);
-        alert('Error creating material transfer. Please try again.');
+        this.notificationService.error('Error creating material transfer. Please try again.');
       }
     });
   }
@@ -649,7 +665,7 @@ export class PurchaseRequisitionComponent implements OnInit {
     event?.stopPropagation();
     const selectedItems = this.inlineSelectableItems.filter(item => item.selected && item.fulfillQty && item.fulfillQty > 0);
     if (selectedItems.length === 0) {
-      alert('Please select at least one item to fulfill from stock.');
+      this.notificationService.error('Please select at least one item to fulfill from stock.');
       return;
     }
     
@@ -665,7 +681,7 @@ export class PurchaseRequisitionComponent implements OnInit {
     event?.stopPropagation();
     const selectedItems = this.inlineSelectableItems.filter(item => item.selected && item.fulfillQty && item.fulfillQty > 0);
     if (selectedItems.length === 0) {
-      alert('Please select at least one item for material transfer.');
+      this.notificationService.error('Please select at least one item for material transfer.');
       return;
     }
     

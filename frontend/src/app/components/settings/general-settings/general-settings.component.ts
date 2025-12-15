@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SettingsService, GeneralSettings } from '../../../services/settings.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-general-settings',
@@ -33,7 +34,7 @@ export class GeneralSettingsComponent implements OnInit {
     { value: 'WEIGHTED_AVERAGE', label: 'Weighted Average Cost' }
   ];
 
-  constructor(private settingsService: SettingsService) {}
+  constructor(private settingsService: SettingsService, private notificationService: NotificationService) {}
 
   ngOnInit(): void {
     this.loadSettings();
@@ -61,12 +62,12 @@ export class GeneralSettingsComponent implements OnInit {
       next: (data) => {
         this.settings = data;
         this.saving = false;
-        alert('Settings saved successfully!');
+        this.notificationService.success('Settings saved successfully');
       },
       error: (err) => {
         console.error('Error saving settings', err);
         this.saving = false;
-        alert('Error saving settings');
+        this.notificationService.error('Error saving settings');
       }
     });
   }

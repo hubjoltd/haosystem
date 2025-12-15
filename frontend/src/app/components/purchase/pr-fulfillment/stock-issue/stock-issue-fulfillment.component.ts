@@ -3,6 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { PurchaseRequisitionService, PurchaseRequisition } from '../../../../services/purchase-requisition.service';
 import { PRFulfillmentService, PRFulfillment, FulfillmentItem } from '../../../../services/pr-fulfillment.service';
 import { SettingsService } from '../../../../services/settings.service';
+import { NotificationService } from '../../../../services/notification.service';
 
 interface Warehouse {
   id: number;
@@ -35,7 +36,8 @@ export class StockIssueFulfillmentComponent implements OnInit {
     private router: Router,
     private prService: PurchaseRequisitionService,
     private fulfillmentService: PRFulfillmentService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -173,13 +175,13 @@ export class StockIssueFulfillmentComponent implements OnInit {
     this.fulfillmentService.createStockIssueFulfillment(fulfillment).subscribe({
       next: () => {
         this.saving = false;
-        alert('Stock Issue created successfully!');
+        this.notificationService.success('Stock Issue created successfully');
         this.router.navigate(['/app/purchase/requisition']);
       },
       error: (err) => {
         console.error('Error creating stock issue:', err);
         this.saving = false;
-        alert('Stock Issue saved locally. Backend integration pending.');
+        this.notificationService.warning('Stock Issue saved locally. Backend integration pending.');
         this.router.navigate(['/app/purchase/requisition']);
       }
     });

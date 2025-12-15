@@ -4,6 +4,7 @@ import { ItemGroupService, ItemGroup } from '../../../services/item-group.servic
 import { UnitOfMeasureService, UnitOfMeasure } from '../../../services/unit-of-measure.service';
 import { SupplierService, Supplier } from '../../../services/supplier.service';
 import { SettingsService } from '../../../services/settings.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-item-master',
@@ -32,7 +33,8 @@ export class ItemMasterComponent implements OnInit {
     private itemGroupService: ItemGroupService,
     private unitOfMeasureService: UnitOfMeasureService,
     private supplierService: SupplierService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -156,7 +158,7 @@ export class ItemMasterComponent implements OnInit {
 
   saveItem(): void {
     if (!this.isFormValid()) {
-      this.errorMessage = 'Please fill in all required fields';
+      this.notificationService.error('Please fill in all required fields');
       return;
     }
 
@@ -170,21 +172,23 @@ export class ItemMasterComponent implements OnInit {
     if (this.editMode && this.selectedItem.id) {
       this.itemService.update(this.selectedItem.id, itemToSave).subscribe({
         next: () => {
+          this.notificationService.success('Item updated successfully');
           this.loadData();
           this.closeModal();
         },
         error: (err) => {
-          this.errorMessage = err.error?.error || 'Error updating item';
+          this.notificationService.error(err.error?.error || 'Error updating item');
         }
       });
     } else {
       this.itemService.create(itemToSave).subscribe({
         next: () => {
+          this.notificationService.success('Item created successfully');
           this.loadData();
           this.closeModal();
         },
         error: (err) => {
-          this.errorMessage = err.error?.error || 'Error creating item';
+          this.notificationService.error(err.error?.error || 'Error creating item');
         }
       });
     }
@@ -193,9 +197,12 @@ export class ItemMasterComponent implements OnInit {
   deleteItem(id: number): void {
     if (confirm('Are you sure you want to delete this item?')) {
       this.itemService.delete(id).subscribe({
-        next: () => this.loadData(),
+        next: () => {
+          this.notificationService.success('Item deleted successfully');
+          this.loadData();
+        },
         error: (err) => {
-          alert(err.error?.error || 'Error deleting item');
+          this.notificationService.error(err.error?.error || 'Error deleting item');
         }
       });
     }

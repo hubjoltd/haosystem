@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ItemGroupService, ItemGroup } from '../../../services/item-group.service';
 import { SettingsService } from '../../../services/settings.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-group-master',
@@ -20,7 +21,8 @@ export class GroupMasterComponent implements OnInit {
 
   constructor(
     private groupService: ItemGroupService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -112,34 +114,36 @@ export class GroupMasterComponent implements OnInit {
 
   saveGroup(): void {
     if (!this.isFormValid()) {
-      this.errorMessage = 'Group Code and Name are required';
+      this.notificationService.error('Group Code and Name are required');
       return;
     }
 
     if (this.editMode && this.selectedGroup.status === 'Inactive' && 
         this.canDeactivateInfo && !this.canDeactivateInfo.canDeactivate) {
-      this.errorMessage = `Cannot deactivate: ${this.canDeactivateInfo.itemCount} item(s) are linked to this group`;
+      this.notificationService.error(`Cannot deactivate: ${this.canDeactivateInfo.itemCount} item(s) are linked to this group`);
       return;
     }
 
     if (this.editMode && this.selectedGroup.id) {
       this.groupService.update(this.selectedGroup.id, this.selectedGroup).subscribe({
         next: () => {
+          this.notificationService.success('Group updated successfully');
           this.loadGroups();
           this.closeModal();
         },
         error: (err) => {
-          this.errorMessage = err.error?.error || 'Error updating group';
+          this.notificationService.error(err.error?.error || 'Error updating group');
         }
       });
     } else {
       this.groupService.create(this.selectedGroup).subscribe({
         next: () => {
+          this.notificationService.success('Group created successfully');
           this.loadGroups();
           this.closeModal();
         },
         error: (err) => {
-          this.errorMessage = err.error?.error || 'Error creating group';
+          this.notificationService.error(err.error?.error || 'Error creating group');
         }
       });
     }
@@ -149,14 +153,17 @@ export class GroupMasterComponent implements OnInit {
     this.groupService.canDeactivate(id).subscribe({
       next: (info) => {
         if (!info.canDeactivate) {
-          alert(`Cannot delete group: ${info.itemCount} item(s) are linked to this group. Please reassign or delete those items first.`);
+          this.notificationService.error(`Cannot delete group: ${info.itemCount} item(s) are linked to this group. Please reassign or delete those items first.`);
           return;
         }
         if (confirm('Are you sure you want to delete this group?')) {
           this.groupService.delete(id).subscribe({
-            next: () => this.loadGroups(),
+            next: () => {
+              this.notificationService.success('Group deleted successfully');
+              this.loadGroups();
+            },
             error: (err) => {
-              alert(err.error?.error || 'Error deleting group');
+              this.notificationService.error(err.error?.error || 'Error deleting group');
             }
           });
         }

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { RoleService, Role } from '../../../services/role.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-roles-settings',
@@ -16,7 +17,7 @@ export class RolesSettingsComponent implements OnInit {
   pageSize: number = 25;
   currentPage: number = 1;
 
-  constructor(private router: Router, private roleService: RoleService) {}
+  constructor(private router: Router, private roleService: RoleService, private notificationService: NotificationService) {}
 
   ngOnInit(): void {
     this.loadRoles();
@@ -75,10 +76,11 @@ export class RolesSettingsComponent implements OnInit {
     if (confirm(`Are you sure you want to delete the role "${role.name}"?`)) {
       this.roleService.delete(role.id!).subscribe({
         next: () => {
+          this.notificationService.success('Role deleted successfully');
           this.loadRoles();
         },
         error: (err) => {
-          alert(err.error?.error || 'Error deleting role');
+          this.notificationService.error(err.error?.error || 'Error deleting role');
         }
       });
     }

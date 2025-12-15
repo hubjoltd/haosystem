@@ -3,6 +3,7 @@ import { SettingsService } from '../../../services/settings.service';
 import { StockMovementService, StockAdjustment } from '../../../services/stock-movement.service';
 import { ItemService } from '../../../services/item.service';
 import { WarehouseService } from '../../../services/warehouse.service';
+import { NotificationService } from '../../../services/notification.service';
 
 interface Adjustment {
   id?: number;
@@ -59,7 +60,8 @@ export class StockAdjustmentsComponent implements OnInit {
     private settingsService: SettingsService,
     private stockMovementService: StockMovementService,
     private itemService: ItemService,
-    private warehouseService: WarehouseService
+    private warehouseService: WarehouseService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -181,22 +183,22 @@ export class StockAdjustmentsComponent implements OnInit {
 
   saveAdjustment(): void {
     if (!this.selectedAdjustment.itemId) {
-      this.errorMessage = 'Please select an item.';
+      this.notificationService.error('Please select an item.');
       return;
     }
 
     if (!this.selectedAdjustment.warehouseId) {
-      this.errorMessage = 'Please select a warehouse.';
+      this.notificationService.error('Please select a warehouse.');
       return;
     }
 
     if (!this.selectedAdjustment.quantityAdjusted || this.selectedAdjustment.quantityAdjusted <= 0) {
-      this.errorMessage = 'Please enter a valid quantity to adjust.';
+      this.notificationService.error('Please enter a valid quantity to adjust.');
       return;
     }
 
     if (!this.selectedAdjustment.reason) {
-      this.errorMessage = 'Please select a reason for adjustment.';
+      this.notificationService.error('Please select a reason for adjustment.');
       return;
     }
 
@@ -217,12 +219,13 @@ export class StockAdjustmentsComponent implements OnInit {
     this.stockMovementService.createAdjustment(payload).subscribe({
       next: () => {
         this.saving = false;
+        this.notificationService.success('Stock Adjustment created successfully');
         this.loadAdjustments();
         this.closeModal();
       },
       error: (err: any) => {
         this.saving = false;
-        this.errorMessage = err.error?.error || 'Error saving adjustment';
+        this.notificationService.error(err.error?.error || 'Error saving adjustment');
         console.error('Error saving adjustment', err);
       }
     });
@@ -241,11 +244,12 @@ export class StockAdjustmentsComponent implements OnInit {
     if (confirm('Are you sure you want to approve this adjustment? This will update the stock levels.')) {
       this.stockMovementService.approveAdjustment(id).subscribe({
         next: () => {
+          this.notificationService.success('Adjustment approved successfully');
           this.loadAdjustments();
         },
         error: (err: any) => {
           console.error('Error approving adjustment', err);
-          alert(err.error?.error || 'Error approving adjustment');
+          this.notificationService.error(err.error?.error || 'Error approving adjustment');
         }
       });
     }
@@ -255,11 +259,12 @@ export class StockAdjustmentsComponent implements OnInit {
     if (confirm('Are you sure you want to reject this adjustment?')) {
       this.stockMovementService.rejectAdjustment(id).subscribe({
         next: () => {
+          this.notificationService.success('Adjustment rejected');
           this.loadAdjustments();
         },
         error: (err: any) => {
           console.error('Error rejecting adjustment', err);
-          alert(err.error?.error || 'Error rejecting adjustment');
+          this.notificationService.error(err.error?.error || 'Error rejecting adjustment');
         }
       });
     }

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { UnitOfMeasureService, UnitOfMeasure } from '../../../services/unit-of-measure.service';
 import { SettingsService } from '../../../services/settings.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-units-of-measure',
@@ -20,7 +21,8 @@ export class UnitsOfMeasureComponent implements OnInit {
 
   constructor(
     private unitService: UnitOfMeasureService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -98,7 +100,7 @@ export class UnitsOfMeasureComponent implements OnInit {
 
   saveUnit(): void {
     if (!this.isFormValid()) {
-      this.errorMessage = 'UOM Code and Name are required';
+      this.notificationService.error('UOM Code and Name are required');
       return;
     }
 
@@ -110,21 +112,23 @@ export class UnitsOfMeasureComponent implements OnInit {
     if (this.editMode && this.selectedUnit.id) {
       this.unitService.update(this.selectedUnit.id, unitToSave).subscribe({
         next: () => {
+          this.notificationService.success('Unit of measure updated successfully');
           this.loadUnits();
           this.closeModal();
         },
         error: (err) => {
-          this.errorMessage = err.error?.error || 'Error updating unit';
+          this.notificationService.error(err.error?.error || 'Error updating unit');
         }
       });
     } else {
       this.unitService.create(unitToSave).subscribe({
         next: () => {
+          this.notificationService.success('Unit of measure created successfully');
           this.loadUnits();
           this.closeModal();
         },
         error: (err) => {
-          this.errorMessage = err.error?.error || 'Error creating unit';
+          this.notificationService.error(err.error?.error || 'Error creating unit');
         }
       });
     }
@@ -133,9 +137,12 @@ export class UnitsOfMeasureComponent implements OnInit {
   deleteUnit(id: number): void {
     if (confirm('Are you sure you want to delete this unit?')) {
       this.unitService.delete(id).subscribe({
-        next: () => this.loadUnits(),
+        next: () => {
+          this.notificationService.success('Unit of measure deleted successfully');
+          this.loadUnits();
+        },
         error: (err) => {
-          alert(err.error?.error || 'Error deleting unit');
+          this.notificationService.error(err.error?.error || 'Error deleting unit');
         }
       });
     }

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { RoleService, Role } from '../../../../services/role.service';
+import { NotificationService } from '../../../../services/notification.service';
 
 interface Permission {
   feature: string;
@@ -146,7 +147,8 @@ export class AddRoleComponent implements OnInit {
   constructor(
     private router: Router, 
     private route: ActivatedRoute,
-    private roleService: RoleService
+    private roleService: RoleService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -206,7 +208,7 @@ export class AddRoleComponent implements OnInit {
 
   saveRole(): void {
     if (!this.roleName.trim()) {
-      alert('Role name is required');
+      this.notificationService.error('Role name is required');
       return;
     }
 
@@ -220,20 +222,22 @@ export class AddRoleComponent implements OnInit {
     if (this.editMode && this.roleId) {
       this.roleService.update(this.roleId, role).subscribe({
         next: () => {
+          this.notificationService.success('Role updated successfully');
           this.router.navigate(['/app/settings/roles']);
         },
         error: (err) => {
-          alert(err.error?.error || 'Error updating role');
+          this.notificationService.error(err.error?.error || 'Error updating role');
           this.saving = false;
         }
       });
     } else {
       this.roleService.create(role).subscribe({
         next: () => {
+          this.notificationService.success('Role created successfully');
           this.router.navigate(['/app/settings/roles']);
         },
         error: (err) => {
-          alert(err.error?.error || 'Error creating role');
+          this.notificationService.error(err.error?.error || 'Error creating role');
           this.saving = false;
         }
       });

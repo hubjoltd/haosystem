@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { WarehouseService, Warehouse, Bin } from '../../../services/warehouse.service';
 import { SettingsService } from '../../../services/settings.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-warehouse-bin',
@@ -22,7 +23,8 @@ export class WarehouseBinComponent implements OnInit {
 
   constructor(
     private warehouseService: WarehouseService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -144,28 +146,30 @@ export class WarehouseBinComponent implements OnInit {
 
   saveWarehouse(): void {
     if (!this.isWarehouseFormValid()) {
-      this.errorMessage = 'Warehouse Code and Name are required';
+      this.notificationService.error('Warehouse Code and Name are required');
       return;
     }
 
     if (this.editMode && this.selectedWarehouse.id) {
       this.warehouseService.updateWarehouse(this.selectedWarehouse.id, this.selectedWarehouse).subscribe({
         next: () => {
+          this.notificationService.success('Warehouse updated successfully');
           this.loadWarehouses();
           this.closeModal();
         },
         error: (err) => {
-          this.errorMessage = err.error?.error || 'Error updating warehouse';
+          this.notificationService.error(err.error?.error || 'Error updating warehouse');
         }
       });
     } else {
       this.warehouseService.createWarehouse(this.selectedWarehouse).subscribe({
         next: () => {
+          this.notificationService.success('Warehouse created successfully');
           this.loadWarehouses();
           this.closeModal();
         },
         error: (err) => {
-          this.errorMessage = err.error?.error || 'Error creating warehouse';
+          this.notificationService.error(err.error?.error || 'Error creating warehouse');
         }
       });
     }
@@ -173,33 +177,35 @@ export class WarehouseBinComponent implements OnInit {
 
   saveBin(): void {
     if (!this.isBinFormValid()) {
-      this.errorMessage = 'Bin Code and Name are required';
+      this.notificationService.error('Bin Code and Name are required');
       return;
     }
 
     if (this.editMode && this.selectedBin.id) {
       this.warehouseService.updateBin(this.selectedBin.id, this.selectedBin).subscribe({
         next: () => {
+          this.notificationService.success('Bin updated successfully');
           if (this.expandedWarehouse) {
             this.loadBinsForWarehouse(this.expandedWarehouse);
           }
           this.closeModal();
         },
         error: (err) => {
-          this.errorMessage = err.error?.error || 'Error updating bin';
+          this.notificationService.error(err.error?.error || 'Error updating bin');
         }
       });
     } else {
       this.selectedBin.warehouseId = this.expandedWarehouse || undefined;
       this.warehouseService.createBin(this.selectedBin).subscribe({
         next: () => {
+          this.notificationService.success('Bin created successfully');
           if (this.expandedWarehouse) {
             this.loadBinsForWarehouse(this.expandedWarehouse);
           }
           this.closeModal();
         },
         error: (err) => {
-          this.errorMessage = err.error?.error || 'Error creating bin';
+          this.notificationService.error(err.error?.error || 'Error creating bin');
         }
       });
     }
@@ -208,9 +214,12 @@ export class WarehouseBinComponent implements OnInit {
   deleteWarehouse(id: number): void {
     if (confirm('Are you sure you want to delete this warehouse? All bins inside will also be deleted.')) {
       this.warehouseService.deleteWarehouse(id).subscribe({
-        next: () => this.loadWarehouses(),
+        next: () => {
+          this.notificationService.success('Warehouse deleted successfully');
+          this.loadWarehouses();
+        },
         error: (err) => {
-          alert(err.error?.error || 'Error deleting warehouse');
+          this.notificationService.error(err.error?.error || 'Error deleting warehouse');
         }
       });
     }
@@ -220,12 +229,13 @@ export class WarehouseBinComponent implements OnInit {
     if (confirm('Are you sure you want to delete this bin?')) {
       this.warehouseService.deleteBin(id).subscribe({
         next: () => {
+          this.notificationService.success('Bin deleted successfully');
           if (this.expandedWarehouse) {
             this.loadBinsForWarehouse(this.expandedWarehouse);
           }
         },
         error: (err) => {
-          alert(err.error?.error || 'Error deleting bin');
+          this.notificationService.error(err.error?.error || 'Error deleting bin');
         }
       });
     }

@@ -3,6 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { PurchaseRequisitionService, PurchaseRequisition } from '../../../../services/purchase-requisition.service';
 import { PRFulfillmentService, PRFulfillment, FulfillmentItem } from '../../../../services/pr-fulfillment.service';
 import { SettingsService } from '../../../../services/settings.service';
+import { NotificationService } from '../../../../services/notification.service';
 
 interface Location {
   id: number;
@@ -36,7 +37,8 @@ export class MaterialTransferFulfillmentComponent implements OnInit {
     private router: Router,
     private prService: PurchaseRequisitionService,
     private fulfillmentService: PRFulfillmentService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -177,13 +179,13 @@ export class MaterialTransferFulfillmentComponent implements OnInit {
     this.fulfillmentService.createMaterialTransferFulfillment(fulfillment).subscribe({
       next: () => {
         this.saving = false;
-        alert('Material Transfer created successfully!');
+        this.notificationService.success('Material Transfer created successfully');
         this.router.navigate(['/app/purchase/requisition']);
       },
       error: (err) => {
         console.error('Error creating transfer:', err);
         this.saving = false;
-        alert('Material Transfer saved locally. Backend integration pending.');
+        this.notificationService.warning('Material Transfer saved locally. Backend integration pending.');
         this.router.navigate(['/app/purchase/requisition']);
       }
     });

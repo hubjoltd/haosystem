@@ -5,6 +5,7 @@ import { ItemService } from '../../../services/item.service';
 import { WarehouseService } from '../../../services/warehouse.service';
 import { SupplierService } from '../../../services/supplier.service';
 import { PRFulfillmentService, PRFulfillment } from '../../../services/pr-fulfillment.service';
+import { NotificationService } from '../../../services/notification.service';
 
 interface GRNItem {
   itemId?: number;
@@ -62,7 +63,8 @@ export class GoodsReceiptComponent implements OnInit {
     private itemService: ItemService,
     private warehouseService: WarehouseService,
     private supplierService: SupplierService,
-    private prFulfillmentService: PRFulfillmentService
+    private prFulfillmentService: PRFulfillmentService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -272,12 +274,12 @@ export class GoodsReceiptComponent implements OnInit {
     
     const validItems = this.selectedGRN.items.filter(item => item.itemId && item.quantity > 0);
     if (validItems.length === 0) {
-      this.errorMessage = 'Please add at least one item with quantity.';
+      this.notificationService.error('Please add at least one item with quantity.');
       return;
     }
 
     if (!this.selectedGRN.warehouseId) {
-      this.errorMessage = 'Please select a warehouse.';
+      this.notificationService.error('Please select a warehouse.');
       return;
     }
 
@@ -303,12 +305,13 @@ export class GoodsReceiptComponent implements OnInit {
     this.stockMovementService.createGRN(payload).subscribe({
       next: () => {
         this.saving = false;
+        this.notificationService.success('Goods Receipt created successfully');
         this.loadGRNs();
         this.closeModal();
       },
       error: (err) => {
         this.saving = false;
-        this.errorMessage = err.error?.error || 'Error saving GRN';
+        this.notificationService.error(err.error?.error || 'Error saving GRN');
         console.error('Error saving GRN', err);
       }
     });

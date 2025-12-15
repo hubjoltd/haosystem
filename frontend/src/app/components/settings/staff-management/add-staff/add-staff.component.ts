@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { StaffService, Staff } from '../../../../services/staff.service';
+import { NotificationService } from '../../../../services/notification.service';
 
 @Component({
   selector: 'app-add-staff',
@@ -32,7 +33,8 @@ export class AddStaffComponent implements OnInit {
   constructor(
     private router: Router, 
     private route: ActivatedRoute,
-    private staffService: StaffService
+    private staffService: StaffService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -78,17 +80,17 @@ export class AddStaffComponent implements OnInit {
 
   saveStaff(): void {
     if (!this.staff.firstName?.trim() || !this.staff.lastName?.trim()) {
-      alert('First name and last name are required');
+      this.notificationService.error('First name and last name are required');
       return;
     }
 
     if (!this.staff.email?.trim()) {
-      alert('Email is required');
+      this.notificationService.error('Email is required');
       return;
     }
 
     if (!this.editMode && (!this.password || this.password.length < 6)) {
-      alert('Password must be at least 6 characters');
+      this.notificationService.error('Password must be at least 6 characters');
       return;
     }
 
@@ -102,20 +104,22 @@ export class AddStaffComponent implements OnInit {
     if (this.editMode && this.staffId) {
       this.staffService.update(this.staffId, this.staff).subscribe({
         next: () => {
+          this.notificationService.success('Staff updated successfully');
           this.router.navigate(['/app/settings/staff']);
         },
         error: (err) => {
-          alert(err.error?.error || 'Error updating staff');
+          this.notificationService.error(err.error?.error || 'Error updating staff');
           this.saving = false;
         }
       });
     } else {
       this.staffService.create(staffData).subscribe({
         next: () => {
+          this.notificationService.success('Staff created successfully');
           this.router.navigate(['/app/settings/staff']);
         },
         error: (err) => {
-          alert(err.error?.error || 'Error creating staff');
+          this.notificationService.error(err.error?.error || 'Error creating staff');
           this.saving = false;
         }
       });

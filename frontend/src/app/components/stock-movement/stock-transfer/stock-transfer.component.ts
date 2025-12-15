@@ -3,6 +3,7 @@ import { SettingsService } from '../../../services/settings.service';
 import { StockMovementService, StockTransfer, StockTransferLine } from '../../../services/stock-movement.service';
 import { ItemService } from '../../../services/item.service';
 import { WarehouseService } from '../../../services/warehouse.service';
+import { NotificationService } from '../../../services/notification.service';
 
 interface TransferItem {
   itemId?: number;
@@ -50,7 +51,8 @@ export class StockTransferComponent implements OnInit {
     private settingsService: SettingsService,
     private stockMovementService: StockMovementService,
     private itemService: ItemService,
-    private warehouseService: WarehouseService
+    private warehouseService: WarehouseService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -187,22 +189,22 @@ export class StockTransferComponent implements OnInit {
     
     const validItems = this.selectedTransfer.items.filter(item => item.itemId && item.quantity > 0);
     if (validItems.length === 0) {
-      this.errorMessage = 'Please add at least one item with quantity.';
+      this.notificationService.error('Please add at least one item with quantity.');
       return;
     }
 
     if (!this.selectedTransfer.fromWarehouseId) {
-      this.errorMessage = 'Please select a source warehouse.';
+      this.notificationService.error('Please select a source warehouse.');
       return;
     }
 
     if (!this.selectedTransfer.toWarehouseId) {
-      this.errorMessage = 'Please select a destination warehouse.';
+      this.notificationService.error('Please select a destination warehouse.');
       return;
     }
 
     if (this.selectedTransfer.fromWarehouseId === this.selectedTransfer.toWarehouseId) {
-      this.errorMessage = 'Source and destination warehouse cannot be the same.';
+      this.notificationService.error('Source and destination warehouse cannot be the same.');
       return;
     }
 
@@ -225,12 +227,13 @@ export class StockTransferComponent implements OnInit {
     this.stockMovementService.createTransfer(payload).subscribe({
       next: () => {
         this.saving = false;
+        this.notificationService.success('Stock Transfer created successfully');
         this.loadTransfers();
         this.closeModal();
       },
       error: (err: any) => {
         this.saving = false;
-        this.errorMessage = err.error?.error || 'Error saving transfer';
+        this.notificationService.error(err.error?.error || 'Error saving transfer');
         console.error('Error saving transfer', err);
       }
     });

@@ -3,6 +3,7 @@ import { SettingsService } from '../../../services/settings.service';
 import { StockMovementService, GoodsIssue, GoodsIssueLine } from '../../../services/stock-movement.service';
 import { ItemService } from '../../../services/item.service';
 import { WarehouseService } from '../../../services/warehouse.service';
+import { NotificationService } from '../../../services/notification.service';
 
 interface IssueItem {
   itemId?: number;
@@ -53,7 +54,8 @@ export class GoodsIssueComponent implements OnInit {
     private settingsService: SettingsService,
     private stockMovementService: StockMovementService,
     private itemService: ItemService,
-    private warehouseService: WarehouseService
+    private warehouseService: WarehouseService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -202,12 +204,12 @@ export class GoodsIssueComponent implements OnInit {
     
     const validItems = this.selectedIssue.items.filter(item => item.itemId && item.quantity > 0);
     if (validItems.length === 0) {
-      this.errorMessage = 'Please add at least one item with quantity.';
+      this.notificationService.error('Please add at least one item with quantity.');
       return;
     }
 
     if (!this.selectedIssue.warehouseId) {
-      this.errorMessage = 'Please select a warehouse.';
+      this.notificationService.error('Please select a warehouse.');
       return;
     }
 
@@ -231,12 +233,13 @@ export class GoodsIssueComponent implements OnInit {
     this.stockMovementService.createIssue(payload).subscribe({
       next: () => {
         this.saving = false;
+        this.notificationService.success('Goods Issue created successfully');
         this.loadIssues();
         this.closeModal();
       },
       error: (err: any) => {
         this.saving = false;
-        this.errorMessage = err.error?.error || 'Error saving issue';
+        this.notificationService.error(err.error?.error || 'Error saving issue');
         console.error('Error saving issue', err);
       }
     });
