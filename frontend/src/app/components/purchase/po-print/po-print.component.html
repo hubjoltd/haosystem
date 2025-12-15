@@ -9,133 +9,179 @@
 
 <div class="print-container" *ngIf="po">
   <div class="a4-page">
-    <div class="document-header">
-      <div class="company-info">
-        <h1 class="company-name">{{ companyName }}</h1>
-        <p class="company-address">{{ companyAddress }}</p>
-        <p class="company-contact">Tel: {{ companyPhone }} | Email: {{ companyEmail }}</p>
+    <!-- Document Title -->
+    <div class="document-title">
+      <h1>PURCHASE ORDER</h1>
+    </div>
+
+    <!-- Company Header -->
+    <div class="company-header">
+      <div class="company-logo">
+        <i class="fas fa-shopping-cart"></i>
+        <div class="company-brand">
+          <span class="brand-name">{{ companyName }}</span>
+          <span class="brand-tagline">{{ companyTagline }}</span>
+        </div>
       </div>
-      <div class="document-title">
-        <h2>PURCHASE ORDER</h2>
-        <div class="po-number-box">
-          <span class="label">PO Number</span>
+      <p class="company-address">{{ companyAddress }}</p>
+    </div>
+
+    <!-- Supplier and PO Info Row -->
+    <div class="info-grid">
+      <div class="supplier-box">
+        <div class="info-row-item">
+          <span class="label">Supplier Name:</span>
+          <span class="value">{{ po.supplierName }}</span>
+        </div>
+        <div class="info-row-item">
+          <span class="label">Address:</span>
+          <span class="value">{{ po.supplierAddress || 'N/A' }}</span>
+        </div>
+        <div class="info-row-item">
+          <span class="label">GSTIN:</span>
+          <span class="value">{{ supplierGstin }}</span>
+        </div>
+        <div class="info-row-item">
+          <span class="label">Contact:</span>
+          <span class="value">{{ po.supplierContact || 'N/A' }}</span>
+        </div>
+        <div class="info-row-item">
+          <span class="label">Email:</span>
+          <span class="value">{{ supplierEmail }}</span>
+        </div>
+      </div>
+      <div class="po-details-box">
+        <div class="info-row-item">
+          <span class="label">Supplier Code:</span>
+          <span class="value">{{ supplierCode }}</span>
+        </div>
+        <div class="info-row-item">
+          <span class="label">PO No:</span>
           <span class="value">{{ po.poNumber }}</span>
         </div>
-        <div class="po-number-box pr-ref" *ngIf="po.prNumber">
-          <span class="label">PR Reference</span>
+        <div class="info-row-item" *ngIf="po.prNumber">
+          <span class="label">PR Ref:</span>
           <span class="value">{{ po.prNumber }}</span>
         </div>
-      </div>
-    </div>
-
-    <div class="info-row">
-      <div class="supplier-section">
-        <h3 class="section-label">SUPPLIER</h3>
-        <div class="info-box">
-          <p class="supplier-name">{{ po.supplierName }}</p>
-          <p *ngIf="po.supplierAddress">{{ po.supplierAddress }}</p>
-          <p *ngIf="po.supplierContact">Contact: {{ po.supplierContact }}</p>
+        <div class="info-row-item">
+          <span class="label">PO Date:</span>
+          <span class="value">{{ formatDate(po.poDate || po.createdDate || '') }}</span>
         </div>
-      </div>
-      <div class="delivery-section">
-        <h3 class="section-label">DELIVERY ADDRESS</h3>
-        <div class="info-box">
-          <p>{{ deliveryAddress }}</p>
+        <div class="info-row-item">
+          <span class="label">PO Expiry Days:</span>
+          <span class="value">{{ poExpiryDays }} days</span>
         </div>
       </div>
     </div>
 
-    <div class="order-info">
-      <div class="info-item">
-        <label>PO Date:</label>
-        <span>{{ formatDate(po.poDate || po.createdDate || '') }}</span>
+    <!-- Bill To / Ship To Section -->
+    <div class="address-section">
+      <div class="address-box">
+        <div class="address-header">Bill To:</div>
+        <div class="address-content">
+          <p class="company-name">{{ companyName }}</p>
+          <p>{{ billToAddress }}</p>
+          <p>GSTIN:{{ companyGstin }}</p>
+          <p>Contact: {{ companyPhone }}</p>
+          <p>Email: {{ companyEmail }}</p>
+        </div>
       </div>
-      <div class="info-item">
-        <label>Expected Delivery:</label>
-        <span>{{ formatDate(po.expectedDate || po.deliveryDate || '') }}</span>
-      </div>
-      <div class="info-item">
-        <label>Payment Terms:</label>
-        <span>{{ po.paymentTerms || 'Net 30 Days' }}</span>
+      <div class="address-box">
+        <div class="address-header">Ship To:</div>
+        <div class="address-content">
+          <p class="company-name">{{ companyName }}</p>
+          <p>{{ shipToAddress }}</p>
+          <p>GSTIN:{{ companyGstin }}</p>
+          <p>Contact: {{ companyPhone }}</p>
+          <p>Email: {{ companyEmail }}</p>
+        </div>
       </div>
     </div>
 
+    <!-- Payment Info Row -->
+    <div class="payment-info">
+      <div class="payment-item">
+        <span class="label">Payment Date:</span>
+        <span class="value">{{ paymentDateText }}</span>
+      </div>
+      <div class="payment-item">
+        <span class="label">Payment Terms:</span>
+        <span class="value">{{ po.paymentTerms || '100% against invoice' }}</span>
+      </div>
+    </div>
+
+    <!-- Items Table -->
     <div class="items-section">
       <table class="items-table">
         <thead>
           <tr>
-            <th class="col-sno">#</th>
-            <th class="col-item">Item Description</th>
+            <th class="col-sno">S.No</th>
+            <th class="col-code">Product Code</th>
+            <th class="col-name">Product Name</th>
+            <th class="col-hsn">HSN code</th>
             <th class="col-qty">Quantity</th>
-            <th class="col-unit">Unit</th>
+            <th class="col-unit">Units</th>
             <th class="col-rate">Rate</th>
+            <th class="col-tax">Tax</th>
             <th class="col-amount">Amount</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of po.items; let i = index">
             <td class="center">{{ i + 1 }}</td>
-            <td>
-              <strong>{{ item.itemName }}</strong>
-              <span class="item-desc" *ngIf="item.description"><br>{{ item.description }}</span>
-            </td>
+            <td class="center">{{ item.itemCode || (100 + i + 1) }}</td>
+            <td>{{ item.itemName }}</td>
+            <td class="center">{{ item.hsnCode || getDefaultHsn(item) }}</td>
             <td class="center">{{ item.quantity }}</td>
-            <td class="center">{{ item.unit || 'PCS' }}</td>
-            <td class="right">{{ formatCurrency(item.rate) }}</td>
-            <td class="right">{{ formatCurrency(getItemAmount(item)) }}</td>
+            <td class="center">{{ item.uom || item.unit || 'nos' }}</td>
+            <td class="right">{{ formatNumber(item.rate) }}</td>
+            <td class="center">{{ item.taxRate || defaultTaxRate }}%</td>
+            <td class="right">{{ formatNumber(getItemAmount(item)) }}</td>
           </tr>
         </tbody>
       </table>
     </div>
 
+    <!-- Totals Section -->
     <div class="totals-section">
       <div class="totals-box">
         <div class="total-row">
-          <span class="label">Subtotal:</span>
-          <span class="value">{{ formatCurrency(getSubtotal()) }}</span>
+          <span class="label">Total</span>
+          <span class="value">{{ formatNumber(getSubtotal()) }}</span>
         </div>
         <div class="total-row">
-          <span class="label">Tax (10%):</span>
-          <span class="value">{{ formatCurrency(getTaxAmount()) }}</span>
+          <span class="label">Discounts</span>
+          <span class="value">{{ formatNumber(discount) }}</span>
         </div>
         <div class="total-row grand-total">
-          <span class="label">TOTAL AMOUNT:</span>
-          <span class="value">{{ formatCurrency(getTotal()) }}</span>
+          <span class="label">Grand total</span>
+          <span class="value">{{ formatNumber(getGrandTotal()) }}</span>
         </div>
       </div>
     </div>
 
-    <div class="amount-words">
-      <label>Amount in Words:</label>
-      <p>{{ getTotal() | currency:'USD':'symbol':'1.2-2' }} Only</p>
-    </div>
-
-    <div class="terms-section">
-      <h3 class="section-title">Terms & Conditions</h3>
-      <ol class="terms-list">
-        <li>Please quote the PO number on all correspondence and delivery documents.</li>
-        <li>Goods must be delivered in good condition within the specified time frame.</li>
-        <li>Payment will be made as per the payment terms mentioned above.</li>
-        <li>Any discrepancy in quality or quantity must be reported within 3 working days.</li>
-      </ol>
-    </div>
-
-    <div class="signatures-section">
-      <div class="signature-box">
-        <div class="signature-line"></div>
-        <p class="signature-label">Authorized Signatory</p>
-        <p class="signature-title">Procurement Manager</p>
+    <!-- Terms and Signature Section -->
+    <div class="footer-section">
+      <div class="terms-box">
+        <h4>Terms and conditions:</h4>
+        <ol>
+          <li>We deserve the right to cancel the purchase order anytime before product shipment.</li>
+          <li>Invoice raised to us should contain the details of purchase order with date mentioned.</li>
+          <li>Adherence to agreed product specifications is a must. Any deviation during delivery will result in cancellation of PO.</li>
+          <li>Packing and shipping charges are to be borne by {{ po.supplierName }}.</li>
+          <li>Delivery should be strictly done within {{ poExpiryDays }} days from the date of purchase order.</li>
+        </ol>
       </div>
       <div class="signature-box">
+        <div class="for-company">For {{ companyName }}</div>
         <div class="signature-line"></div>
-        <p class="signature-label">Supplier Acknowledgment</p>
-        <p class="signature-title">Date & Stamp</p>
+        <div class="signature-label">Authorized signatory</div>
       </div>
     </div>
 
+    <!-- Document Footer -->
     <div class="document-footer">
-      <p>This is an official Purchase Order document. Generated on: {{ formatDate(today) }}</p>
-      <p>Page 1 of 1</p>
+      <p>Mark any communications to {{ companyEmail }}</p>
     </div>
   </div>
 </div>

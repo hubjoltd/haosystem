@@ -12,12 +12,26 @@ export class PoPrintComponent implements OnInit {
   po: DirectPurchase | null = null;
   poId: number = 0;
   loading: boolean = true;
-  companyName: string = 'ERP System';
-  companyAddress: string = '123 Business Street, City, Country';
-  companyPhone: string = '+1 234 567 8900';
-  companyEmail: string = 'procurement@erp-system.com';
   
-  deliveryAddress: string = 'Main Warehouse, 456 Industrial Zone, City, Country';
+  companyName: string = 'Thendral Supermarket';
+  companyTagline: string = 'Supermarket';
+  companyAddress: string = 'No 23/2, SBI Colony, Ragavendra Nagar, Chennai - 600124';
+  companyPhone: string = '+91-7869825463';
+  companyEmail: string = 'purchase-team@thendral.com';
+  companyGstin: string = '33APFSDF1ZV';
+  
+  billToAddress: string = 'No 23/2, SBI Colony.\nRagavendra Nagar, Chennai - 600124';
+  shipToAddress: string = 'No 23/2, SBI Colony.\nRagavendra Nagar, Chennai - 600124';
+  
+  supplierCode: string = 'VNDR-104';
+  supplierGstin: string = '33AACCEPVS1ZH';
+  supplierEmail: string = 'purchase-sm@gmail.com';
+  
+  poExpiryDays: number = 7;
+  paymentDateText: string = '7 days from date of delivery';
+  defaultTaxRate: number = 5;
+  discount: number = 0;
+  
   today: string = new Date().toISOString();
 
   constructor(
@@ -37,8 +51,10 @@ export class PoPrintComponent implements OnInit {
     this.poService.getById(this.poId).subscribe({
       next: (po) => {
         this.po = po;
+        if (po.supplierId) {
+          this.supplierCode = 'VNDR-' + po.supplierId;
+        }
         this.loading = false;
-        setTimeout(() => this.triggerPrint(), 500);
       },
       error: (err) => {
         console.error('Error loading PO:', err);
@@ -50,18 +66,25 @@ export class PoPrintComponent implements OnInit {
   formatDate(dateStr: string): string {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
+  formatNumber(amount: number): string {
+    return new Intl.NumberFormat('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     }).format(amount || 0);
   }
 
+  getDefaultHsn(item: DirectPurchaseItem): string {
+    return '34019011';
+  }
+
   getItemAmount(item: DirectPurchaseItem): number {
-    return (item.quantity || 0) * (item.rate || 0);
+    const baseAmount = (item.quantity || 0) * (item.rate || 0);
+    const taxRate = (item as any).taxRate || this.defaultTaxRate;
+    const taxAmount = baseAmount * (taxRate / 100);
+    return baseAmount + taxAmount;
   }
 
   getSubtotal(): number {
@@ -69,15 +92,8 @@ export class PoPrintComponent implements OnInit {
     return this.po.items.reduce((sum, item) => sum + this.getItemAmount(item), 0);
   }
 
-  getTaxAmount(): number {
-    return this.getSubtotal() * 0.10;
-  }
-
-  getTotal(): number {
-    if (this.po?.totalAmount) {
-      return this.po.totalAmount;
-    }
-    return this.getSubtotal() + this.getTaxAmount();
+  getGrandTotal(): number {
+    return this.getSubtotal() - this.discount;
   }
 
   triggerPrint(): void {
