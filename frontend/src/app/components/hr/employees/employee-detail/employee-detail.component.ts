@@ -1,0 +1,332 @@
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { EmployeeService, Employee, EmployeeBankDetail, EmployeeSalary, EmployeeEducation, EmployeeExperience, EmployeeAsset } from '../../../../services/employee.service';
+import { OrganizationService, Department, Designation, Grade, JobRole, Location, CostCenter, ExpenseCenter } from '../../../../services/organization.service';
+
+@Component({
+  selector: 'app-employee-detail',
+  standalone: false,
+  templateUrl: './employee-detail.component.html',
+  styleUrls: ['./employee-detail.component.scss']
+})
+export class EmployeeDetailComponent implements OnInit {
+  employeeId: number | null = null;
+  isNewEmployee = false;
+  isEditMode = false;
+  activeTab = 'personal';
+  
+  employee: Employee = this.getEmptyEmployee();
+  bankDetails: EmployeeBankDetail[] = [];
+  salaryHistory: EmployeeSalary[] = [];
+  education: EmployeeEducation[] = [];
+  experience: EmployeeExperience[] = [];
+  assets: EmployeeAsset[] = [];
+  
+  departments: Department[] = [];
+  designations: Designation[] = [];
+  grades: Grade[] = [];
+  jobRoles: JobRole[] = [];
+  locations: Location[] = [];
+  costCenters: CostCenter[] = [];
+  expenseCenters: ExpenseCenter[] = [];
+  employees: Employee[] = [];
+  
+  showBankModal = false;
+  showSalaryModal = false;
+  showEducationModal = false;
+  showExperienceModal = false;
+  showAssetModal = false;
+  
+  editingBank: EmployeeBankDetail = this.getEmptyBankDetail();
+  editingSalary: EmployeeSalary = this.getEmptySalary();
+  editingEducation: EmployeeEducation = this.getEmptyEducation();
+  editingExperience: EmployeeExperience = this.getEmptyExperience();
+  editingAsset: EmployeeAsset = this.getEmptyAsset();
+  isEditingSubItem = false;
+
+  loading = false;
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private employeeService: EmployeeService,
+    private orgService: OrganizationService
+  ) {}
+
+  ngOnInit() {
+    this.loadDropdownData();
+    
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id === 'new') {
+      this.isNewEmployee = true;
+      this.isEditMode = true;
+    } else if (id) {
+      this.employeeId = parseInt(id);
+      this.loadEmployee();
+      
+      const editParam = this.route.snapshot.queryParamMap.get('edit');
+      this.isEditMode = editParam === 'true';
+    }
+  }
+
+  loadDropdownData() {
+    this.orgService.getDepartments().subscribe(data => this.departments = data);
+    this.orgService.getDesignations().subscribe(data => this.designations = data);
+    this.orgService.getGrades().subscribe(data => this.grades = data);
+    this.orgService.getJobRoles().subscribe(data => this.jobRoles = data);
+    this.orgService.getLocations().subscribe(data => this.locations = data);
+    this.orgService.getCostCenters().subscribe(data => this.costCenters = data);
+    this.orgService.getExpenseCenters().subscribe(data => this.expenseCenters = data);
+    this.employeeService.getActive().subscribe(data => this.employees = data);
+  }
+
+  loadEmployee() {
+    if (!this.employeeId) return;
+    
+    this.loading = true;
+    this.employeeService.getById(this.employeeId).subscribe({
+      next: (data) => {
+        this.employee = data;
+        this.loadSubData();
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading employee:', err);
+        this.loading = false;
+      }
+    });
+  }
+
+  loadSubData() {
+    if (!this.employeeId) return;
+    
+    this.employeeService.getBankDetails(this.employeeId).subscribe(data => this.bankDetails = data);
+    this.employeeService.getSalaryHistory(this.employeeId).subscribe(data => this.salaryHistory = data);
+    this.employeeService.getEducation(this.employeeId).subscribe(data => this.education = data);
+    this.employeeService.getExperience(this.employeeId).subscribe(data => this.experience = data);
+    this.employeeService.getAssets(this.employeeId).subscribe(data => this.assets = data);
+  }
+
+  getEmptyEmployee(): Employee {
+    return {
+      employeeCode: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      active: true,
+      employmentStatus: 'PROBATION',
+      employmentType: 'FULL_TIME'
+    };
+  }
+
+  getEmptyBankDetail(): EmployeeBankDetail {
+    return { bankName: '', accountNumber: '', isPrimary: false, active: true };
+  }
+
+  getEmptySalary(): EmployeeSalary {
+    return { basicSalary: 0, effectiveFrom: '', isCurrent: true };
+  }
+
+  getEmptyEducation(): EmployeeEducation {
+    return { qualification: '', institution: '' };
+  }
+
+  getEmptyExperience(): EmployeeExperience {
+    return { companyName: '', designation: '', fromDate: '' };
+  }
+
+  getEmptyAsset(): EmployeeAsset {
+    return { assetType: '', assetName: '', approvalStatus: 'PENDING' };
+  }
+
+  setTab(tab: string) {
+    this.activeTab = tab;
+  }
+
+  toggleEditMode() {
+    this.isEditMode = !this.isEditMode;
+  }
+
+  saveEmployee() {
+    if (this.isNewEmployee) {
+      this.employeeService.create(this.employee).subscribe({
+        next: (created) => {
+          this.router.navigate(['/app/hr/employees', created.id]);
+        },
+        error: (err) => console.error('Error creating employee:', err)
+      });
+    } else if (this.employeeId) {
+      this.employeeService.update(this.employeeId, this.employee).subscribe({
+        next: () => {
+          this.isEditMode = false;
+          this.loadEmployee();
+        },
+        error: (err) => console.error('Error updating employee:', err)
+      });
+    }
+  }
+
+  cancel() {
+    if (this.isNewEmployee) {
+      this.router.navigate(['/app/hr/employees']);
+    } else {
+      this.isEditMode = false;
+      this.loadEmployee();
+    }
+  }
+
+  goBack() {
+    this.router.navigate(['/app/hr/employees']);
+  }
+
+  openBankModal(item?: EmployeeBankDetail) {
+    this.isEditingSubItem = !!item;
+    this.editingBank = item ? { ...item } : this.getEmptyBankDetail();
+    this.showBankModal = true;
+  }
+
+  saveBankDetail() {
+    if (!this.employeeId) return;
+    
+    if (this.isEditingSubItem && this.editingBank.id) {
+      this.employeeService.updateBankDetail(this.editingBank.id, this.editingBank).subscribe({
+        next: () => { this.showBankModal = false; this.loadSubData(); },
+        error: (err) => console.error('Error updating bank detail:', err)
+      });
+    } else {
+      this.employeeService.createBankDetail(this.employeeId, this.editingBank).subscribe({
+        next: () => { this.showBankModal = false; this.loadSubData(); },
+        error: (err) => console.error('Error creating bank detail:', err)
+      });
+    }
+  }
+
+  deleteBankDetail(item: EmployeeBankDetail) {
+    if (item.id && confirm('Delete this bank detail?')) {
+      this.employeeService.deleteBankDetail(item.id).subscribe({
+        next: () => this.loadSubData(),
+        error: (err) => console.error('Error deleting:', err)
+      });
+    }
+  }
+
+  openSalaryModal() {
+    this.editingSalary = this.getEmptySalary();
+    this.showSalaryModal = true;
+  }
+
+  saveSalary() {
+    if (!this.employeeId) return;
+    
+    this.employeeService.createSalary(this.employeeId, this.editingSalary).subscribe({
+      next: () => { this.showSalaryModal = false; this.loadSubData(); },
+      error: (err) => console.error('Error creating salary:', err)
+    });
+  }
+
+  openEducationModal(item?: EmployeeEducation) {
+    this.isEditingSubItem = !!item;
+    this.editingEducation = item ? { ...item } : this.getEmptyEducation();
+    this.showEducationModal = true;
+  }
+
+  saveEducation() {
+    if (!this.employeeId) return;
+    
+    if (this.isEditingSubItem && this.editingEducation.id) {
+      this.employeeService.updateEducation(this.editingEducation.id, this.editingEducation).subscribe({
+        next: () => { this.showEducationModal = false; this.loadSubData(); },
+        error: (err) => console.error('Error updating education:', err)
+      });
+    } else {
+      this.employeeService.createEducation(this.employeeId, this.editingEducation).subscribe({
+        next: () => { this.showEducationModal = false; this.loadSubData(); },
+        error: (err) => console.error('Error creating education:', err)
+      });
+    }
+  }
+
+  deleteEducation(item: EmployeeEducation) {
+    if (item.id && confirm('Delete this education record?')) {
+      this.employeeService.deleteEducation(item.id).subscribe({
+        next: () => this.loadSubData(),
+        error: (err) => console.error('Error deleting:', err)
+      });
+    }
+  }
+
+  openExperienceModal(item?: EmployeeExperience) {
+    this.isEditingSubItem = !!item;
+    this.editingExperience = item ? { ...item } : this.getEmptyExperience();
+    this.showExperienceModal = true;
+  }
+
+  saveExperience() {
+    if (!this.employeeId) return;
+    
+    if (this.isEditingSubItem && this.editingExperience.id) {
+      this.employeeService.updateExperience(this.editingExperience.id, this.editingExperience).subscribe({
+        next: () => { this.showExperienceModal = false; this.loadSubData(); },
+        error: (err) => console.error('Error updating experience:', err)
+      });
+    } else {
+      this.employeeService.createExperience(this.employeeId, this.editingExperience).subscribe({
+        next: () => { this.showExperienceModal = false; this.loadSubData(); },
+        error: (err) => console.error('Error creating experience:', err)
+      });
+    }
+  }
+
+  deleteExperience(item: EmployeeExperience) {
+    if (item.id && confirm('Delete this experience record?')) {
+      this.employeeService.deleteExperience(item.id).subscribe({
+        next: () => this.loadSubData(),
+        error: (err) => console.error('Error deleting:', err)
+      });
+    }
+  }
+
+  openAssetModal(item?: EmployeeAsset) {
+    this.isEditingSubItem = !!item;
+    this.editingAsset = item ? { ...item } : this.getEmptyAsset();
+    this.showAssetModal = true;
+  }
+
+  saveAsset() {
+    if (!this.employeeId) return;
+    
+    if (this.isEditingSubItem && this.editingAsset.id) {
+      this.employeeService.updateAsset(this.editingAsset.id, this.editingAsset).subscribe({
+        next: () => { this.showAssetModal = false; this.loadSubData(); },
+        error: (err) => console.error('Error updating asset:', err)
+      });
+    } else {
+      this.employeeService.createAsset(this.employeeId, this.editingAsset).subscribe({
+        next: () => { this.showAssetModal = false; this.loadSubData(); },
+        error: (err) => console.error('Error creating asset:', err)
+      });
+    }
+  }
+
+  approveAsset(item: EmployeeAsset, status: string) {
+    if (item.id) {
+      this.employeeService.approveAsset(item.id, status).subscribe({
+        next: () => this.loadSubData(),
+        error: (err) => console.error('Error approving asset:', err)
+      });
+    }
+  }
+
+  deleteAsset(item: EmployeeAsset) {
+    if (item.id && confirm('Delete this asset record?')) {
+      this.employeeService.deleteAsset(item.id).subscribe({
+        next: () => this.loadSubData(),
+        error: (err) => console.error('Error deleting:', err)
+      });
+    }
+  }
+
+  compareById(obj1: any, obj2: any): boolean {
+    return obj1 && obj2 ? obj1.id === obj2.id : obj1 === obj2;
+  }
+}

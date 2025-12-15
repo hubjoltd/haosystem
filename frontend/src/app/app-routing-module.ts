@@ -73,6 +73,8 @@ import { GradesComponent } from './components/hr/organization/grades/grades.comp
 import { DesignationsComponent } from './components/hr/organization/designations/designations.component';
 import { CostCentersComponent } from './components/hr/organization/cost-centers/cost-centers.component';
 import { ExpenseCentersComponent } from './components/hr/organization/expense-centers/expense-centers.component';
+import { EmployeeListComponent } from './components/hr/employees/employee-list/employee-list.component';
+import { EmployeeDetailComponent } from './components/hr/employees/employee-detail/employee-detail.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -143,7 +145,9 @@ const routes: Routes = [
       { path: 'hr/organization/grades', component: GradesComponent },
       { path: 'hr/organization/designations', component: DesignationsComponent },
       { path: 'hr/organization/cost-centers', component: CostCentersComponent },
-      { path: 'hr/organization/expense-centers', component: ExpenseCentersComponent }
+      { path: 'hr/organization/expense-centers', component: ExpenseCentersComponent },
+      { path: 'hr/employees', component: EmployeeListComponent },
+      { path: 'hr/employees/:id', component: EmployeeDetailComponent }
     ]
   }
 ];

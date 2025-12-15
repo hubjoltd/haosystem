@@ -1,0 +1,762 @@
+<div class="employee-detail-container">
+  <div class="page-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h2 *ngIf="isNewEmployee">New Employee</h2>
+      <h2 *ngIf="!isNewEmployee">{{ employee.firstName }} {{ employee.lastName }}</h2>
+      <span class="employee-code" *ngIf="!isNewEmployee">{{ employee.employeeCode }}</span>
+    </div>
+    <div class="header-actions" *ngIf="!isNewEmployee">
+      <button class="btn-secondary" *ngIf="!isEditMode" (click)="toggleEditMode()">
+        <i class="fas fa-edit"></i> Edit
+      </button>
+      <button class="btn-primary" *ngIf="isEditMode" (click)="saveEmployee()">
+        <i class="fas fa-save"></i> Save
+      </button>
+      <button class="btn-secondary" *ngIf="isEditMode" (click)="cancel()">Cancel</button>
+    </div>
+    <div class="header-actions" *ngIf="isNewEmployee">
+      <button class="btn-primary" (click)="saveEmployee()">
+        <i class="fas fa-save"></i> Save
+      </button>
+      <button class="btn-secondary" (click)="cancel()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button [class.active]="activeTab === 'personal'" (click)="setTab('personal')">Personal Info</button>
+    <button [class.active]="activeTab === 'employment'" (click)="setTab('employment')">Employment</button>
+    <button [class.active]="activeTab === 'bank'" (click)="setTab('bank')" *ngIf="!isNewEmployee">Bank Details</button>
+    <button [class.active]="activeTab === 'salary'" (click)="setTab('salary')" *ngIf="!isNewEmployee">Salary</button>
+    <button [class.active]="activeTab === 'education'" (click)="setTab('education')" *ngIf="!isNewEmployee">Education</button>
+    <button [class.active]="activeTab === 'experience'" (click)="setTab('experience')" *ngIf="!isNewEmployee">Experience</button>
+    <button [class.active]="activeTab === 'assets'" (click)="setTab('assets')" *ngIf="!isNewEmployee">Assets</button>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'personal'">
+    <div class="form-section">
+      <h3>Basic Information</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Employee Code *</label>
+          <input type="text" [(ngModel)]="employee.employeeCode" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>First Name *</label>
+          <input type="text" [(ngModel)]="employee.firstName" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Middle Name</label>
+          <input type="text" [(ngModel)]="employee.middleName" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Last Name *</label>
+          <input type="text" [(ngModel)]="employee.lastName" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" [(ngModel)]="employee.email" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" [(ngModel)]="employee.phone" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Mobile</label>
+          <input type="text" [(ngModel)]="employee.mobile" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" [(ngModel)]="employee.dateOfBirth" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Gender</label>
+          <select [(ngModel)]="employee.gender" [disabled]="!isEditMode">
+            <option value="">Select</option>
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Marital Status</label>
+          <select [(ngModel)]="employee.maritalStatus" [disabled]="!isEditMode">
+            <option value="">Select</option>
+            <option value="SINGLE">Single</option>
+            <option value="MARRIED">Married</option>
+            <option value="DIVORCED">Divorced</option>
+            <option value="WIDOWED">Widowed</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nationality</label>
+          <input type="text" [(ngModel)]="employee.nationality" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Blood Group</label>
+          <select [(ngModel)]="employee.bloodGroup" [disabled]="!isEditMode">
+            <option value="">Select</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Address Information</h3>
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label>Permanent Address</label>
+          <textarea [(ngModel)]="employee.permanentAddress" [disabled]="!isEditMode" rows="2"></textarea>
+        </div>
+        <div class="form-group full-width">
+          <label>Current Address</label>
+          <textarea [(ngModel)]="employee.currentAddress" [disabled]="!isEditMode" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Emergency Contact</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Contact Name</label>
+          <input type="text" [(ngModel)]="employee.emergencyContactName" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Contact Phone</label>
+          <input type="text" [(ngModel)]="employee.emergencyContactPhone" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Relationship</label>
+          <input type="text" [(ngModel)]="employee.emergencyContactRelation" [disabled]="!isEditMode" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'employment'">
+    <div class="form-section">
+      <h3>Organization Details</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Department</label>
+          <select [(ngModel)]="employee.department" [compareWith]="compareById" [disabled]="!isEditMode">
+            <option [ngValue]="null">Select</option>
+            <option *ngFor="let d of departments" [ngValue]="d">{{ d.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Designation</label>
+          <select [(ngModel)]="employee.designation" [compareWith]="compareById" [disabled]="!isEditMode">
+            <option [ngValue]="null">Select</option>
+            <option *ngFor="let d of designations" [ngValue]="d">{{ d.title }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Grade</label>
+          <select [(ngModel)]="employee.grade" [compareWith]="compareById" [disabled]="!isEditMode">
+            <option [ngValue]="null">Select</option>
+            <option *ngFor="let g of grades" [ngValue]="g">{{ g.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Job Role</label>
+          <select [(ngModel)]="employee.jobRole" [compareWith]="compareById" [disabled]="!isEditMode">
+            <option [ngValue]="null">Select</option>
+            <option *ngFor="let j of jobRoles" [ngValue]="j">{{ j.title }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <select [(ngModel)]="employee.location" [compareWith]="compareById" [disabled]="!isEditMode">
+            <option [ngValue]="null">Select</option>
+            <option *ngFor="let l of locations" [ngValue]="l">{{ l.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Cost Center</label>
+          <select [(ngModel)]="employee.costCenter" [compareWith]="compareById" [disabled]="!isEditMode">
+            <option [ngValue]="null">Select</option>
+            <option *ngFor="let c of costCenters" [ngValue]="c">{{ c.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Expense Center</label>
+          <select [(ngModel)]="employee.expenseCenter" [compareWith]="compareById" [disabled]="!isEditMode">
+            <option [ngValue]="null">Select</option>
+            <option *ngFor="let e of expenseCenters" [ngValue]="e">{{ e.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Reporting Manager</label>
+          <select [(ngModel)]="employee.reportingManager" [compareWith]="compareById" [disabled]="!isEditMode">
+            <option [ngValue]="null">Select</option>
+            <option *ngFor="let e of employees" [ngValue]="e">{{ e.firstName }} {{ e.lastName }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Employment Details</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Employment Type</label>
+          <select [(ngModel)]="employee.employmentType" [disabled]="!isEditMode">
+            <option value="FULL_TIME">Full Time</option>
+            <option value="PART_TIME">Part Time</option>
+            <option value="CONTRACT">Contract</option>
+            <option value="INTERN">Intern</option>
+            <option value="CONSULTANT">Consultant</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Employment Status</label>
+          <select [(ngModel)]="employee.employmentStatus" [disabled]="!isEditMode">
+            <option value="PROBATION">Probation</option>
+            <option value="CONFIRMED">Confirmed</option>
+            <option value="NOTICE">Notice Period</option>
+            <option value="RESIGNED">Resigned</option>
+            <option value="TERMINATED">Terminated</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Joining Date</label>
+          <input type="date" [(ngModel)]="employee.joiningDate" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Confirmation Date</label>
+          <input type="date" [(ngModel)]="employee.confirmationDate" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Probation Period (Months)</label>
+          <input type="number" [(ngModel)]="employee.probationMonths" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Notice Period (Days)</label>
+          <input type="number" [(ngModel)]="employee.noticePeriodDays" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Resignation Date</label>
+          <input type="date" [(ngModel)]="employee.resignationDate" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Last Working Date</label>
+          <input type="date" [(ngModel)]="employee.lastWorkingDate" [disabled]="!isEditMode" />
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="employee.active" [disabled]="!isEditMode" />
+            Active
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'bank'">
+    <div class="section-header">
+      <h3>Bank Details</h3>
+      <button class="btn-primary btn-sm" (click)="openBankModal()">
+        <i class="fas fa-plus"></i> Add Bank
+      </button>
+    </div>
+    <table class="data-table" *ngIf="bankDetails.length > 0">
+      <thead>
+        <tr>
+          <th>Bank Name</th>
+          <th>Branch</th>
+          <th>Account Number</th>
+          <th>Account Type</th>
+          <th>IFSC Code</th>
+          <th>Primary</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let b of bankDetails">
+          <td>{{ b.bankName }}</td>
+          <td>{{ b.branchName }}</td>
+          <td>{{ b.accountNumber }}</td>
+          <td>{{ b.accountType }}</td>
+          <td>{{ b.ifscCode }}</td>
+          <td><span class="badge" [class.badge-primary]="b.isPrimary">{{ b.isPrimary ? 'Yes' : 'No' }}</span></td>
+          <td>
+            <button class="btn-icon" (click)="openBankModal(b)"><i class="fas fa-edit"></i></button>
+            <button class="btn-icon btn-danger" (click)="deleteBankDetail(b)"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="no-data" *ngIf="bankDetails.length === 0">No bank details added</p>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'salary'">
+    <div class="section-header">
+      <h3>Salary History</h3>
+      <button class="btn-primary btn-sm" (click)="openSalaryModal()">
+        <i class="fas fa-plus"></i> Add Salary Revision
+      </button>
+    </div>
+    <table class="data-table" *ngIf="salaryHistory.length > 0">
+      <thead>
+        <tr>
+          <th>Effective From</th>
+          <th>Basic</th>
+          <th>HRA</th>
+          <th>Gross</th>
+          <th>Deductions</th>
+          <th>Net</th>
+          <th>CTC</th>
+          <th>Current</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of salaryHistory" [class.current-row]="s.isCurrent">
+          <td>{{ s.effectiveFrom }}</td>
+          <td>{{ s.basicSalary | number }}</td>
+          <td>{{ s.hraAmount | number }}</td>
+          <td>{{ s.grossSalary | number }}</td>
+          <td>{{ (s.pfDeduction || 0) + (s.tdsDeduction || 0) + (s.otherDeductions || 0) | number }}</td>
+          <td>{{ s.netSalary | number }}</td>
+          <td>{{ s.ctcAnnual | number }}</td>
+          <td><span class="badge badge-primary" *ngIf="s.isCurrent">Current</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="no-data" *ngIf="salaryHistory.length === 0">No salary records</p>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'education'">
+    <div class="section-header">
+      <h3>Educational Qualifications</h3>
+      <button class="btn-primary btn-sm" (click)="openEducationModal()">
+        <i class="fas fa-plus"></i> Add Education
+      </button>
+    </div>
+    <table class="data-table" *ngIf="education.length > 0">
+      <thead>
+        <tr>
+          <th>Qualification</th>
+          <th>Institution</th>
+          <th>University</th>
+          <th>Specialization</th>
+          <th>Year</th>
+          <th>Percentage/Grade</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of education">
+          <td>{{ e.qualification }}</td>
+          <td>{{ e.institution }}</td>
+          <td>{{ e.university }}</td>
+          <td>{{ e.specialization }}</td>
+          <td>{{ e.yearOfPassing }}</td>
+          <td>{{ e.percentage ? e.percentage + '%' : e.grade }}</td>
+          <td>
+            <button class="btn-icon" (click)="openEducationModal(e)"><i class="fas fa-edit"></i></button>
+            <button class="btn-icon btn-danger" (click)="deleteEducation(e)"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="no-data" *ngIf="education.length === 0">No education records</p>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'experience'">
+    <div class="section-header">
+      <h3>Work Experience</h3>
+      <button class="btn-primary btn-sm" (click)="openExperienceModal()">
+        <i class="fas fa-plus"></i> Add Experience
+      </button>
+    </div>
+    <table class="data-table" *ngIf="experience.length > 0">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Designation</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Location</th>
+          <th>Last Salary</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let exp of experience">
+          <td>{{ exp.companyName }}</td>
+          <td>{{ exp.designation }}</td>
+          <td>{{ exp.fromDate }}</td>
+          <td>{{ !exp.toDate ? 'Present' : exp.toDate }}</td>
+          <td>{{ exp.location }}</td>
+          <td>{{ exp.lastSalary }}</td>
+          <td>
+            <button class="btn-icon" (click)="openExperienceModal(exp)"><i class="fas fa-edit"></i></button>
+            <button class="btn-icon btn-danger" (click)="deleteExperience(exp)"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="no-data" *ngIf="experience.length === 0">No experience records</p>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'assets'">
+    <div class="section-header">
+      <h3>Assigned Assets</h3>
+      <button class="btn-primary btn-sm" (click)="openAssetModal()">
+        <i class="fas fa-plus"></i> Add Asset
+      </button>
+    </div>
+    <table class="data-table" *ngIf="assets.length > 0">
+      <thead>
+        <tr>
+          <th>Asset Type</th>
+          <th>Name</th>
+          <th>Asset Tag</th>
+          <th>Serial Number</th>
+          <th>Issued Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of assets">
+          <td>{{ a.assetType }}</td>
+          <td>{{ a.assetName }}</td>
+          <td>{{ a.assetTag }}</td>
+          <td>{{ a.serialNumber }}</td>
+          <td>{{ a.issuedDate }}</td>
+          <td>
+            <span class="badge" [ngClass]="{
+              'badge-warning': a.approvalStatus === 'PENDING',
+              'badge-success': a.approvalStatus === 'APPROVED',
+              'badge-danger': a.approvalStatus === 'REJECTED'
+            }">{{ a.approvalStatus }}</span>
+          </td>
+          <td>
+            <button class="btn-icon" *ngIf="a.approvalStatus === 'PENDING'" (click)="approveAsset(a, 'APPROVED')" title="Approve">
+              <i class="fas fa-check"></i>
+            </button>
+            <button class="btn-icon btn-danger" *ngIf="a.approvalStatus === 'PENDING'" (click)="approveAsset(a, 'REJECTED')" title="Reject">
+              <i class="fas fa-times"></i>
+            </button>
+            <button class="btn-icon" (click)="openAssetModal(a)"><i class="fas fa-edit"></i></button>
+            <button class="btn-icon btn-danger" (click)="deleteAsset(a)"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="no-data" *ngIf="assets.length === 0">No assets assigned</p>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showBankModal" (click)="showBankModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditingSubItem ? 'Edit' : 'Add' }} Bank Detail</h3>
+      <button class="btn-close" (click)="showBankModal = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Bank Name *</label>
+        <input type="text" [(ngModel)]="editingBank.bankName" />
+      </div>
+      <div class="form-group">
+        <label>Branch Name</label>
+        <input type="text" [(ngModel)]="editingBank.branchName" />
+      </div>
+      <div class="form-group">
+        <label>Account Number *</label>
+        <input type="text" [(ngModel)]="editingBank.accountNumber" />
+      </div>
+      <div class="form-group">
+        <label>Account Type</label>
+        <select [(ngModel)]="editingBank.accountType">
+          <option value="">Select</option>
+          <option value="SAVINGS">Savings</option>
+          <option value="CURRENT">Current</option>
+          <option value="SALARY">Salary</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>IFSC Code</label>
+        <input type="text" [(ngModel)]="editingBank.ifscCode" />
+      </div>
+      <div class="form-group">
+        <label>SWIFT Code</label>
+        <input type="text" [(ngModel)]="editingBank.swiftCode" />
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="editingBank.isPrimary" /> Primary Account
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showBankModal = false">Cancel</button>
+      <button class="btn-primary" (click)="saveBankDetail()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showSalaryModal" (click)="showSalaryModal = false">
+  <div class="modal modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add Salary Revision</h3>
+      <button class="btn-close" (click)="showSalaryModal = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Effective From *</label>
+          <input type="date" [(ngModel)]="editingSalary.effectiveFrom" />
+        </div>
+        <div class="form-group">
+          <label>Basic Salary *</label>
+          <input type="number" [(ngModel)]="editingSalary.basicSalary" />
+        </div>
+        <div class="form-group">
+          <label>HRA (House Rent Allowance)</label>
+          <input type="number" [(ngModel)]="editingSalary.hraAmount" />
+        </div>
+        <div class="form-group">
+          <label>DA (Dearness Allowance)</label>
+          <input type="number" [(ngModel)]="editingSalary.daAmount" />
+        </div>
+        <div class="form-group">
+          <label>TA (Transport Allowance)</label>
+          <input type="number" [(ngModel)]="editingSalary.taAmount" />
+        </div>
+        <div class="form-group">
+          <label>Medical Allowance</label>
+          <input type="number" [(ngModel)]="editingSalary.medicalAllowance" />
+        </div>
+        <div class="form-group">
+          <label>Special Allowance</label>
+          <input type="number" [(ngModel)]="editingSalary.specialAllowance" />
+        </div>
+        <div class="form-group">
+          <label>Other Allowances</label>
+          <input type="number" [(ngModel)]="editingSalary.otherAllowances" />
+        </div>
+        <div class="form-group">
+          <label>PF Deduction</label>
+          <input type="number" [(ngModel)]="editingSalary.pfDeduction" />
+        </div>
+        <div class="form-group">
+          <label>ESI Deduction</label>
+          <input type="number" [(ngModel)]="editingSalary.esiDeduction" />
+        </div>
+        <div class="form-group">
+          <label>Professional Tax</label>
+          <input type="number" [(ngModel)]="editingSalary.professionalTax" />
+        </div>
+        <div class="form-group">
+          <label>TDS Deduction</label>
+          <input type="number" [(ngModel)]="editingSalary.tdsDeduction" />
+        </div>
+        <div class="form-group">
+          <label>Other Deductions</label>
+          <input type="number" [(ngModel)]="editingSalary.otherDeductions" />
+        </div>
+        <div class="form-group">
+          <label>CTC (Annual)</label>
+          <input type="number" [(ngModel)]="editingSalary.ctcAnnual" />
+        </div>
+        <div class="form-group full-width">
+          <label>Remarks</label>
+          <textarea [(ngModel)]="editingSalary.remarks" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showSalaryModal = false">Cancel</button>
+      <button class="btn-primary" (click)="saveSalary()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showEducationModal" (click)="showEducationModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditingSubItem ? 'Edit' : 'Add' }} Education</h3>
+      <button class="btn-close" (click)="showEducationModal = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Qualification *</label>
+        <select [(ngModel)]="editingEducation.qualification">
+          <option value="">Select</option>
+          <option value="10TH">10th Standard</option>
+          <option value="12TH">12th Standard</option>
+          <option value="DIPLOMA">Diploma</option>
+          <option value="BACHELORS">Bachelor's Degree</option>
+          <option value="MASTERS">Master's Degree</option>
+          <option value="PHD">PhD</option>
+          <option value="CERTIFICATION">Certification</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Institution *</label>
+        <input type="text" [(ngModel)]="editingEducation.institution" />
+      </div>
+      <div class="form-group">
+        <label>University</label>
+        <input type="text" [(ngModel)]="editingEducation.university" />
+      </div>
+      <div class="form-group">
+        <label>Specialization</label>
+        <input type="text" [(ngModel)]="editingEducation.specialization" />
+      </div>
+      <div class="form-group">
+        <label>Year of Passing</label>
+        <input type="text" [(ngModel)]="editingEducation.yearOfPassing" />
+      </div>
+      <div class="form-group">
+        <label>Percentage</label>
+        <input type="text" [(ngModel)]="editingEducation.percentage" />
+      </div>
+      <div class="form-group">
+        <label>Grade</label>
+        <input type="text" [(ngModel)]="editingEducation.grade" />
+      </div>
+      <div class="form-group">
+        <label>Remarks</label>
+        <textarea [(ngModel)]="editingEducation.remarks" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showEducationModal = false">Cancel</button>
+      <button class="btn-primary" (click)="saveEducation()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showExperienceModal" (click)="showExperienceModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditingSubItem ? 'Edit' : 'Add' }} Experience</h3>
+      <button class="btn-close" (click)="showExperienceModal = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Company Name *</label>
+        <input type="text" [(ngModel)]="editingExperience.companyName" />
+      </div>
+      <div class="form-group">
+        <label>Designation *</label>
+        <input type="text" [(ngModel)]="editingExperience.designation" />
+      </div>
+      <div class="form-group">
+        <label>From Date *</label>
+        <input type="date" [(ngModel)]="editingExperience.fromDate" />
+      </div>
+      <div class="form-group">
+        <label>To Date (leave blank if current)</label>
+        <input type="date" [(ngModel)]="editingExperience.toDate" />
+      </div>
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" [(ngModel)]="editingExperience.location" />
+      </div>
+      <div class="form-group full-width">
+        <label>Responsibilities</label>
+        <textarea [(ngModel)]="editingExperience.responsibilities" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Last Salary</label>
+        <input type="text" [(ngModel)]="editingExperience.lastSalary" />
+      </div>
+      <div class="form-group">
+        <label>Reason for Leaving</label>
+        <input type="text" [(ngModel)]="editingExperience.reasonForLeaving" />
+      </div>
+      <div class="form-group">
+        <label>Reference Contact</label>
+        <input type="text" [(ngModel)]="editingExperience.referenceContact" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showExperienceModal = false">Cancel</button>
+      <button class="btn-primary" (click)="saveExperience()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showAssetModal" (click)="showAssetModal = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditingSubItem ? 'Edit' : 'Add' }} Asset</h3>
+      <button class="btn-close" (click)="showAssetModal = false">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Asset Type *</label>
+        <select [(ngModel)]="editingAsset.assetType">
+          <option value="">Select</option>
+          <option value="LAPTOP">Laptop</option>
+          <option value="DESKTOP">Desktop</option>
+          <option value="MOBILE">Mobile Phone</option>
+          <option value="MONITOR">Monitor</option>
+          <option value="KEYBOARD">Keyboard</option>
+          <option value="MOUSE">Mouse</option>
+          <option value="HEADSET">Headset</option>
+          <option value="ID_CARD">ID Card</option>
+          <option value="ACCESS_CARD">Access Card</option>
+          <option value="VEHICLE">Vehicle</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Asset Name *</label>
+        <input type="text" [(ngModel)]="editingAsset.assetName" />
+      </div>
+      <div class="form-group">
+        <label>Asset Tag</label>
+        <input type="text" [(ngModel)]="editingAsset.assetTag" />
+      </div>
+      <div class="form-group">
+        <label>Serial Number</label>
+        <input type="text" [(ngModel)]="editingAsset.serialNumber" />
+      </div>
+      <div class="form-group">
+        <label>Issued Date</label>
+        <input type="date" [(ngModel)]="editingAsset.issuedDate" />
+      </div>
+      <div class="form-group">
+        <label>Return Date</label>
+        <input type="date" [(ngModel)]="editingAsset.returnDate" />
+      </div>
+      <div class="form-group">
+        <label>Condition</label>
+        <select [(ngModel)]="editingAsset.condition">
+          <option value="">Select</option>
+          <option value="NEW">New</option>
+          <option value="GOOD">Good</option>
+          <option value="FAIR">Fair</option>
+          <option value="POOR">Poor</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Remarks</label>
+        <textarea [(ngModel)]="editingAsset.remarks" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showAssetModal = false">Cancel</button>
+      <button class="btn-primary" (click)="saveAsset()">Save</button>
+    </div>
+  </div>
+</div>
