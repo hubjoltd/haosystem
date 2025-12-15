@@ -65,6 +65,13 @@ export class PurchaseRequisitionComponent implements OnInit {
     { value: 'priority', label: 'Priority' }
   ];
   currentSort = 'date-created';
+  
+  expandedPRId: number | null = null;
+  inlineTabActive: 'purchaseOrders' | 'stockFulfillments' | 'materialTransfers' = 'purchaseOrders';
+  inlinePurchaseOrders: any[] = [];
+  inlineStockFulfillments: StockFulfillment[] = [];
+  inlineMaterialTransfers: MaterialTransfer[] = [];
+  inlineSelectableItems: SelectablePRItem[] = [];
 
   constructor(
     private prService: PurchaseRequisitionService,
@@ -505,6 +512,12 @@ export class PurchaseRequisitionComponent implements OnInit {
       next: () => {
         this.closeStockFulfillmentModal();
         this.loadData();
+        if (this.expandedPRId) {
+          const expandedPR = this.requisitions.find(r => r.id === this.expandedPRId);
+          if (expandedPR) {
+            setTimeout(() => this.loadInlineData(expandedPR), 500);
+          }
+        }
         alert('Stock fulfillment created successfully!');
       },
       error: (err) => {
@@ -561,6 +574,12 @@ export class PurchaseRequisitionComponent implements OnInit {
       next: () => {
         this.closeMaterialTransferModal();
         this.loadData();
+        if (this.expandedPRId) {
+          const expandedPR = this.requisitions.find(r => r.id === this.expandedPRId);
+          if (expandedPR) {
+            setTimeout(() => this.loadInlineData(expandedPR), 500);
+          }
+        }
         alert('Material transfer created successfully!');
       },
       error: (err) => {
@@ -577,5 +596,97 @@ export class PurchaseRequisitionComponent implements OnInit {
 
   getRemainingQty(item: PRItem): number {
     return item.quantity - (item.fulfilledQuantity || 0);
+  }
+
+  togglePRExpand(pr: PurchaseRequisition, event?: Event): void {
+    event?.stopPropagation();
+    if (this.expandedPRId === pr.id) {
+      this.expandedPRId = null;
+      this.resetInlineState();
+    } else {
+      this.resetInlineState();
+      this.expandedPRId = pr.id!;
+      this.inlineTabActive = 'purchaseOrders';
+      this.loadInlineData(pr);
+    }
+  }
+
+  private resetInlineState(): void {
+    this.inlineSelectableItems = [];
+    this.inlinePurchaseOrders = [];
+    this.inlineStockFulfillments = [];
+    this.inlineMaterialTransfers = [];
+  }
+
+  loadInlineData(pr: PurchaseRequisition): void {
+    if (!pr.id) return;
+    
+    this.inlineSelectableItems = pr.items
+      .filter(item => (item.quantity - (item.fulfilledQuantity || 0)) > 0)
+      .map(item => ({
+        ...item,
+        selected: false,
+        fulfillQty: item.quantity - (item.fulfilledQuantity || 0)
+      }));
+    
+    this.prService.getPurchaseOrdersByPrId(pr.id).subscribe({
+      next: (data) => this.inlinePurchaseOrders = data,
+      error: () => this.inlinePurchaseOrders = []
+    });
+    
+    this.prService.getStockFulfillmentsByPrId(pr.id).subscribe({
+      next: (data) => this.inlineStockFulfillments = data,
+      error: () => this.inlineStockFulfillments = []
+    });
+    
+    this.prService.getMaterialTransfersByPrId(pr.id).subscribe({
+      next: (data) => this.inlineMaterialTransfers = data,
+      error: () => this.inlineMaterialTransfers = []
+    });
+  }
+
+  openInlineStockFulfillment(pr: PurchaseRequisition, event?: Event): void {
+    event?.stopPropagation();
+    const selectedItems = this.inlineSelectableItems.filter(item => item.selected && item.fulfillQty && item.fulfillQty > 0);
+    if (selectedItems.length === 0) {
+      alert('Please select at least one item to fulfill from stock.');
+      return;
+    }
+    
+    this.selectedPR = JSON.parse(JSON.stringify(pr));
+    this.stockFulfillmentItems = selectedItems;
+    this.selectedWarehouseId = null;
+    this.selectedSupplierId = null;
+    this.stockFulfillmentRemarks = '';
+    this.showStockFulfillmentModal = true;
+  }
+
+  openInlineMaterialTransfer(pr: PurchaseRequisition, event?: Event): void {
+    event?.stopPropagation();
+    const selectedItems = this.inlineSelectableItems.filter(item => item.selected && item.fulfillQty && item.fulfillQty > 0);
+    if (selectedItems.length === 0) {
+      alert('Please select at least one item for material transfer.');
+      return;
+    }
+    
+    this.selectedPR = JSON.parse(JSON.stringify(pr));
+    this.materialTransferItems = selectedItems;
+    this.transferProjectName = '';
+    this.transferSupplierId = null;
+    this.materialTransferRemarks = '';
+    this.showMaterialTransferModal = true;
+  }
+
+  toggleInlineItemSelection(item: SelectablePRItem): void {
+    item.selected = !item.selected;
+  }
+
+  toggleAllInlineItems(event: Event): void {
+    const checked = (event.target as HTMLInputElement).checked;
+    this.inlineSelectableItems.forEach(item => item.selected = checked);
+  }
+
+  getSelectedItemsCount(): number {
+    return this.inlineSelectableItems.filter(item => item.selected).length;
   }
 }

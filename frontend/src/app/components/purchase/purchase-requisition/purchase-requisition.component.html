@@ -124,32 +124,159 @@
         <span class="column-count">{{ getFilteredPRs(approvedPRs).length }} Requisitions</span>
       </div>
       <div class="column-body">
-        <div class="pr-card" *ngFor="let pr of getFilteredPRs(approvedPRs)" (click)="viewPR(pr)">
-          <div class="card-header">
-            <span class="pr-number">{{ pr.prNumber }}</span>
-            <span class="priority-badge" [ngClass]="getPriorityClass(pr.priority)">{{ pr.priority }}</span>
+        <div class="pr-card-wrapper" *ngFor="let pr of getFilteredPRs(approvedPRs)">
+          <div class="pr-card" [class.expanded]="expandedPRId === pr.id">
+            <div class="card-header">
+              <span class="pr-number">{{ pr.prNumber }}</span>
+              <div class="header-right">
+                <span class="priority-badge" [ngClass]="getPriorityClass(pr.priority)">{{ pr.priority }}</span>
+                <button class="expand-btn" (click)="togglePRExpand(pr, $event)" [title]="expandedPRId === pr.id ? 'Collapse' : 'Expand'">
+                  <i class="fa" [class.fa-chevron-down]="expandedPRId !== pr.id" [class.fa-chevron-up]="expandedPRId === pr.id"></i>
+                </button>
+              </div>
+            </div>
+            <div class="card-department">{{ pr.department }}</div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="calculateFulfillmentProgress(pr)"></div>
+              <span class="progress-text">{{ calculateFulfillmentProgress(pr) }}% Fulfilled</span>
+            </div>
+            <div class="card-actions-row">
+              <button class="btn-action view" (click)="viewPR(pr); $event.stopPropagation()" title="View Details">
+                <i class="fa fa-eye"></i>
+              </button>
+              <button class="btn-action convert" (click)="convertToPO(pr, $event)" title="Convert to PO">
+                <i class="fa fa-file-invoice"></i>
+              </button>
+            </div>
+            <div class="card-footer">
+              <span class="comments"><i class="fa fa-comments"></i> Comments: {{ pr.commentsCount || 0 }}</span>
+            </div>
           </div>
-          <div class="card-department">{{ pr.department }}</div>
-          <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="calculateFulfillmentProgress(pr)"></div>
-            <span class="progress-text">{{ calculateFulfillmentProgress(pr) }}% Fulfilled</span>
-          </div>
-          <div class="card-actions-row">
-            <button class="btn-action view" (click)="openViewModal(pr); $event.stopPropagation()" title="View History">
-              <i class="fa fa-eye"></i>
-            </button>
-            <button class="btn-action convert" (click)="convertToPO(pr, $event)" title="Convert to PO">
-              <i class="fa fa-file-invoice"></i>
-            </button>
-            <button class="btn-action stock" (click)="openStockFulfillmentModal(pr, $event)" title="Fulfill from Stock">
-              <i class="fa fa-box"></i>
-            </button>
-            <button class="btn-action transfer" (click)="openMaterialTransferModal(pr, $event)" title="Material Transfer">
-              <i class="fa fa-exchange-alt"></i>
-            </button>
-          </div>
-          <div class="card-footer">
-            <span class="comments"><i class="fa fa-comments"></i> Comments: {{ pr.commentsCount || 0 }}</span>
+          
+          <div class="inline-expand-section" *ngIf="expandedPRId === pr.id">
+            <div class="inline-items-section">
+              <div class="inline-section-header">
+                <h4>Select Items for Fulfillment</h4>
+                <span class="selected-count" *ngIf="getSelectedItemsCount() > 0">{{ getSelectedItemsCount() }} selected</span>
+              </div>
+              <table class="inline-items-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40px;"><input type="checkbox" (change)="toggleAllInlineItems($event)" /></th>
+                    <th>Item</th>
+                    <th style="width: 80px;">Required</th>
+                    <th style="width: 80px;">Fulfilled</th>
+                    <th style="width: 80px;">Remaining</th>
+                    <th style="width: 90px;">Qty to Fulfill</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of inlineSelectableItems">
+                    <td><input type="checkbox" [(ngModel)]="item.selected" /></td>
+                    <td>{{ item.itemName }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.fulfilledQuantity || 0 }}</td>
+                    <td>{{ getRemainingQty(item) }}</td>
+                    <td><input type="number" class="inline-qty-input" [(ngModel)]="item.fulfillQty" [max]="getRemainingQty(item)" min="1" [disabled]="!item.selected" /></td>
+                  </tr>
+                  <tr *ngIf="inlineSelectableItems.length === 0">
+                    <td colspan="6" class="no-items">All items have been fulfilled</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="inline-action-buttons" *ngIf="inlineSelectableItems.length > 0">
+                <button class="btn-action stock" (click)="openInlineStockFulfillment(pr, $event)">
+                  <i class="fa fa-box"></i> Fulfill from Stock
+                </button>
+                <button class="btn-action transfer" (click)="openInlineMaterialTransfer(pr, $event)">
+                  <i class="fa fa-exchange-alt"></i> Material Transfer
+                </button>
+              </div>
+            </div>
+            
+            <div class="inline-tabs">
+              <div class="tab-headers">
+                <button class="tab-header" [class.active]="inlineTabActive === 'purchaseOrders'" (click)="inlineTabActive = 'purchaseOrders'">
+                  <i class="fa fa-file-invoice"></i> Purchase Orders ({{ inlinePurchaseOrders.length }})
+                </button>
+                <button class="tab-header" [class.active]="inlineTabActive === 'stockFulfillments'" (click)="inlineTabActive = 'stockFulfillments'">
+                  <i class="fa fa-box"></i> Fulfilled Stocks ({{ inlineStockFulfillments.length }})
+                </button>
+                <button class="tab-header" [class.active]="inlineTabActive === 'materialTransfers'" (click)="inlineTabActive = 'materialTransfers'">
+                  <i class="fa fa-exchange-alt"></i> Material Transfers ({{ inlineMaterialTransfers.length }})
+                </button>
+              </div>
+              
+              <div class="tab-content" *ngIf="inlineTabActive === 'purchaseOrders'">
+                <table class="inline-data-table" *ngIf="inlinePurchaseOrders.length > 0">
+                  <thead>
+                    <tr>
+                      <th>PO Number</th>
+                      <th>Supplier</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let po of inlinePurchaseOrders">
+                      <td>{{ po.poNumber }}</td>
+                      <td>{{ po.supplierName }}</td>
+                      <td>{{ formatDate(po.poDate) }}</td>
+                      <td><span class="status-badge" [ngClass]="getStatusClass(po.status)">{{ po.status }}</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="empty-tab" *ngIf="inlinePurchaseOrders.length === 0">No purchase orders created yet</div>
+              </div>
+              
+              <div class="tab-content" *ngIf="inlineTabActive === 'stockFulfillments'">
+                <table class="inline-data-table" *ngIf="inlineStockFulfillments.length > 0">
+                  <thead>
+                    <tr>
+                      <th>From Warehouse</th>
+                      <th>Supplier</th>
+                      <th>Items</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let sf of inlineStockFulfillments">
+                      <td>{{ sf.warehouseName || '-' }}</td>
+                      <td>{{ sf.supplierName || '-' }}</td>
+                      <td>{{ sf.items?.length || 0 }} items</td>
+                      <td>{{ formatDate(sf.createdAt) }}</td>
+                      <td><span class="status-badge status-approved">Fulfilled</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="empty-tab" *ngIf="inlineStockFulfillments.length === 0">No stock fulfillments yet</div>
+              </div>
+              
+              <div class="tab-content" *ngIf="inlineTabActive === 'materialTransfers'">
+                <table class="inline-data-table" *ngIf="inlineMaterialTransfers.length > 0">
+                  <thead>
+                    <tr>
+                      <th>From Project</th>
+                      <th>Supplier</th>
+                      <th>Items</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let mt of inlineMaterialTransfers">
+                      <td>{{ mt.projectName || '-' }}</td>
+                      <td>{{ mt.supplierName || '-' }}</td>
+                      <td>{{ mt.items?.length || 0 }} items</td>
+                      <td>{{ formatDate(mt.createdAt) }}</td>
+                      <td><span class="status-badge status-approved">Transferred</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="empty-tab" *ngIf="inlineMaterialTransfers.length === 0">No material transfers yet</div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="empty-column" *ngIf="getFilteredPRs(approvedPRs).length === 0">
@@ -165,32 +292,159 @@
         <span class="column-count">{{ getFilteredPRs(partiallyFulfilledPRs).length }} Requisitions</span>
       </div>
       <div class="column-body">
-        <div class="pr-card" *ngFor="let pr of getFilteredPRs(partiallyFulfilledPRs)" (click)="viewPR(pr)">
-          <div class="card-header">
-            <span class="pr-number">{{ pr.prNumber }}</span>
-            <span class="priority-badge" [ngClass]="getPriorityClass(pr.priority)">{{ pr.priority }}</span>
+        <div class="pr-card-wrapper" *ngFor="let pr of getFilteredPRs(partiallyFulfilledPRs)">
+          <div class="pr-card" [class.expanded]="expandedPRId === pr.id">
+            <div class="card-header">
+              <span class="pr-number">{{ pr.prNumber }}</span>
+              <div class="header-right">
+                <span class="priority-badge" [ngClass]="getPriorityClass(pr.priority)">{{ pr.priority }}</span>
+                <button class="expand-btn" (click)="togglePRExpand(pr, $event)" [title]="expandedPRId === pr.id ? 'Collapse' : 'Expand'">
+                  <i class="fa" [class.fa-chevron-down]="expandedPRId !== pr.id" [class.fa-chevron-up]="expandedPRId === pr.id"></i>
+                </button>
+              </div>
+            </div>
+            <div class="card-department">{{ pr.department }}</div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="calculateFulfillmentProgress(pr)"></div>
+              <span class="progress-text">{{ calculateFulfillmentProgress(pr) }}% Fulfilled</span>
+            </div>
+            <div class="card-actions-row">
+              <button class="btn-action view" (click)="viewPR(pr); $event.stopPropagation()" title="View Details">
+                <i class="fa fa-eye"></i>
+              </button>
+              <button class="btn-action convert" (click)="convertToPO(pr, $event)" title="Convert to PO">
+                <i class="fa fa-file-invoice"></i>
+              </button>
+            </div>
+            <div class="card-footer">
+              <span class="comments"><i class="fa fa-comments"></i> Comments: {{ pr.commentsCount || 0 }}</span>
+            </div>
           </div>
-          <div class="card-department">{{ pr.department }}</div>
-          <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="calculateFulfillmentProgress(pr)"></div>
-            <span class="progress-text">{{ calculateFulfillmentProgress(pr) }}% Fulfilled</span>
-          </div>
-          <div class="card-actions-row">
-            <button class="btn-action view" (click)="openViewModal(pr); $event.stopPropagation()" title="View History">
-              <i class="fa fa-eye"></i>
-            </button>
-            <button class="btn-action convert" (click)="convertToPO(pr, $event)" title="Convert to PO">
-              <i class="fa fa-file-invoice"></i>
-            </button>
-            <button class="btn-action stock" (click)="openStockFulfillmentModal(pr, $event)" title="Fulfill from Stock">
-              <i class="fa fa-box"></i>
-            </button>
-            <button class="btn-action transfer" (click)="openMaterialTransferModal(pr, $event)" title="Material Transfer">
-              <i class="fa fa-exchange-alt"></i>
-            </button>
-          </div>
-          <div class="card-footer">
-            <span class="comments"><i class="fa fa-comments"></i> Comments: {{ pr.commentsCount || 0 }}</span>
+          
+          <div class="inline-expand-section" *ngIf="expandedPRId === pr.id">
+            <div class="inline-items-section">
+              <div class="inline-section-header">
+                <h4>Select Items for Fulfillment</h4>
+                <span class="selected-count" *ngIf="getSelectedItemsCount() > 0">{{ getSelectedItemsCount() }} selected</span>
+              </div>
+              <table class="inline-items-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40px;"><input type="checkbox" (change)="toggleAllInlineItems($event)" /></th>
+                    <th>Item</th>
+                    <th style="width: 80px;">Required</th>
+                    <th style="width: 80px;">Fulfilled</th>
+                    <th style="width: 80px;">Remaining</th>
+                    <th style="width: 90px;">Qty to Fulfill</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of inlineSelectableItems">
+                    <td><input type="checkbox" [(ngModel)]="item.selected" /></td>
+                    <td>{{ item.itemName }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.fulfilledQuantity || 0 }}</td>
+                    <td>{{ getRemainingQty(item) }}</td>
+                    <td><input type="number" class="inline-qty-input" [(ngModel)]="item.fulfillQty" [max]="getRemainingQty(item)" min="1" [disabled]="!item.selected" /></td>
+                  </tr>
+                  <tr *ngIf="inlineSelectableItems.length === 0">
+                    <td colspan="6" class="no-items">All items have been fulfilled</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="inline-action-buttons" *ngIf="inlineSelectableItems.length > 0">
+                <button class="btn-action stock" (click)="openInlineStockFulfillment(pr, $event)">
+                  <i class="fa fa-box"></i> Fulfill from Stock
+                </button>
+                <button class="btn-action transfer" (click)="openInlineMaterialTransfer(pr, $event)">
+                  <i class="fa fa-exchange-alt"></i> Material Transfer
+                </button>
+              </div>
+            </div>
+            
+            <div class="inline-tabs">
+              <div class="tab-headers">
+                <button class="tab-header" [class.active]="inlineTabActive === 'purchaseOrders'" (click)="inlineTabActive = 'purchaseOrders'">
+                  <i class="fa fa-file-invoice"></i> Purchase Orders ({{ inlinePurchaseOrders.length }})
+                </button>
+                <button class="tab-header" [class.active]="inlineTabActive === 'stockFulfillments'" (click)="inlineTabActive = 'stockFulfillments'">
+                  <i class="fa fa-box"></i> Fulfilled Stocks ({{ inlineStockFulfillments.length }})
+                </button>
+                <button class="tab-header" [class.active]="inlineTabActive === 'materialTransfers'" (click)="inlineTabActive = 'materialTransfers'">
+                  <i class="fa fa-exchange-alt"></i> Material Transfers ({{ inlineMaterialTransfers.length }})
+                </button>
+              </div>
+              
+              <div class="tab-content" *ngIf="inlineTabActive === 'purchaseOrders'">
+                <table class="inline-data-table" *ngIf="inlinePurchaseOrders.length > 0">
+                  <thead>
+                    <tr>
+                      <th>PO Number</th>
+                      <th>Supplier</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let po of inlinePurchaseOrders">
+                      <td>{{ po.poNumber }}</td>
+                      <td>{{ po.supplierName }}</td>
+                      <td>{{ formatDate(po.poDate) }}</td>
+                      <td><span class="status-badge" [ngClass]="getStatusClass(po.status)">{{ po.status }}</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="empty-tab" *ngIf="inlinePurchaseOrders.length === 0">No purchase orders created yet</div>
+              </div>
+              
+              <div class="tab-content" *ngIf="inlineTabActive === 'stockFulfillments'">
+                <table class="inline-data-table" *ngIf="inlineStockFulfillments.length > 0">
+                  <thead>
+                    <tr>
+                      <th>From Warehouse</th>
+                      <th>Supplier</th>
+                      <th>Items</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let sf of inlineStockFulfillments">
+                      <td>{{ sf.warehouseName || '-' }}</td>
+                      <td>{{ sf.supplierName || '-' }}</td>
+                      <td>{{ sf.items?.length || 0 }} items</td>
+                      <td>{{ formatDate(sf.createdAt) }}</td>
+                      <td><span class="status-badge status-approved">Fulfilled</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="empty-tab" *ngIf="inlineStockFulfillments.length === 0">No stock fulfillments yet</div>
+              </div>
+              
+              <div class="tab-content" *ngIf="inlineTabActive === 'materialTransfers'">
+                <table class="inline-data-table" *ngIf="inlineMaterialTransfers.length > 0">
+                  <thead>
+                    <tr>
+                      <th>From Project</th>
+                      <th>Supplier</th>
+                      <th>Items</th>
+                      <th>Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let mt of inlineMaterialTransfers">
+                      <td>{{ mt.projectName || '-' }}</td>
+                      <td>{{ mt.supplierName || '-' }}</td>
+                      <td>{{ mt.items?.length || 0 }} items</td>
+                      <td>{{ formatDate(mt.createdAt) }}</td>
+                      <td><span class="status-badge status-approved">Transferred</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="empty-tab" *ngIf="inlineMaterialTransfers.length === 0">No material transfers yet</div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="empty-column" *ngIf="getFilteredPRs(partiallyFulfilledPRs).length === 0">

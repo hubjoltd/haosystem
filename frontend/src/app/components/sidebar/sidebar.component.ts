@@ -91,18 +91,7 @@ export class SidebarComponent implements OnInit {
       permissionKey: 'Purchase',
       children: [
         { icon: 'fas fa-file-alt', label: 'Purchase Requisition', route: '/app/purchase/requisition', permissionKey: 'Purchase - Requisition' },
-        {
-          icon: 'fas fa-tasks',
-          label: 'PR Fulfillment',
-          expanded: false,
-          permissionKey: 'Purchase - PR Fulfillment',
-          children: [
-            { icon: 'fas fa-file-invoice', label: 'Convert to Purchase Order', route: '/app/purchase/fulfillment/convert-to-po' },
-            { icon: 'fas fa-arrow-up', label: 'Fulfill from Stock Issue', route: '/app/purchase/fulfillment/stock-issue' },
-            { icon: 'fas fa-exchange-alt', label: 'Fulfill via Material Transfer', route: '/app/purchase/fulfillment/material-transfer' }
-          ]
-        },
-        { icon: 'fas fa-cart-plus', label: 'Direct Purchase', route: '/app/purchase/direct', permissionKey: 'Purchase - Direct Purchase' }
+        { icon: 'fas fa-file-invoice', label: 'Purchase Order', route: '/app/purchase/orders', permissionKey: 'Purchase - Orders' }
       ]
     },
     {
