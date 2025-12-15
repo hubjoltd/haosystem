@@ -7,6 +7,7 @@ import { SettingsService } from '../../../services/settings.service';
 import { WarehouseService, Warehouse } from '../../../services/warehouse.service';
 import { SupplierService, Supplier } from '../../../services/supplier.service';
 import { NotificationService } from '../../../services/notification.service';
+import { AuthService } from '../../../services/auth.service';
 
 interface SelectablePRItem extends PRItem {
   selected?: boolean;
@@ -74,6 +75,8 @@ export class PurchaseRequisitionComponent implements OnInit {
   inlineMaterialTransfers: MaterialTransfer[] = [];
   inlineSelectableItems: SelectablePRItem[] = [];
 
+  currentUserName: string = '';
+
   constructor(
     private prService: PurchaseRequisitionService,
     private unitService: UnitOfMeasureService,
@@ -82,8 +85,16 @@ export class PurchaseRequisitionComponent implements OnInit {
     private settingsService: SettingsService,
     private warehouseService: WarehouseService,
     private supplierService: SupplierService,
-    private notificationService: NotificationService
-  ) {}
+    private notificationService: NotificationService,
+    private authService: AuthService
+  ) {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.currentUserName = user.firstName && user.lastName 
+        ? `${user.firstName} ${user.lastName}` 
+        : user.username;
+    }
+  }
 
   ngOnInit(): void {
     this.loadData();
@@ -147,7 +158,7 @@ export class PurchaseRequisitionComponent implements OnInit {
       prNumber: '',
       prDate: today,
       requiredDate: '',
-      requestedBy: 'Current User',
+      requestedBy: this.currentUserName || 'Current User',
       department: '',
       deliveryLocation: '',
       purpose: '',

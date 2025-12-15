@@ -20,6 +20,9 @@ public class PurchaseRequisitionService {
     @Autowired
     private PrefixSettingsService prefixSettingsService;
 
+    @Autowired
+    private UserNotificationService userNotificationService;
+
     public List<PurchaseRequisition> getAll() {
         return prRepository.findAllByOrderByCreatedAtDesc();
     }
@@ -114,7 +117,17 @@ public class PurchaseRequisitionService {
         pr.setSubmittedBy(submittedBy);
         pr.setSubmittedById(submittedById);
 
-        return prRepository.save(pr);
+        PurchaseRequisition savedPr = prRepository.save(pr);
+        
+        userNotificationService.notifyAdmins(
+            "PR Submitted for Approval",
+            "Purchase Requisition " + pr.getPrNumber() + " has been submitted by " + submittedBy + " and requires approval.",
+            "PR_APPROVAL",
+            "PurchaseRequisition",
+            savedPr.getId()
+        );
+
+        return savedPr;
     }
 
     @Transactional

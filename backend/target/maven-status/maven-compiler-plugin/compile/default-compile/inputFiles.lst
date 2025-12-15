@@ -8,6 +8,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/controller/PrefixSettingsController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/StockAdjustment.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/AuthService.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/UserNotificationController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/StockTransferLine.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/InventoryLedger.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PurchaseRequisitionItem.java
@@ -23,6 +24,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/config/SecurityConfig.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/ValuationService.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GoodsReceiptRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/UserNotificationRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/dto/RegisterRequest.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/FinanceSettings.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PRMaterialTransferItem.java
@@ -92,6 +94,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/model/PrefixSettings.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/PrefixSettingsRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PRStockFulfillmentItem.java
+/home/runner/workspace/backend/src/main/java/com/erp/service/UserNotificationService.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/ItemGroupService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/GoodsIssue.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GeneralSettingsRepository.java
@@ -104,3 +107,4 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/StockTransferLineRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PRFulfillment.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/BinRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/UserNotification.java

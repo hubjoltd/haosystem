@@ -19,28 +19,35 @@
         <div class="dropdown notification-dropdown" *ngIf="showNotifications">
           <div class="dropdown-header">
             <h4>Notifications</h4>
-            <a href="#">Mark all as read</a>
+            <a href="javascript:void(0)" (click)="markAllAsRead()">Mark all as read</a>
           </div>
           <div class="dropdown-body">
-            <div class="notification-item" *ngFor="let notification of notifications" [class.unread]="!notification.read">
+            <div class="notification-item" 
+                 *ngFor="let notification of notifications" 
+                 [class.unread]="!notification.read"
+                 (click)="markAsRead(notification)">
               <div class="notification-icon">
-                <i class="fas fa-info-circle"></i>
+                <i class="fas" [ngClass]="getNotificationIcon(notification.type)"></i>
               </div>
               <div class="notification-content">
+                <strong>{{ notification.title }}</strong>
                 <p>{{ notification.message }}</p>
-                <span class="time">{{ notification.time }}</span>
+                <span class="time">{{ getTimeAgo(notification.createdAt) }}</span>
               </div>
             </div>
+            <div class="notification-empty" *ngIf="notifications.length === 0">
+              <i class="fas fa-bell-slash"></i>
+              <p>No notifications</p>
+            </div>
           </div>
-          <div class="dropdown-footer">
-            <a href="#">View all notifications</a>
+          <div class="dropdown-footer" *ngIf="notifications.length > 0">
+            <a href="javascript:void(0)">View all notifications</a>
           </div>
         </div>
       </div>
 
       <button class="action-btn">
         <i class="fas fa-envelope"></i>
-        <span class="badge">2</span>
       </button>
     </div>
 
@@ -49,20 +56,20 @@
         <div class="avatar">
           <i class="fas fa-user"></i>
         </div>
-        <span class="name">Admin User</span>
+        <span class="name">{{ currentUserName }}</span>
         <i class="fas fa-chevron-down"></i>
       </button>
       <div class="dropdown profile-dropdown" *ngIf="showProfile">
-        <a href="#" class="dropdown-item">
+        <a href="javascript:void(0)" class="dropdown-item">
           <i class="fas fa-user"></i>
           My Profile
         </a>
-        <a href="#" class="dropdown-item">
+        <a href="javascript:void(0)" class="dropdown-item">
           <i class="fas fa-cog"></i>
           Account Settings
         </a>
         <div class="dropdown-divider"></div>
-        <a routerLink="/login" class="dropdown-item text-danger">
+        <a href="javascript:void(0)" (click)="logout()" class="dropdown-item text-danger">
           <i class="fas fa-sign-out-alt"></i>
           Logout
         </a>

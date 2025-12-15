@@ -9,6 +9,7 @@ com/erp/service/StaffService.class
 com/erp/repository/ValuationCostLayerRepository.class
 com/erp/repository/GoodsIssueLineRepository.class
 com/erp/service/UnitOfMeasureService.class
+com/erp/controller/UserNotificationController.class
 com/erp/model/Contract.class
 com/erp/repository/PurchaseRequisitionItemRepository.class
 com/erp/model/ValuationCostLayer.class
@@ -25,6 +26,7 @@ com/erp/model/GeneralSettings.class
 com/erp/controller/RoleController.class
 com/erp/model/Bin.class
 com/erp/service/GoodsIssueService.class
+com/erp/model/UserNotification.class
 com/erp/dto/LoginRequest.class
 com/erp/model/PurchaseRequisition.class
 com/erp/repository/PrefixSettingsRepository.class
@@ -58,6 +60,7 @@ com/erp/model/PRFulfillmentItem.class
 com/erp/controller/PrefixSettingsController.class
 com/erp/service/WarehouseService.class
 com/erp/model/GoodsReceipt.class
+com/erp/repository/UserNotificationRepository.class
 com/erp/controller/HealthController.class
 com/erp/service/StockAdjustmentService.class
 com/erp/repository/StockAdjustmentRepository.class
@@ -103,6 +106,7 @@ com/erp/ErpApplication.class
 com/erp/model/GoodsIssue.class
 com/erp/repository/PurchaseRequisitionRepository.class
 com/erp/config/SecurityConfig.class
+com/erp/service/UserNotificationService.class
 com/erp/service/ValuationService$InsufficientInventoryException.class
 com/erp/controller/StockMovementController.class
 com/erp/model/Supplier.class
