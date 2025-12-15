@@ -91,7 +91,8 @@ export class SidebarComponent implements OnInit {
       permissionKey: 'Purchase',
       children: [
         { icon: 'fas fa-file-alt', label: 'Purchase Requisition', route: '/app/purchase/requisition', permissionKey: 'Purchase - Requisition' },
-        { icon: 'fas fa-file-invoice', label: 'Purchase Order', route: '/app/purchase/orders', permissionKey: 'Purchase - Orders' }
+        { icon: 'fas fa-file-invoice', label: 'Purchase Order', route: '/app/purchase/orders', permissionKey: 'Purchase - Orders' },
+        { icon: 'fas fa-file-invoice-dollar', label: 'Purchase Invoice', route: '/app/purchase/invoices', permissionKey: 'Purchase - Invoices' }
       ]
     },
     {

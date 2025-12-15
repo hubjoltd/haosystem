@@ -61,6 +61,7 @@ import { PurchaseAuditsComponent } from './components/audit-trails/purchase-audi
 
 import { PrPrintComponent } from './components/purchase/pr-print/pr-print.component';
 import { PoPrintComponent } from './components/purchase/po-print/po-print.component';
+import { PurchaseInvoiceComponent } from './components/purchase/purchase-invoice/purchase-invoice.component';
 import { PrefixSettingsComponent } from './components/settings/prefix-settings/prefix-settings.component';
 import { AddRoleComponent } from './components/settings/roles-settings/add-role/add-role.component';
 import { AddStaffComponent } from './components/settings/staff-management/add-staff/add-staff.component';
@@ -126,7 +127,8 @@ const routes: Routes = [
       { path: 'audit/inventory', component: InventoryAuditsComponent },
       { path: 'audit/purchase', component: PurchaseAuditsComponent },
       { path: 'purchase/requisition/:id/print', component: PrPrintComponent },
-      { path: 'purchase/direct/:id/print', component: PoPrintComponent }
+      { path: 'purchase/direct/:id/print', component: PoPrintComponent },
+      { path: 'purchase/invoices', component: PurchaseInvoiceComponent }
     ]
   }
 ];

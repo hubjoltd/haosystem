@@ -1,6 +1,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/controller/PurchaseRequisitionController.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/InventoryLedgerRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/AuditLogRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/PurchaseInvoice.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/GoodsReceiptService.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/StockTransferService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/GoodsReceipt.java
@@ -37,13 +38,16 @@
 /home/runner/workspace/backend/src/main/java/com/erp/controller/AuthController.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/SupplierService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Bin.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/PurchaseInvoiceItem.java
 /home/runner/workspace/backend/src/main/java/com/erp/dto/LoginRequest.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/SettingsService.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/ItemGroupRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/ValuationCostLayerRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/ValuationCostLayer.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/PurchaseInvoiceRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Role.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/UserRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/service/PurchaseInvoiceService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/AuditLog.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/ContractRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/AuditLogService.java
@@ -62,6 +66,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/controller/ApiController.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/WarehouseService.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/PurchaseRequisitionRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/PurchaseInvoiceController.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/CustomerRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/PrefixSettingsService.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/HealthController.java

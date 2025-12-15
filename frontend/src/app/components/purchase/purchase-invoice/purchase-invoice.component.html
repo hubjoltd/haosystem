@@ -1,0 +1,333 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Purchase Invoices</h1>
+      <p class="subtitle">Manage purchase invoices from completed orders</p>
+    </div>
+    <div class="header-actions">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Search invoices...">
+      </div>
+      <button class="btn-toggle" (click)="toggleViewMode()">
+        <i class="fas" [ngClass]="viewMode === 'table' ? 'fa-th' : 'fa-list'"></i>
+      </button>
+      <button class="btn-primary" (click)="openModal()">
+        <i class="fas fa-plus"></i> New Invoice
+      </button>
+    </div>
+  </div>
+
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading invoices...</p>
+  </div>
+
+  <div class="table-view" *ngIf="!loading && viewMode === 'table'">
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Invoice No</th>
+            <th>PO Reference</th>
+            <th>Supplier</th>
+            <th>Invoice Date</th>
+            <th>Due Date</th>
+            <th>Total Amount</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let invoice of filteredInvoices">
+            <td class="invoice-number">{{ invoice.invoiceNumber }}</td>
+            <td>{{ invoice.poNumber || '-' }}</td>
+            <td>{{ invoice.supplierName }}</td>
+            <td>{{ formatDate(invoice.invoiceDate) }}</td>
+            <td>{{ formatDate(invoice.dueDate) }}</td>
+            <td class="amount">{{ formatCurrency(invoice.totalAmount) }}</td>
+            <td>
+              <span class="badge" [ngClass]="getStatusClass(invoice.status)">
+                {{ invoice.status }}
+              </span>
+            </td>
+            <td class="actions">
+              <button class="btn-icon" title="View/Edit" (click)="openModal(invoice)">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn-icon" title="Print" (click)="printInvoice(invoice)">
+                <i class="fas fa-print"></i>
+              </button>
+              <button class="btn-icon btn-success" *ngIf="invoice.status === 'Draft'" 
+                      title="Mark as Submitted" (click)="updateInvoiceStatus(invoice, 'Submitted')">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+              <button class="btn-icon btn-success" *ngIf="invoice.status === 'Submitted'" 
+                      title="Mark as Paid" (click)="updateInvoiceStatus(invoice, 'Paid')">
+                <i class="fas fa-check-circle"></i>
+              </button>
+              <button class="btn-icon btn-danger" title="Delete" (click)="deleteInvoice(invoice.id!)">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredInvoices.length === 0">
+            <td colspan="8" class="empty-row">
+              <div class="empty-state">
+                <i class="fas fa-file-invoice"></i>
+                <p>No invoices found</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="kanban-view" *ngIf="!loading && viewMode === 'kanban'">
+    <div class="kanban-board">
+      <div class="kanban-column">
+        <div class="column-header draft">
+          <h3>Draft</h3>
+          <span class="count">{{ draftInvoices.length }}</span>
+        </div>
+        <div class="column-body">
+          <div class="kanban-card" *ngFor="let invoice of draftInvoices" (click)="openModal(invoice)">
+            <div class="card-header">
+              <span class="invoice-number">{{ invoice.invoiceNumber }}</span>
+              <span class="badge badge-secondary">{{ invoice.status }}</span>
+            </div>
+            <div class="card-body">
+              <p class="supplier">{{ invoice.supplierName }}</p>
+              <p class="po-ref" *ngIf="invoice.poNumber">PO: {{ invoice.poNumber }}</p>
+            </div>
+            <div class="card-footer">
+              <span class="amount">{{ formatCurrency(invoice.totalAmount) }}</span>
+              <span class="date">{{ formatDate(invoice.invoiceDate) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kanban-column">
+        <div class="column-header pending">
+          <h3>Pending</h3>
+          <span class="count">{{ pendingInvoices.length }}</span>
+        </div>
+        <div class="column-body">
+          <div class="kanban-card" *ngFor="let invoice of pendingInvoices" (click)="openModal(invoice)">
+            <div class="card-header">
+              <span class="invoice-number">{{ invoice.invoiceNumber }}</span>
+              <span class="badge badge-warning">{{ invoice.status }}</span>
+            </div>
+            <div class="card-body">
+              <p class="supplier">{{ invoice.supplierName }}</p>
+              <p class="po-ref" *ngIf="invoice.poNumber">PO: {{ invoice.poNumber }}</p>
+            </div>
+            <div class="card-footer">
+              <span class="amount">{{ formatCurrency(invoice.totalAmount) }}</span>
+              <span class="date">{{ formatDate(invoice.invoiceDate) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kanban-column">
+        <div class="column-header completed">
+          <h3>Paid</h3>
+          <span class="count">{{ paidInvoices.length }}</span>
+        </div>
+        <div class="column-body">
+          <div class="kanban-card" *ngFor="let invoice of paidInvoices" (click)="openModal(invoice)">
+            <div class="card-header">
+              <span class="invoice-number">{{ invoice.invoiceNumber }}</span>
+              <span class="badge badge-success">{{ invoice.status }}</span>
+            </div>
+            <div class="card-body">
+              <p class="supplier">{{ invoice.supplierName }}</p>
+              <p class="po-ref" *ngIf="invoice.poNumber">PO: {{ invoice.poNumber }}</p>
+            </div>
+            <div class="card-footer">
+              <span class="amount">{{ formatCurrency(invoice.totalAmount) }}</span>
+              <span class="date">{{ formatDate(invoice.invoiceDate) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editMode ? 'Edit Invoice' : 'Create New Invoice' }}</h2>
+      <button class="btn-close" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section">
+        <h3>Invoice Details</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Invoice Number</label>
+            <input type="text" [(ngModel)]="selectedInvoice.invoiceNumber" readonly>
+          </div>
+          <div class="form-group">
+            <label>Invoice Date</label>
+            <input type="date" [(ngModel)]="selectedInvoice.invoiceDate">
+          </div>
+          <div class="form-group">
+            <label>Due Date</label>
+            <input type="date" [(ngModel)]="selectedInvoice.dueDate">
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select [(ngModel)]="selectedInvoice.status">
+              <option value="Draft">Draft</option>
+              <option value="Submitted">Submitted</option>
+              <option value="Pending">Pending</option>
+              <option value="Paid">Paid</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section" *ngIf="!editMode">
+        <h3>Link to Purchase Order</h3>
+        <div class="form-group">
+          <label>Select Completed PO (Optional)</label>
+          <select (change)="onPoSelect($event)">
+            <option value="">-- Select PO --</option>
+            <option *ngFor="let po of completedPOs" [value]="po.id">
+              {{ po.poNumber }} - {{ po.supplierName }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Supplier Information</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Supplier Name</label>
+            <input type="text" [(ngModel)]="selectedInvoice.supplierName">
+          </div>
+          <div class="form-group">
+            <label>Supplier GSTIN</label>
+            <input type="text" [(ngModel)]="selectedInvoice.supplierGstin">
+          </div>
+          <div class="form-group full-width">
+            <label>Supplier Address</label>
+            <textarea [(ngModel)]="selectedInvoice.supplierAddress" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Contact</label>
+            <input type="text" [(ngModel)]="selectedInvoice.supplierContact">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="selectedInvoice.supplierEmail">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Invoice Items</h3>
+        <div class="items-table-container">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Item Code</th>
+                <th>Item Name</th>
+                <th>HSN</th>
+                <th>Qty</th>
+                <th>UOM</th>
+                <th>Rate</th>
+                <th>Tax %</th>
+                <th>Amount</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of selectedInvoice.items; let i = index">
+                <td>
+                  <input type="text" [(ngModel)]="item.itemCode" class="input-sm">
+                </td>
+                <td>
+                  <input type="text" [(ngModel)]="item.itemName" class="input-md">
+                </td>
+                <td>
+                  <input type="text" [(ngModel)]="item.hsnCode" class="input-sm">
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="item.quantity" 
+                         (ngModelChange)="calculateItemAmount(item)" class="input-xs">
+                </td>
+                <td>
+                  <input type="text" [(ngModel)]="item.uom" class="input-xs">
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="item.rate" 
+                         (ngModelChange)="calculateItemAmount(item)" class="input-sm">
+                </td>
+                <td>
+                  <input type="number" [(ngModel)]="item.taxRate" 
+                         (ngModelChange)="calculateItemAmount(item)" class="input-xs">
+                </td>
+                <td class="amount-cell">
+                  {{ formatCurrency(item.amount) }}
+                </td>
+                <td>
+                  <button class="btn-icon btn-danger" (click)="removeItem(i)" 
+                          [disabled]="selectedInvoice.items.length === 1">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <button class="btn-add-item" (click)="addItem()">
+            <i class="fas fa-plus"></i> Add Item
+          </button>
+        </div>
+      </div>
+
+      <div class="form-section totals-section">
+        <div class="totals-grid">
+          <div class="total-row">
+            <span class="label">Subtotal:</span>
+            <span class="value">{{ formatCurrency(getSubtotal()) }}</span>
+          </div>
+          <div class="total-row">
+            <span class="label">Tax:</span>
+            <span class="value">{{ formatCurrency(getTaxTotal()) }}</span>
+          </div>
+          <div class="total-row">
+            <span class="label">Discount:</span>
+            <input type="number" [(ngModel)]="selectedInvoice.discount" class="input-sm">
+          </div>
+          <div class="total-row grand-total">
+            <span class="label">Grand Total:</span>
+            <span class="value">{{ formatCurrency(getTotalAmount()) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-group full-width">
+          <label>Remarks</label>
+          <textarea [(ngModel)]="selectedInvoice.remarks" rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn-primary" (click)="saveInvoice()">
+        {{ editMode ? 'Update Invoice' : 'Create Invoice' }}
+      </button>
+    </div>
+  </div>
+</div>
