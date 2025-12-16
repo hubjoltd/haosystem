@@ -1,0 +1,160 @@
+<div class="leave-types-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h1><i class="fas fa-list-alt"></i> Leave Types</h1>
+      <p class="subtitle">Configure leave types and policies</p>
+    </div>
+    <button class="btn-primary" (click)="openCreateModal()">
+      <i class="fas fa-plus"></i> Add Leave Type
+    </button>
+  </div>
+
+  <div class="filters-bar">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" placeholder="Search leave types..." [(ngModel)]="searchTerm" (ngModelChange)="filterLeaveTypes()">
+    </div>
+  </div>
+
+  <div class="leave-types-grid" *ngIf="!loading">
+    <div class="leave-type-card" *ngFor="let lt of filteredLeaveTypes" [style.border-left-color]="lt.colorCode">
+      <div class="card-header">
+        <div class="type-info">
+          <span class="type-code">{{ lt.code }}</span>
+          <h3>{{ lt.name }}</h3>
+        </div>
+        <div class="card-actions">
+          <button class="btn-icon" (click)="openEditModal(lt)" title="Edit">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn-icon delete" (click)="deleteLeaveType(lt.id!)" title="Delete">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="description">{{ lt.description || 'No description' }}</p>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Annual Entitlement</span>
+            <span class="value">{{ lt.annualEntitlement || 0 }} days</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Accrual</span>
+            <span class="value">{{ lt.accrualType }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Carry Forward</span>
+            <span class="value">{{ lt.carryForwardAllowed ? 'Yes (Max: ' + lt.maxCarryForward + ')' : 'No' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Paid Leave</span>
+            <span class="value">{{ lt.isPaid ? 'Yes' : 'No' }}</span>
+          </div>
+        </div>
+        <div class="badges">
+          <span class="badge" [class.active]="lt.isActive" [class.inactive]="!lt.isActive">
+            {{ lt.isActive ? 'Active' : 'Inactive' }}
+          </span>
+          <span class="badge approval" *ngIf="lt.requiresApproval">Requires Approval</span>
+          <span class="badge document" *ngIf="lt.documentRequired">Document Required</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && filteredLeaveTypes.length === 0">
+    <i class="fas fa-folder-open"></i>
+    <p>No leave types found</p>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ editMode ? 'Edit' : 'Add' }} Leave Type</h2>
+        <button class="btn-close" (click)="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Code *</label>
+            <input type="text" [(ngModel)]="formData.code" placeholder="e.g., PTO">
+          </div>
+          <div class="form-group">
+            <label>Name *</label>
+            <input type="text" [(ngModel)]="formData.name" placeholder="e.g., Paid Time Off">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="formData.description" rows="2" placeholder="Leave type description..."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Annual Entitlement (days)</label>
+            <input type="number" [(ngModel)]="formData.annualEntitlement" min="0">
+          </div>
+          <div class="form-group">
+            <label>Accrual Type</label>
+            <select [(ngModel)]="formData.accrualType">
+              <option value="ANNUALLY">Annually</option>
+              <option value="MONTHLY">Monthly</option>
+              <option value="NONE">None</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Min Notice Days</label>
+            <input type="number" [(ngModel)]="formData.minNoticeDays" min="0">
+          </div>
+          <div class="form-group">
+            <label>Max Consecutive Days</label>
+            <input type="number" [(ngModel)]="formData.maxConsecutiveDays" min="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Applicable Gender</label>
+            <select [(ngModel)]="formData.applicableGender">
+              <option value="ALL">All</option>
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Color Code</label>
+            <input type="color" [(ngModel)]="formData.colorCode">
+          </div>
+        </div>
+        <div class="form-row checkboxes">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="formData.isPaid"> Paid Leave
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="formData.requiresApproval"> Requires Approval
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="formData.carryForwardAllowed"> Allow Carry Forward
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="formData.documentRequired"> Document Required
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="formData.isActive"> Active
+          </label>
+        </div>
+        <div class="form-row" *ngIf="formData.carryForwardAllowed">
+          <div class="form-group">
+            <label>Max Carry Forward (days)</label>
+            <input type="number" [(ngModel)]="formData.maxCarryForward" min="0">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeModal()">Cancel</button>
+        <button class="btn-primary" (click)="saveLeaveType()">{{ editMode ? 'Update' : 'Create' }}</button>
+      </div>
+    </div>
+  </div>
+</div>

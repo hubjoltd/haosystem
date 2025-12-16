@@ -1,0 +1,277 @@
+.holiday-calendar-container {
+  padding: 24px;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+
+    .header-left {
+      h1 {
+        font-size: 24px;
+        color: #008080;
+        margin: 0;
+        i { margin-right: 10px; }
+      }
+      .subtitle { color: #666; margin: 4px 0 0; }
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+
+      select {
+        padding: 10px 16px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        &:focus { border-color: #008080; outline: none; }
+      }
+
+      .btn-primary {
+        background: #008080;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        &:hover { background: #006666; }
+      }
+    }
+  }
+
+  .filter-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+
+    .tab {
+      padding: 8px 16px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      &:hover { background: #f0f0f0; }
+      &.federal { border-color: #dc3545; color: #dc3545; }
+      &.company { border-color: #008080; color: #008080; }
+      &.optional { border-color: #ffc107; color: #856404; }
+    }
+  }
+
+  .holidays-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .holiday-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      border-left: 4px solid #008080;
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      gap: 20px;
+
+      .holiday-date {
+        min-width: 70px;
+        text-align: center;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 8px;
+
+        .day {
+          display: block;
+          font-size: 28px;
+          font-weight: 700;
+          color: #008080;
+          line-height: 1;
+        }
+        .month {
+          display: block;
+          font-size: 14px;
+          color: #666;
+          text-transform: uppercase;
+          margin-top: 4px;
+        }
+        .weekday {
+          display: block;
+          font-size: 12px;
+          color: #999;
+          margin-top: 2px;
+        }
+      }
+
+      .holiday-info {
+        flex: 1;
+
+        h3 {
+          margin: 0 0 4px;
+          font-size: 16px;
+          color: #333;
+        }
+
+        p {
+          margin: 0 0 8px;
+          font-size: 14px;
+          color: #666;
+        }
+
+        .badges {
+          display: flex;
+          gap: 8px;
+
+          .type-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            color: white;
+          }
+
+          .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            &.paid { background: #d4edda; color: #155724; }
+            &.optional { background: #fff3cd; color: #856404; }
+          }
+        }
+      }
+
+      .holiday-actions {
+        display: flex;
+        gap: 8px;
+
+        .btn-icon {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 8px;
+          border-radius: 4px;
+          color: #666;
+          &:hover { background: #f0f0f0; }
+          &.delete:hover { color: #dc3545; background: #fdecea; }
+        }
+      }
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px;
+    color: #999;
+    background: white;
+    border-radius: 12px;
+    i { font-size: 48px; margin-bottom: 16px; }
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+
+  .modal {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow: auto;
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+      h2 { margin: 0; font-size: 18px; color: #333; }
+      .btn-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        color: #666;
+      }
+    }
+
+    .modal-body {
+      padding: 20px;
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+
+        &.checkboxes {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 16px;
+        }
+      }
+
+      .form-group {
+        margin-bottom: 16px;
+        label {
+          display: block;
+          margin-bottom: 6px;
+          font-size: 14px;
+          color: #333;
+          font-weight: 500;
+        }
+        input, select, textarea {
+          width: 100%;
+          padding: 10px;
+          border: 1px solid #ddd;
+          border-radius: 6px;
+          &:focus { border-color: #008080; outline: none; }
+        }
+      }
+
+      .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        input { width: auto; }
+      }
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 20px;
+      border-top: 1px solid #eee;
+
+      button {
+        padding: 10px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        border: none;
+      }
+      .btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+        &:hover { background: #e0e0e0; }
+      }
+      .btn-primary {
+        background: #008080;
+        color: white;
+        &:hover { background: #006666; }
+      }
+    }
+  }
+}

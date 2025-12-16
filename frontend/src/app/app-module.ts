@@ -95,6 +95,11 @@ import { AttendanceDashboardComponent } from './components/mis-dashboards/attend
 import { PerformanceDashboardComponent } from './components/mis-dashboards/performance-dashboard/performance-dashboard.component';
 import { CustomReportBuilderComponent } from './components/mis-dashboards/custom-report-builder/custom-report-builder.component';
 
+import { ClockInOutComponent } from './components/attendance/clock-in-out/clock-in-out.component';
+import { LeaveTypesComponent } from './components/leave/leave-types/leave-types.component';
+import { LeaveRequestsComponent } from './components/leave/leave-requests/leave-requests.component';
+import { HolidayCalendarComponent } from './components/leave/holiday-calendar/holiday-calendar.component';
+
 @NgModule({
   declarations: [
     App,
@@ -180,7 +185,11 @@ import { CustomReportBuilderComponent } from './components/mis-dashboards/custom
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
-    AppRoutingModule
+    AppRoutingModule,
+    ClockInOutComponent,
+    LeaveTypesComponent,
+    LeaveRequestsComponent,
+    HolidayCalendarComponent
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }

@@ -14,7 +14,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend Architecture
 - **Framework**: Angular 21 with TypeScript 5.9
-- **Module Pattern**: NgModule-based architecture (not standalone components)
+- **Module Pattern**: NgModule-based architecture with standalone components for new features
 - **Styling**: SCSS with a dark teal (#008080) and white color scheme
 - **State Management**: Services with RxJS BehaviorSubjects for reactive state
 - **HTTP Communication**: HttpClient with interceptors for authentication
@@ -65,8 +65,24 @@ The application uses a hierarchical component structure:
      - Designations - job titles and designations
      - Cost Centers - financial cost center tracking
      - Expense Centers - expense allocation centers
-   - **Employee Master** (Phase 2 Pending): Employee list, personal details, employment details
-   - **Document Management** (Phase 3 Pending): Document types, employee documents, expiry tracking
+   - **Employee Master** (Phase 2 Complete): Employee list with search/filter, personal details, employment details
+   - **Document Management** (Phase 3 Complete): Document types, employee documents, expiry tracking
+11. **Time, Attendance & Leave Management** - Comprehensive workforce management:
+   - **Time & Attendance**:
+     - Clock In/Out - Web-based time capture with real-time clock display
+     - Attendance tracking with multiple capture methods (WEB, MOBILE, BIOMETRIC, MANUAL, EXCEL_UPLOAD)
+     - Status tracking (PRESENT, ABSENT, HALF_DAY, ON_LEAVE, HOLIDAY, WEEKEND)
+     - Overtime hours calculation and tracking
+     - Late arrival/early departure monitoring
+     - Approval workflow for manual entries
+     - Project-wise time entries with day-wise and hour-wise logging
+     - Attendance rules engine for shift configurations
+   - **Leave Management**:
+     - Leave Types - Configurable leave categories (Casual, Sick, Annual, etc.) with accrual settings
+     - Leave Requests - Employee leave applications with approval workflow (PENDING -> APPROVED/REJECTED/CANCELLED)
+     - Leave Balance tracking with carry-forward and encashment options
+     - Holiday Calendar - Company holiday management with types (FEDERAL, COMPANY, OPTIONAL, RESTRICTED)
+     - Leave accrual types (ANNUALLY, MONTHLY, QUARTERLY)
 
 ### Routing
 - Root path redirects to login
@@ -85,7 +101,7 @@ The application uses a hierarchical component structure:
 ### Backend Integration (Implemented)
 - **Spring Boot REST API** on port 8080 with PostgreSQL database
 - **Proxy Configuration**: `frontend/proxy.conf.json` routes `/api` to `localhost:8080`
-- **42 JPA Repository interfaces** for data persistence (includes HR organization entities)
+- **58 JPA Repository interfaces** for data persistence (includes HR organization entities and Time/Attendance/Leave entities)
 - API endpoints:
   - `/api/auth/login`, `/api/auth/register`
   - `/api/customers`, `/api/contracts`
@@ -98,6 +114,8 @@ The application uses a hierarchical component structure:
   - `/api/notifications` (user notifications with mark as read, delete)
   - `/api/settings/prefixes`, `/api/settings/prefixes/generate/{type}` (prefix settings and ID auto-generation)
   - `/api/organization/departments`, `/api/organization/locations`, `/api/organization/job-roles`, `/api/organization/grades`, `/api/organization/designations`, `/api/organization/cost-centers`, `/api/organization/expense-centers` (HR organization structure CRUD)
+  - `/api/attendance` (attendance records, clock in/out, rules, project time entries)
+  - `/api/leave` (leave types, leave requests with approval workflow, leave balances, holiday calendar)
 
 ### Auto-Generation with Prefix Settings
 All inventory and purchase modules support automatic ID generation based on configurable prefix settings:

@@ -198,6 +198,30 @@ export class SidebarComponent implements OnInit {
         { icon: 'fas fa-chart-line', label: 'Performance Dashboard', route: '/app/mis/performance-dashboard' },
         { icon: 'fas fa-file-alt', label: 'Custom Report Builder', route: '/app/mis/report-builder' }
       ]
+    },
+    {
+      icon: 'fas fa-clock',
+      label: 'Time & Attendance',
+      expanded: false,
+      permissionKey: 'Attendance',
+      children: [
+        { icon: 'fas fa-sign-in-alt', label: 'Clock In / Out', route: '/app/attendance/clock-in-out' },
+        { icon: 'fas fa-calendar-alt', label: 'Attendance Records', route: '/app/attendance/records' },
+        { icon: 'fas fa-sliders-h', label: 'Attendance Rules', route: '/app/attendance/rules' },
+        { icon: 'fas fa-project-diagram', label: 'Project Time Entry', route: '/app/attendance/project-time' }
+      ]
+    },
+    {
+      icon: 'fas fa-umbrella-beach',
+      label: 'Leave Management',
+      expanded: false,
+      permissionKey: 'Leave Management',
+      children: [
+        { icon: 'fas fa-list-alt', label: 'Leave Types', route: '/app/leave/types' },
+        { icon: 'fas fa-calendar-check', label: 'Leave Requests', route: '/app/leave/requests' },
+        { icon: 'fas fa-balance-scale', label: 'Leave Balances', route: '/app/leave/balances' },
+        { icon: 'fas fa-calendar', label: 'Holiday Calendar', route: '/app/leave/holidays' }
+      ]
     }
   ];
 

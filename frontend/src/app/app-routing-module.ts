@@ -84,6 +84,11 @@ import { AttendanceDashboardComponent } from './components/mis-dashboards/attend
 import { PerformanceDashboardComponent } from './components/mis-dashboards/performance-dashboard/performance-dashboard.component';
 import { CustomReportBuilderComponent } from './components/mis-dashboards/custom-report-builder/custom-report-builder.component';
 
+import { ClockInOutComponent } from './components/attendance/clock-in-out/clock-in-out.component';
+import { LeaveTypesComponent } from './components/leave/leave-types/leave-types.component';
+import { LeaveRequestsComponent } from './components/leave/leave-requests/leave-requests.component';
+import { HolidayCalendarComponent } from './components/leave/holiday-calendar/holiday-calendar.component';
+
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
@@ -162,7 +167,11 @@ const routes: Routes = [
       { path: 'mis/payroll-dashboard', component: PayrollDashboardComponent },
       { path: 'mis/attendance-dashboard', component: AttendanceDashboardComponent },
       { path: 'mis/performance-dashboard', component: PerformanceDashboardComponent },
-      { path: 'mis/report-builder', component: CustomReportBuilderComponent }
+      { path: 'mis/report-builder', component: CustomReportBuilderComponent },
+      { path: 'attendance/clock-in-out', component: ClockInOutComponent },
+      { path: 'leave/types', component: LeaveTypesComponent },
+      { path: 'leave/requests', component: LeaveRequestsComponent },
+      { path: 'leave/holidays', component: HolidayCalendarComponent }
     ]
   }
 ];
