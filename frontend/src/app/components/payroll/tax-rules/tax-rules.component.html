@@ -1,0 +1,135 @@
+<div class="tax-rules-container">
+  <div class="page-header">
+    <h2>Taxation Rules</h2>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <i class="fas fa-plus"></i> Add Tax Rule
+    </button>
+  </div>
+
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Rate (%)</th>
+          <th>Max Income</th>
+          <th>Employee</th>
+          <th>Employer</th>
+          <th>Tax Year</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let rule of rules">
+          <td>{{ rule.code }}</td>
+          <td>{{ rule.name }}</td>
+          <td><span class="badge" [ngClass]="getTypeBadgeClass(rule.taxType)">{{ rule.taxType }}</span></td>
+          <td class="rate">{{ rule.rate }}%</td>
+          <td>{{ rule.maxIncome ? (rule.maxIncome | number:'1.0-0') : '-' }}</td>
+          <td>
+            <i class="fas" [class.fa-check]="rule.employeeContribution" [class.fa-times]="!rule.employeeContribution"
+               [class.check]="rule.employeeContribution" [class.cross]="!rule.employeeContribution"></i>
+          </td>
+          <td>
+            <i class="fas" [class.fa-check]="rule.employerContribution" [class.fa-times]="!rule.employerContribution"
+               [class.check]="rule.employerContribution" [class.cross]="!rule.employerContribution"></i>
+          </td>
+          <td>{{ rule.taxYear }}</td>
+          <td>
+            <span class="status-badge" [class.active]="rule.isActive" [class.inactive]="!rule.isActive">
+              {{ rule.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td class="actions">
+            <button class="btn-icon" (click)="openEditModal(rule)" title="Edit">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-icon delete" (click)="deleteRule(rule.id!)" title="Delete">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="rules.length === 0">
+          <td colspan="10" class="no-data">No tax rules found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditing ? 'Edit' : 'Add' }} Tax Rule</h3>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Code *</label>
+          <input type="text" [(ngModel)]="currentRule.code" required>
+        </div>
+        <div class="form-group">
+          <label>Name *</label>
+          <input type="text" [(ngModel)]="currentRule.name" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="currentRule.description" rows="2"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tax Type *</label>
+          <select [(ngModel)]="currentRule.taxType">
+            <option *ngFor="let type of taxTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Rate (%) *</label>
+          <input type="number" [(ngModel)]="currentRule.rate" step="0.01">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>State Code</label>
+          <input type="text" [(ngModel)]="currentRule.stateCode">
+        </div>
+        <div class="form-group">
+          <label>Max Income</label>
+          <input type="number" [(ngModel)]="currentRule.maxIncome">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Calculation Basis</label>
+          <select [(ngModel)]="currentRule.calculationBasis">
+            <option *ngFor="let basis of calculationBasis" [value]="basis">{{ basis }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tax Year</label>
+          <input type="number" [(ngModel)]="currentRule.taxYear">
+        </div>
+      </div>
+      <div class="form-row checkboxes">
+        <div class="form-group checkbox">
+          <label><input type="checkbox" [(ngModel)]="currentRule.employeeContribution"> Employee Contribution</label>
+        </div>
+        <div class="form-group checkbox">
+          <label><input type="checkbox" [(ngModel)]="currentRule.employerContribution"> Employer Contribution</label>
+        </div>
+        <div class="form-group checkbox">
+          <label><input type="checkbox" [(ngModel)]="currentRule.isActive"> Active</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveRule()">{{ isEditing ? 'Update' : 'Create' }}</button>
+    </div>
+  </div>
+</div>

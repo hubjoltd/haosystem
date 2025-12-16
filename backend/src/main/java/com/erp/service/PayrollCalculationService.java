@@ -51,7 +51,7 @@ public class PayrollCalculationService {
 
     @Transactional
     public List<Timesheet> generateTimesheets(LocalDate startDate, LocalDate endDate) {
-        List<Employee> employees = employeeRepository.findByIsActiveTrue();
+        List<Employee> employees = employeeRepository.findByActiveTrue();
         List<Timesheet> timesheets = new ArrayList<>();
         
         for (Employee employee : employees) {
@@ -119,7 +119,7 @@ public class PayrollCalculationService {
             run.getPeriodStartDate(), run.getPeriodEndDate());
         
         if (approvedTimesheets.isEmpty()) {
-            List<Employee> employees = employeeRepository.findByIsActiveTrue();
+            List<Employee> employees = employeeRepository.findByActiveTrue();
             for (Employee employee : employees) {
                 PayrollRecord record = calculateEmployeePayroll(run, employee, null);
                 payrollRecordRepository.save(record);

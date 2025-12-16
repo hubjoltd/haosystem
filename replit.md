@@ -83,6 +83,36 @@ The application uses a hierarchical component structure:
      - Leave Balance tracking with carry-forward and encashment options
      - Holiday Calendar - Company holiday management with types (FEDERAL, COMPANY, OPTIONAL, RESTRICTED)
      - Leave accrual types (ANNUALLY, MONTHLY, QUARTERLY)
+12. **Payroll Management** - Complete 5-phase payroll workflow:
+   - **Phase 1 - Payroll Rules Configuration**:
+     - Salary Heads - Earnings (Basic, HRA, DA, Bonus) and Deductions (PF, Tax, Insurance)
+     - Pay Frequencies - Weekly, Bi-Weekly, Semi-Monthly, Monthly with configurable pay dates
+     - Overtime Rules - Configurable multipliers (1.5x, 2x) with daily/weekly thresholds
+     - Tax Rules - Federal, State, Social Security (6.2%), Medicare (1.45%), Disability
+     - Statutory Rules - FICA, State disability insurance, unemployment contributions
+   - **Phase 2 - Attendance Approval & Timesheets**:
+     - Timesheet generation from approved attendance records
+     - Review regular hours, overtime hours, present/absent days
+     - Approval workflow (DRAFT -> PENDING_APPROVAL -> APPROVED/REJECTED)
+   - **Phase 3 - Payroll Calculation**:
+     - Payroll Run creation with pay period dates
+     - Automated calculation formulas:
+       - Salaried: Base Pay = Annual Salary ÷ Pay Periods, OT = Hourly Rate × OT Hours × Multiplier
+       - Hourly: Regular Pay + Overtime Pay
+       - Gross Pay = Base + OT + Bonuses + Reimbursements
+       - Pre-Tax Deductions: Health, Dental, Vision, 401k, HSA
+       - Taxes: Federal, State, Social Security, Medicare, Disability
+       - Net Pay = Gross - Pre-Tax - Taxes - Post-Tax Deductions
+   - **Phase 4 - Process Payroll**:
+     - Review payroll records per employee
+     - Approve/reject individual records
+     - Process payroll run for payment
+     - Employer contribution calculations (SS match, Medicare match, 401k match)
+   - **Phase 5 - Employee Self-Service (ESS)**:
+     - Pay stubs viewing and download
+     - Leave balance display
+     - Leave request submission
+     - Attendance summary access
 
 ### Routing
 - Root path redirects to login
@@ -101,7 +131,7 @@ The application uses a hierarchical component structure:
 ### Backend Integration (Implemented)
 - **Spring Boot REST API** on port 8080 with PostgreSQL database
 - **Proxy Configuration**: `frontend/proxy.conf.json` routes `/api` to `localhost:8080`
-- **58 JPA Repository interfaces** for data persistence (includes HR organization entities and Time/Attendance/Leave entities)
+- **67 JPA Repository interfaces** for data persistence (includes HR organization, Time/Attendance/Leave, and Payroll entities)
 - API endpoints:
   - `/api/auth/login`, `/api/auth/register`
   - `/api/customers`, `/api/contracts`
@@ -116,6 +146,8 @@ The application uses a hierarchical component structure:
   - `/api/organization/departments`, `/api/organization/locations`, `/api/organization/job-roles`, `/api/organization/grades`, `/api/organization/designations`, `/api/organization/cost-centers`, `/api/organization/expense-centers` (HR organization structure CRUD)
   - `/api/attendance` (attendance records, clock in/out, rules, project time entries)
   - `/api/leave` (leave types, leave requests with approval workflow, leave balances, holiday calendar)
+  - `/api/payroll/rules` (salary heads, pay frequencies, overtime rules, tax rules, statutory rules)
+  - `/api/payroll` (timesheets, payroll runs, payroll records, employee benefits, paystubs)
 
 ### Auto-Generation with Prefix Settings
 All inventory and purchase modules support automatic ID generation based on configurable prefix settings:

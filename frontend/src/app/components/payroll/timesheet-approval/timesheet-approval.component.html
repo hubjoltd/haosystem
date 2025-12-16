@@ -1,0 +1,122 @@
+<div class="timesheet-container">
+  <div class="page-header">
+    <h2>Attendance Approval & Timesheets</h2>
+    <button class="btn btn-primary" (click)="openGenerateModal()">
+      <i class="fas fa-sync"></i> Generate Timesheets
+    </button>
+  </div>
+
+  <div class="filters-section">
+    <div class="filter-group">
+      <label>Status</label>
+      <select [(ngModel)]="filterStatus" (change)="filterTimesheets()">
+        <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Period Start</label>
+      <input type="date" [(ngModel)]="startDate">
+    </div>
+    <div class="filter-group">
+      <label>Period End</label>
+      <input type="date" [(ngModel)]="endDate">
+    </div>
+  </div>
+
+  <div class="summary-cards">
+    <div class="summary-card">
+      <span class="count">{{ getCountByStatus('DRAFT') }}</span>
+      <span class="label">Draft</span>
+    </div>
+    <div class="summary-card pending">
+      <span class="count">{{ getCountByStatus('PENDING_APPROVAL') }}</span>
+      <span class="label">Pending Approval</span>
+    </div>
+    <div class="summary-card approved">
+      <span class="count">{{ getCountByStatus('APPROVED') }}</span>
+      <span class="label">Approved</span>
+    </div>
+    <div class="summary-card rejected">
+      <span class="count">{{ getCountByStatus('REJECTED') }}</span>
+      <span class="label">Rejected</span>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Timesheet #</th>
+          <th>Employee</th>
+          <th>Period</th>
+          <th>Regular Hours</th>
+          <th>OT Hours</th>
+          <th>Total Hours</th>
+          <th>Present Days</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ts of filteredTimesheets">
+          <td>{{ ts.timesheetNumber }}</td>
+          <td>{{ getEmployeeName(ts) }}</td>
+          <td>{{ ts.periodStartDate | date:'MMM d' }} - {{ ts.periodEndDate | date:'MMM d, yyyy' }}</td>
+          <td>{{ ts.totalRegularHours | number:'1.1-1' }}</td>
+          <td>{{ ts.totalOvertimeHours | number:'1.1-1' }}</td>
+          <td class="total">{{ ts.totalHours | number:'1.1-1' }}</td>
+          <td>{{ ts.presentDays }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(ts.status)">{{ ts.status }}</span>
+          </td>
+          <td class="actions">
+            <ng-container *ngIf="ts.status === 'PENDING_APPROVAL'">
+              <button class="btn btn-sm btn-success" (click)="approveTimesheet(ts.id!)" title="Approve">
+                <i class="fas fa-check"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="rejectTimesheet(ts.id!)" title="Reject">
+                <i class="fas fa-times"></i>
+              </button>
+            </ng-container>
+            <span *ngIf="ts.status !== 'PENDING_APPROVAL'" class="no-action">-</span>
+          </td>
+        </tr>
+        <tr *ngIf="filteredTimesheets.length === 0">
+          <td colspan="9" class="no-data">No timesheets found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showGenerateModal" (click)="closeGenerateModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Generate Timesheets from Attendance</h3>
+      <button class="close-btn" (click)="closeGenerateModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="info-text">
+        This will generate timesheets for all active employees based on their approved attendance records
+        for the selected period.
+      </p>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Period Start Date *</label>
+          <input type="date" [(ngModel)]="generateStartDate" required>
+        </div>
+        <div class="form-group">
+          <label>Period End Date *</label>
+          <input type="date" [(ngModel)]="generateEndDate" required>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeGenerateModal()" [disabled]="generating">Cancel</button>
+      <button class="btn btn-primary" (click)="generateTimesheets()" [disabled]="generating">
+        <i class="fas fa-spinner fa-spin" *ngIf="generating"></i>
+        {{ generating ? 'Generating...' : 'Generate Timesheets' }}
+      </button>
+    </div>
+  </div>
+</div>

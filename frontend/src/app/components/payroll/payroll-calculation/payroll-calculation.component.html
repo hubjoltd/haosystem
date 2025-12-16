@@ -1,0 +1,107 @@
+<div class="payroll-calc-container">
+  <div class="page-header">
+    <h2>Payroll Calculation</h2>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <i class="fas fa-plus"></i> Create Payroll Run
+    </button>
+  </div>
+
+  <div class="info-card">
+    <i class="fas fa-info-circle"></i>
+    <div>
+      <strong>Payroll Calculation Process:</strong>
+      <ol>
+        <li>Create a new payroll run with the pay period dates</li>
+        <li>Click "Calculate" to auto-compute payroll from approved timesheets</li>
+        <li>Review the calculated amounts before processing</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Payroll Run #</th>
+          <th>Description</th>
+          <th>Period</th>
+          <th>Pay Date</th>
+          <th>Employees</th>
+          <th>Gross Pay</th>
+          <th>Net Pay</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let run of payrollRuns">
+          <td class="run-number">{{ run.payrollRunNumber }}</td>
+          <td>{{ run.description }}</td>
+          <td>{{ run.periodStartDate | date:'MMM d' }} - {{ run.periodEndDate | date:'MMM d, yyyy' }}</td>
+          <td>{{ run.payDate | date:'MMM d, yyyy' }}</td>
+          <td>{{ run.totalEmployees || 0 }}</td>
+          <td class="amount">${{ run.totalGrossPay | number:'1.2-2' }}</td>
+          <td class="amount net">${{ run.totalNetPay | number:'1.2-2' }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(run.status)">{{ run.status }}</span>
+          </td>
+          <td class="actions">
+            <button class="btn btn-sm btn-primary" *ngIf="canCalculate(run)" 
+                    (click)="calculatePayroll(run)" [disabled]="calculating" title="Calculate Payroll">
+              <i class="fas fa-calculator"></i> Calculate
+            </button>
+            <a [routerLink]="['/app/payroll/process', run.id]" class="btn btn-sm btn-secondary" 
+               *ngIf="run.status === 'CALCULATED'" title="Review & Process">
+              <i class="fas fa-arrow-right"></i> Review
+            </a>
+            <span *ngIf="run.status === 'PROCESSED'" class="processed-label">
+              <i class="fas fa-check-circle"></i> Completed
+            </span>
+          </td>
+        </tr>
+        <tr *ngIf="payrollRuns.length === 0">
+          <td colspan="9" class="no-data">No payroll runs found. Create one to get started.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Create Payroll Run</h3>
+      <button class="close-btn" (click)="closeCreateModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Payroll Run Number *</label>
+        <input type="text" [(ngModel)]="newRun.payrollRunNumber" required>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" [(ngModel)]="newRun.description">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Period Start Date *</label>
+          <input type="date" [(ngModel)]="newRun.periodStartDate" required>
+        </div>
+        <div class="form-group">
+          <label>Period End Date *</label>
+          <input type="date" [(ngModel)]="newRun.periodEndDate" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Pay Date *</label>
+        <input type="date" [(ngModel)]="newRun.payDate" required>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeCreateModal()" [disabled]="creating">Cancel</button>
+      <button class="btn btn-primary" (click)="createPayrollRun()" [disabled]="creating">
+        {{ creating ? 'Creating...' : 'Create Payroll Run' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -222,6 +222,36 @@ export class SidebarComponent implements OnInit {
         { icon: 'fas fa-balance-scale', label: 'Leave Balances', route: '/app/leave/balances' },
         { icon: 'fas fa-calendar', label: 'Holiday Calendar', route: '/app/leave/holidays' }
       ]
+    },
+    {
+      icon: 'fas fa-money-check-alt',
+      label: 'Payroll Management',
+      expanded: false,
+      permissionKey: 'Payroll',
+      children: [
+        {
+          icon: 'fas fa-cogs',
+          label: 'Payroll Rules',
+          expanded: false,
+          children: [
+            { icon: 'fas fa-list', label: 'Salary Heads', route: '/app/payroll/rules/salary-heads' },
+            { icon: 'fas fa-calendar-week', label: 'Pay Frequencies', route: '/app/payroll/rules/pay-frequencies' },
+            { icon: 'fas fa-clock', label: 'Overtime Rules', route: '/app/payroll/rules/overtime-rules' },
+            { icon: 'fas fa-percent', label: 'Tax Rules', route: '/app/payroll/rules/tax-rules' },
+            { icon: 'fas fa-gavel', label: 'Statutory Rules', route: '/app/payroll/rules/statutory-rules' }
+          ]
+        },
+        {
+          icon: 'fas fa-tasks',
+          label: 'Payroll Processing',
+          expanded: false,
+          children: [
+            { icon: 'fas fa-clipboard-check', label: 'Timesheet Approval', route: '/app/payroll/timesheets' },
+            { icon: 'fas fa-calculator', label: 'Payroll Calculation', route: '/app/payroll/calculation' }
+          ]
+        },
+        { icon: 'fas fa-user-circle', label: 'Employee Self-Service', route: '/app/payroll/self-service' }
+      ]
     }
   ];
 

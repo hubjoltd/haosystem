@@ -89,6 +89,16 @@ import { LeaveTypesComponent } from './components/leave/leave-types/leave-types.
 import { LeaveRequestsComponent } from './components/leave/leave-requests/leave-requests.component';
 import { HolidayCalendarComponent } from './components/leave/holiday-calendar/holiday-calendar.component';
 
+import { SalaryHeadsComponent } from './components/payroll/salary-heads/salary-heads.component';
+import { PayFrequenciesComponent } from './components/payroll/pay-frequencies/pay-frequencies.component';
+import { OvertimeRulesComponent } from './components/payroll/overtime-rules/overtime-rules.component';
+import { TaxRulesComponent } from './components/payroll/tax-rules/tax-rules.component';
+import { StatutoryRulesComponent } from './components/payroll/statutory-rules/statutory-rules.component';
+import { TimesheetApprovalComponent } from './components/payroll/timesheet-approval/timesheet-approval.component';
+import { PayrollCalculationComponent } from './components/payroll/payroll-calculation/payroll-calculation.component';
+import { ProcessPayrollComponent } from './components/payroll/process-payroll/process-payroll.component';
+import { EmployeeSelfServiceComponent } from './components/payroll/employee-self-service/employee-self-service.component';
+
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
@@ -171,7 +181,16 @@ const routes: Routes = [
       { path: 'attendance/clock-in-out', component: ClockInOutComponent },
       { path: 'leave/types', component: LeaveTypesComponent },
       { path: 'leave/requests', component: LeaveRequestsComponent },
-      { path: 'leave/holidays', component: HolidayCalendarComponent }
+      { path: 'leave/holidays', component: HolidayCalendarComponent },
+      { path: 'payroll/rules/salary-heads', component: SalaryHeadsComponent },
+      { path: 'payroll/rules/pay-frequencies', component: PayFrequenciesComponent },
+      { path: 'payroll/rules/overtime-rules', component: OvertimeRulesComponent },
+      { path: 'payroll/rules/tax-rules', component: TaxRulesComponent },
+      { path: 'payroll/rules/statutory-rules', component: StatutoryRulesComponent },
+      { path: 'payroll/timesheets', component: TimesheetApprovalComponent },
+      { path: 'payroll/calculation', component: PayrollCalculationComponent },
+      { path: 'payroll/process/:id', component: ProcessPayrollComponent },
+      { path: 'payroll/self-service', component: EmployeeSelfServiceComponent }
     ]
   }
 ];

@@ -106,6 +106,9 @@ public class Employee {
     private Integer probationMonths;
     private Integer noticePeriodDays;
     
+    private java.math.BigDecimal salary;
+    private java.math.BigDecimal hourlyRate;
+    
     private Boolean active = true;
     
     private LocalDateTime createdAt;
@@ -238,6 +241,10 @@ public class Employee {
     public void setProbationMonths(Integer probationMonths) { this.probationMonths = probationMonths; }
     public Integer getNoticePeriodDays() { return noticePeriodDays; }
     public void setNoticePeriodDays(Integer noticePeriodDays) { this.noticePeriodDays = noticePeriodDays; }
+    public java.math.BigDecimal getSalary() { return salary; }
+    public void setSalary(java.math.BigDecimal salary) { this.salary = salary; }
+    public java.math.BigDecimal getHourlyRate() { return hourlyRate; }
+    public void setHourlyRate(java.math.BigDecimal hourlyRate) { this.hourlyRate = hourlyRate; }
     public Boolean getActive() { return active; }
     public void setActive(Boolean active) { this.active = active; }
     public LocalDateTime getCreatedAt() { return createdAt; }

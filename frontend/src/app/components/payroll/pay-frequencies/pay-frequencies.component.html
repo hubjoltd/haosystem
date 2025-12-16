@@ -1,0 +1,110 @@
+<div class="pay-frequencies-container">
+  <div class="page-header">
+    <h2>Pay Frequencies</h2>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <i class="fas fa-plus"></i> Add Pay Frequency
+    </button>
+  </div>
+
+  <div class="cards-grid">
+    <div class="frequency-card" *ngFor="let freq of frequencies" [class.inactive]="!freq.isActive">
+      <div class="card-header">
+        <h3>{{ freq.name }}</h3>
+        <span class="code">{{ freq.code }}</span>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <span class="label">Periods Per Year:</span>
+          <span class="value">{{ freq.periodsPerYear }}</span>
+        </div>
+        <div class="info-row" *ngIf="freq.payDayOfMonth">
+          <span class="label">Pay Day (Monthly):</span>
+          <span class="value">{{ freq.payDayOfMonth }}</span>
+        </div>
+        <div class="info-row" *ngIf="freq.payDayOfWeek">
+          <span class="label">Pay Day (Weekly):</span>
+          <span class="value">{{ freq.payDayOfWeek }}</span>
+        </div>
+        <div class="status-row">
+          <span class="badge" [class.default]="freq.isDefault">{{ freq.isDefault ? 'Default' : '' }}</span>
+          <span class="badge" [class.active]="freq.isActive" [class.inactive]="!freq.isActive">
+            {{ freq.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-icon" (click)="openEditModal(freq)" title="Edit">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn-icon delete" (click)="deleteFrequency(freq.id!)" title="Delete">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+    <div class="no-data" *ngIf="frequencies.length === 0">
+      No pay frequencies configured
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditing ? 'Edit' : 'Add' }} Pay Frequency</h3>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Code *</label>
+          <input type="text" [(ngModel)]="currentFrequency.code" required>
+        </div>
+        <div class="form-group">
+          <label>Name *</label>
+          <input type="text" [(ngModel)]="currentFrequency.name" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="currentFrequency.description" rows="2"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Periods Per Year *</label>
+          <select [(ngModel)]="currentFrequency.periodsPerYear">
+            <option [value]="52">52 (Weekly)</option>
+            <option [value]="26">26 (Bi-Weekly)</option>
+            <option [value]="24">24 (Semi-Monthly)</option>
+            <option [value]="12">12 (Monthly)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Pay Day of Month</label>
+          <input type="number" [(ngModel)]="currentFrequency.payDayOfMonth" min="1" max="31">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Pay Day of Week (1-7)</label>
+          <input type="number" [(ngModel)]="currentFrequency.payDayOfWeek" min="1" max="7">
+        </div>
+        <div class="form-group">
+          <label>Second Pay Day (Semi-Monthly)</label>
+          <input type="number" [(ngModel)]="currentFrequency.secondPayDayOfMonth" min="1" max="31">
+        </div>
+      </div>
+      <div class="form-row checkboxes">
+        <div class="form-group checkbox">
+          <label><input type="checkbox" [(ngModel)]="currentFrequency.isDefault"> Default</label>
+        </div>
+        <div class="form-group checkbox">
+          <label><input type="checkbox" [(ngModel)]="currentFrequency.isActive"> Active</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveFrequency()">{{ isEditing ? 'Update' : 'Create' }}</button>
+    </div>
+  </div>
+</div>

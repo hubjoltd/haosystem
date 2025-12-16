@@ -1,0 +1,176 @@
+<div class="process-payroll-container" *ngIf="!loading">
+  <div class="page-header">
+    <div class="header-left">
+      <button class="btn btn-back" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div>
+        <h2>Process Payroll</h2>
+        <span class="run-info" *ngIf="payrollRun">{{ payrollRun.payrollRunNumber }}</span>
+      </div>
+    </div>
+    <button class="btn btn-success" (click)="processPayroll()" 
+            [disabled]="processing || payrollRun?.status === 'PROCESSED'"
+            *ngIf="payrollRun?.status !== 'PROCESSED'">
+      <i class="fas fa-check-circle"></i> {{ processing ? 'Processing...' : 'Process Payroll' }}
+    </button>
+    <span class="processed-badge" *ngIf="payrollRun?.status === 'PROCESSED'">
+      <i class="fas fa-check-circle"></i> Already Processed
+    </span>
+  </div>
+
+  <div class="summary-section" *ngIf="payrollRun">
+    <div class="summary-card">
+      <span class="label">Pay Period</span>
+      <span class="value">{{ payrollRun.periodStartDate | date:'MMM d' }} - {{ payrollRun.periodEndDate | date:'MMM d, yyyy' }}</span>
+    </div>
+    <div class="summary-card">
+      <span class="label">Pay Date</span>
+      <span class="value">{{ payrollRun.payDate | date:'MMM d, yyyy' }}</span>
+    </div>
+    <div class="summary-card">
+      <span class="label">Employees</span>
+      <span class="value">{{ payrollRun.totalEmployees }}</span>
+    </div>
+    <div class="summary-card">
+      <span class="label">Gross Pay</span>
+      <span class="value amount">${{ payrollRun.totalGrossPay | number:'1.2-2' }}</span>
+    </div>
+    <div class="summary-card">
+      <span class="label">Deductions</span>
+      <span class="value amount deduction">${{ payrollRun.totalDeductions | number:'1.2-2' }}</span>
+    </div>
+    <div class="summary-card highlight">
+      <span class="label">Net Pay</span>
+      <span class="value amount net">${{ payrollRun.totalNetPay | number:'1.2-2' }}</span>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <h3>Employee Payroll Details</h3>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Type</th>
+          <th>Regular Hrs</th>
+          <th>OT Hrs</th>
+          <th>Gross Pay</th>
+          <th>Deductions</th>
+          <th>Taxes</th>
+          <th>Net Pay</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let record of payrollRecords">
+          <td class="employee-name">{{ getEmployeeName(record) }}</td>
+          <td><span class="badge type">{{ record.employeeType }}</span></td>
+          <td>{{ record.regularHours | number:'1.1-1' }}</td>
+          <td>{{ record.overtimeHours | number:'1.1-1' }}</td>
+          <td class="amount">${{ record.grossPay | number:'1.2-2' }}</td>
+          <td class="amount deduction">${{ record.totalDeductions | number:'1.2-2' }}</td>
+          <td class="amount">${{ record.totalTaxes | number:'1.2-2' }}</td>
+          <td class="amount net">${{ record.netPay | number:'1.2-2' }}</td>
+          <td>
+            <button class="btn-icon" (click)="viewRecordDetails(record)" title="View Details">
+              <i class="fas fa-eye"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="payrollRecords.length === 0">
+          <td colspan="9" class="no-data">No payroll records found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="loading" *ngIf="loading">
+  <i class="fas fa-spinner fa-spin"></i> Loading payroll data...
+</div>
+
+<div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+  <div class="modal detail-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Pay Stub - {{ getEmployeeName(selectedRecord!) }}</h3>
+      <button class="close-btn" (click)="closeDetailModal()">&times;</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedRecord">
+      <div class="paystub-section">
+        <h4>Earnings</h4>
+        <div class="detail-row">
+          <span>Base Pay</span>
+          <span>${{ selectedRecord.basePay | number:'1.2-2' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="selectedRecord.overtimePay">
+          <span>Overtime Pay</span>
+          <span>${{ selectedRecord.overtimePay | number:'1.2-2' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="selectedRecord.bonuses">
+          <span>Bonuses</span>
+          <span>${{ selectedRecord.bonuses | number:'1.2-2' }}</span>
+        </div>
+        <div class="detail-row total">
+          <span>Gross Pay</span>
+          <span>${{ selectedRecord.grossPay | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <div class="paystub-section">
+        <h4>Pre-Tax Deductions</h4>
+        <div class="detail-row" *ngIf="selectedRecord.healthInsurance">
+          <span>Health Insurance</span>
+          <span>${{ selectedRecord.healthInsurance | number:'1.2-2' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="selectedRecord.dentalInsurance">
+          <span>Dental Insurance</span>
+          <span>${{ selectedRecord.dentalInsurance | number:'1.2-2' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="selectedRecord.visionInsurance">
+          <span>Vision Insurance</span>
+          <span>${{ selectedRecord.visionInsurance | number:'1.2-2' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="selectedRecord.retirement401k">
+          <span>401(k)</span>
+          <span>${{ selectedRecord.retirement401k | number:'1.2-2' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="selectedRecord.hsaContribution">
+          <span>HSA</span>
+          <span>${{ selectedRecord.hsaContribution | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <div class="paystub-section">
+        <h4>Taxes</h4>
+        <div class="detail-row" *ngIf="selectedRecord.federalTax">
+          <span>Federal Tax</span>
+          <span>${{ selectedRecord.federalTax | number:'1.2-2' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="selectedRecord.stateTax">
+          <span>State Tax</span>
+          <span>${{ selectedRecord.stateTax | number:'1.2-2' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="selectedRecord.socialSecurityTax">
+          <span>Social Security</span>
+          <span>${{ selectedRecord.socialSecurityTax | number:'1.2-2' }}</span>
+        </div>
+        <div class="detail-row" *ngIf="selectedRecord.medicareTax">
+          <span>Medicare</span>
+          <span>${{ selectedRecord.medicareTax | number:'1.2-2' }}</span>
+        </div>
+        <div class="detail-row total">
+          <span>Total Taxes</span>
+          <span>${{ selectedRecord.totalTaxes | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <div class="paystub-section net-section">
+        <div class="detail-row net-pay">
+          <span>Net Pay</span>
+          <span>${{ selectedRecord.netPay | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
