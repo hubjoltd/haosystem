@@ -149,7 +149,12 @@ public class PayrollCalculationService {
         BigDecimal annualSalary = employee.getSalary() != null ? employee.getSalary() : BigDecimal.ZERO;
         record.setAnnualSalary(annualSalary);
         
-        BigDecimal hourlyRate = calculateHourlyRate(annualSalary);
+        BigDecimal hourlyRate;
+        if ("HOURLY".equalsIgnoreCase(employeeType) && employee.getHourlyRate() != null && employee.getHourlyRate().compareTo(BigDecimal.ZERO) > 0) {
+            hourlyRate = employee.getHourlyRate();
+        } else {
+            hourlyRate = calculateHourlyRate(annualSalary);
+        }
         record.setHourlyRate(hourlyRate);
         
         BigDecimal regularHours = timesheet != null ? timesheet.getTotalRegularHours() : BigDecimal.ZERO;
