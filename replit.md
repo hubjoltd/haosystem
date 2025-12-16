@@ -83,7 +83,39 @@ The application uses a hierarchical component structure:
      - Leave Balance tracking with carry-forward and encashment options
      - Holiday Calendar - Company holiday management with types (FEDERAL, COMPANY, OPTIONAL, RESTRICTED)
      - Leave accrual types (ANNUALLY, MONTHLY, QUARTERLY)
-12. **Payroll Management** - Complete 5-phase payroll workflow:
+12. **Integration Capabilities** - External System Integrations:
+   - **Integration Settings** (Settings -> Integrations):
+     - QuickBooks - Accounting system integration
+     - SAP - ERP system integration
+     - ADP - Payroll provider integration
+     - Jira - Project management integration
+     - SMTP - Email server configuration
+     - SMS - Twilio/Vonage/AWS SNS messaging
+   - **Features**:
+     - Encrypted credential storage
+     - Connection testing
+     - Sync scheduling (hourly, daily, weekly, monthly)
+     - Sync status logging and history
+     - Environment support (sandbox/production)
+13. **Expense & Reimbursement Management** - Employee expense workflow:
+   - **Expense Categories**: Travel, Fuel, Meals, Purchases, Others
+   - **Expense Request Workflow**:
+     - DRAFT -> SUBMITTED -> PENDING_APPROVAL -> APPROVED/REJECTED
+     - Manager approval with comments
+     - Partial amount approval support
+   - **Reimbursement Processing**:
+     - Status tracking (PENDING -> IN_PROGRESS -> COMPLETED)
+     - Payroll integration for reimbursements
+     - Posting to accounts after approval
+   - **Features**:
+     - Multiple expense items per request
+     - Receipt attachment support
+     - Cost center allocation
+     - Project code tracking
+     - Billable expense flagging
+     - Multiple payment methods (Cash, Card, Bank Transfer)
+     - Currency support
+14. **Payroll Management** - Complete 5-phase payroll workflow:
    - **Phase 1 - Payroll Rules Configuration**:
      - Salary Heads - Earnings (Basic, HRA, DA, Bonus) and Deductions (PF, Tax, Insurance)
      - Pay Frequencies - Weekly, Bi-Weekly, Semi-Monthly, Monthly with configurable pay dates
@@ -131,7 +163,7 @@ The application uses a hierarchical component structure:
 ### Backend Integration (Implemented)
 - **Spring Boot REST API** on port 8080 with PostgreSQL database
 - **Proxy Configuration**: `frontend/proxy.conf.json` routes `/api` to `localhost:8080`
-- **67 JPA Repository interfaces** for data persistence (includes HR organization, Time/Attendance/Leave, and Payroll entities)
+- **72 JPA Repository interfaces** for data persistence (includes HR organization, Time/Attendance/Leave, Payroll, Integration, and Expense entities)
 - API endpoints:
   - `/api/auth/login`, `/api/auth/register`
   - `/api/customers`, `/api/contracts`
@@ -148,6 +180,8 @@ The application uses a hierarchical component structure:
   - `/api/leave` (leave types, leave requests with approval workflow, leave balances, holiday calendar)
   - `/api/payroll/rules` (salary heads, pay frequencies, overtime rules, tax rules, statutory rules)
   - `/api/payroll` (timesheets, payroll runs, payroll records, employee benefits, paystubs)
+  - `/api/integrations` (integration configurations, sync logs, connection testing)
+  - `/api/expenses` (expense requests, expense items, expense categories, approval workflow, reimbursements)
 
 ### Auto-Generation with Prefix Settings
 All inventory and purchase modules support automatic ID generation based on configurable prefix settings:

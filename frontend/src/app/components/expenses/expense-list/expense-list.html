@@ -1,0 +1,133 @@
+<div class="expense-list-container">
+  <div class="page-header">
+    <h2>Expense Management</h2>
+    <button class="btn btn-primary" (click)="createExpense()">
+      <i class="fas fa-plus"></i> New Expense
+    </button>
+  </div>
+
+  <div class="stats-cards">
+    <div class="stat-card" (click)="setViewMode('all')" [class.active]="viewMode === 'all'">
+      <div class="stat-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ expenses.length }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+    </div>
+    <div class="stat-card warning" (click)="setViewMode('pending')" [class.active]="viewMode === 'pending'">
+      <div class="stat-icon"><i class="fas fa-clock"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ statistics.totalPending || 0 }}</span>
+        <span class="stat-label">Pending Approval</span>
+      </div>
+    </div>
+    <div class="stat-card success" (click)="setViewMode('approved')" [class.active]="viewMode === 'approved'">
+      <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ statistics.totalApproved || 0 }}</span>
+        <span class="stat-label">Approved</span>
+      </div>
+    </div>
+    <div class="stat-card info" (click)="setViewMode('reimbursement')" [class.active]="viewMode === 'reimbursement'">
+      <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ statistics.totalApproved || 0 }}</span>
+        <span class="stat-label">Pending Reimbursement</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="filters-section">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()" 
+             placeholder="Search by request number, title, or employee...">
+    </div>
+    <div class="filter-group">
+      <select [(ngModel)]="filterStatus" (ngModelChange)="applyFilters()">
+        <option value="">All Statuses</option>
+        <option *ngFor="let status of expenseStatuses" [value]="status.value">{{ status.label }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="expense-table" *ngIf="!loading && filteredExpenses.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>Request #</th>
+          <th>Title</th>
+          <th>Employee</th>
+          <th>Date</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Reimbursement</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let expense of filteredExpenses">
+          <td class="request-number">{{ expense.requestNumber }}</td>
+          <td>{{ expense.title }}</td>
+          <td>{{ expense.employee?.firstName }} {{ expense.employee?.lastName }}</td>
+          <td>{{ formatDate(expense.expenseDate!) }}</td>
+          <td class="amount">{{ formatCurrency(expense.totalAmount!) }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusColor(expense.status!)">
+              {{ getStatusLabel(expense.status!) }}
+            </span>
+          </td>
+          <td>
+            <span *ngIf="expense.reimbursementRequired && expense.reimbursementStatus" 
+                  class="reimbursement-badge" [ngClass]="expense.reimbursementStatus?.toLowerCase()">
+              {{ getReimbursementLabel(expense.reimbursementStatus) }}
+            </span>
+            <span *ngIf="!expense.reimbursementRequired">N/A</span>
+          </td>
+          <td class="actions">
+            <button class="btn-icon" (click)="viewExpense(expense.id!)" title="View">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn-icon" *ngIf="expense.status === 'DRAFT'" (click)="editExpense(expense.id!)" title="Edit">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-icon" *ngIf="expense.status === 'DRAFT'" (click)="submitExpense(expense)" title="Submit">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+            <button class="btn-icon success" *ngIf="expense.status === 'PENDING_APPROVAL'" (click)="approveExpense(expense)" title="Approve">
+              <i class="fas fa-check"></i>
+            </button>
+            <button class="btn-icon danger" *ngIf="expense.status === 'PENDING_APPROVAL'" (click)="rejectExpense(expense)" title="Reject">
+              <i class="fas fa-times"></i>
+            </button>
+            <button class="btn-icon info" *ngIf="expense.status === 'APPROVED' && expense.reimbursementStatus === 'PENDING'" 
+                    (click)="markReimbursed(expense)" title="Mark Reimbursed">
+              <i class="fas fa-money-check"></i>
+            </button>
+            <button class="btn-icon" *ngIf="expense.status === 'APPROVED' && !expense.postedToAccounts" 
+                    (click)="postToAccounts(expense)" title="Post to Accounts">
+              <i class="fas fa-book"></i>
+            </button>
+            <button class="btn-icon danger" *ngIf="expense.status === 'DRAFT'" (click)="deleteExpense(expense.id!)" title="Delete">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && filteredExpenses.length === 0">
+    <i class="fas fa-receipt fa-3x"></i>
+    <h3>No Expenses Found</h3>
+    <p>{{ expenses.length === 0 ? 'Create your first expense report.' : 'No expenses match your filters.' }}</p>
+    <button class="btn btn-primary" (click)="createExpense()" *ngIf="expenses.length === 0">
+      Create Expense
+    </button>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin fa-2x"></i>
+    <p>Loading expenses...</p>
+  </div>
+</div>

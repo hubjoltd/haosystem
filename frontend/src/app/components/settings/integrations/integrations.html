@@ -1,0 +1,228 @@
+<div class="integrations-container">
+  <div class="page-header">
+    <h2>Integration Settings</h2>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <i class="fas fa-plus"></i> Add Integration
+    </button>
+  </div>
+
+  <div class="integration-cards" *ngIf="!loading">
+    <div class="integration-card" *ngFor="let integration of integrations">
+      <div class="card-header">
+        <div class="integration-icon">
+          <i class="fas" [ngClass]="getTypeIcon(integration.integrationType)"></i>
+        </div>
+        <div class="integration-info">
+          <h3>{{ integration.name }}</h3>
+          <span class="integration-type">{{ getIntegrationTypeName(integration.integrationType) }}</span>
+        </div>
+        <div class="status-badge" [class.active]="integration.active" [class.inactive]="!integration.active">
+          {{ integration.active ? 'Active' : 'Inactive' }}
+        </div>
+      </div>
+      
+      <div class="card-body">
+        <p class="description">{{ integration.description || 'No description provided' }}</p>
+        
+        <div class="sync-info" *ngIf="integration.syncEnabled">
+          <div class="sync-status">
+            <span class="label">Sync:</span>
+            <span class="value">{{ integration.syncFrequency }}</span>
+          </div>
+          <div class="last-sync" *ngIf="integration.lastSyncAt">
+            <span class="label">Last Sync:</span>
+            <span class="value" [class.success]="integration.lastSyncStatus === 'SUCCESS'" 
+                                [class.failed]="integration.lastSyncStatus === 'FAILED'">
+              {{ integration.lastSyncStatus }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="environment-badge" *ngIf="integration.environment">
+          {{ integration.environment }}
+        </div>
+      </div>
+      
+      <div class="card-actions">
+        <button class="btn btn-sm btn-outline" (click)="openEditModal(integration)">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="btn btn-sm btn-outline" (click)="testConnection(integration.id!)" [disabled]="testingConnection">
+          <i class="fas fa-plug"></i> Test
+        </button>
+        <button class="btn btn-sm btn-outline" (click)="triggerSync(integration.id!)" *ngIf="integration.syncEnabled" [disabled]="syncingData">
+          <i class="fas fa-sync"></i> Sync
+        </button>
+        <button class="btn btn-sm btn-outline" (click)="toggleActive(integration.id!)">
+          <i class="fas" [ngClass]="integration.active ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+        </button>
+        <button class="btn btn-sm btn-danger" (click)="deleteIntegration(integration.id!)">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && integrations.length === 0">
+    <i class="fas fa-plug fa-3x"></i>
+    <h3>No Integrations Configured</h3>
+    <p>Connect your ERP to external systems like QuickBooks, SAP, ADP, and more.</p>
+    <button class="btn btn-primary" (click)="openCreateModal()">Add Your First Integration</button>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin fa-2x"></i>
+    <p>Loading integrations...</p>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditing ? 'Edit Integration' : 'Add New Integration' }}</h3>
+      <button class="close-btn" (click)="closeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Integration Type *</label>
+        <select [(ngModel)]="formData.integrationType" [disabled]="isEditing">
+          <option value="">Select Type</option>
+          <option *ngFor="let type of integrationTypes" [value]="type.code">
+            {{ type.name }} - {{ type.description }}
+          </option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Name *</label>
+        <input type="text" [(ngModel)]="formData.name" placeholder="Integration name">
+      </div>
+      
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="formData.description" rows="2" placeholder="Description"></textarea>
+      </div>
+
+      <div class="form-group" *ngIf="showTypeSpecificFields(formData.integrationType || '')">
+        <label>Environment</label>
+        <select [(ngModel)]="formData.environment">
+          <option value="">Select Environment</option>
+          <option *ngFor="let env of environments" [value]="env.value">{{ env.label }}</option>
+        </select>
+      </div>
+
+      <div class="form-section" *ngIf="isAccountingType() || isPayrollType() || isProjectType()">
+        <h4>API Configuration</h4>
+        <div class="form-group">
+          <label>API URL</label>
+          <input type="text" [(ngModel)]="formData.apiUrl" placeholder="https://api.example.com">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Client ID</label>
+            <input type="text" [(ngModel)]="formData.clientId">
+          </div>
+          <div class="form-group">
+            <label>Client Secret</label>
+            <input type="password" [(ngModel)]="formData.clientSecret">
+          </div>
+        </div>
+        <div class="form-group" *ngIf="isAccountingType()">
+          <label>Company ID</label>
+          <input type="text" [(ngModel)]="formData.companyId">
+        </div>
+      </div>
+
+      <div class="form-section" *ngIf="isSmtpType()">
+        <h4>SMTP Configuration</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label>SMTP Host</label>
+            <input type="text" [(ngModel)]="formData.smtpHost" placeholder="smtp.example.com">
+          </div>
+          <div class="form-group">
+            <label>SMTP Port</label>
+            <input type="number" [(ngModel)]="formData.smtpPort" placeholder="587">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Security</label>
+          <select [(ngModel)]="formData.smtpSecurity">
+            <option value="TLS">TLS</option>
+            <option value="SSL">SSL</option>
+            <option value="NONE">None</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" [(ngModel)]="formData.username">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" [(ngModel)]="formData.password">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section" *ngIf="isSmsType()">
+        <h4>SMS Configuration</h4>
+        <div class="form-group">
+          <label>SMS Provider</label>
+          <select [(ngModel)]="formData.smsProvider">
+            <option value="TWILIO">Twilio</option>
+            <option value="NEXMO">Vonage/Nexmo</option>
+            <option value="AWS_SNS">AWS SNS</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Account SID</label>
+            <input type="text" [(ngModel)]="formData.smsAccountSid">
+          </div>
+          <div class="form-group">
+            <label>Auth Token</label>
+            <input type="password" [(ngModel)]="formData.smsAuthToken">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>From Number</label>
+          <input type="text" [(ngModel)]="formData.smsFromNumber" placeholder="+1234567890">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Sync Settings</h4>
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" [(ngModel)]="formData.syncEnabled">
+            Enable Automatic Sync
+          </label>
+        </div>
+        <div class="form-group" *ngIf="formData.syncEnabled">
+          <label>Sync Frequency</label>
+          <select [(ngModel)]="formData.syncFrequency">
+            <option *ngFor="let freq of syncFrequencies" [value]="freq.value">{{ freq.label }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" [(ngModel)]="formData.active">
+          Active
+        </label>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveIntegration()">
+        {{ isEditing ? 'Update' : 'Create' }} Integration
+      </button>
+    </div>
+  </div>
+</div>

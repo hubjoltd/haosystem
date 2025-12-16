@@ -45,7 +45,8 @@ export class SidebarComponent implements OnInit {
         { icon: 'fas fa-file-contract', label: 'Contract Settings', route: '/app/settings/contract' },
         { icon: 'fas fa-user-shield', label: 'Roles Settings', route: '/app/settings/roles' },
         { icon: 'fas fa-users-cog', label: 'Staff Management', route: '/app/settings/staff' },
-        { icon: 'fas fa-hashtag', label: 'Prefix Settings', route: '/app/settings/prefixes' }
+        { icon: 'fas fa-hashtag', label: 'Prefix Settings', route: '/app/settings/prefixes' },
+        { icon: 'fas fa-plug', label: 'Integrations', route: '/app/settings/integrations' }
       ]
     },
     { icon: 'fas fa-users', label: 'Customer Management', route: '/app/customers', permissionKey: 'Customer Management' },
@@ -221,6 +222,16 @@ export class SidebarComponent implements OnInit {
         { icon: 'fas fa-calendar-check', label: 'Leave Requests', route: '/app/leave/requests' },
         { icon: 'fas fa-balance-scale', label: 'Leave Balances', route: '/app/leave/balances' },
         { icon: 'fas fa-calendar', label: 'Holiday Calendar', route: '/app/leave/holidays' }
+      ]
+    },
+    {
+      icon: 'fas fa-file-invoice-dollar',
+      label: 'Expense Management',
+      expanded: false,
+      permissionKey: 'Expenses',
+      children: [
+        { icon: 'fas fa-list', label: 'All Expenses', route: '/app/expenses' },
+        { icon: 'fas fa-plus-circle', label: 'New Expense', route: '/app/expenses/new' }
       ]
     },
     {

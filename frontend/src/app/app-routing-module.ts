@@ -99,6 +99,10 @@ import { PayrollCalculationComponent } from './components/payroll/payroll-calcul
 import { ProcessPayrollComponent } from './components/payroll/process-payroll/process-payroll.component';
 import { EmployeeSelfServiceComponent } from './components/payroll/employee-self-service/employee-self-service.component';
 
+import { IntegrationsComponent } from './components/settings/integrations/integrations';
+import { ExpenseListComponent } from './components/expenses/expense-list/expense-list';
+import { ExpenseFormComponent } from './components/expenses/expense-form/expense-form';
+
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
@@ -123,6 +127,7 @@ const routes: Routes = [
       { path: 'settings/staff/add', component: AddStaffComponent },
       { path: 'settings/staff/edit/:id', component: AddStaffComponent },
       { path: 'settings/prefixes', component: PrefixSettingsComponent },
+      { path: 'settings/integrations', component: IntegrationsComponent },
       { path: 'customers', component: CustomerManagementComponent },
       { path: 'contracts', component: ContractManagementComponent },
       { path: 'inventory/groups', component: GroupMasterComponent },
@@ -190,7 +195,11 @@ const routes: Routes = [
       { path: 'payroll/timesheets', component: TimesheetApprovalComponent },
       { path: 'payroll/calculation', component: PayrollCalculationComponent },
       { path: 'payroll/process/:id', component: ProcessPayrollComponent },
-      { path: 'payroll/self-service', component: EmployeeSelfServiceComponent }
+      { path: 'payroll/self-service', component: EmployeeSelfServiceComponent },
+      { path: 'expenses', component: ExpenseListComponent },
+      { path: 'expenses/new', component: ExpenseFormComponent },
+      { path: 'expenses/:id', component: ExpenseFormComponent },
+      { path: 'expenses/:id/edit', component: ExpenseFormComponent }
     ]
   }
 ];
