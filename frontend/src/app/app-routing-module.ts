@@ -107,6 +107,7 @@ import { RecruitmentComponent } from './components/hr/recruitment/recruitment.co
 import { TrainingComponent } from './components/hr/training/training.component';
 import { LoansComponent } from './components/hr/loans/loans.component';
 import { OnboardingComponent } from './components/hr/onboarding/onboarding.component';
+import { LettersComponent } from './components/hr/letters/letters.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -208,7 +209,8 @@ const routes: Routes = [
       { path: 'hr/recruitment', component: RecruitmentComponent },
       { path: 'hr/training', component: TrainingComponent },
       { path: 'hr/loans', component: LoansComponent },
-      { path: 'hr/onboarding', component: OnboardingComponent }
+      { path: 'hr/onboarding', component: OnboardingComponent },
+      { path: 'hr/letters', component: LettersComponent }
     ]
   }
 ];

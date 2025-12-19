@@ -1,0 +1,179 @@
+<div class="letters-container">
+  <div class="page-header">
+    <h2>HR Letter Templates</h2>
+    <button class="btn btn-primary" (click)="openForm()">
+      <i class="fas fa-plus"></i> Generate Letter
+    </button>
+  </div>
+
+  <div class="filters-row">
+    <div class="filter-group">
+      <label>Letter Type:</label>
+      <select [(ngModel)]="filterType" class="form-control">
+        <option value="">All Types</option>
+        <option *ngFor="let type of letterTypes" [value]="type.value">{{ type.label }}</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Status:</label>
+      <select [(ngModel)]="filterStatus" class="form-control">
+        <option value="">All Statuses</option>
+        <option value="DRAFT">Draft</option>
+        <option value="GENERATED">Generated</option>
+        <option value="SIGNED">Signed</option>
+        <option value="ISSUED">Issued</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading letters...</div>
+
+  <div class="letters-table" *ngIf="!loading">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Letter #</th>
+          <th>Type</th>
+          <th>Employee</th>
+          <th>Subject</th>
+          <th>Issue Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let letter of filteredLetters">
+          <td>{{ letter.letterNumber }}</td>
+          <td>{{ getLetterTypeLabel(letter.letterType) }}</td>
+          <td>{{ getEmployeeName(letter.employee) }}</td>
+          <td>{{ letter.subject }}</td>
+          <td>{{ formatDate(letter.issueDate) }}</td>
+          <td>
+            <span class="badge" [ngClass]="getStatusClass(letter.status)">{{ letter.status }}</span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn btn-sm btn-info" (click)="viewLetter(letter)" title="View">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn btn-sm btn-primary" *ngIf="letter.status === 'DRAFT' || letter.status === 'GENERATED'" 
+                      (click)="signLetter(letter)" title="Sign">
+                <i class="fas fa-signature"></i>
+              </button>
+              <button class="btn btn-sm btn-success" *ngIf="letter.status === 'SIGNED'" 
+                      (click)="issueLetter(letter)" title="Issue">
+                <i class="fas fa-paper-plane"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" *ngIf="letter.status === 'DRAFT'" 
+                      (click)="deleteLetter(letter)" title="Delete">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="filteredLetters.length === 0">
+          <td colspan="7" class="text-center">No letters found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Generate HR Letter</h3>
+        <button class="close-btn" (click)="closeForm()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Letter Type *</label>
+          <select [(ngModel)]="formData.letterType" class="form-control">
+            <option *ngFor="let type of letterTypes" [value]="type.value">{{ type.label }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Employee *</label>
+          <select [(ngModel)]="formData.employeeId" class="form-control">
+            <option [ngValue]="null">Select Employee</option>
+            <option *ngFor="let emp of employees" [ngValue]="emp.id">
+              {{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})
+            </option>
+          </select>
+        </div>
+
+        <ng-container *ngIf="formData.letterType === 'WARNING'">
+          <div class="form-group">
+            <label>Warning Level</label>
+            <select [(ngModel)]="formData.warningLevel" class="form-control">
+              <option value="First">First Warning</option>
+              <option value="Second">Second Warning</option>
+              <option value="Final">Final Warning</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Reason *</label>
+            <textarea [(ngModel)]="formData.reason" class="form-control" rows="3" 
+                      placeholder="Enter the reason for this warning"></textarea>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="formData.letterType === 'EXPERIENCE'">
+          <div class="form-group">
+            <label>Last Working Date *</label>
+            <input type="date" [(ngModel)]="formData.lastWorkingDate" class="form-control">
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="formData.letterType === 'SALARY_REVISION'">
+          <div class="form-group">
+            <label>New Annual Salary</label>
+            <input type="number" [(ngModel)]="formData.newSalary" class="form-control" placeholder="Enter new salary">
+          </div>
+          <div class="form-group">
+            <label>Increment (%)</label>
+            <input type="number" [(ngModel)]="formData.increment" class="form-control" placeholder="Enter increment percentage">
+          </div>
+          <div class="form-group">
+            <label>Effective Date *</label>
+            <input type="date" [(ngModel)]="formData.effectiveDate" class="form-control">
+          </div>
+        </ng-container>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+        <button class="btn btn-primary" (click)="generateLetter()">Generate Letter</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showPreview && selectedLetter" (click)="closePreview()">
+    <div class="modal-content letter-preview" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ selectedLetter.subject }}</h3>
+        <button class="close-btn" (click)="closePreview()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="letter-meta">
+          <p><strong>Letter Number:</strong> {{ selectedLetter.letterNumber }}</p>
+          <p><strong>Type:</strong> {{ getLetterTypeLabel(selectedLetter.letterType) }}</p>
+          <p><strong>Employee:</strong> {{ getEmployeeName(selectedLetter.employee) }}</p>
+          <p><strong>Status:</strong> <span class="badge" [ngClass]="getStatusClass(selectedLetter.status)">{{ selectedLetter.status }}</span></p>
+          <p *ngIf="selectedLetter.signed"><strong>Signed:</strong> Yes</p>
+          <p *ngIf="selectedLetter.sentToEmployee"><strong>Sent to Employee:</strong> Yes</p>
+        </div>
+        <hr>
+        <div class="letter-content">
+          <pre>{{ selectedLetter.content }}</pre>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closePreview()">Close</button>
+        <button class="btn btn-primary" *ngIf="selectedLetter.status === 'DRAFT' || selectedLetter.status === 'GENERATED'" 
+                (click)="signLetter(selectedLetter); closePreview()">Sign Letter</button>
+        <button class="btn btn-success" *ngIf="selectedLetter.status === 'SIGNED'" 
+                (click)="issueLetter(selectedLetter); closePreview()">Issue to Employee</button>
+      </div>
+    </div>
+  </div>
+</div>
