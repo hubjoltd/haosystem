@@ -197,18 +197,7 @@ export class SidebarComponent implements OnInit {
             { icon: 'fas fa-file-contract', label: 'Offer Letters', route: '/app/hr/recruitment/offers' }
           ]
         },
-        {
-          icon: 'fas fa-graduation-cap',
-          label: 'Training & Development',
-          expanded: false,
-          children: [
-            { icon: 'fas fa-book', label: 'Training Sessions', route: '/app/hr/training/sessions' },
-            { icon: 'fas fa-calendar', label: 'Training Calendar', route: '/app/hr/training/calendar' },
-            { icon: 'fas fa-check-circle', label: 'Training Attendance', route: '/app/hr/training/attendance' },
-            { icon: 'fas fa-star', label: 'Training Feedback', route: '/app/hr/training/feedback' },
-            { icon: 'fas fa-certificate', label: 'Certificates', route: '/app/hr/training/certificates' }
-          ]
-        },
+        { icon: 'fas fa-graduation-cap', label: 'Training & Development', route: '/app/hr/training' },
         { icon: 'fas fa-sign-in-alt', label: 'Onboarding', route: '/app/hr/onboarding' },
         { icon: 'fas fa-file-invoice', label: 'F&F Settlement', route: '/app/hr/settlement' }
       ]
