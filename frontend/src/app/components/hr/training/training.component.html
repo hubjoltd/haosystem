@@ -25,16 +25,21 @@
   <div class="tabs">
     <button [class.active]="activeTab === 'programs'" (click)="setTab('programs')">Programs</button>
     <button [class.active]="activeTab === 'sessions'" (click)="setTab('sessions')">Sessions</button>
+    <button [class.active]="activeTab === 'calendar'" (click)="setTab('calendar')">Calendar</button>
   </div>
 
   <div class="tab-content">
+    <!-- Programs Tab -->
     <div *ngIf="activeTab === 'programs'" class="content-section">
       <div class="section-header">
         <h3>Training Programs</h3>
         <button class="btn btn-primary" (click)="openForm()">+ New Program</button>
       </div>
       <div *ngIf="loading" class="loading">Loading...</div>
-      <table *ngIf="!loading" class="data-table">
+      <div *ngIf="!loading && programs.length === 0" class="empty-state">
+        <p>No training programs yet. Click "New Program" to create one.</p>
+      </div>
+      <table *ngIf="!loading && programs.length > 0" class="data-table">
         <thead>
           <tr>
             <th>Code</th>
@@ -61,12 +66,17 @@
       </table>
     </div>
 
+    <!-- Sessions Tab -->
     <div *ngIf="activeTab === 'sessions'" class="content-section">
       <div class="section-header">
         <h3>Training Sessions</h3>
+        <button class="btn btn-primary" (click)="openSessionForm()">+ New Session</button>
       </div>
       <div *ngIf="loading" class="loading">Loading...</div>
-      <table *ngIf="!loading" class="data-table">
+      <div *ngIf="!loading && sessions.length === 0" class="empty-state">
+        <p>No training sessions yet. Click "New Session" to create one.</p>
+      </div>
+      <table *ngIf="!loading && sessions.length > 0" class="data-table">
         <thead>
           <tr>
             <th>Program</th>
@@ -88,26 +98,54 @@
             <td>{{ session.trainerName }}</td>
             <td>{{ session.enrolledCount || 0 }}/{{ session.maxParticipants }}</td>
             <td><span class="badge" [ngClass]="getStatusClass(session.status)">{{ session.status }}</span></td>
-            <td>
+            <td class="actions-cell">
+              <button class="btn btn-sm" (click)="openEnrollmentModal(session)">Enrollments</button>
+              <button class="btn btn-sm" (click)="openSessionForm(session)">Edit</button>
               <button *ngIf="session.status === 'SCHEDULED'" class="btn btn-sm btn-primary" (click)="startSession(session.id)">Start</button>
               <button *ngIf="session.status === 'IN_PROGRESS'" class="btn btn-sm btn-success" (click)="completeSession(session.id)">Complete</button>
+              <button class="btn btn-sm btn-danger" (click)="deleteSession(session.id)">Delete</button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <!-- Calendar Tab -->
+    <div *ngIf="activeTab === 'calendar'" class="content-section">
+      <div class="calendar-header">
+        <button class="btn btn-sm" (click)="previousMonth()">&lt; Prev</button>
+        <h3>{{ getMonthYear() }}</h3>
+        <button class="btn btn-sm" (click)="nextMonth()">Next &gt;</button>
+      </div>
+      <div class="calendar-grid">
+        <div class="calendar-day-header">Sun</div>
+        <div class="calendar-day-header">Mon</div>
+        <div class="calendar-day-header">Tue</div>
+        <div class="calendar-day-header">Wed</div>
+        <div class="calendar-day-header">Thu</div>
+        <div class="calendar-day-header">Fri</div>
+        <div class="calendar-day-header">Sat</div>
+        <div *ngFor="let cell of calendarDays" class="calendar-cell" [class.empty]="!cell.day">
+          <div *ngIf="cell.day" class="day-number">{{ cell.day }}</div>
+          <div *ngFor="let session of cell.sessions" class="calendar-session" [ngClass]="getStatusClass(session.status)">
+            {{ session.program?.name || 'Session' }}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
+  <!-- Program Form Modal -->
   <div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <h3>{{ editingItem ? 'Edit' : 'New' }} Program</h3>
       <form (ngSubmit)="saveProgram()">
         <div class="form-group">
-          <label>Program Code</label>
+          <label>Program Code *</label>
           <input type="text" [(ngModel)]="formData.programCode" name="programCode" required>
         </div>
         <div class="form-group">
-          <label>Name</label>
+          <label>Name *</label>
           <input type="text" [(ngModel)]="formData.name" name="name" required>
         </div>
         <div class="form-group">
@@ -127,9 +165,155 @@
           <label>Description</label>
           <textarea [(ngModel)]="formData.description" name="description" rows="4"></textarea>
         </div>
+        <div class="form-group checkbox-group">
+          <label><input type="checkbox" [(ngModel)]="formData.isActive" name="isActive"> Active</label>
+        </div>
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
           <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Session Form Modal -->
+  <div *ngIf="showSessionForm" class="modal-overlay" (click)="closeSessionForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>{{ editingSession ? 'Edit' : 'New' }} Training Session</h3>
+      <form (ngSubmit)="saveSession()">
+        <div class="form-group">
+          <label>Training Program *</label>
+          <select [(ngModel)]="sessionFormData.programId" name="programId" required>
+            <option value="">Select Program</option>
+            <option *ngFor="let program of programs" [value]="program.id">{{ program.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Session Date *</label>
+          <input type="date" [(ngModel)]="sessionFormData.sessionDate" name="sessionDate" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Time</label>
+            <input type="time" [(ngModel)]="sessionFormData.startTime" name="startTime">
+          </div>
+          <div class="form-group">
+            <label>End Time</label>
+            <input type="time" [(ngModel)]="sessionFormData.endTime" name="endTime">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" [(ngModel)]="sessionFormData.location" name="location" placeholder="e.g., Conference Room A">
+        </div>
+        <div class="form-group">
+          <label>Trainer Name</label>
+          <input type="text" [(ngModel)]="sessionFormData.trainerName" name="trainerName">
+        </div>
+        <div class="form-group">
+          <label>Max Participants</label>
+          <input type="number" [(ngModel)]="sessionFormData.maxParticipants" name="maxParticipants" min="1">
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea [(ngModel)]="sessionFormData.notes" name="notes" rows="3"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeSessionForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">{{ editingSession ? 'Update' : 'Create' }} Session</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Enrollment Modal -->
+  <div *ngIf="showEnrollmentModal" class="modal-overlay" (click)="closeEnrollmentModal()">
+    <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Enrollments - {{ selectedSession?.program?.name }}</h3>
+      </div>
+      
+      <div class="enroll-form">
+        <select [(ngModel)]="enrollmentData.employeeId" class="enroll-select">
+          <option value="">Select Employee to Enroll</option>
+          <option *ngFor="let emp of employees" [value]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+        </select>
+        <button class="btn btn-primary" (click)="enrollEmployee()" [disabled]="!enrollmentData.employeeId">Enroll</button>
+      </div>
+
+      <div *ngIf="enrollments.length === 0" class="empty-state">
+        <p>No enrollments yet. Select an employee to enroll them in this session.</p>
+      </div>
+
+      <table *ngIf="enrollments.length > 0" class="data-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Enrolled Date</th>
+            <th>Attendance</th>
+            <th>Feedback</th>
+            <th>Certificate</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let enrollment of enrollments">
+            <td>{{ enrollment.employee?.firstName }} {{ enrollment.employee?.lastName }}</td>
+            <td>{{ formatDate(enrollment.enrolledAt) }}</td>
+            <td>
+              <span *ngIf="enrollment.attended === true" class="badge bg-success">Attended</span>
+              <span *ngIf="enrollment.attended === false" class="badge bg-danger">Absent</span>
+              <span *ngIf="enrollment.attended === null && selectedSession?.status !== 'SCHEDULED'" class="attendance-actions">
+                <button class="btn btn-sm btn-success" (click)="markAttendance(enrollment, true)">Present</button>
+                <button class="btn btn-sm btn-danger" (click)="markAttendance(enrollment, false)">Absent</button>
+              </span>
+              <span *ngIf="enrollment.attended === null && selectedSession?.status === 'SCHEDULED'" class="badge bg-secondary">Pending</span>
+            </td>
+            <td>
+              <span *ngIf="enrollment.feedbackRating">{{ enrollment.feedbackRating }}/5</span>
+              <button *ngIf="!enrollment.feedbackRating && enrollment.attended" class="btn btn-sm" (click)="openFeedbackModal(enrollment)">Add Feedback</button>
+              <span *ngIf="!enrollment.feedbackRating && !enrollment.attended">-</span>
+            </td>
+            <td>
+              <span *ngIf="enrollment.certificateIssued" class="badge bg-success">Issued</span>
+              <button *ngIf="!enrollment.certificateIssued && enrollment.attended" class="btn btn-sm btn-primary" (click)="generateCertificate(enrollment)">Generate</button>
+              <span *ngIf="!enrollment.certificateIssued && !enrollment.attended">-</span>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-danger" (click)="cancelEnrollment(enrollment)">Cancel</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="form-actions">
+        <button class="btn btn-secondary" (click)="closeEnrollmentModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback Modal -->
+  <div *ngIf="showFeedbackModal" class="modal-overlay" (click)="closeFeedbackModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Submit Training Feedback</h3>
+      <form (ngSubmit)="submitFeedback()">
+        <div class="form-group">
+          <label>Rating (1-5) *</label>
+          <select [(ngModel)]="feedbackData.rating" name="rating" required>
+            <option [value]="1">1 - Poor</option>
+            <option [value]="2">2 - Fair</option>
+            <option [value]="3">3 - Good</option>
+            <option [value]="4">4 - Very Good</option>
+            <option [value]="5">5 - Excellent</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Comments</label>
+          <textarea [(ngModel)]="feedbackData.comments" name="comments" rows="4" placeholder="Share your feedback about the training..."></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeFeedbackModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Feedback</button>
         </div>
       </form>
     </div>

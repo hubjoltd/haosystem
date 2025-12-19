@@ -1,6 +1,7 @@
 <div class="onboarding-container">
   <div class="page-header">
     <h2>Employee Onboarding</h2>
+    <button class="btn btn-primary" (click)="openPlanForm()">+ New Onboarding Plan</button>
   </div>
 
   <div class="dashboard-cards">
@@ -28,7 +29,11 @@
 
   <div *ngIf="loading" class="loading">Loading...</div>
 
-  <div *ngIf="!loading" class="plans-grid">
+  <div *ngIf="!loading && plans.length === 0" class="empty-state">
+    <p>No onboarding plans yet. Click "New Onboarding Plan" to create one.</p>
+  </div>
+
+  <div *ngIf="!loading && plans.length > 0" class="plans-grid">
     <div *ngFor="let plan of plans" class="plan-card">
       <div class="plan-header">
         <h4>{{ plan.employee?.firstName }} {{ plan.employee?.lastName }}</h4>
@@ -37,50 +42,233 @@
       <div class="plan-info">
         <p><strong>Start Date:</strong> {{ formatDate(plan.startDate) }}</p>
         <p><strong>Expected End:</strong> {{ formatDate(plan.expectedEndDate) }}</p>
-        <p><strong>Buddy:</strong> {{ plan.buddy?.firstName }} {{ plan.buddy?.lastName }}</p>
+        <p *ngIf="plan.buddy"><strong>Buddy:</strong> {{ plan.buddy?.firstName }} {{ plan.buddy?.lastName }}</p>
+        <p *ngIf="plan.manager"><strong>Manager:</strong> {{ plan.manager?.firstName }} {{ plan.manager?.lastName }}</p>
       </div>
       <div class="progress-bar">
         <div class="progress-fill" [style.width.%]="getProgress(plan)"></div>
       </div>
-      <p class="progress-text">{{ plan.completedTasks || 0 }}/{{ plan.totalTasks || 0 }} tasks completed</p>
+      <p class="progress-text">{{ plan.completedTasks || 0 }}/{{ plan.totalTasks || 0 }} tasks completed ({{ getProgress(plan) }}%)</p>
       <div class="plan-actions">
         <button class="btn btn-sm" (click)="viewTasks(plan)">View Tasks</button>
+        <button class="btn btn-sm" (click)="openAssetModal(plan)">Assets</button>
+        <button class="btn btn-sm" (click)="openPlanForm(plan)">Edit</button>
         <button *ngIf="plan.status === 'NOT_STARTED'" class="btn btn-sm btn-primary" (click)="startPlan(plan.id)">Start</button>
         <button *ngIf="plan.status === 'IN_PROGRESS'" class="btn btn-sm btn-success" (click)="completePlan(plan.id)">Complete</button>
+        <button class="btn btn-sm btn-danger" (click)="deletePlan(plan.id)">Delete</button>
       </div>
     </div>
   </div>
 
-  <div *ngIf="selectedPlan" class="modal-overlay" (click)="closeTasks()">
+  <!-- Create/Edit Plan Modal -->
+  <div *ngIf="showPlanForm" class="modal-overlay" (click)="closePlanForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>{{ editingPlan ? 'Edit' : 'New' }} Onboarding Plan</h3>
+      <form (ngSubmit)="savePlan()">
+        <div class="form-group">
+          <label>Employee *</label>
+          <select [(ngModel)]="planFormData.employeeId" name="employeeId" required [disabled]="editingPlan">
+            <option value="">Select Employee</option>
+            <option *ngFor="let emp of employees" [value]="emp.id">{{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Date *</label>
+            <input type="date" [(ngModel)]="planFormData.startDate" name="startDate" required>
+          </div>
+          <div class="form-group">
+            <label>Expected End Date *</label>
+            <input type="date" [(ngModel)]="planFormData.expectedEndDate" name="expectedEndDate" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Buddy (Mentor)</label>
+          <select [(ngModel)]="planFormData.buddyId" name="buddyId">
+            <option value="">Select Buddy</option>
+            <option *ngFor="let emp of employees" [value]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Reporting Manager</label>
+          <select [(ngModel)]="planFormData.managerId" name="managerId">
+            <option value="">Select Manager</option>
+            <option *ngFor="let emp of employees" [value]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea [(ngModel)]="planFormData.notes" name="notes" rows="3"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closePlanForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">{{ editingPlan ? 'Update' : 'Create' }} Plan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tasks Modal -->
+  <div *ngIf="selectedPlan && !showAssetModal" class="modal-overlay" (click)="closeTasks()">
     <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
-      <h3>Tasks - {{ selectedPlan.employee?.firstName }} {{ selectedPlan.employee?.lastName }}</h3>
-      <table class="data-table">
+      <div class="modal-header">
+        <h3>Onboarding Checklist - {{ selectedPlan.employee?.firstName }} {{ selectedPlan.employee?.lastName }}</h3>
+        <button class="btn btn-primary btn-sm" (click)="openTaskForm()">+ Add Task</button>
+      </div>
+      
+      <div *ngIf="tasks.length === 0" class="empty-state">
+        <p>No tasks yet. Click "Add Task" to create onboarding checklist items.</p>
+      </div>
+
+      <div *ngIf="tasks.length > 0" class="checklist-container">
+        <div *ngFor="let task of tasks" class="checklist-item" [ngClass]="{'completed': task.status === 'COMPLETED'}">
+          <div class="checklist-checkbox">
+            <input type="checkbox" [checked]="task.status === 'COMPLETED'" (change)="completeTask(task)" [disabled]="task.status === 'COMPLETED'">
+          </div>
+          <div class="checklist-content">
+            <div class="checklist-title">{{ task.taskName }}</div>
+            <div class="checklist-meta">
+              <span class="badge badge-sm" [ngClass]="getStatusClass(task.status)">{{ task.status }}</span>
+              <span class="category">{{ getCategoryLabel(task.category) }}</span>
+              <span *ngIf="task.assignedTo" class="assigned">Assigned to: {{ task.assignedTo?.firstName }} {{ task.assignedTo?.lastName }}</span>
+              <span class="due-date">Due: {{ formatDate(task.dueDate) }}</span>
+            </div>
+            <div *ngIf="task.description" class="checklist-description">{{ task.description }}</div>
+          </div>
+          <div class="checklist-actions">
+            <button *ngIf="task.status !== 'COMPLETED'" class="btn btn-sm btn-success" (click)="completeTask(task)">Complete</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteTask(task)">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-secondary" (click)="closeTasks()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Task Modal -->
+  <div *ngIf="showTaskForm" class="modal-overlay" (click)="closeTaskForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Add Onboarding Task</h3>
+      <form (ngSubmit)="saveTask()">
+        <div class="form-group">
+          <label>Task Name *</label>
+          <input type="text" [(ngModel)]="taskFormData.taskName" name="taskName" required placeholder="e.g., Complete HR paperwork">
+        </div>
+        <div class="form-group">
+          <label>Category *</label>
+          <select [(ngModel)]="taskFormData.category" name="category" required>
+            <option *ngFor="let cat of taskCategories" [value]="cat">{{ getCategoryLabel(cat) }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Assigned To</label>
+          <select [(ngModel)]="taskFormData.assignedToId" name="assignedToId">
+            <option value="">Select Assignee</option>
+            <option *ngFor="let emp of employees" [value]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Due Date *</label>
+          <input type="date" [(ngModel)]="taskFormData.dueDate" name="dueDate" required>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="taskFormData.description" name="description" rows="3" placeholder="Task details..."></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeTaskForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Asset Modal -->
+  <div *ngIf="showAssetModal" class="modal-overlay" (click)="closeAssetModal()">
+    <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Asset Assignment - {{ selectedAssetPlan?.employee?.firstName }} {{ selectedAssetPlan?.employee?.lastName }}</h3>
+        <button class="btn btn-primary btn-sm" (click)="openAssetForm()">+ Assign Asset</button>
+      </div>
+
+      <div *ngIf="assets.length === 0" class="empty-state">
+        <p>No assets assigned yet. Click "Assign Asset" to assign equipment to this employee.</p>
+      </div>
+
+      <table *ngIf="assets.length > 0" class="data-table">
         <thead>
           <tr>
-            <th>Task</th>
-            <th>Category</th>
-            <th>Assigned To</th>
-            <th>Due Date</th>
+            <th>Asset Type</th>
+            <th>Asset Name</th>
+            <th>Serial Number</th>
+            <th>Assigned Date</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let task of tasks">
-            <td>{{ task.taskName }}</td>
-            <td>{{ task.category }}</td>
-            <td>{{ task.assignedTo?.firstName }} {{ task.assignedTo?.lastName }}</td>
-            <td>{{ formatDate(task.dueDate) }}</td>
-            <td><span class="badge" [ngClass]="getStatusClass(task.status)">{{ task.status }}</span></td>
+          <tr *ngFor="let asset of assets">
+            <td>{{ getAssetTypeLabel(asset.assetType) }}</td>
+            <td>{{ asset.assetName }}</td>
+            <td>{{ asset.serialNumber || '-' }}</td>
+            <td>{{ formatDate(asset.assignedDate) }}</td>
             <td>
-              <button *ngIf="task.status !== 'COMPLETED'" class="btn btn-sm btn-success" (click)="completeTask(task)">Complete</button>
+              <span class="badge" [ngClass]="asset.returnedDate ? 'bg-secondary' : 'bg-primary'">
+                {{ asset.returnedDate ? 'Returned' : 'Assigned' }}
+              </span>
+            </td>
+            <td>
+              <button *ngIf="!asset.returnedDate" class="btn btn-sm btn-warning" (click)="returnAsset(asset)">Return</button>
             </td>
           </tr>
         </tbody>
       </table>
+
       <div class="form-actions">
-        <button class="btn btn-secondary" (click)="closeTasks()">Close</button>
+        <button class="btn btn-secondary" (click)="closeAssetModal()">Close</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Assign Asset Form Modal -->
+  <div *ngIf="showAssetForm" class="modal-overlay" (click)="closeAssetForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Assign Asset</h3>
+      <form (ngSubmit)="saveAsset()">
+        <div class="form-group">
+          <label>Asset Type *</label>
+          <select [(ngModel)]="assetFormData.assetType" name="assetType" required>
+            <option *ngFor="let type of assetTypes" [value]="type">{{ getAssetTypeLabel(type) }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Asset Name *</label>
+          <input type="text" [(ngModel)]="assetFormData.assetName" name="assetName" required placeholder="e.g., Dell Latitude 5520">
+        </div>
+        <div class="form-group">
+          <label>Serial Number</label>
+          <input type="text" [(ngModel)]="assetFormData.serialNumber" name="serialNumber" placeholder="e.g., SN123456789">
+        </div>
+        <div class="form-group">
+          <label>Asset Tag</label>
+          <input type="text" [(ngModel)]="assetFormData.assetTag" name="assetTag" placeholder="e.g., IT-001">
+        </div>
+        <div class="form-group">
+          <label>Assigned Date *</label>
+          <input type="date" [(ngModel)]="assetFormData.assignedDate" name="assignedDate" required>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea [(ngModel)]="assetFormData.notes" name="notes" rows="3" placeholder="Additional notes..."></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeAssetForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Assign Asset</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
