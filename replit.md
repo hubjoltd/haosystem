@@ -56,17 +56,17 @@ The application uses a hierarchical component structure:
 9. **Reports** - Reorganized into sub-sections:
    - **Inventory Reports**: Stock Summary, Inventory Valuation, Item Movement, Stock Ledger, Group-wise Stock, Warehouse Stock, Reorder Level, Slow-Moving Items, Purchase vs GRN
    - **Purchase Reports**: PR List, PR Item Pending, PR Fulfillment History, PO List, Direct Purchase, Stock Issue/Transfer (components scaffolded, awaiting design implementation)
-10. **HR Management** - Human Resources module with Organization Structure:
-   - **Organization Structure** (Phase 1 Complete):
-     - Departments - with location and cost center assignment
-     - Locations - physical office locations
-     - Job Roles - job role definitions
-     - Grades - employee grade levels
-     - Designations - job titles and designations
-     - Cost Centers - financial cost center tracking
-     - Expense Centers - expense allocation centers
-   - **Employee Master** (Phase 2 Complete): Employee list with search/filter, personal details, employment details
-   - **Document Management** (Phase 3 Complete): Document types, employee documents, expiry tracking
+10. **HR Management** - Comprehensive Human Resources module:
+   - **Organization Structure** (Complete):
+     - Departments, Locations, Job Roles, Grades, Designations, Cost Centers, Expense Centers
+   - **Employee Master** (Complete): Employee list, personal/employment details, search/filter
+   - **Document Management** (Complete): Document types, employee documents, expiry tracking
+   - **Recruitment** (Complete):
+     - Manpower Requisition, Job Postings, Candidate Database, Interview Scheduling, Offer Letters
+   - **Training & Development** (Complete):
+     - Training Sessions, Calendar, Employee Attendance, Feedback, Certificates
+   - **Onboarding** (Complete):
+     - Checklists, Asset Assignment, Document Upload, Buddy Assignment, Completion Tracking
 11. **Time, Attendance & Leave Management** - Comprehensive workforce management:
    - **Time & Attendance**:
      - Clock In/Out - Web-based time capture with real-time clock display
@@ -115,7 +115,12 @@ The application uses a hierarchical component structure:
      - Billable expense flagging
      - Multiple payment methods (Cash, Card, Bank Transfer)
      - Currency support
-14. **Payroll Management** - Complete 5-phase payroll workflow:
+14. **Loans & Advances Management** (Complete):
+   - Loan Applications, Approval Workflow, EMI Configuration, Auto-Deduction from Payroll, Loan Ledger, Repayment History
+15. **Compensation & Benefits** (Complete):
+   - Salary Bands, Salary Revision, Bonus/Incentive Setup
+   - Health Insurance, Dental, Vision, Allowances, Benefits Enrollment
+16. **Payroll Management** - Complete 5-phase payroll workflow:
    - **Phase 1 - Payroll Rules Configuration**:
      - Salary Heads - Earnings (Basic, HRA, DA, Bonus) and Deductions (PF, Tax, Insurance)
      - Pay Frequencies - Weekly, Bi-Weekly, Semi-Monthly, Monthly with configurable pay dates

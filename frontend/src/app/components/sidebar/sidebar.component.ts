@@ -185,7 +185,31 @@ export class SidebarComponent implements OnInit {
             { icon: 'fas fa-bell', label: 'Expiry Reminders', route: '/app/hr/documents/reminders' }
           ]
         },
-        { icon: 'fas fa-graduation-cap', label: 'Onboarding', route: '/app/hr/onboarding' }
+        {
+          icon: 'fas fa-handshake',
+          label: 'Recruitment',
+          expanded: false,
+          children: [
+            { icon: 'fas fa-file-alt', label: 'Manpower Requisition', route: '/app/hr/recruitment/requisition' },
+            { icon: 'fas fa-briefcase', label: 'Job Postings', route: '/app/hr/recruitment/postings' },
+            { icon: 'fas fa-address-book', label: 'Candidate Database', route: '/app/hr/recruitment/candidates' },
+            { icon: 'fas fa-calendar-check', label: 'Interviews', route: '/app/hr/recruitment/interviews' },
+            { icon: 'fas fa-file-contract', label: 'Offer Letters', route: '/app/hr/recruitment/offers' }
+          ]
+        },
+        {
+          icon: 'fas fa-graduation-cap',
+          label: 'Training & Development',
+          expanded: false,
+          children: [
+            { icon: 'fas fa-book', label: 'Training Sessions', route: '/app/hr/training/sessions' },
+            { icon: 'fas fa-calendar', label: 'Training Calendar', route: '/app/hr/training/calendar' },
+            { icon: 'fas fa-check-circle', label: 'Training Attendance', route: '/app/hr/training/attendance' },
+            { icon: 'fas fa-star', label: 'Training Feedback', route: '/app/hr/training/feedback' },
+            { icon: 'fas fa-certificate', label: 'Certificates', route: '/app/hr/training/certificates' }
+          ]
+        },
+        { icon: 'fas fa-sign-in-alt', label: 'Onboarding', route: '/app/hr/onboarding' }
       ]
     },
     {
@@ -263,6 +287,48 @@ export class SidebarComponent implements OnInit {
           ]
         },
         { icon: 'fas fa-user-circle', label: 'Employee Self-Service', route: '/app/payroll/self-service' }
+      ]
+    },
+    {
+      icon: 'fas fa-dollar-sign',
+      label: 'Loans & Advances',
+      expanded: false,
+      permissionKey: 'Loans',
+      children: [
+        { icon: 'fas fa-list-alt', label: 'Loan Applications', route: '/app/loans' },
+        { icon: 'fas fa-check-square', label: 'Loan Approvals', route: '/app/loans/approvals' },
+        { icon: 'fas fa-calendar-alt', label: 'EMI Configuration', route: '/app/loans/emi' },
+        { icon: 'fas fa-book', label: 'Loan Ledger', route: '/app/loans/ledger' },
+        { icon: 'fas fa-history', label: 'Repayment History', route: '/app/loans/repayments' }
+      ]
+    },
+    {
+      icon: 'fas fa-briefcase',
+      label: 'Compensation & Benefits',
+      expanded: false,
+      permissionKey: 'Compensation',
+      children: [
+        {
+          icon: 'fas fa-layer-group',
+          label: 'Salary Management',
+          expanded: false,
+          children: [
+            { icon: 'fas fa-bars', label: 'Salary Bands', route: '/app/compensation/salary-bands' },
+            { icon: 'fas fa-exchange-alt', label: 'Salary Revision', route: '/app/compensation/salary-revision' },
+            { icon: 'fas fa-gift', label: 'Bonus & Incentive', route: '/app/compensation/bonus-incentive' }
+          ]
+        },
+        {
+          icon: 'fas fa-heart',
+          label: 'Benefits Administration',
+          expanded: false,
+          children: [
+            { icon: 'fas fa-hospital', label: 'Health Insurance', route: '/app/compensation/health-insurance' },
+            { icon: 'fas fa-tooth', label: 'Dental & Vision', route: '/app/compensation/dental-vision' },
+            { icon: 'fas fa-utensils', label: 'Allowances', route: '/app/compensation/allowances' },
+            { icon: 'fas fa-scroll', label: 'Benefits Enrollment', route: '/app/compensation/enrollment' }
+          ]
+        }
       ]
     }
   ];
