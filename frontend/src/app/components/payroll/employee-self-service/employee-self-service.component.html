@@ -19,6 +19,12 @@
     <button class="tab" [class.active]="activeTab === 'expenses'" (click)="activeTab = 'expenses'">
       <i class="fas fa-receipt"></i> Expenses
     </button>
+    <button class="tab" [class.active]="activeTab === 'documents'" (click)="activeTab = 'documents'">
+      <i class="fas fa-folder-open"></i> Documents
+    </button>
+    <button class="tab" [class.active]="activeTab === 'assets'" (click)="activeTab = 'assets'">
+      <i class="fas fa-laptop"></i> Assets
+    </button>
   </div>
 
   <div class="tab-content" *ngIf="activeTab === 'paystubs'">
@@ -222,6 +228,96 @@
           </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'documents'">
+    <div class="section-header">
+      <h3>My Documents</h3>
+    </div>
+    <div class="info-card" style="margin-bottom: 20px;">
+      <i class="fas fa-info-circle"></i>
+      <p>View your uploaded documents and their verification status. Contact HR to upload new documents or request updates.</p>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Document Type</th>
+            <th>Document Number</th>
+            <th>Issue Date</th>
+            <th>Expiry Date</th>
+            <th>Status</th>
+            <th>Uploaded</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let doc of documents" [class.expiring]="isDocumentExpiring(doc)" [class.expired]="isDocumentExpired(doc)">
+            <td>{{ doc.documentType?.name || 'N/A' }}</td>
+            <td>{{ doc.documentNumber || '-' }}</td>
+            <td>{{ doc.issueDate | date:'MMM d, yyyy' }}</td>
+            <td>
+              <span [class.text-warning]="isDocumentExpiring(doc)" [class.text-danger]="isDocumentExpired(doc)">
+                {{ doc.expiryDate ? (doc.expiryDate | date:'MMM d, yyyy') : 'No Expiry' }}
+              </span>
+              <i *ngIf="isDocumentExpiring(doc)" class="fas fa-exclamation-triangle text-warning" title="Expiring soon"></i>
+              <i *ngIf="isDocumentExpired(doc)" class="fas fa-times-circle text-danger" title="Expired"></i>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="getDocumentStatusClass(doc.verificationStatus)">
+                {{ doc.verificationStatus }}
+              </span>
+            </td>
+            <td>{{ doc.uploadedAt | date:'MMM d, yyyy' }}</td>
+          </tr>
+          <tr *ngIf="documents.length === 0">
+            <td colspan="6" class="no-data-row">No documents uploaded yet</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'assets'">
+    <div class="section-header">
+      <h3>My Assigned Assets</h3>
+    </div>
+    <div class="cards-grid">
+      <div class="card asset-card" *ngFor="let asset of assets">
+        <div class="card-header">
+          <span class="asset-type">{{ asset.assetType }}</span>
+          <span class="status-badge" [ngClass]="getAssetStatusClass(asset.approvalStatus)">
+            {{ asset.approvalStatus }}
+          </span>
+        </div>
+        <div class="card-body">
+          <h4 class="asset-name">{{ asset.assetName }}</h4>
+          <div class="detail-row" *ngIf="asset.assetTag">
+            <span>Asset Tag</span>
+            <span>{{ asset.assetTag }}</span>
+          </div>
+          <div class="detail-row" *ngIf="asset.serialNumber">
+            <span>Serial Number</span>
+            <span>{{ asset.serialNumber }}</span>
+          </div>
+          <div class="detail-row" *ngIf="asset.issuedDate">
+            <span>Issued Date</span>
+            <span>{{ asset.issuedDate | date:'MMM d, yyyy' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="asset.condition">
+            <span>Condition</span>
+            <span>{{ asset.condition }}</span>
+          </div>
+          <div class="detail-row" *ngIf="asset.remarks">
+            <span>Remarks</span>
+            <span>{{ asset.remarks }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="no-data" *ngIf="assets.length === 0">
+        <i class="fas fa-laptop"></i>
+        <p>No assets assigned to you</p>
+      </div>
     </div>
   </div>
 </div>

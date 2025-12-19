@@ -7,6 +7,8 @@ import { LoanService } from '../../../services/loan.service';
 import { ExpenseService } from '../../../services/expense.service';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
 import { AuthService } from '../../../services/auth.service';
+import { DocumentService, EmployeeDocument, DocumentType } from '../../../services/document.service';
+import { EmployeeService, EmployeeAsset } from '../../../services/employee.service';
 
 @Component({
   selector: 'app-employee-self-service',
@@ -23,6 +25,9 @@ export class EmployeeSelfServiceComponent implements OnInit {
   loans: any[] = [];
   expenses: any[] = [];
   attendanceRecords: AttendanceRecord[] = [];
+  documents: EmployeeDocument[] = [];
+  documentTypes: DocumentType[] = [];
+  assets: EmployeeAsset[] = [];
   
   currentEmployeeId: number = 0;
   selectedPaystub: PayrollRecord | null = null;
@@ -43,7 +48,9 @@ export class EmployeeSelfServiceComponent implements OnInit {
     private loanService: LoanService,
     private expenseService: ExpenseService,
     private attendanceService: AttendanceService,
-    private authService: AuthService
+    private authService: AuthService,
+    private documentService: DocumentService,
+    private employeeService: EmployeeService
   ) {
     this.currentEmployeeId = this.authService.getCurrentUserId() || 0;
   }
@@ -56,6 +63,8 @@ export class EmployeeSelfServiceComponent implements OnInit {
     this.loadLoans();
     this.loadExpenses();
     this.loadAttendance();
+    this.loadDocuments();
+    this.loadAssets();
   }
 
   loadPaystubs(): void {
@@ -327,5 +336,55 @@ export class EmployeeSelfServiceComponent implements OnInit {
 
   getAttendanceStatusBadge(record: AttendanceRecord): string {
     return record.status || 'ABSENT';
+  }
+
+  loadDocuments(): void {
+    this.documentService.getEmployeeDocuments(this.currentEmployeeId).subscribe({
+      next: (data) => this.documents = data,
+      error: (err) => console.error('Error loading documents:', err)
+    });
+    this.documentService.getTypes().subscribe({
+      next: (data) => this.documentTypes = data,
+      error: (err) => console.error('Error loading document types:', err)
+    });
+  }
+
+  loadAssets(): void {
+    this.employeeService.getAssets(this.currentEmployeeId).subscribe({
+      next: (data) => this.assets = data,
+      error: (err) => console.error('Error loading assets:', err)
+    });
+  }
+
+  getDocumentStatusClass(status: string): string {
+    switch (status) {
+      case 'VERIFIED': return 'approved';
+      case 'REJECTED': return 'rejected';
+      case 'PENDING': return 'pending';
+      default: return 'pending';
+    }
+  }
+
+  getAssetStatusClass(status: string): string {
+    switch (status) {
+      case 'ASSIGNED': return 'approved';
+      case 'RETURNED': return 'returned';
+      case 'PENDING': return 'pending';
+      default: return 'pending';
+    }
+  }
+
+  isDocumentExpiring(doc: EmployeeDocument): boolean {
+    if (!doc.expiryDate) return false;
+    const expiry = new Date(doc.expiryDate);
+    const today = new Date();
+    const daysUntilExpiry = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    return daysUntilExpiry <= 30 && daysUntilExpiry > 0;
+  }
+
+  isDocumentExpired(doc: EmployeeDocument): boolean {
+    if (!doc.expiryDate) return false;
+    const expiry = new Date(doc.expiryDate);
+    return expiry < new Date();
   }
 }
