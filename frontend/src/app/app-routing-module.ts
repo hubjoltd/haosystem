@@ -104,6 +104,11 @@ import { ExpenseListComponent } from './components/expenses/expense-list/expense
 import { ExpenseFormComponent } from './components/expenses/expense-form/expense-form';
 
 import { RecruitmentComponent } from './components/hr/recruitment/recruitment.component';
+import { RecruitmentRequisitionComponent } from './components/hr/recruitment/requisition/requisition.component';
+import { RecruitmentPostingsComponent } from './components/hr/recruitment/postings/postings.component';
+import { RecruitmentCandidatesComponent } from './components/hr/recruitment/candidates/candidates.component';
+import { RecruitmentInterviewsComponent } from './components/hr/recruitment/interviews/interviews.component';
+import { RecruitmentOffersComponent } from './components/hr/recruitment/offers/offers.component';
 import { TrainingComponent } from './components/hr/training/training.component';
 import { LoansComponent } from './components/hr/loans/loans.component';
 import { OnboardingComponent } from './components/hr/onboarding/onboarding.component';
@@ -213,6 +218,11 @@ const routes: Routes = [
       { path: 'expenses/:id', component: ExpenseFormComponent },
       { path: 'expenses/:id/edit', component: ExpenseFormComponent },
       { path: 'hr/recruitment', component: RecruitmentComponent },
+      { path: 'hr/recruitment/requisition', component: RecruitmentRequisitionComponent },
+      { path: 'hr/recruitment/postings', component: RecruitmentPostingsComponent },
+      { path: 'hr/recruitment/candidates', component: RecruitmentCandidatesComponent },
+      { path: 'hr/recruitment/interviews', component: RecruitmentInterviewsComponent },
+      { path: 'hr/recruitment/offers', component: RecruitmentOffersComponent },
       { path: 'hr/training', component: TrainingComponent },
       { path: 'hr/loans', component: LoansComponent },
       { path: 'hr/onboarding', component: OnboardingComponent },

@@ -89,6 +89,13 @@ import { EmployeeDetailComponent } from './components/hr/employees/employee-deta
 import { DocumentTypesComponent } from './components/hr/documents/document-types/document-types.component';
 import { DocumentExpiryComponent } from './components/hr/documents/document-expiry/document-expiry.component';
 
+import { RecruitmentComponent } from './components/hr/recruitment/recruitment.component';
+import { RecruitmentRequisitionComponent } from './components/hr/recruitment/requisition/requisition.component';
+import { RecruitmentPostingsComponent } from './components/hr/recruitment/postings/postings.component';
+import { RecruitmentCandidatesComponent } from './components/hr/recruitment/candidates/candidates.component';
+import { RecruitmentInterviewsComponent } from './components/hr/recruitment/interviews/interviews.component';
+import { RecruitmentOffersComponent } from './components/hr/recruitment/offers/offers.component';
+
 import { HRDashboardComponent } from './components/mis-dashboards/hr-dashboard/hr-dashboard.component';
 import { PayrollDashboardComponent } from './components/mis-dashboards/payroll-dashboard/payroll-dashboard.component';
 import { AttendanceDashboardComponent } from './components/mis-dashboards/attendance-dashboard/attendance-dashboard.component';
@@ -172,6 +179,12 @@ import { HolidayCalendarComponent } from './components/leave/holiday-calendar/ho
     EmployeeDetailComponent,
     DocumentTypesComponent,
     DocumentExpiryComponent,
+    RecruitmentComponent,
+    RecruitmentRequisitionComponent,
+    RecruitmentPostingsComponent,
+    RecruitmentCandidatesComponent,
+    RecruitmentInterviewsComponent,
+    RecruitmentOffersComponent,
     HRDashboardComponent,
     PayrollDashboardComponent,
     AttendanceDashboardComponent,
