@@ -114,6 +114,7 @@ import { LoansComponent } from './components/hr/loans/loans.component';
 import { OnboardingComponent } from './components/hr/onboarding/onboarding.component';
 import { LettersComponent } from './components/hr/letters/letters.component';
 import { CompensationComponent } from './components/hr/compensation/compensation.component';
+import { SettlementComponent } from './components/hr/settlement/settlement.component';
 import { LoansApplicationComponent } from './components/loans/loans.component';
 import { LoanApprovalsComponent } from './components/loans/approvals/approvals.component';
 import { LoanEmiComponent } from './components/loans/emi/emi.component';
@@ -227,6 +228,7 @@ const routes: Routes = [
       { path: 'hr/loans', component: LoansComponent },
       { path: 'hr/onboarding', component: OnboardingComponent },
       { path: 'hr/letters', component: LettersComponent },
+      { path: 'hr/settlement', component: SettlementComponent },
       { path: 'compensation/salary-bands', component: CompensationComponent },
       { path: 'compensation/salary-revision', component: CompensationComponent },
       { path: 'compensation/bonus-incentive', component: CompensationComponent },

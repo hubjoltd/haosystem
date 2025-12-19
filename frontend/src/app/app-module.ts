@@ -95,6 +95,7 @@ import { RecruitmentPostingsComponent } from './components/hr/recruitment/postin
 import { RecruitmentCandidatesComponent } from './components/hr/recruitment/candidates/candidates.component';
 import { RecruitmentInterviewsComponent } from './components/hr/recruitment/interviews/interviews.component';
 import { RecruitmentOffersComponent } from './components/hr/recruitment/offers/offers.component';
+import { SettlementComponent } from './components/hr/settlement/settlement.component';
 
 import { HRDashboardComponent } from './components/mis-dashboards/hr-dashboard/hr-dashboard.component';
 import { PayrollDashboardComponent } from './components/mis-dashboards/payroll-dashboard/payroll-dashboard.component';
@@ -185,6 +186,7 @@ import { HolidayCalendarComponent } from './components/leave/holiday-calendar/ho
     RecruitmentCandidatesComponent,
     RecruitmentInterviewsComponent,
     RecruitmentOffersComponent,
+    SettlementComponent,
     HRDashboardComponent,
     PayrollDashboardComponent,
     AttendanceDashboardComponent,

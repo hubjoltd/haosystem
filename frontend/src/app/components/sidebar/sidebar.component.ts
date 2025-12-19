@@ -209,7 +209,8 @@ export class SidebarComponent implements OnInit {
             { icon: 'fas fa-certificate', label: 'Certificates', route: '/app/hr/training/certificates' }
           ]
         },
-        { icon: 'fas fa-sign-in-alt', label: 'Onboarding', route: '/app/hr/onboarding' }
+        { icon: 'fas fa-sign-in-alt', label: 'Onboarding', route: '/app/hr/onboarding' },
+        { icon: 'fas fa-file-invoice', label: 'F&F Settlement', route: '/app/hr/settlement' }
       ]
     },
     {
