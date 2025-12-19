@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "cd frontend && npm install && npm run build && mkdir -p ../backend/src/main/resources/static && cp -r dist/frontend/. ../backend/src/main/resources/static/ && cd ../backend && mvn clean package -DskipTests"
+    "build": "cd frontend && npm install && npm run build && mkdir -p ../backend/src/main/resources/static && if [ -d dist/frontend/browser ]; then cp -r dist/frontend/browser/. ../backend/src/main/resources/static/; else cp -r dist/frontend/. ../backend/src/main/resources/static/; fi && cd ../backend && mvn clean package -DskipTests"
   },
   "keywords": [],
   "author": "",
