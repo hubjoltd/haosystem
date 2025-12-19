@@ -71,7 +71,7 @@
           "options": {
             "host": "0.0.0.0",
             "port": 5000,
-            "allowedHosts": [".replit.dev", ".kirk.replit.dev"],
+            "allowedHosts": true,
             "proxyConfig": "proxy.conf.json"
           },
           "configurations": {
