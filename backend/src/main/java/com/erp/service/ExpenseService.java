@@ -30,9 +30,6 @@ public class ExpenseService {
     private CostCenterRepository costCenterRepository;
 
     @Autowired
-    private PrefixSettingsRepository prefixSettingsRepository;
-
-    @Autowired
     private PayrollRecordRepository payrollRecordRepository;
 
     public List<ExpenseCategory> findAllCategories() {
@@ -367,7 +364,7 @@ public class ExpenseService {
                 }
                 payrollRecord.setReimbursements(currentReimbursements.add(request.getApprovedAmount()));
                 payrollRecordRepository.save(payrollRecord);
-                request.setPayrollRecordId(payrollRecordId);
+                request.setPayrollRecord(payrollRecord);
             }
         }
         
@@ -386,8 +383,10 @@ public class ExpenseService {
             throw new RuntimeException("Can only process reimbursement for approved expenses");
         }
         
-        List<PayrollRecord> pendingRecords = payrollRecordRepository.findByEmployeeIdAndStatus(
-            employeeId, "DRAFT");
+        List<PayrollRecord> pendingRecords = payrollRecordRepository.findByEmployeeId(employeeId)
+            .stream()
+            .filter(r -> "DRAFT".equals(r.getStatus()))
+            .toList();
         
         if (!pendingRecords.isEmpty()) {
             PayrollRecord record = pendingRecords.get(0);
@@ -398,7 +397,7 @@ public class ExpenseService {
             record.setReimbursements(currentReimbursements.add(request.getApprovedAmount()));
             payrollRecordRepository.save(record);
             
-            request.setPayrollRecordId(record.getId());
+            request.setPayrollRecord(record);
             request.setReimbursementStatus("IN_PROGRESS");
         } else {
             request.setReimbursementStatus("PENDING");
@@ -471,20 +470,6 @@ public class ExpenseService {
     private String generateRequestNumber() {
         String prefix = "EXP";
         String year = String.valueOf(LocalDate.now().getYear());
-        
-        try {
-            Optional<PrefixSettings> prefixSettings = prefixSettingsRepository.findByType("EXPENSE");
-            if (prefixSettings.isPresent()) {
-                PrefixSettings settings = prefixSettings.get();
-                prefix = settings.getPrefix();
-                int nextNumber = settings.getNextNumber();
-                settings.setNextNumber(nextNumber + 1);
-                prefixSettingsRepository.save(settings);
-                return prefix + "-" + year + "-" + String.format("%05d", nextNumber);
-            }
-        } catch (Exception e) {
-        }
-        
         long count = expenseRequestRepository.count() + 1;
         return prefix + "-" + year + "-" + String.format("%05d", count);
     }
