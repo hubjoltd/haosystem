@@ -184,7 +184,8 @@ export class SidebarComponent implements OnInit {
             { icon: 'fas fa-folder', label: 'Employee Documents', route: '/app/hr/documents/employee' },
             { icon: 'fas fa-bell', label: 'Expiry Reminders', route: '/app/hr/documents/reminders' }
           ]
-        }
+        },
+        { icon: 'fas fa-graduation-cap', label: 'Onboarding', route: '/app/hr/onboarding' }
       ]
     },
     {

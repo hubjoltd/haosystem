@@ -13,6 +13,12 @@
     <button class="tab" [class.active]="activeTab === 'leave'" (click)="activeTab = 'leave'">
       <i class="fas fa-calendar-alt"></i> Leave
     </button>
+    <button class="tab" [class.active]="activeTab === 'loans'" (click)="activeTab = 'loans'">
+      <i class="fas fa-money-check-alt"></i> Loans
+    </button>
+    <button class="tab" [class.active]="activeTab === 'expenses'" (click)="activeTab = 'expenses'">
+      <i class="fas fa-receipt"></i> Expenses
+    </button>
   </div>
 
   <div class="tab-content" *ngIf="activeTab === 'paystubs'">
@@ -111,11 +117,111 @@
 
   <div class="tab-content" *ngIf="activeTab === 'attendance'">
     <div class="section-header">
-      <h3>Attendance Summary</h3>
+      <h3>Attendance Records</h3>
     </div>
-    <div class="info-card">
-      <i class="fas fa-info-circle"></i>
-      <p>View your attendance records in the Time & Attendance module.</p>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Clock In</th>
+            <th>Clock Out</th>
+            <th>Hours</th>
+            <th>Status</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of attendanceRecords">
+            <td>{{ record.attendanceDate | date:'MMM d, yyyy' }}</td>
+            <td>{{ record.clockIn || 'N/A' }}</td>
+            <td>{{ record.clockOut || 'N/A' }}</td>
+            <td>{{ record.regularHours || 0 }}h</td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(getAttendanceStatusBadge(record))">
+                {{ getAttendanceStatusBadge(record) }}
+              </span>
+            </td>
+            <td>{{ record.remarks || '-' }}</td>
+          </tr>
+          <tr *ngIf="attendanceRecords.length === 0">
+            <td colspan="6" class="no-data-row">No attendance records found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'loans'">
+    <div class="section-header">
+      <h3>My Loans & Advances</h3>
+    </div>
+    <div class="cards-grid">
+      <div class="card" *ngFor="let loan of loans">
+        <div class="card-header">
+          <span class="label">{{ loan.loanType }}</span>
+          <span class="status-badge" [ngClass]="getLoanStatusClass(loan.status)">{{ loan.status }}</span>
+        </div>
+        <div class="card-body">
+          <div class="detail-row">
+            <span>Loan Amount</span>
+            <span class="amount">${{ loan.loanAmount | number:'1.2-2' }}</span>
+          </div>
+          <div class="detail-row">
+            <span>Approved Amount</span>
+            <span class="amount">${{ loan.approvedAmount | number:'1.2-2' }}</span>
+          </div>
+          <div class="detail-row">
+            <span>Outstanding</span>
+            <span class="amount">${{ (loan.approvedAmount - (loan.paidAmount || 0)) | number:'1.2-2' }}</span>
+          </div>
+          <div class="detail-row">
+            <span>No. of EMIs</span>
+            <span>{{ loan.numberOfEmi }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="no-data" *ngIf="loans.length === 0">
+        <i class="fas fa-info-circle"></i>
+        <p>No loans found</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'expenses'">
+    <div class="section-header">
+      <h3>My Expense Requests</h3>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Approved Amount</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let expense of expenses">
+            <td>{{ expense.createdAt | date:'MMM d, yyyy' }}</td>
+            <td>{{ expense.category?.name || 'N/A' }}</td>
+            <td>${{ expense.totalAmount | number:'1.2-2' }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="getExpenseStatusClass(expense.status)">
+                {{ expense.status }}
+              </span>
+            </td>
+            <td>${{ expense.approvedAmount | number:'1.2-2' }}</td>
+            <td>{{ expense.remarks || '-' }}</td>
+          </tr>
+          <tr *ngIf="expenses.length === 0">
+            <td colspan="6" class="no-data-row">No expense requests found</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
