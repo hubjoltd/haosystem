@@ -2,6 +2,7 @@ package com.erp.dto;
 
 public class AuthResponse {
     private String token;
+    private Long userId;
     private String username;
     private String email;
     private String firstName;
@@ -11,8 +12,9 @@ public class AuthResponse {
     
     public AuthResponse() {}
     
-    public AuthResponse(String token, String username, String email, String firstName, String lastName, String role, String permissions) {
+    public AuthResponse(String token, Long userId, String username, String email, String firstName, String lastName, String role, String permissions) {
         this.token = token;
+        this.userId = userId;
         this.username = username;
         this.email = email;
         this.firstName = firstName;
@@ -20,6 +22,9 @@ public class AuthResponse {
         this.role = role;
         this.permissions = permissions;
     }
+    
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
     
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }

@@ -20,6 +20,7 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   token: string;
+  userId: number;
   username: string;
   email: string;
   firstName: string;
@@ -29,6 +30,7 @@ export interface AuthResponse {
 }
 
 export interface CurrentUser {
+  userId: number;
   username: string;
   email: string;
   firstName: string;
@@ -74,6 +76,7 @@ export class AuthService {
       tap(response => {
         localStorage.setItem('token', response.token);
         const user: CurrentUser = {
+          userId: response.userId,
           username: response.username,
           email: response.email,
           firstName: response.firstName,
@@ -92,6 +95,7 @@ export class AuthService {
       tap(response => {
         localStorage.setItem('token', response.token);
         const user: CurrentUser = {
+          userId: response.userId,
           username: response.username,
           email: response.email,
           firstName: response.firstName,
@@ -121,6 +125,11 @@ export class AuthService {
 
   getCurrentUser(): CurrentUser | null {
     return this.currentUserSubject.value;
+  }
+
+  getCurrentUserId(): number | null {
+    const user = this.getCurrentUser();
+    return user?.userId || null;
   }
 
   hasRole(role: string): boolean {

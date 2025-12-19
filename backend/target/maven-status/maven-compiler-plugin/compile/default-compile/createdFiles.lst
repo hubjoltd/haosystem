@@ -45,6 +45,7 @@ com/erp/controller/LoanController.class
 com/erp/controller/ApiController.class
 com/erp/controller/MisDashboardController.class
 com/erp/model/Department.class
+com/erp/service/CompensationService.class
 com/erp/service/ValuationService.class
 com/erp/repository/InterviewRepository.class
 com/erp/controller/HRLetterController.class
@@ -173,6 +174,7 @@ com/erp/service/UserNotificationService$NotificationForbiddenException.class
 com/erp/controller/PRFulfillmentController.class
 com/erp/repository/IntegrationSyncLogRepository.class
 com/erp/service/PayrollCalculationService.class
+com/erp/controller/CompensationController.class
 com/erp/repository/HolidayRepository.class
 com/erp/service/OnboardingService.class
 com/erp/model/BenefitPlan.class

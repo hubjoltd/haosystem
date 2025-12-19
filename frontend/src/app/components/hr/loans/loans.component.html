@@ -1,0 +1,141 @@
+<div class="loans-container">
+  <div class="page-header">
+    <h2>Loans & Advances</h2>
+  </div>
+
+  <div class="dashboard-cards">
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.pendingApproval || 0 }}</div>
+      <div class="stat-label">Pending Approval</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.activeLoans || 0 }}</div>
+      <div class="stat-label">Active Loans</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.overduePayments || 0 }}</div>
+      <div class="stat-label">Overdue Payments</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.dueThisMonth || 0 }}</div>
+      <div class="stat-label">Due This Month</div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <h3>Loan Applications</h3>
+    <button class="btn btn-primary" (click)="openForm()">+ New Loan Application</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading...</div>
+
+  <table *ngIf="!loading" class="data-table">
+    <thead>
+      <tr>
+        <th>Application #</th>
+        <th>Employee</th>
+        <th>Type</th>
+        <th>Amount</th>
+        <th>Tenure</th>
+        <th>EMI</th>
+        <th>Outstanding</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let loan of loans">
+        <td>{{ loan.applicationNumber }}</td>
+        <td>{{ loan.employee?.firstName }} {{ loan.employee?.lastName }}</td>
+        <td>{{ loan.loanType }}</td>
+        <td>{{ formatCurrency(loan.approvedAmount || loan.requestedAmount) }}</td>
+        <td>{{ loan.approvedTenureMonths || loan.requestedTenureMonths }} months</td>
+        <td>{{ formatCurrency(loan.emiAmount) }}</td>
+        <td>{{ formatCurrency(loan.outstandingBalance) }}</td>
+        <td><span class="badge" [ngClass]="getStatusClass(loan.status)">{{ loan.status }}</span></td>
+        <td>
+          <button *ngIf="loan.status === 'DRAFT'" class="btn btn-sm btn-primary" (click)="submitLoan(loan.id)">Submit</button>
+          <button *ngIf="loan.status === 'PENDING_APPROVAL'" class="btn btn-sm btn-success" (click)="approveLoan(loan)">Approve</button>
+          <button *ngIf="loan.status === 'PENDING_APPROVAL'" class="btn btn-sm btn-danger" (click)="rejectLoan(loan.id)">Reject</button>
+          <button *ngIf="loan.status === 'APPROVED'" class="btn btn-sm btn-info" (click)="disburseLoan(loan.id)">Disburse</button>
+          <button *ngIf="loan.status === 'ACTIVE'" class="btn btn-sm" (click)="viewRepayments(loan)">Repayments</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>New Loan Application</h3>
+      <form (ngSubmit)="saveLoan()">
+        <div class="form-group">
+          <label>Employee ID</label>
+          <input type="number" [(ngModel)]="formData.employeeId" name="employeeId" required>
+        </div>
+        <div class="form-group">
+          <label>Loan Type</label>
+          <select [(ngModel)]="formData.loanType" name="loanType">
+            <option value="PERSONAL">Personal Loan</option>
+            <option value="SALARY_ADVANCE">Salary Advance</option>
+            <option value="EMERGENCY">Emergency Loan</option>
+            <option value="HOUSING">Housing Loan</option>
+            <option value="VEHICLE">Vehicle Loan</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Amount</label>
+          <input type="number" [(ngModel)]="formData.requestedAmount" name="requestedAmount" min="0" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label>Tenure (months)</label>
+          <input type="number" [(ngModel)]="formData.requestedTenureMonths" name="requestedTenureMonths" min="1" max="60">
+        </div>
+        <div class="form-group">
+          <label>Interest Rate (%)</label>
+          <input type="number" [(ngModel)]="formData.interestRate" name="interestRate" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label>Purpose</label>
+          <textarea [(ngModel)]="formData.purpose" name="purpose" rows="3"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Apply</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div *ngIf="selectedLoan" class="modal-overlay" (click)="closeRepayments()">
+    <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+      <h3>Repayment Schedule - {{ selectedLoan.applicationNumber }}</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Due Date</th>
+            <th>EMI</th>
+            <th>Principal</th>
+            <th>Interest</th>
+            <th>Paid</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of repayments">
+            <td>{{ r.installmentNumber }}</td>
+            <td>{{ formatDate(r.dueDate) }}</td>
+            <td>{{ formatCurrency(r.emiAmount) }}</td>
+            <td>{{ formatCurrency(r.principalAmount) }}</td>
+            <td>{{ formatCurrency(r.interestAmount) }}</td>
+            <td>{{ formatCurrency(r.paidAmount) }}</td>
+            <td><span class="badge" [ngClass]="getStatusClass(r.status)">{{ r.status }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="form-actions">
+        <button class="btn btn-secondary" (click)="closeRepayments()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

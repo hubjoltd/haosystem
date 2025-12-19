@@ -103,6 +103,11 @@ import { IntegrationsComponent } from './components/settings/integrations/integr
 import { ExpenseListComponent } from './components/expenses/expense-list/expense-list';
 import { ExpenseFormComponent } from './components/expenses/expense-form/expense-form';
 
+import { RecruitmentComponent } from './components/hr/recruitment/recruitment.component';
+import { TrainingComponent } from './components/hr/training/training.component';
+import { LoansComponent } from './components/hr/loans/loans.component';
+import { OnboardingComponent } from './components/hr/onboarding/onboarding.component';
+
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
@@ -199,7 +204,11 @@ const routes: Routes = [
       { path: 'expenses', component: ExpenseListComponent },
       { path: 'expenses/new', component: ExpenseFormComponent },
       { path: 'expenses/:id', component: ExpenseFormComponent },
-      { path: 'expenses/:id/edit', component: ExpenseFormComponent }
+      { path: 'expenses/:id/edit', component: ExpenseFormComponent },
+      { path: 'hr/recruitment', component: RecruitmentComponent },
+      { path: 'hr/training', component: TrainingComponent },
+      { path: 'hr/loans', component: LoansComponent },
+      { path: 'hr/onboarding', component: OnboardingComponent }
     ]
   }
 ];

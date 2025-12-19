@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PayrollService, PayrollRecord } from '../../../services/payroll.service';
 import { LeaveService, LeaveBalance, LeaveRequest } from '../../../services/leave.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-employee-self-service',
@@ -17,7 +18,7 @@ export class EmployeeSelfServiceComponent implements OnInit {
   leaveBalances: LeaveBalance[] = [];
   leaveRequests: LeaveRequest[] = [];
   
-  currentEmployeeId = 1;
+  currentEmployeeId: number = 0;
   selectedPaystub: PayrollRecord | null = null;
   showPaystubModal = false;
   
@@ -32,8 +33,11 @@ export class EmployeeSelfServiceComponent implements OnInit {
 
   constructor(
     private payrollService: PayrollService,
-    private leaveService: LeaveService
-  ) {}
+    private leaveService: LeaveService,
+    private authService: AuthService
+  ) {
+    this.currentEmployeeId = this.authService.getCurrentUserId() || 0;
+  }
 
   ngOnInit(): void {
     this.loadPaystubs();

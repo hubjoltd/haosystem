@@ -1,0 +1,137 @@
+<div class="training-container">
+  <div class="page-header">
+    <h2>Training Management</h2>
+  </div>
+
+  <div class="dashboard-cards">
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.activePrograms || 0 }}</div>
+      <div class="stat-label">Active Programs</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.upcomingSessions || 0 }}</div>
+      <div class="stat-label">Upcoming Sessions</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.totalEnrollments || 0 }}</div>
+      <div class="stat-label">Total Enrollments</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.completedTrainings || 0 }}</div>
+      <div class="stat-label">Completed</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button [class.active]="activeTab === 'programs'" (click)="setTab('programs')">Programs</button>
+    <button [class.active]="activeTab === 'sessions'" (click)="setTab('sessions')">Sessions</button>
+  </div>
+
+  <div class="tab-content">
+    <div *ngIf="activeTab === 'programs'" class="content-section">
+      <div class="section-header">
+        <h3>Training Programs</h3>
+        <button class="btn btn-primary" (click)="openForm()">+ New Program</button>
+      </div>
+      <div *ngIf="loading" class="loading">Loading...</div>
+      <table *ngIf="!loading" class="data-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let program of programs">
+            <td>{{ program.programCode }}</td>
+            <td>{{ program.name }}</td>
+            <td>{{ program.category }}</td>
+            <td>{{ program.durationHours }} hours</td>
+            <td><span class="badge" [ngClass]="program.isActive ? 'bg-success' : 'bg-secondary'">{{ program.isActive ? 'Active' : 'Inactive' }}</span></td>
+            <td>
+              <button class="btn btn-sm" (click)="openForm(program)">Edit</button>
+              <button class="btn btn-sm btn-danger" (click)="deleteProgram(program.id)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="activeTab === 'sessions'" class="content-section">
+      <div class="section-header">
+        <h3>Training Sessions</h3>
+      </div>
+      <div *ngIf="loading" class="loading">Loading...</div>
+      <table *ngIf="!loading" class="data-table">
+        <thead>
+          <tr>
+            <th>Program</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Location</th>
+            <th>Trainer</th>
+            <th>Capacity</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let session of sessions">
+            <td>{{ session.program?.name }}</td>
+            <td>{{ formatDate(session.sessionDate) }}</td>
+            <td>{{ session.startTime }} - {{ session.endTime }}</td>
+            <td>{{ session.location }}</td>
+            <td>{{ session.trainerName }}</td>
+            <td>{{ session.enrolledCount || 0 }}/{{ session.maxParticipants }}</td>
+            <td><span class="badge" [ngClass]="getStatusClass(session.status)">{{ session.status }}</span></td>
+            <td>
+              <button *ngIf="session.status === 'SCHEDULED'" class="btn btn-sm btn-primary" (click)="startSession(session.id)">Start</button>
+              <button *ngIf="session.status === 'IN_PROGRESS'" class="btn btn-sm btn-success" (click)="completeSession(session.id)">Complete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>{{ editingItem ? 'Edit' : 'New' }} Program</h3>
+      <form (ngSubmit)="saveProgram()">
+        <div class="form-group">
+          <label>Program Code</label>
+          <input type="text" [(ngModel)]="formData.programCode" name="programCode" required>
+        </div>
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" [(ngModel)]="formData.name" name="name" required>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select [(ngModel)]="formData.category" name="category">
+            <option value="TECHNICAL">Technical</option>
+            <option value="SOFT_SKILLS">Soft Skills</option>
+            <option value="COMPLIANCE">Compliance</option>
+            <option value="LEADERSHIP">Leadership</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Duration (hours)</label>
+          <input type="number" [(ngModel)]="formData.durationHours" name="durationHours" min="1">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="formData.description" name="description" rows="4"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

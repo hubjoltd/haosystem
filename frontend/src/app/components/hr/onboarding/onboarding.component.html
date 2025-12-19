@@ -1,0 +1,86 @@
+<div class="onboarding-container">
+  <div class="page-header">
+    <h2>Employee Onboarding</h2>
+  </div>
+
+  <div class="dashboard-cards">
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.activePlans || 0 }}</div>
+      <div class="stat-label">Active Plans</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.pendingTasks || 0 }}</div>
+      <div class="stat-label">Pending Tasks</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.overdueTasks || 0 }}</div>
+      <div class="stat-label">Overdue Tasks</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.completedThisMonth || 0 }}</div>
+      <div class="stat-label">Completed This Month</div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <h3>Onboarding Plans</h3>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading...</div>
+
+  <div *ngIf="!loading" class="plans-grid">
+    <div *ngFor="let plan of plans" class="plan-card">
+      <div class="plan-header">
+        <h4>{{ plan.employee?.firstName }} {{ plan.employee?.lastName }}</h4>
+        <span class="badge" [ngClass]="getStatusClass(plan.status)">{{ plan.status }}</span>
+      </div>
+      <div class="plan-info">
+        <p><strong>Start Date:</strong> {{ formatDate(plan.startDate) }}</p>
+        <p><strong>Expected End:</strong> {{ formatDate(plan.expectedEndDate) }}</p>
+        <p><strong>Buddy:</strong> {{ plan.buddy?.firstName }} {{ plan.buddy?.lastName }}</p>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="getProgress(plan)"></div>
+      </div>
+      <p class="progress-text">{{ plan.completedTasks || 0 }}/{{ plan.totalTasks || 0 }} tasks completed</p>
+      <div class="plan-actions">
+        <button class="btn btn-sm" (click)="viewTasks(plan)">View Tasks</button>
+        <button *ngIf="plan.status === 'NOT_STARTED'" class="btn btn-sm btn-primary" (click)="startPlan(plan.id)">Start</button>
+        <button *ngIf="plan.status === 'IN_PROGRESS'" class="btn btn-sm btn-success" (click)="completePlan(plan.id)">Complete</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="selectedPlan" class="modal-overlay" (click)="closeTasks()">
+    <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+      <h3>Tasks - {{ selectedPlan.employee?.firstName }} {{ selectedPlan.employee?.lastName }}</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Category</th>
+            <th>Assigned To</th>
+            <th>Due Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let task of tasks">
+            <td>{{ task.taskName }}</td>
+            <td>{{ task.category }}</td>
+            <td>{{ task.assignedTo?.firstName }} {{ task.assignedTo?.lastName }}</td>
+            <td>{{ formatDate(task.dueDate) }}</td>
+            <td><span class="badge" [ngClass]="getStatusClass(task.status)">{{ task.status }}</span></td>
+            <td>
+              <button *ngIf="task.status !== 'COMPLETED'" class="btn btn-sm btn-success" (click)="completeTask(task)">Complete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="form-actions">
+        <button class="btn btn-secondary" (click)="closeTasks()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

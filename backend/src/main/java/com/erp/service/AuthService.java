@@ -49,6 +49,7 @@ public class AuthService {
         
         return new AuthResponse(
             token,
+            user.getId(),
             user.getUsername(),
             user.getEmail(),
             user.getFirstName(),
@@ -96,6 +97,7 @@ public class AuthService {
         
         return new AuthResponse(
             token,
+            user.getId(),
             user.getUsername(),
             user.getEmail(),
             user.getFirstName(),

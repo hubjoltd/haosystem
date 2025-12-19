@@ -1,0 +1,186 @@
+<div class="recruitment-container">
+  <div class="page-header">
+    <h2>Recruitment Management</h2>
+  </div>
+
+  <div class="dashboard-cards">
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.openRequisitions || 0 }}</div>
+      <div class="stat-label">Open Requisitions</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.activePostings || 0 }}</div>
+      <div class="stat-label">Active Postings</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.totalCandidates || 0 }}</div>
+      <div class="stat-label">Total Candidates</div>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-value">{{ dashboard.upcomingInterviews || 0 }}</div>
+      <div class="stat-label">Upcoming Interviews</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button [class.active]="activeTab === 'requisitions'" (click)="setTab('requisitions')">Requisitions</button>
+    <button [class.active]="activeTab === 'postings'" (click)="setTab('postings')">Job Postings</button>
+    <button [class.active]="activeTab === 'candidates'" (click)="setTab('candidates')">Candidates</button>
+    <button [class.active]="activeTab === 'interviews'" (click)="setTab('interviews')">Interviews</button>
+  </div>
+
+  <div class="tab-content">
+    <div *ngIf="activeTab === 'requisitions'" class="content-section">
+      <div class="section-header">
+        <h3>Job Requisitions</h3>
+        <button class="btn btn-primary" (click)="openForm()">+ New Requisition</button>
+      </div>
+      <div *ngIf="loading" class="loading">Loading...</div>
+      <table *ngIf="!loading" class="data-table">
+        <thead>
+          <tr>
+            <th>Number</th>
+            <th>Title</th>
+            <th>Department</th>
+            <th>Positions</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let req of requisitions">
+            <td>{{ req.requisitionNumber }}</td>
+            <td>{{ req.jobTitle }}</td>
+            <td>{{ req.department?.name }}</td>
+            <td>{{ req.numberOfPositions }}</td>
+            <td><span class="badge" [ngClass]="getStatusClass(req.status)">{{ req.status }}</span></td>
+            <td>
+              <button class="btn btn-sm" (click)="openForm(req)">Edit</button>
+              <button *ngIf="req.status === 'DRAFT'" class="btn btn-sm btn-primary" (click)="submitRequisition(req.id)">Submit</button>
+              <button *ngIf="req.status === 'PENDING'" class="btn btn-sm btn-success" (click)="approveRequisition(req.id)">Approve</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="activeTab === 'postings'" class="content-section">
+      <div class="section-header">
+        <h3>Job Postings</h3>
+      </div>
+      <div *ngIf="loading" class="loading">Loading...</div>
+      <table *ngIf="!loading" class="data-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Title</th>
+            <th>Location</th>
+            <th>Applications</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let posting of jobPostings">
+            <td>{{ posting.postingCode }}</td>
+            <td>{{ posting.jobTitle }}</td>
+            <td>{{ posting.location }}</td>
+            <td>{{ posting.applicationCount || 0 }}</td>
+            <td><span class="badge" [ngClass]="getStatusClass(posting.status)">{{ posting.status }}</span></td>
+            <td>
+              <button *ngIf="posting.status === 'DRAFT'" class="btn btn-sm btn-primary" (click)="publishPosting(posting.id)">Publish</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="activeTab === 'candidates'" class="content-section">
+      <div class="section-header">
+        <h3>Candidates</h3>
+      </div>
+      <div *ngIf="loading" class="loading">Loading...</div>
+      <table *ngIf="!loading" class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Position</th>
+            <th>Status</th>
+            <th>Applied</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let candidate of candidates">
+            <td>{{ candidate.firstName }} {{ candidate.lastName }}</td>
+            <td>{{ candidate.email }}</td>
+            <td>{{ candidate.jobPosting?.jobTitle }}</td>
+            <td><span class="badge" [ngClass]="getStatusClass(candidate.status)">{{ candidate.status }}</span></td>
+            <td>{{ formatDate(candidate.applicationDate) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div *ngIf="activeTab === 'interviews'" class="content-section">
+      <div class="section-header">
+        <h3>Upcoming Interviews</h3>
+      </div>
+      <div *ngIf="loading" class="loading">Loading...</div>
+      <table *ngIf="!loading" class="data-table">
+        <thead>
+          <tr>
+            <th>Candidate</th>
+            <th>Position</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Interviewer</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let interview of interviews">
+            <td>{{ interview.candidate?.firstName }} {{ interview.candidate?.lastName }}</td>
+            <td>{{ interview.candidate?.jobPosting?.jobTitle }}</td>
+            <td>{{ formatDate(interview.scheduledDate) }}</td>
+            <td>{{ interview.interviewType }}</td>
+            <td>{{ interview.interviewer?.firstName }} {{ interview.interviewer?.lastName }}</td>
+            <td><span class="badge" [ngClass]="getStatusClass(interview.status)">{{ interview.status }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>{{ editingItem ? 'Edit' : 'New' }} Requisition</h3>
+      <form (ngSubmit)="saveRequisition()">
+        <div class="form-group">
+          <label>Job Title</label>
+          <input type="text" [(ngModel)]="formData.jobTitle" name="jobTitle" required>
+        </div>
+        <div class="form-group">
+          <label>Number of Positions</label>
+          <input type="number" [(ngModel)]="formData.numberOfPositions" name="numberOfPositions" min="1">
+        </div>
+        <div class="form-group">
+          <label>Employment Type</label>
+          <select [(ngModel)]="formData.employmentType" name="employmentType">
+            <option value="FULL_TIME">Full Time</option>
+            <option value="PART_TIME">Part Time</option>
+            <option value="CONTRACT">Contract</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="formData.jobDescription" name="jobDescription" rows="4"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

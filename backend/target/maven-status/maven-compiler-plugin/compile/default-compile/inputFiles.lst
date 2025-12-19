@@ -141,6 +141,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/controller/IntegrationController.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/PRMaterialTransferRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PRMaterialTransfer.java
+/home/runner/workspace/backend/src/main/java/com/erp/service/CompensationService.java
 /home/runner/workspace/backend/src/main/java/com/erp/config/SecurityConfig.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/UserNotificationRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/ContractSettingsController.java
@@ -178,6 +179,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/model/AuditLog.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/ContractRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/User.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/CompensationController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/OnboardingTask.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/LeaveBalanceRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/EmployeeEducationRepository.java
