@@ -1,0 +1,9 @@
+<div class="repayments-container">
+  <div class="page-header">
+    <h2>Repayment History</h2>
+  </div>
+  <div *ngIf="loading" class="loading">Loading...</div>
+  <div *ngIf="!loading && repayments.length === 0" class="empty-state">
+    <p>No repayment history found</p>
+  </div>
+</div>

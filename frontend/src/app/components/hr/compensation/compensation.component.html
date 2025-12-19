@@ -1,0 +1,58 @@
+<div class="compensation-container">
+  <div class="page-header">
+    <h2>Compensation & Benefits Management</h2>
+  </div>
+
+  <div class="tabs">
+    <button [class.active]="activeTab === 'salary-bands'" (click)="setTab('salary-bands')">Salary Bands</button>
+    <button [class.active]="activeTab === 'salary-revision'" (click)="setTab('salary-revision')">Salary Revision</button>
+    <button [class.active]="activeTab === 'bonus-incentive'" (click)="setTab('bonus-incentive')">Bonus & Incentive</button>
+    <button [class.active]="activeTab === 'health-insurance'" (click)="setTab('health-insurance')">Health Insurance</button>
+    <button [class.active]="activeTab === 'dental-vision'" (click)="setTab('dental-vision')">Dental & Vision</button>
+    <button [class.active]="activeTab === 'allowances'" (click)="setTab('allowances')">Allowances</button>
+    <button [class.active]="activeTab === 'enrollment'" (click)="setTab('enrollment')">Benefits Enrollment</button>
+  </div>
+
+  <div class="section-header">
+    <h3>{{ activeTab | titlecase }}</h3>
+    <button class="btn btn-primary" (click)="openForm()">+ Add New</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading...</div>
+
+  <div *ngIf="!loading" class="data-table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="4" class="text-center">No data available</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="showForm" class="modal-overlay">
+    <div class="modal-content">
+      <h3>Add New {{ activeTab | titlecase }}</h3>
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" [(ngModel)]="formData.name" placeholder="Enter name">
+      </div>
+      <div class="form-group">
+        <label>Value</label>
+        <input type="text" [(ngModel)]="formData.value" placeholder="Enter value">
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+        <button class="btn btn-primary" (click)="save()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>

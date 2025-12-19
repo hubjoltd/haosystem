@@ -1,0 +1,39 @@
+<div class="approvals-container">
+  <div class="page-header">
+    <h2>Loan Approvals</h2>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading...</div>
+
+  <div *ngIf="!loading && pendingLoans.length > 0" class="data-table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Applicant</th>
+          <th>Loan Type</th>
+          <th>Amount</th>
+          <th>Tenure</th>
+          <th>Interest Rate</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let loan of pendingLoans">
+          <td>{{ loan.employeeName }}</td>
+          <td>{{ loan.loanType }}</td>
+          <td>{{ loan.loanAmount | currency }}</td>
+          <td>{{ loan.requestedTenureMonths }} months</td>
+          <td>{{ loan.interestRate }}%</td>
+          <td>
+            <button class="btn btn-sm btn-success" (click)="approve(loan)">Approve</button>
+            <button class="btn btn-sm btn-danger" (click)="reject(loan)">Reject</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && pendingLoans.length === 0" class="empty-state">
+    <p>No pending loan approvals</p>
+  </div>
+</div>

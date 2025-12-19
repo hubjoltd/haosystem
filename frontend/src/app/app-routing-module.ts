@@ -108,6 +108,12 @@ import { TrainingComponent } from './components/hr/training/training.component';
 import { LoansComponent } from './components/hr/loans/loans.component';
 import { OnboardingComponent } from './components/hr/onboarding/onboarding.component';
 import { LettersComponent } from './components/hr/letters/letters.component';
+import { CompensationComponent } from './components/hr/compensation/compensation.component';
+import { LoansApplicationComponent } from './components/loans/loans.component';
+import { LoanApprovalsComponent } from './components/loans/approvals/approvals.component';
+import { LoanEmiComponent } from './components/loans/emi/emi.component';
+import { LoanLedgerComponent } from './components/loans/ledger/ledger.component';
+import { LoanRepaymentsComponent } from './components/loans/repayments/repayments.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -210,7 +216,19 @@ const routes: Routes = [
       { path: 'hr/training', component: TrainingComponent },
       { path: 'hr/loans', component: LoansComponent },
       { path: 'hr/onboarding', component: OnboardingComponent },
-      { path: 'hr/letters', component: LettersComponent }
+      { path: 'hr/letters', component: LettersComponent },
+      { path: 'compensation/salary-bands', component: CompensationComponent },
+      { path: 'compensation/salary-revision', component: CompensationComponent },
+      { path: 'compensation/bonus-incentive', component: CompensationComponent },
+      { path: 'compensation/health-insurance', component: CompensationComponent },
+      { path: 'compensation/dental-vision', component: CompensationComponent },
+      { path: 'compensation/allowances', component: CompensationComponent },
+      { path: 'compensation/enrollment', component: CompensationComponent },
+      { path: 'loans', component: LoansApplicationComponent },
+      { path: 'loans/approvals', component: LoanApprovalsComponent },
+      { path: 'loans/emi', component: LoanEmiComponent },
+      { path: 'loans/ledger', component: LoanLedgerComponent },
+      { path: 'loans/repayments', component: LoanRepaymentsComponent }
     ]
   }
 ];
