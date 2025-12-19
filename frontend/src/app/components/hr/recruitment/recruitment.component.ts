@@ -22,6 +22,17 @@ export class RecruitmentComponent implements OnInit {
   editingItem: any = null;
   formData: any = {};
 
+  showPostingForm = false;
+  postingData: any = {};
+  approvedRequisitions: any[] = [];
+
+  showCandidateForm = false;
+  candidateData: any = {};
+  activePostings: any[] = [];
+
+  showInterviewForm = false;
+  interviewData: any = {};
+
   constructor(private recruitmentService: RecruitmentService) {}
 
   ngOnInit(): void {
@@ -138,5 +149,73 @@ export class RecruitmentComponent implements OnInit {
       'ACTIVE': 'bg-primary', 'CLOSED': 'bg-dark', 'REJECTED': 'bg-danger'
     };
     return classes[status] || 'bg-secondary';
+  }
+
+  openPostingForm(): void {
+    this.postingData = { postingType: 'EXTERNAL' };
+    this.loadApprovedRequisitions();
+    this.showPostingForm = true;
+  }
+
+  closePostingForm(): void {
+    this.showPostingForm = false;
+    this.postingData = {};
+  }
+
+  loadApprovedRequisitions(): void {
+    this.recruitmentService.getRequisitions().subscribe({
+      next: (data) => this.approvedRequisitions = data.filter((r: any) => r.status === 'APPROVED'),
+      error: (err) => console.error(err)
+    });
+  }
+
+  saveJobPosting(): void {
+    this.recruitmentService.createJobPosting(this.postingData).subscribe({
+      next: () => { this.closePostingForm(); this.loadJobPostings(); this.loadDashboard(); },
+      error: (err) => { console.error(err); alert('Error creating job posting'); }
+    });
+  }
+
+  openCandidateForm(): void {
+    this.candidateData = {};
+    this.loadActivePostings();
+    this.showCandidateForm = true;
+  }
+
+  closeCandidateForm(): void {
+    this.showCandidateForm = false;
+    this.candidateData = {};
+  }
+
+  loadActivePostings(): void {
+    this.recruitmentService.getActiveJobPostings().subscribe({
+      next: (data) => this.activePostings = data,
+      error: (err) => console.error(err)
+    });
+  }
+
+  saveCandidate(): void {
+    this.recruitmentService.createCandidate(this.candidateData).subscribe({
+      next: () => { this.closeCandidateForm(); this.loadCandidates(); this.loadDashboard(); },
+      error: (err) => { console.error(err); alert('Error adding candidate'); }
+    });
+  }
+
+  openInterviewForm(): void {
+    this.interviewData = { interviewType: 'PHONE', duration: 60 };
+    this.loadCandidates();
+    this.showInterviewForm = true;
+  }
+
+  closeInterviewForm(): void {
+    this.showInterviewForm = false;
+    this.interviewData = {};
+  }
+
+  saveInterview(): void {
+    this.recruitmentService.scheduleInterview(this.interviewData).subscribe({
+      next: () => { this.closeInterviewForm(); this.loadInterviews(); this.loadDashboard(); },
+      error: (err) => { console.error(err); alert('Error scheduling interview'); }
+    });
   }
 }

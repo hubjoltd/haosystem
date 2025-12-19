@@ -63,7 +63,7 @@ public class FinalSettlementService {
         }
         
         FinalSettlement settlement = new FinalSettlement();
-        settlement.setSettlementNumber(prefixService.generateId("SETTLEMENT"));
+        settlement.setSettlementNumber("SET-" + System.currentTimeMillis());
         settlement.setEmployee(employee);
         settlement.setLastWorkingDay(lastWorkingDay);
         settlement.setResignationDate(employee.getResignationDate());
@@ -110,8 +110,9 @@ public class FinalSettlementService {
         List<LeaveBalance> leaveBalances = leaveBalanceRepository.findByEmployeeId(employee.getId());
         int totalLeaveDays = 0;
         for (LeaveBalance lb : leaveBalances) {
-            if (lb.getBalance() != null) {
-                totalLeaveDays += lb.getBalance().intValue();
+            BigDecimal available = lb.getAvailableBalance();
+            if (available != null) {
+                totalLeaveDays += available.intValue();
             }
         }
         settlement.setLeaveBalanceDays(totalLeaveDays);
@@ -148,7 +149,7 @@ public class FinalSettlementService {
         if (settlement.getOtherEarnings() != null) totalEarnings = totalEarnings.add(settlement.getOtherEarnings());
         settlement.setTotalEarnings(totalEarnings);
         
-        List<LoanApplication> activeLoans = loanRepository.findByEmployeeIdAndStatus(employee.getId(), "DISBURSED");
+        List<LoanApplication> activeLoans = loanRepository.findActiveLoansForEmployee(employee.getId());
         BigDecimal loanRecovery = BigDecimal.ZERO;
         for (LoanApplication loan : activeLoans) {
             if (loan.getOutstandingBalance() != null) {

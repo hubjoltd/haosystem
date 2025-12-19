@@ -255,6 +255,10 @@ public class RecruitmentService {
         return candidateRepository.findByRequisitionId(requisitionId);
     }
 
+    public List<Candidate> findCandidatesByJobPosting(Long postingId) {
+        return candidateRepository.findByJobPostingId(postingId);
+    }
+
     public List<Candidate> searchCandidates(String search) {
         return candidateRepository.searchCandidates(search);
     }
@@ -364,6 +368,10 @@ public class RecruitmentService {
 
     public List<Interview> findScheduledInterviews(LocalDateTime start, LocalDateTime end) {
         return interviewRepository.findScheduledInterviewsBetween(start.toLocalDate(), end.toLocalDate());
+    }
+
+    public List<Interview> findUpcomingInterviews() {
+        return interviewRepository.findByStatusAndInterviewDateGreaterThanEqual("SCHEDULED", LocalDate.now());
     }
 
     @Transactional

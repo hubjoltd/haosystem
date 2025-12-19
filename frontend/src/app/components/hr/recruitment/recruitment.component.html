@@ -67,6 +67,7 @@
     <div *ngIf="activeTab === 'postings'" class="content-section">
       <div class="section-header">
         <h3>Job Postings</h3>
+        <button class="btn btn-primary" (click)="openPostingForm()">+ New Job Posting</button>
       </div>
       <div *ngIf="loading" class="loading">Loading...</div>
       <table *ngIf="!loading" class="data-table">
@@ -98,6 +99,7 @@
     <div *ngIf="activeTab === 'candidates'" class="content-section">
       <div class="section-header">
         <h3>Candidates</h3>
+        <button class="btn btn-primary" (click)="openCandidateForm()">+ Add Candidate</button>
       </div>
       <div *ngIf="loading" class="loading">Loading...</div>
       <table *ngIf="!loading" class="data-table">
@@ -125,6 +127,7 @@
     <div *ngIf="activeTab === 'interviews'" class="content-section">
       <div class="section-header">
         <h3>Upcoming Interviews</h3>
+        <button class="btn btn-primary" (click)="openInterviewForm()">+ Schedule Interview</button>
       </div>
       <div *ngIf="loading" class="loading">Loading...</div>
       <table *ngIf="!loading" class="data-table">
@@ -179,6 +182,134 @@
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
           <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div *ngIf="showPostingForm" class="modal-overlay" (click)="closePostingForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>New Job Posting</h3>
+      <form (ngSubmit)="saveJobPosting()">
+        <div class="form-group">
+          <label>Select Requisition</label>
+          <select [(ngModel)]="postingData.requisitionId" name="requisitionId" required>
+            <option value="">-- Select Requisition --</option>
+            <option *ngFor="let req of approvedRequisitions" [value]="req.id">{{ req.jobTitle }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Job Title</label>
+          <input type="text" [(ngModel)]="postingData.jobTitle" name="jobTitle" required>
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" [(ngModel)]="postingData.location" name="location">
+        </div>
+        <div class="form-group">
+          <label>Posting Type</label>
+          <select [(ngModel)]="postingData.postingType" name="postingType">
+            <option value="INTERNAL">Internal</option>
+            <option value="EXTERNAL">External</option>
+            <option value="BOTH">Both</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Application Deadline</label>
+          <input type="date" [(ngModel)]="postingData.applicationDeadline" name="applicationDeadline">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="postingData.description" name="description" rows="4"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closePostingForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div *ngIf="showCandidateForm" class="modal-overlay" (click)="closeCandidateForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Add Candidate</h3>
+      <form (ngSubmit)="saveCandidate()">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" [(ngModel)]="candidateData.firstName" name="firstName" required>
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" [(ngModel)]="candidateData.lastName" name="lastName" required>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" [(ngModel)]="candidateData.email" name="email" required>
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" [(ngModel)]="candidateData.phone" name="phone">
+        </div>
+        <div class="form-group">
+          <label>Job Posting</label>
+          <select [(ngModel)]="candidateData.jobPostingId" name="jobPostingId">
+            <option value="">-- Select Job Posting --</option>
+            <option *ngFor="let posting of activePostings" [value]="posting.id">{{ posting.jobTitle }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Resume/Notes</label>
+          <textarea [(ngModel)]="candidateData.notes" name="notes" rows="4"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeCandidateForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div *ngIf="showInterviewForm" class="modal-overlay" (click)="closeInterviewForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Schedule Interview</h3>
+      <form (ngSubmit)="saveInterview()">
+        <div class="form-group">
+          <label>Candidate</label>
+          <select [(ngModel)]="interviewData.candidateId" name="candidateId" required>
+            <option value="">-- Select Candidate --</option>
+            <option *ngFor="let candidate of candidates" [value]="candidate.id">{{ candidate.firstName }} {{ candidate.lastName }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Interview Type</label>
+          <select [(ngModel)]="interviewData.interviewType" name="interviewType" required>
+            <option value="PHONE">Phone Screen</option>
+            <option value="VIDEO">Video Call</option>
+            <option value="IN_PERSON">In Person</option>
+            <option value="TECHNICAL">Technical</option>
+            <option value="HR">HR Round</option>
+            <option value="FINAL">Final Round</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Scheduled Date & Time</label>
+          <input type="datetime-local" [(ngModel)]="interviewData.scheduledDate" name="scheduledDate" required>
+        </div>
+        <div class="form-group">
+          <label>Duration (minutes)</label>
+          <input type="number" [(ngModel)]="interviewData.duration" name="duration" min="15" max="180">
+        </div>
+        <div class="form-group">
+          <label>Location/Link</label>
+          <input type="text" [(ngModel)]="interviewData.location" name="location">
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea [(ngModel)]="interviewData.notes" name="notes" rows="3"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeInterviewForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Schedule</button>
         </div>
       </form>
     </div>

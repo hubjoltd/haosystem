@@ -31,4 +31,6 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
     
     @Query("SELECT i FROM Interview i WHERE i.status = 'SCHEDULED' AND i.interviewDate < :today")
     List<Interview> findOverdueInterviews(@Param("today") LocalDate today);
+    
+    List<Interview> findByStatusAndInterviewDateGreaterThanEqual(String status, LocalDate date);
 }

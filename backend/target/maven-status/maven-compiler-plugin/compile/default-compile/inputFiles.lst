@@ -22,6 +22,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/ContractTypeRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/ValuationService.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GoodsReceiptRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/FinalSettlementRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/HolidayRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/LeaveRequestRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/dto/RegisterRequest.java
@@ -151,6 +152,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/IntegrationConfigRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/PRFulfillmentController.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/StatutoryRuleRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/service/FinalSettlementService.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GoodsIssueLineRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Holiday.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/TrainingSessionRepository.java
@@ -159,6 +161,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/model/JobPosting.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/CustomerStatusRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/AuthController.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/FinalSettlementController.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/SupplierService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Bin.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/JobRole.java
@@ -248,4 +251,5 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/BinRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/ExpenseController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/UserNotification.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/FinalSettlement.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/EmployeeBankDetailRepository.java

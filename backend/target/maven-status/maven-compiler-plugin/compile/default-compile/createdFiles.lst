@@ -15,6 +15,7 @@ com/erp/model/JobRole.class
 com/erp/model/Contract.class
 com/erp/controller/RecruitmentController.class
 com/erp/controller/UserNotificationController.class
+com/erp/repository/FinalSettlementRepository.class
 com/erp/repository/PurchaseRequisitionItemRepository.class
 com/erp/model/ValuationCostLayer.class
 com/erp/controller/PurchaseRequisitionController.class
@@ -51,6 +52,7 @@ com/erp/repository/InterviewRepository.class
 com/erp/controller/HRLetterController.class
 com/erp/model/OnboardingPlan.class
 com/erp/model/JobRequisition.class
+com/erp/service/FinalSettlementService.class
 com/erp/model/IntegrationSyncLog.class
 com/erp/model/InventoryLedger.class
 com/erp/repository/ContractStatusRepository.class
@@ -75,6 +77,7 @@ com/erp/controller/CustomerSettingsController.class
 com/erp/model/EmployeeBankDetail.class
 com/erp/model/CustomerGroup.class
 com/erp/repository/PayrollRunRepository.class
+com/erp/controller/FinalSettlementController.class
 com/erp/model/PayrollRecord.class
 com/erp/security/JwtAuthFilter.class
 com/erp/service/PurchaseInvoiceService.class
@@ -195,6 +198,7 @@ com/erp/service/TrainingService.class
 com/erp/model/Grade.class
 com/erp/service/AuditLogService.class
 com/erp/repository/TimesheetRepository.class
+com/erp/model/FinalSettlement.class
 com/erp/repository/JobRoleRepository.class
 com/erp/model/LeaveBalance.class
 com/erp/service/WarehouseService.class

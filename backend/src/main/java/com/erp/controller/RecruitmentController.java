@@ -155,6 +155,11 @@ public class RecruitmentController {
         return ResponseEntity.ok(recruitmentService.findCandidatesByRequisition(requisitionId));
     }
 
+    @GetMapping("/candidates/posting/{postingId}")
+    public ResponseEntity<List<Candidate>> getCandidatesByPosting(@PathVariable Long postingId) {
+        return ResponseEntity.ok(recruitmentService.findCandidatesByJobPosting(postingId));
+    }
+
     @GetMapping("/candidates/search")
     public ResponseEntity<List<Candidate>> searchCandidates(@RequestParam String q) {
         return ResponseEntity.ok(recruitmentService.searchCandidates(q));
@@ -216,6 +221,11 @@ public class RecruitmentController {
         LocalDateTime startDate = LocalDateTime.parse(start);
         LocalDateTime endDate = LocalDateTime.parse(end);
         return ResponseEntity.ok(recruitmentService.findScheduledInterviews(startDate, endDate));
+    }
+
+    @GetMapping("/interviews/upcoming")
+    public ResponseEntity<List<Interview>> getUpcomingInterviews() {
+        return ResponseEntity.ok(recruitmentService.findUpcomingInterviews());
     }
 
     @PostMapping("/interviews")
