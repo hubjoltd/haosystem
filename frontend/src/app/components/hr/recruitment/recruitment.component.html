@@ -195,16 +195,12 @@
           <label>Select Requisition</label>
           <select [(ngModel)]="postingData.requisitionId" name="requisitionId" required>
             <option value="">-- Select Requisition --</option>
-            <option *ngFor="let req of approvedRequisitions" [value]="req.id">{{ req.jobTitle }}</option>
+            <option *ngFor="let req of approvedRequisitions" [value]="req.id">{{ req.positionTitle || req.jobTitle }}</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Job Title</label>
-          <input type="text" [(ngModel)]="postingData.jobTitle" name="jobTitle" required>
-        </div>
-        <div class="form-group">
-          <label>Location</label>
-          <input type="text" [(ngModel)]="postingData.location" name="location">
+          <label>Posting Title</label>
+          <input type="text" [(ngModel)]="postingData.title" name="title" required>
         </div>
         <div class="form-group">
           <label>Posting Type</label>
@@ -216,7 +212,7 @@
         </div>
         <div class="form-group">
           <label>Application Deadline</label>
-          <input type="date" [(ngModel)]="postingData.applicationDeadline" name="applicationDeadline">
+          <input type="date" [(ngModel)]="postingData.closeDate" name="closeDate">
         </div>
         <div class="form-group">
           <label>Description</label>
@@ -277,7 +273,7 @@
           <label>Candidate</label>
           <select [(ngModel)]="interviewData.candidateId" name="candidateId" required>
             <option value="">-- Select Candidate --</option>
-            <option *ngFor="let candidate of candidates" [value]="candidate.id">{{ candidate.firstName }} {{ candidate.lastName }}</option>
+            <option *ngFor="let candidate of allCandidates" [value]="candidate.id">{{ candidate.firstName }} {{ candidate.lastName }}</option>
           </select>
         </div>
         <div class="form-group">
@@ -292,20 +288,27 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Scheduled Date & Time</label>
-          <input type="datetime-local" [(ngModel)]="interviewData.scheduledDate" name="scheduledDate" required>
+          <label>Interview Mode</label>
+          <select [(ngModel)]="interviewData.interviewMode" name="interviewMode">
+            <option value="VIRTUAL">Virtual</option>
+            <option value="IN_PERSON">In Person</option>
+          </select>
         </div>
         <div class="form-group">
-          <label>Duration (minutes)</label>
-          <input type="number" [(ngModel)]="interviewData.duration" name="duration" min="15" max="180">
+          <label>Interview Date</label>
+          <input type="date" [(ngModel)]="interviewData.interviewDate" name="interviewDate" required>
         </div>
         <div class="form-group">
-          <label>Location/Link</label>
-          <input type="text" [(ngModel)]="interviewData.location" name="location">
+          <label>Start Time</label>
+          <input type="time" [(ngModel)]="interviewData.startTime" name="startTime" required>
+        </div>
+        <div class="form-group">
+          <label>Location/Meeting Link</label>
+          <input type="text" [(ngModel)]="interviewData.location" name="location" placeholder="Room number or video link">
         </div>
         <div class="form-group">
           <label>Notes</label>
-          <textarea [(ngModel)]="interviewData.notes" name="notes" rows="3"></textarea>
+          <textarea [(ngModel)]="interviewData.interviewerNotes" name="interviewerNotes" rows="3"></textarea>
         </div>
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="closeInterviewForm()">Cancel</button>

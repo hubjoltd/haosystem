@@ -32,6 +32,7 @@ export class RecruitmentComponent implements OnInit {
 
   showInterviewForm = false;
   interviewData: any = {};
+  allCandidates: any[] = [];
 
   constructor(private recruitmentService: RecruitmentService) {}
 
@@ -202,9 +203,16 @@ export class RecruitmentComponent implements OnInit {
   }
 
   openInterviewForm(): void {
-    this.interviewData = { interviewType: 'PHONE', duration: 60 };
-    this.loadCandidates();
+    this.interviewData = { interviewType: 'PHONE', interviewMode: 'VIRTUAL' };
+    this.loadAllCandidatesForForm();
     this.showInterviewForm = true;
+  }
+
+  loadAllCandidatesForForm(): void {
+    this.recruitmentService.getCandidates().subscribe({
+      next: (data) => this.allCandidates = data,
+      error: (err) => console.error(err)
+    });
   }
 
   closeInterviewForm(): void {
