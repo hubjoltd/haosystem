@@ -180,7 +180,6 @@ import { HolidayCalendarComponent } from './components/leave/holiday-calendar/ho
     EmployeeDetailComponent,
     DocumentTypesComponent,
     DocumentExpiryComponent,
-    RecruitmentComponent,
     RecruitmentRequisitionComponent,
     RecruitmentPostingsComponent,
     RecruitmentCandidatesComponent,
@@ -204,7 +203,8 @@ import { HolidayCalendarComponent } from './components/leave/holiday-calendar/ho
     ClockInOutComponent,
     LeaveTypesComponent,
     LeaveRequestsComponent,
-    HolidayCalendarComponent
+    HolidayCalendarComponent,
+    RecruitmentComponent
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }

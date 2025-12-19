@@ -1,4 +1,244 @@
 <div class="container-fluid p-4">
-  <h2>Full & Final Settlement</h2>
-  <p>F&F Settlement management page</p>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Full & Final Settlement</h2>
+    <button class="btn btn-primary" (click)="openForm()">
+      <i class="fas fa-plus me-2"></i>Initiate Settlement
+    </button>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2">Total Settlements</h6>
+          <h3 class="card-title mb-0">{{ dashboard.total || 0 }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-dark">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2">Pending Approval</h6>
+          <h3 class="card-title mb-0">{{ dashboard.pendingApproval || 0 }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2">Approved</h6>
+          <h3 class="card-title mb-0">{{ dashboard.approved || 0 }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-2">Processed</h6>
+          <h3 class="card-title mb-0">{{ dashboard.processed || 0 }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && settlements.length === 0" class="text-center py-5 text-muted">
+        <i class="fas fa-file-invoice-dollar fa-3x mb-3"></i>
+        <p>No settlements found. Click "Initiate Settlement" to create one.</p>
+      </div>
+
+      <div *ngIf="!loading && settlements.length > 0" class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Settlement #</th>
+              <th>Employee</th>
+              <th>Last Working Day</th>
+              <th>Separation Type</th>
+              <th>Net Payable</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of settlements">
+              <td>{{ s.settlementNumber }}</td>
+              <td>{{ s.employee?.firstName }} {{ s.employee?.lastName }}</td>
+              <td>{{ formatDate(s.lastWorkingDay) }}</td>
+              <td>{{ s.separationType }}</td>
+              <td>{{ formatCurrency(s.netPayable) }}</td>
+              <td><span class="badge" [ngClass]="getStatusClass(s.status)">{{ s.status }}</span></td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary me-1" (click)="viewDetail(s)" title="View Details">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button *ngIf="s.status === 'DRAFT'" class="btn btn-sm btn-outline-danger" (click)="deleteSettlement(s.id)" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
+
+<div class="modal" [class.show]="showForm" [style.display]="showForm ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Initiate F&F Settlement</h5>
+        <button type="button" class="btn-close" (click)="closeForm()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Employee *</label>
+          <select class="form-select" [(ngModel)]="formData.employeeId" required>
+            <option value="">Select Employee</option>
+            <option *ngFor="let emp of employees" [value]="emp.id">{{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Last Working Day *</label>
+          <input type="date" class="form-control" [(ngModel)]="formData.lastWorkingDay" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Separation Type *</label>
+          <select class="form-select" [(ngModel)]="formData.separationType" required>
+            <option *ngFor="let type of separationTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="saveSettlement()">Initiate</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="showForm"></div>
+
+<div class="modal" [class.show]="showDetail" [style.display]="showDetail ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content" *ngIf="selectedSettlement">
+      <div class="modal-header">
+        <h5 class="modal-title">Settlement Details - {{ selectedSettlement.settlementNumber }}</h5>
+        <button type="button" class="btn-close" (click)="closeDetail()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <p><strong>Employee:</strong> {{ selectedSettlement.employee?.firstName }} {{ selectedSettlement.employee?.lastName }}</p>
+            <p><strong>Employee Code:</strong> {{ selectedSettlement.employee?.employeeCode }}</p>
+            <p><strong>Separation Type:</strong> {{ selectedSettlement.separationType }}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Last Working Day:</strong> {{ formatDate(selectedSettlement.lastWorkingDay) }}</p>
+            <p><strong>Status:</strong> <span class="badge" [ngClass]="getStatusClass(selectedSettlement.status)">{{ selectedSettlement.status }}</span></p>
+            <p><strong>Created:</strong> {{ formatDate(selectedSettlement.createdAt) }}</p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card mb-3">
+              <div class="card-header bg-success text-white">Earnings</div>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Basic Salary Due</span>
+                  <strong>{{ formatCurrency(selectedSettlement.basicSalaryDue) }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Allowances Due</span>
+                  <strong>{{ formatCurrency(selectedSettlement.allowancesDue) }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Bonus Due</span>
+                  <strong>{{ formatCurrency(selectedSettlement.bonusDue) }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Leave Encashment ({{ selectedSettlement.leaveBalanceDays || 0 }} days)</span>
+                  <strong>{{ formatCurrency(selectedSettlement.leaveEncashment) }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Gratuity</span>
+                  <strong>{{ formatCurrency(selectedSettlement.gratuityAmount) }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Other Earnings</span>
+                  <strong>{{ formatCurrency(selectedSettlement.otherEarnings) }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between bg-light">
+                  <strong>Total Earnings</strong>
+                  <strong class="text-success">{{ formatCurrency(selectedSettlement.totalEarnings) }}</strong>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card mb-3">
+              <div class="card-header bg-danger text-white">Deductions</div>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Loan Recovery</span>
+                  <strong>{{ formatCurrency(selectedSettlement.loanRecovery) }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Advance Recovery</span>
+                  <strong>{{ formatCurrency(selectedSettlement.advanceRecovery) }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Asset Recovery</span>
+                  <strong>{{ formatCurrency(selectedSettlement.assetRecovery) }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Notice Pay Recovery</span>
+                  <strong>{{ formatCurrency(selectedSettlement.noticePayRecovery) }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Tax Deduction</span>
+                  <strong>{{ formatCurrency(selectedSettlement.taxDeduction) }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Other Deductions</span>
+                  <strong>{{ formatCurrency(selectedSettlement.otherDeductions) }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between bg-light">
+                  <strong>Total Deductions</strong>
+                  <strong class="text-danger">{{ formatCurrency(selectedSettlement.totalDeductions) }}</strong>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-primary text-white">
+          <div class="card-body d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Net Payable Amount</h5>
+            <h3 class="mb-0">{{ formatCurrency(selectedSettlement.netPayable) }}</h3>
+          </div>
+        </div>
+
+        <div *ngIf="selectedSettlement.remarks" class="mt-3">
+          <p><strong>Remarks:</strong> {{ selectedSettlement.remarks }}</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDetail()">Close</button>
+        <button *ngIf="selectedSettlement.status === 'DRAFT'" class="btn btn-warning" (click)="submitSettlement(selectedSettlement.id)">Submit for Approval</button>
+        <button *ngIf="selectedSettlement.status === 'PENDING_APPROVAL'" class="btn btn-danger me-2" (click)="rejectSettlement(selectedSettlement.id)">Reject</button>
+        <button *ngIf="selectedSettlement.status === 'PENDING_APPROVAL'" class="btn btn-success" (click)="approveSettlement(selectedSettlement.id)">Approve</button>
+        <button *ngIf="selectedSettlement.status === 'APPROVED'" class="btn btn-primary" (click)="processSettlement(selectedSettlement.id)">Process Payment</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="showDetail"></div>
