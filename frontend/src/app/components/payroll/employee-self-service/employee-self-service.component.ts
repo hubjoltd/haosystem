@@ -209,12 +209,12 @@ export class EmployeeSelfServiceComponent implements OnInit {
 
   downloadPaystub(record: PayrollRecord): void {
     const salarySlipData = this.buildSalarySlipData(record);
-    this.salarySlipService.downloadSalarySlipPDF(salarySlipData);
+    this.salarySlipService.generateSalarySlipPDF(salarySlipData);
   }
 
   printPaystub(record: PayrollRecord): void {
     const salarySlipData = this.buildSalarySlipData(record);
-    this.salarySlipService.generateSalarySlipPDF(salarySlipData);
+    this.salarySlipService.printSalarySlipPDF(salarySlipData);
   }
 
   private buildSalarySlipData(record: PayrollRecord): SalarySlipData {
