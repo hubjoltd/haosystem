@@ -282,15 +282,8 @@ export class SidebarComponent implements OnInit {
     {
       icon: 'fas fa-dollar-sign',
       label: 'Loans & Advances',
-      expanded: false,
-      permissionKey: 'Loans',
-      children: [
-        { icon: 'fas fa-list-alt', label: 'Loan Applications', route: '/app/loans' },
-        { icon: 'fas fa-check-square', label: 'Loan Approvals', route: '/app/loans/approvals' },
-        { icon: 'fas fa-calendar-alt', label: 'EMI Configuration', route: '/app/loans/emi' },
-        { icon: 'fas fa-book', label: 'Loan Ledger', route: '/app/loans/ledger' },
-        { icon: 'fas fa-history', label: 'Repayment History', route: '/app/loans/repayments' }
-      ]
+      route: '/app/hr/loans',
+      permissionKey: 'Loans'
     },
     {
       icon: 'fas fa-briefcase',
