@@ -7,52 +7,613 @@
     <button [class.active]="activeTab === 'salary-bands'" (click)="setTab('salary-bands')">Salary Bands</button>
     <button [class.active]="activeTab === 'salary-revision'" (click)="setTab('salary-revision')">Salary Revision</button>
     <button [class.active]="activeTab === 'bonus-incentive'" (click)="setTab('bonus-incentive')">Bonus & Incentive</button>
-    <button [class.active]="activeTab === 'health-insurance'" (click)="setTab('health-insurance')">Health Insurance</button>
-    <button [class.active]="activeTab === 'dental-vision'" (click)="setTab('dental-vision')">Dental & Vision</button>
+    <button [class.active]="activeTab === 'benefit-plans'" (click)="setTab('benefit-plans')">Benefit Plans</button>
     <button [class.active]="activeTab === 'allowances'" (click)="setTab('allowances')">Allowances</button>
     <button [class.active]="activeTab === 'enrollment'" (click)="setTab('enrollment')">Benefits Enrollment</button>
   </div>
 
   <div class="section-header">
-    <h3>{{ activeTab | titlecase }}</h3>
+    <h3>{{ activeTab === 'salary-bands' ? 'Salary Bands' : activeTab === 'salary-revision' ? 'Salary Revisions' : activeTab === 'bonus-incentive' ? 'Bonus & Incentives' : activeTab === 'benefit-plans' ? 'Benefit Plans' : activeTab === 'allowances' ? 'Allowances' : 'Employee Benefits Enrollment' }}</h3>
     <button class="btn btn-primary" (click)="openForm()">+ Add New</button>
   </div>
 
   <div *ngIf="loading" class="loading">Loading...</div>
 
-  <div *ngIf="!loading" class="data-table-container">
+  <!-- Salary Bands Table -->
+  <div *ngIf="!loading && activeTab === 'salary-bands'" class="table-container">
     <table class="data-table">
       <thead>
         <tr>
-          <th>ID</th>
+          <th>Code</th>
           <th>Name</th>
+          <th>Grade</th>
+          <th>Min Salary</th>
+          <th>Mid Salary</th>
+          <th>Max Salary</th>
+          <th>Effective From</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td colspan="4" class="text-center">No data available</td>
+        <tr *ngFor="let band of salaryBands">
+          <td>{{ band.bandCode }}</td>
+          <td>{{ band.name }}</td>
+          <td>{{ band.grade?.name || '-' }}</td>
+          <td>{{ formatCurrency(band.minSalary) }}</td>
+          <td>{{ formatCurrency(band.midSalary) }}</td>
+          <td>{{ formatCurrency(band.maxSalary) }}</td>
+          <td>{{ formatDate(band.effectiveFrom) }}</td>
+          <td><span class="badge" [ngClass]="band.isActive ? 'bg-success' : 'bg-secondary'">{{ band.isActive ? 'Active' : 'Inactive' }}</span></td>
+          <td>
+            <button class="btn btn-sm btn-outline" (click)="openForm(band)">Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="delete(band.id)">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="salaryBands.length === 0">
+          <td colspan="9" class="text-center">No salary bands found</td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <div *ngIf="showForm" class="modal-overlay">
-    <div class="modal-content">
-      <h3>Add New {{ activeTab | titlecase }}</h3>
-      <div class="form-group">
-        <label>Name</label>
-        <input type="text" [(ngModel)]="formData.name" placeholder="Enter name">
+  <!-- Salary Revisions Table -->
+  <div *ngIf="!loading && activeTab === 'salary-revision'" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Type</th>
+          <th>Current Salary</th>
+          <th>Revised Salary</th>
+          <th>Increment %</th>
+          <th>Effective Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let rev of salaryRevisions">
+          <td>{{ rev.employee?.firstName }} {{ rev.employee?.lastName }}</td>
+          <td>{{ rev.revisionType }}</td>
+          <td>{{ formatCurrency(rev.currentSalary) }}</td>
+          <td>{{ formatCurrency(rev.revisedSalary) }}</td>
+          <td>{{ rev.incrementPercentage }}%</td>
+          <td>{{ formatDate(rev.effectiveDate) }}</td>
+          <td><span class="badge" [ngClass]="getStatusClass(rev.status)">{{ rev.status }}</span></td>
+          <td>
+            <button *ngIf="rev.status === 'PENDING'" class="btn btn-sm btn-success" (click)="approveRevision(rev.id)">Approve</button>
+            <button *ngIf="rev.status === 'PENDING'" class="btn btn-sm btn-danger" (click)="rejectRevision(rev.id)">Reject</button>
+          </td>
+        </tr>
+        <tr *ngIf="salaryRevisions.length === 0">
+          <td colspan="8" class="text-center">No salary revisions found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Bonus & Incentives Table -->
+  <div *ngIf="!loading && activeTab === 'bonus-incentive'" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Calculation</th>
+          <th>Amount/Percentage</th>
+          <th>Frequency</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let bonus of bonusIncentives">
+          <td>{{ bonus.name }}</td>
+          <td>{{ bonus.bonusType }}</td>
+          <td>{{ bonus.calculationBasis }}</td>
+          <td>{{ bonus.calculationBasis === 'FIXED' ? formatCurrency(bonus.amount) : bonus.percentage + '%' }}</td>
+          <td>{{ bonus.frequency }}</td>
+          <td><span class="badge" [ngClass]="bonus.isActive ? 'bg-success' : 'bg-secondary'">{{ bonus.isActive ? 'Active' : 'Inactive' }}</span></td>
+          <td>
+            <button class="btn btn-sm btn-outline" (click)="openForm(bonus)">Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="delete(bonus.id)">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="bonusIncentives.length === 0">
+          <td colspan="7" class="text-center">No bonus/incentives found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Benefit Plans Table -->
+  <div *ngIf="!loading && activeTab === 'benefit-plans'" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Provider</th>
+          <th>Employer Contrib.</th>
+          <th>Employee Contrib.</th>
+          <th>Coverage</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let plan of benefitPlans">
+          <td>{{ plan.planCode }}</td>
+          <td>{{ plan.name }}</td>
+          <td>{{ plan.benefitType }}</td>
+          <td>{{ plan.provider || '-' }}</td>
+          <td>{{ formatCurrency(plan.employerContribution) }}</td>
+          <td>{{ formatCurrency(plan.employeeContribution) }}</td>
+          <td>{{ formatCurrency(plan.coverageAmount) }}</td>
+          <td><span class="badge" [ngClass]="plan.isActive ? 'bg-success' : 'bg-secondary'">{{ plan.isActive ? 'Active' : 'Inactive' }}</span></td>
+          <td>
+            <button class="btn btn-sm btn-outline" (click)="openForm(plan)">Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="delete(plan.id)">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="benefitPlans.length === 0">
+          <td colspan="9" class="text-center">No benefit plans found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Allowances Table -->
+  <div *ngIf="!loading && activeTab === 'allowances'" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Calculation</th>
+          <th>Amount/Percentage</th>
+          <th>Taxable</th>
+          <th>Effective From</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let allowance of allowances">
+          <td>{{ allowance.name }}</td>
+          <td>{{ allowance.allowanceType }}</td>
+          <td>{{ allowance.calculationBasis }}</td>
+          <td>{{ allowance.calculationBasis === 'FIXED' ? formatCurrency(allowance.amount) : allowance.percentage + '%' }}</td>
+          <td>{{ allowance.isTaxable ? 'Yes' : 'No' }}</td>
+          <td>{{ formatDate(allowance.effectiveFrom) }}</td>
+          <td><span class="badge" [ngClass]="allowance.isActive ? 'bg-success' : 'bg-secondary'">{{ allowance.isActive ? 'Active' : 'Inactive' }}</span></td>
+          <td>
+            <button class="btn btn-sm btn-outline" (click)="openForm(allowance)">Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="delete(allowance.id)">Delete</button>
+          </td>
+        </tr>
+        <tr *ngIf="allowances.length === 0">
+          <td colspan="8" class="text-center">No allowances found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Employee Benefits Enrollment Table -->
+  <div *ngIf="!loading && activeTab === 'enrollment'" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Benefit Plan</th>
+          <th>Coverage Type</th>
+          <th>Enrollment Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let eb of employeeBenefits">
+          <td>{{ eb.employee?.firstName }} {{ eb.employee?.lastName }}</td>
+          <td>{{ eb.benefitPlan?.name }}</td>
+          <td>{{ eb.coverageType }}</td>
+          <td>{{ formatDate(eb.enrollmentDate) }}</td>
+          <td><span class="badge" [ngClass]="getStatusClass(eb.status)">{{ eb.status }}</span></td>
+          <td>
+            <button class="btn btn-sm btn-outline" (click)="openForm(eb)">Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="delete(eb.id)">Cancel</button>
+          </td>
+        </tr>
+        <tr *ngIf="employeeBenefits.length === 0">
+          <td colspan="6" class="text-center">No enrollments found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Forms Modal -->
+  <div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">
+    <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editMode ? 'Edit' : 'Add' }} {{ activeTab === 'salary-bands' ? 'Salary Band' : activeTab === 'salary-revision' ? 'Salary Revision' : activeTab === 'bonus-incentive' ? 'Bonus/Incentive' : activeTab === 'benefit-plans' ? 'Benefit Plan' : activeTab === 'allowances' ? 'Allowance' : 'Enrollment' }}</h3>
+        <button class="close-btn" (click)="closeForm()">&times;</button>
       </div>
-      <div class="form-group">
-        <label>Value</label>
-        <input type="text" [(ngModel)]="formData.value" placeholder="Enter value">
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-secondary" (click)="closeForm()">Cancel</button>
-        <button class="btn btn-primary" (click)="save()">Save</button>
-      </div>
+
+      <!-- Salary Band Form -->
+      <form *ngIf="activeTab === 'salary-bands'" (ngSubmit)="save()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Band Code <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="formData.bandCode" name="bandCode" required>
+          </div>
+          <div class="form-group">
+            <label>Name <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="formData.name" name="name" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Grade</label>
+            <select [(ngModel)]="formData.gradeId" name="gradeId">
+              <option [ngValue]="null">Select Grade</option>
+              <option *ngFor="let g of grades" [ngValue]="g.id">{{ g.name }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Job Role</label>
+            <select [(ngModel)]="formData.jobRoleId" name="jobRoleId">
+              <option [ngValue]="null">Select Job Role</option>
+              <option *ngFor="let r of jobRoles" [ngValue]="r.id">{{ r.name }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Min Salary</label>
+            <input type="number" [(ngModel)]="formData.minSalary" name="minSalary" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Mid Salary</label>
+            <input type="number" [(ngModel)]="formData.midSalary" name="midSalary" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Max Salary</label>
+            <input type="number" [(ngModel)]="formData.maxSalary" name="maxSalary" min="0" step="0.01">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Currency</label>
+            <select [(ngModel)]="formData.currency" name="currency">
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+              <option value="INR">INR</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Pay Frequency</label>
+            <select [(ngModel)]="formData.payFrequency" name="payFrequency">
+              <option value="MONTHLY">Monthly</option>
+              <option value="BI_WEEKLY">Bi-Weekly</option>
+              <option value="WEEKLY">Weekly</option>
+            </select>
+          </div>
+        </div>
+        <h4>Allowance Percentages (% of Basic)</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label>HRA %</label>
+            <input type="number" [(ngModel)]="formData.hraPercentage" name="hraPercentage" min="0" max="100" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>DA %</label>
+            <input type="number" [(ngModel)]="formData.daPercentage" name="daPercentage" min="0" max="100" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>TA %</label>
+            <input type="number" [(ngModel)]="formData.taPercentage" name="taPercentage" min="0" max="100" step="0.01">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Medical Allowance %</label>
+            <input type="number" [(ngModel)]="formData.medicalAllowancePercentage" name="medicalAllowancePercentage" min="0" max="100" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Special Allowance %</label>
+            <input type="number" [(ngModel)]="formData.specialAllowancePercentage" name="specialAllowancePercentage" min="0" max="100" step="0.01">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Effective From</label>
+            <input type="date" [(ngModel)]="formData.effectiveFrom" name="effectiveFrom">
+          </div>
+          <div class="form-group">
+            <label>Active</label>
+            <select [(ngModel)]="formData.isActive" name="isActive">
+              <option [ngValue]="true">Yes</option>
+              <option [ngValue]="false">No</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+
+      <!-- Salary Revision Form -->
+      <form *ngIf="activeTab === 'salary-revision'" (ngSubmit)="save()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Employee <span class="required">*</span></label>
+            <select [(ngModel)]="formData.employeeId" name="employeeId" required (change)="onEmployeeChange()">
+              <option [ngValue]="null">Select Employee</option>
+              <option *ngFor="let emp of employees" [ngValue]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Revision Type</label>
+            <select [(ngModel)]="formData.revisionType" name="revisionType">
+              <option *ngFor="let type of revisionTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Current Salary</label>
+            <input type="number" [(ngModel)]="formData.currentSalary" name="currentSalary" readonly>
+          </div>
+          <div class="form-group">
+            <label>Increment %</label>
+            <input type="number" [(ngModel)]="formData.incrementPercentage" name="incrementPercentage" min="0" max="200" step="0.01" (input)="calculateIncrement()">
+          </div>
+          <div class="form-group">
+            <label>Revised Salary</label>
+            <input type="number" [(ngModel)]="formData.revisedSalary" name="revisedSalary">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Effective Date</label>
+          <input type="date" [(ngModel)]="formData.effectiveDate" name="effectiveDate">
+        </div>
+        <div class="form-group">
+          <label>Reason</label>
+          <textarea [(ngModel)]="formData.reason" name="reason" rows="3"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit for Approval</button>
+        </div>
+      </form>
+
+      <!-- Bonus & Incentive Form -->
+      <form *ngIf="activeTab === 'bonus-incentive'" (ngSubmit)="save()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="formData.name" name="name" required>
+          </div>
+          <div class="form-group">
+            <label>Bonus Type</label>
+            <select [(ngModel)]="formData.bonusType" name="bonusType">
+              <option *ngFor="let type of bonusTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Calculation Basis</label>
+            <select [(ngModel)]="formData.calculationBasis" name="calculationBasis">
+              <option *ngFor="let basis of calculationBasis" [value]="basis">{{ basis }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Frequency</label>
+            <select [(ngModel)]="formData.frequency" name="frequency">
+              <option *ngFor="let freq of frequencies" [value]="freq">{{ freq }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group" *ngIf="formData.calculationBasis === 'FIXED'">
+            <label>Amount</label>
+            <input type="number" [(ngModel)]="formData.amount" name="amount" min="0" step="0.01">
+          </div>
+          <div class="form-group" *ngIf="formData.calculationBasis !== 'FIXED'">
+            <label>Percentage</label>
+            <input type="number" [(ngModel)]="formData.percentage" name="percentage" min="0" max="100" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Active</label>
+            <select [(ngModel)]="formData.isActive" name="isActive">
+              <option [ngValue]="true">Yes</option>
+              <option [ngValue]="false">No</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Eligibility Rules</label>
+          <textarea [(ngModel)]="formData.eligibilityRules" name="eligibilityRules" rows="3" placeholder="Define eligibility criteria..."></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+
+      <!-- Benefit Plan Form -->
+      <form *ngIf="activeTab === 'benefit-plans'" (ngSubmit)="save()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Plan Code <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="formData.planCode" name="planCode" required>
+          </div>
+          <div class="form-group">
+            <label>Name <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="formData.name" name="name" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Benefit Type</label>
+            <select [(ngModel)]="formData.benefitType" name="benefitType">
+              <option *ngFor="let type of benefitTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Provider</label>
+            <input type="text" [(ngModel)]="formData.provider" name="provider">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Employer Contribution</label>
+            <input type="number" [(ngModel)]="formData.employerContribution" name="employerContribution" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Employee Contribution</label>
+            <input type="number" [(ngModel)]="formData.employeeContribution" name="employeeContribution" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Coverage Amount</label>
+            <input type="number" [(ngModel)]="formData.coverageAmount" name="coverageAmount" min="0" step="0.01">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Waiting Period (days)</label>
+            <input type="number" [(ngModel)]="formData.waitingPeriodDays" name="waitingPeriodDays" min="0">
+          </div>
+          <div class="form-group">
+            <label>Effective From</label>
+            <input type="date" [(ngModel)]="formData.effectiveFrom" name="effectiveFrom">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Mandatory</label>
+            <select [(ngModel)]="formData.isMandatory" name="isMandatory">
+              <option [ngValue]="true">Yes</option>
+              <option [ngValue]="false">No</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Active</label>
+            <select [(ngModel)]="formData.isActive" name="isActive">
+              <option [ngValue]="true">Yes</option>
+              <option [ngValue]="false">No</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="formData.description" name="description" rows="3"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+
+      <!-- Allowance Form -->
+      <form *ngIf="activeTab === 'allowances'" (ngSubmit)="save()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="formData.name" name="name" required>
+          </div>
+          <div class="form-group">
+            <label>Allowance Type</label>
+            <select [(ngModel)]="formData.allowanceType" name="allowanceType">
+              <option *ngFor="let type of allowanceTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Calculation Basis</label>
+            <select [(ngModel)]="formData.calculationBasis" name="calculationBasis">
+              <option *ngFor="let basis of calculationBasis" [value]="basis">{{ basis }}</option>
+            </select>
+          </div>
+          <div class="form-group" *ngIf="formData.calculationBasis === 'FIXED'">
+            <label>Amount</label>
+            <input type="number" [(ngModel)]="formData.amount" name="amount" min="0" step="0.01">
+          </div>
+          <div class="form-group" *ngIf="formData.calculationBasis !== 'FIXED'">
+            <label>Percentage</label>
+            <input type="number" [(ngModel)]="formData.percentage" name="percentage" min="0" max="100" step="0.01">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Taxable</label>
+            <select [(ngModel)]="formData.isTaxable" name="isTaxable">
+              <option [ngValue]="true">Yes</option>
+              <option [ngValue]="false">No</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Effective From</label>
+            <input type="date" [(ngModel)]="formData.effectiveFrom" name="effectiveFrom">
+          </div>
+          <div class="form-group">
+            <label>Active</label>
+            <select [(ngModel)]="formData.isActive" name="isActive">
+              <option [ngValue]="true">Yes</option>
+              <option [ngValue]="false">No</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+
+      <!-- Enrollment Form -->
+      <form *ngIf="activeTab === 'enrollment'" (ngSubmit)="save()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Employee <span class="required">*</span></label>
+            <select [(ngModel)]="formData.employeeId" name="employeeId" required>
+              <option [ngValue]="null">Select Employee</option>
+              <option *ngFor="let emp of employees" [ngValue]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Benefit Plan <span class="required">*</span></label>
+            <select [(ngModel)]="formData.benefitPlanId" name="benefitPlanId" required>
+              <option [ngValue]="null">Select Benefit Plan</option>
+              <option *ngFor="let plan of benefitPlans" [ngValue]="plan.id">{{ plan.name }} ({{ plan.benefitType }})</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Coverage Type</label>
+            <select [(ngModel)]="formData.coverageType" name="coverageType">
+              <option value="EMPLOYEE_ONLY">Employee Only</option>
+              <option value="EMPLOYEE_SPOUSE">Employee + Spouse</option>
+              <option value="EMPLOYEE_CHILDREN">Employee + Children</option>
+              <option value="FAMILY">Family</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Enrollment Date</label>
+            <input type="date" [(ngModel)]="formData.enrollmentDate" name="enrollmentDate">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary">{{ editMode ? 'Update' : 'Enroll' }}</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
