@@ -77,6 +77,16 @@
     color: white;
     &:hover { background: #545b62; }
   }
+
+  &.btn-outline-primary {
+    background: transparent;
+    color: #008080;
+    border: 2px solid #008080;
+    &:hover { 
+      background: #008080;
+      color: white;
+    }
+  }
 }
 
 .paystubs-grid {

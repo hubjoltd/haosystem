@@ -391,8 +391,11 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closePaystubModal()">Close</button>
+      <button class="btn btn-outline-primary" (click)="printPaystub(selectedPaystub!)">
+        <i class="fas fa-print"></i> Print
+      </button>
       <button class="btn btn-primary" (click)="downloadPaystub(selectedPaystub!)">
-        <i class="fas fa-download"></i> Download PDF
+        <i class="fas fa-download"></i> Download
       </button>
     </div>
   </div>

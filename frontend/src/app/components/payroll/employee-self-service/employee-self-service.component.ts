@@ -8,7 +8,8 @@ import { ExpenseService } from '../../../services/expense.service';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
 import { AuthService } from '../../../services/auth.service';
 import { DocumentService, EmployeeDocument, DocumentType } from '../../../services/document.service';
-import { EmployeeService, EmployeeAsset } from '../../../services/employee.service';
+import { EmployeeService, EmployeeAsset, Employee } from '../../../services/employee.service';
+import { SalarySlipService, SalarySlipData, EmployeeSlipInfo } from '../../../services/salary-slip.service';
 
 @Component({
   selector: 'app-employee-self-service',
@@ -30,6 +31,7 @@ export class EmployeeSelfServiceComponent implements OnInit {
   assets: EmployeeAsset[] = [];
   
   currentEmployeeId: number = 0;
+  currentEmployee: Employee | null = null;
   selectedPaystub: PayrollRecord | null = null;
   showPaystubModal = false;
   
@@ -42,6 +44,9 @@ export class EmployeeSelfServiceComponent implements OnInit {
   };
   leaveTypes: any[] = [];
 
+  companyName = 'Hao System Corporation';
+  companyAddress = '123 Business Park, Suite 500, New York, NY 10001';
+
   constructor(
     private payrollService: PayrollService,
     private leaveService: LeaveService,
@@ -50,12 +55,14 @@ export class EmployeeSelfServiceComponent implements OnInit {
     private attendanceService: AttendanceService,
     private authService: AuthService,
     private documentService: DocumentService,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private salarySlipService: SalarySlipService
   ) {
     this.currentEmployeeId = this.authService.getCurrentUserId() || 0;
   }
 
   ngOnInit(): void {
+    this.loadCurrentEmployee();
     this.loadPaystubs();
     this.loadLeaveBalances();
     this.loadLeaveRequests();
@@ -65,6 +72,13 @@ export class EmployeeSelfServiceComponent implements OnInit {
     this.loadAttendance();
     this.loadDocuments();
     this.loadAssets();
+  }
+
+  loadCurrentEmployee(): void {
+    this.employeeService.getById(this.currentEmployeeId).subscribe({
+      next: (data) => this.currentEmployee = data,
+      error: (err) => console.error('Error loading employee:', err)
+    });
   }
 
   loadPaystubs(): void {
@@ -194,101 +208,42 @@ export class EmployeeSelfServiceComponent implements OnInit {
   }
 
   downloadPaystub(record: PayrollRecord): void {
-    const period = this.getPayPeriod(record);
-    const html = this.generatePaystubHTML(record);
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `paystub_${period.replace(/\s+/g, '_')}.html`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    const salarySlipData = this.buildSalarySlipData(record);
+    this.salarySlipService.downloadSalarySlipPDF(salarySlipData);
   }
 
-  private generatePaystubHTML(record: PayrollRecord): string {
-    return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Pay Stub</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          .paystub { max-width: 800px; margin: 0 auto; border: 1px solid #ccc; padding: 30px; }
-          .header { text-align: center; margin-bottom: 30px; }
-          .company-name { font-size: 24px; font-weight: bold; }
-          .pay-period { font-size: 14px; margin-top: 10px; }
-          .section { margin-bottom: 30px; }
-          .section-title { font-weight: bold; font-size: 14px; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
-          .detail-row { display: flex; justify-content: space-between; padding: 5px 0; }
-          .total-row { font-weight: bold; border-top: 1px solid #000; padding-top: 5px; }
-          .net-pay { font-size: 18px; font-weight: bold; background: #f0f0f0; padding: 10px; text-align: center; }
-        </style>
-      </head>
-      <body>
-        <div class="paystub">
-          <div class="header">
-            <div class="company-name">Pay Stub</div>
-            <div class="pay-period">Period: ${this.getPayPeriod(record)}</div>
-            <div class="pay-period">Paid: ${this.getPayDate(record)}</div>
-          </div>
+  printPaystub(record: PayrollRecord): void {
+    const salarySlipData = this.buildSalarySlipData(record);
+    this.salarySlipService.generateSalarySlipPDF(salarySlipData);
+  }
 
-          <div class="section">
-            <div class="section-title">Earnings</div>
-            <div class="detail-row">
-              <span>Base Pay</span>
-              <span>$${(record.basePay || 0).toFixed(2)}</span>
-            </div>
-            ${record.overtimePay ? `<div class="detail-row">
-              <span>Overtime Pay</span>
-              <span>$${record.overtimePay.toFixed(2)}</span>
-            </div>` : ''}
-            <div class="detail-row total-row">
-              <span>Gross Pay</span>
-              <span>$${(record.grossPay || 0).toFixed(2)}</span>
-            </div>
-          </div>
-
-          <div class="section">
-            <div class="section-title">Deductions</div>
-            ${record.healthInsurance ? `<div class="detail-row">
-              <span>Health Insurance</span>
-              <span>$${record.healthInsurance.toFixed(2)}</span>
-            </div>` : ''}
-            ${record.retirement401k ? `<div class="detail-row">
-              <span>401(k)</span>
-              <span>$${record.retirement401k.toFixed(2)}</span>
-            </div>` : ''}
-            ${record.federalTax ? `<div class="detail-row">
-              <span>Federal Tax</span>
-              <span>$${record.federalTax.toFixed(2)}</span>
-            </div>` : ''}
-            ${record.stateTax ? `<div class="detail-row">
-              <span>State Tax</span>
-              <span>$${record.stateTax.toFixed(2)}</span>
-            </div>` : ''}
-            ${record.socialSecurityTax ? `<div class="detail-row">
-              <span>Social Security</span>
-              <span>$${record.socialSecurityTax.toFixed(2)}</span>
-            </div>` : ''}
-            ${record.medicareTax ? `<div class="detail-row">
-              <span>Medicare</span>
-              <span>$${record.medicareTax.toFixed(2)}</span>
-            </div>` : ''}
-            <div class="detail-row total-row">
-              <span>Total Deductions</span>
-              <span>$${(record.totalDeductions || 0).toFixed(2)}</span>
-            </div>
-          </div>
-
-          <div class="section net-pay">
-            Net Pay: $${(record.netPay || 0).toFixed(2)}
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
+  private buildSalarySlipData(record: PayrollRecord): SalarySlipData {
+    const emp = this.currentEmployee;
+    const payDate = record.payrollRun?.payDate ? new Date(record.payrollRun.payDate) : new Date();
+    const payMonth = payDate.toLocaleString('en-US', { month: 'long' });
+    const payYear = payDate.getFullYear();
+    
+    const employeeInfo: EmployeeSlipInfo = {
+      name: emp ? `${emp.firstName} ${emp.lastName}` : 'Employee',
+      employeeCode: emp?.employeeCode || `EMP-${this.currentEmployeeId}`,
+      designation: emp?.designation?.title || 'Staff',
+      dateOfJoining: emp?.joiningDate ? new Date(emp.joiningDate).toLocaleDateString() : 'N/A',
+      uanNumber: emp?.aadharNumber || undefined,
+      pfAccountNumber: emp?.panNumber || undefined,
+      bankAccountNumber: undefined,
+      department: emp?.department?.name || undefined
+    };
+    
+    return {
+      employee: employeeInfo,
+      payrollRecord: record,
+      companyName: this.companyName,
+      companyAddress: this.companyAddress,
+      payMonth: payMonth,
+      payYear: payYear,
+      paidDays: 22,
+      lopDays: 0
+    };
   }
 
   getTotalEntitlement(balance: LeaveBalance): number {
