@@ -38,8 +38,48 @@ export class RecruitmentService {
     return this.http.post<any>(`${this.baseUrl}/requisitions/${id}/approve`, { approverId });
   }
 
+  rejectRequisition(id: number, reason: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/requisitions/${id}/reject`, { reason });
+  }
+
+  holdRequisition(id: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/requisitions/${id}/hold`, {});
+  }
+
   deleteRequisition(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/requisitions/${id}`);
+  }
+
+  getOffers(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/offers`);
+  }
+
+  getOffer(id: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/offers/${id}`);
+  }
+
+  createOffer(data: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/offers`, data);
+  }
+
+  updateOffer(id: number, data: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/offers/${id}`, data);
+  }
+
+  sendOffer(id: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/offers/${id}/send`, {});
+  }
+
+  acceptOffer(id: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/offers/${id}/accept`, {});
+  }
+
+  declineOffer(id: number, reason: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/offers/${id}/decline`, { reason });
+  }
+
+  deleteOffer(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/offers/${id}`);
   }
 
   getJobPostings(): Observable<any[]> {

@@ -1,4 +1,430 @@
-<div class="container-fluid p-4">
-  <h2>Manpower Requisition</h2>
-  <p>Manpower requisition page content</p>
+<div class="requisition-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h2>Manpower Requisition (MRF)</h2>
+      <p class="subtitle">Manage job requisition requests and approvals</p>
+    </div>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <i class="fas fa-plus"></i> New Requisition
+    </button>
+  </div>
+
+  <div class="stats-cards">
+    <div class="stat-card" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">
+      <div class="stat-value">{{ getStatusCounts()['all'] }}</div>
+      <div class="stat-label">Total</div>
+    </div>
+    <div class="stat-card draft" [class.active]="activeTab === 'DRAFT'" (click)="activeTab = 'DRAFT'">
+      <div class="stat-value">{{ getStatusCounts()['DRAFT'] }}</div>
+      <div class="stat-label">Draft</div>
+    </div>
+    <div class="stat-card pending" [class.active]="activeTab === 'PENDING'" (click)="activeTab = 'PENDING'">
+      <div class="stat-value">{{ getStatusCounts()['PENDING'] }}</div>
+      <div class="stat-label">Pending</div>
+    </div>
+    <div class="stat-card approved" [class.active]="activeTab === 'APPROVED'" (click)="activeTab = 'APPROVED'">
+      <div class="stat-value">{{ getStatusCounts()['APPROVED'] }}</div>
+      <div class="stat-label">Approved</div>
+    </div>
+    <div class="stat-card rejected" [class.active]="activeTab === 'REJECTED'" (click)="activeTab = 'REJECTED'">
+      <div class="stat-value">{{ getStatusCounts()['REJECTED'] }}</div>
+      <div class="stat-label">Rejected</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Search by number, title, department...">
+    </div>
+  </div>
+
+  <div class="content-card">
+    <div *ngIf="loading" class="loading">
+      <i class="fas fa-spinner fa-spin"></i> Loading requisitions...
+    </div>
+
+    <div *ngIf="!loading && getFilteredRequisitions().length === 0" class="empty-state">
+      <i class="fas fa-file-alt"></i>
+      <p>No requisitions found</p>
+      <button class="btn btn-primary" (click)="openCreateModal()">Create New Requisition</button>
+    </div>
+
+    <table *ngIf="!loading && getFilteredRequisitions().length > 0" class="data-table">
+      <thead>
+        <tr>
+          <th>MRF Number</th>
+          <th>Job Title</th>
+          <th>Department</th>
+          <th>Positions</th>
+          <th>Type</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Approval</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let req of getFilteredRequisitions()">
+          <td class="mrf-number">{{ req.requisitionNumber }}</td>
+          <td>{{ req.jobTitle }}</td>
+          <td>{{ req.department?.name || '-' }}</td>
+          <td class="positions">{{ req.numberOfPositions }}</td>
+          <td>{{ req.employmentType }}</td>
+          <td>
+            <span class="priority-badge" [ngClass]="getPriorityClass(req.priority)">
+              {{ req.priority }}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(req.status)">
+              {{ req.status }}
+            </span>
+          </td>
+          <td class="approval-level">{{ getCurrentApprovalLevel(req) }}</td>
+          <td class="actions">
+            <button class="btn-icon" title="View Details" (click)="viewDetails(req)">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button *ngIf="req.status === 'DRAFT'" class="btn-icon" title="Edit" (click)="openEditModal(req)">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button *ngIf="req.status === 'DRAFT'" class="btn-icon success" title="Submit for Approval" (click)="submitForApproval(req)">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+            <button *ngIf="canApprove(req)" class="btn-icon success" title="Approve" (click)="openApprovalModal(req, 'approve')">
+              <i class="fas fa-check"></i>
+            </button>
+            <button *ngIf="canApprove(req)" class="btn-icon danger" title="Reject" (click)="openApprovalModal(req, 'reject')">
+              <i class="fas fa-times"></i>
+            </button>
+            <button *ngIf="req.status === 'PENDING'" class="btn-icon warning" title="Put on Hold" (click)="putOnHold(req)">
+              <i class="fas fa-pause"></i>
+            </button>
+            <button *ngIf="req.status === 'DRAFT'" class="btn-icon danger" title="Delete" (click)="deleteRequisition(req)">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditing ? 'Edit' : 'New' }} Manpower Requisition</h3>
+      <button class="btn-close" (click)="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-section">
+        <h4>Basic Information</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>MRF Number</label>
+            <input type="text" [(ngModel)]="selectedRequisition.requisitionNumber" readonly class="readonly">
+          </div>
+          <div class="form-group">
+            <label>Requested By</label>
+            <input type="text" [(ngModel)]="selectedRequisition.requestedBy" readonly class="readonly">
+          </div>
+          <div class="form-group">
+            <label>Job Title <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="selectedRequisition.jobTitle" placeholder="e.g., Software Engineer">
+          </div>
+          <div class="form-group">
+            <label>Department</label>
+            <select [(ngModel)]="selectedRequisition.departmentId">
+              <option [ngValue]="null">-- Select Department --</option>
+              <option *ngFor="let dept of departments" [ngValue]="dept.id">{{ dept.name }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Number of Positions <span class="required">*</span></label>
+            <input type="number" [(ngModel)]="selectedRequisition.numberOfPositions" min="1">
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <select [(ngModel)]="selectedRequisition.priority">
+              <option *ngFor="let p of priorities" [value]="p">{{ p }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Employment Details</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Employment Type</label>
+            <select [(ngModel)]="selectedRequisition.employmentType">
+              <option *ngFor="let type of employmentTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Work Mode</label>
+            <select [(ngModel)]="selectedRequisition.workMode">
+              <option *ngFor="let mode of workModes" [value]="mode">{{ mode }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Work Location</label>
+            <input type="text" [(ngModel)]="selectedRequisition.workLocation" placeholder="e.g., New York, USA">
+          </div>
+          <div class="form-group">
+            <label>Expected Joining Date</label>
+            <input type="date" [(ngModel)]="selectedRequisition.expectedJoiningDate">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Salary Range</h4>
+        <div class="form-grid cols-4">
+          <div class="form-group">
+            <label>Currency</label>
+            <select [(ngModel)]="selectedRequisition.currency">
+              <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Min Salary</label>
+            <input type="number" [(ngModel)]="selectedRequisition.minSalary" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Max Salary</label>
+            <input type="number" [(ngModel)]="selectedRequisition.maxSalary" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Min Experience (Years)</label>
+            <input type="number" [(ngModel)]="selectedRequisition.minimumExperience" min="0" placeholder="0">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Justification</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Justification Type</label>
+            <select [(ngModel)]="selectedRequisition.justificationType">
+              <option *ngFor="let type of justificationTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+          <div class="form-group" *ngIf="selectedRequisition.justificationType === 'Replacement'">
+            <label>Replacing Employee</label>
+            <input type="text" [(ngModel)]="selectedRequisition.replacementFor" placeholder="Employee name being replaced">
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label>Justification Details <span class="required">*</span></label>
+          <textarea [(ngModel)]="selectedRequisition.justification" rows="3" 
+                    placeholder="Explain why this position is needed..."></textarea>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Job Requirements</h4>
+        <div class="form-group full-width">
+          <label>Job Description</label>
+          <textarea [(ngModel)]="selectedRequisition.jobDescription" rows="4" 
+                    placeholder="Describe the role, responsibilities, and expectations..."></textarea>
+        </div>
+        <div class="form-group full-width">
+          <label>Required Skills</label>
+          <textarea [(ngModel)]="selectedRequisition.requiredSkills" rows="2" 
+                    placeholder="List required skills separated by commas..."></textarea>
+        </div>
+        <div class="form-group full-width">
+          <label>Education Requirement</label>
+          <input type="text" [(ngModel)]="selectedRequisition.educationRequirement" 
+                 placeholder="e.g., Bachelor's degree in Computer Science">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-outline" (click)="saveRequisition(true)">Save as Draft</button>
+      <button class="btn btn-primary" (click)="saveRequisition(false)">Submit for Approval</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Details Modal -->
+<div *ngIf="showViewModal && viewRequisition" class="modal-overlay" (click)="closeViewModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Requisition Details - {{ viewRequisition.requisitionNumber }}</h3>
+      <button class="btn-close" (click)="closeViewModal()"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="detail-header">
+        <div class="detail-title">
+          <h2>{{ viewRequisition.jobTitle }}</h2>
+          <span class="status-badge large" [ngClass]="getStatusClass(viewRequisition.status)">
+            {{ viewRequisition.status }}
+          </span>
+        </div>
+        <div class="detail-meta">
+          <span><i class="fas fa-calendar"></i> {{ formatDate(viewRequisition.requestedDate) }}</span>
+          <span><i class="fas fa-user"></i> {{ viewRequisition.requestedBy }}</span>
+        </div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-section">
+          <h4>Position Details</h4>
+          <div class="detail-row">
+            <span class="label">Department:</span>
+            <span class="value">{{ viewRequisition.department?.name || '-' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Positions:</span>
+            <span class="value">{{ viewRequisition.numberOfPositions }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Employment Type:</span>
+            <span class="value">{{ viewRequisition.employmentType }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Work Mode:</span>
+            <span class="value">{{ viewRequisition.workMode }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Location:</span>
+            <span class="value">{{ viewRequisition.workLocation || '-' }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Compensation</h4>
+          <div class="detail-row">
+            <span class="label">Salary Range:</span>
+            <span class="value">
+              {{ formatCurrency(viewRequisition.minSalary, viewRequisition.currency) }} - 
+              {{ formatCurrency(viewRequisition.maxSalary, viewRequisition.currency) }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Min Experience:</span>
+            <span class="value">{{ viewRequisition.minimumExperience || 0 }} years</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Expected Joining:</span>
+            <span class="value">{{ formatDate(viewRequisition.expectedJoiningDate) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Priority:</span>
+            <span class="priority-badge" [ngClass]="getPriorityClass(viewRequisition.priority)">
+              {{ viewRequisition.priority }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section full">
+        <h4>Justification</h4>
+        <div class="detail-row">
+          <span class="label">Type:</span>
+          <span class="value">{{ viewRequisition.justificationType }}</span>
+        </div>
+        <div *ngIf="viewRequisition.replacementFor" class="detail-row">
+          <span class="label">Replacing:</span>
+          <span class="value">{{ viewRequisition.replacementFor }}</span>
+        </div>
+        <div class="detail-text">{{ viewRequisition.justification }}</div>
+      </div>
+
+      <div *ngIf="viewRequisition.jobDescription" class="detail-section full">
+        <h4>Job Description</h4>
+        <div class="detail-text">{{ viewRequisition.jobDescription }}</div>
+      </div>
+
+      <div *ngIf="viewRequisition.requiredSkills" class="detail-section full">
+        <h4>Required Skills</h4>
+        <div class="skill-tags">
+          <span class="skill-tag" *ngFor="let skill of viewRequisition.requiredSkills?.split(',')">
+            {{ skill.trim() }}
+          </span>
+        </div>
+      </div>
+
+      <div *ngIf="viewRequisition.approvalHistory?.length" class="detail-section full">
+        <h4>Approval History</h4>
+        <div class="approval-timeline">
+          <div class="timeline-item" *ngFor="let history of viewRequisition.approvalHistory">
+            <div class="timeline-icon" [ngClass]="history.status.toLowerCase()">
+              <i class="fas" [ngClass]="history.status === 'APPROVED' ? 'fa-check' : history.status === 'REJECTED' ? 'fa-times' : 'fa-clock'"></i>
+            </div>
+            <div class="timeline-content">
+              <div class="timeline-header">
+                <strong>{{ history.levelName }}</strong>
+                <span class="timeline-status" [ngClass]="history.status.toLowerCase()">{{ history.status }}</span>
+              </div>
+              <div class="timeline-meta">
+                {{ history.approverName }} - {{ formatDate(history.actionDate) }}
+              </div>
+              <div *ngIf="history.comments" class="timeline-comments">{{ history.comments }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="viewRequisition.jobId" class="detail-section full">
+        <div class="job-id-banner">
+          <i class="fas fa-check-circle"></i>
+          <span>Job ID Generated: <strong>{{ viewRequisition.jobId }}</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeViewModal()">Close</button>
+      <button *ngIf="canApprove(viewRequisition)" class="btn btn-success" (click)="closeViewModal(); openApprovalModal(viewRequisition, 'approve')">
+        <i class="fas fa-check"></i> Approve
+      </button>
+      <button *ngIf="canApprove(viewRequisition)" class="btn btn-danger" (click)="closeViewModal(); openApprovalModal(viewRequisition, 'reject')">
+        <i class="fas fa-times"></i> Reject
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Approval Modal -->
+<div *ngIf="showApprovalModal && requisitionToApprove" class="modal-overlay" (click)="closeApprovalModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ approvalAction === 'approve' ? 'Approve' : 'Reject' }} Requisition</h3>
+      <button class="btn-close" (click)="closeApprovalModal()"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="approval-info">
+        <p><strong>MRF Number:</strong> {{ requisitionToApprove.requisitionNumber }}</p>
+        <p><strong>Job Title:</strong> {{ requisitionToApprove.jobTitle }}</p>
+        <p><strong>Positions:</strong> {{ requisitionToApprove.numberOfPositions }}</p>
+      </div>
+      
+      <div class="form-group">
+        <label>{{ approvalAction === 'approve' ? 'Comments (Optional)' : 'Rejection Reason (Required)' }}</label>
+        <textarea [(ngModel)]="approvalComments" rows="4" 
+                  [placeholder]="approvalAction === 'approve' ? 'Add any comments...' : 'Please provide reason for rejection...'"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeApprovalModal()">Cancel</button>
+      <button class="btn" [ngClass]="approvalAction === 'approve' ? 'btn-success' : 'btn-danger'" 
+              (click)="processApproval()"
+              [disabled]="approvalAction === 'reject' && !approvalComments">
+        {{ approvalAction === 'approve' ? 'Approve' : 'Reject' }}
+      </button>
+    </div>
+  </div>
+</div>
 </div>

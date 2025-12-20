@@ -1,4 +1,415 @@
-<div class="container-fluid p-4">
-  <h2>Candidate Database</h2>
-  <p>Candidate database page content</p>
+<div class="candidates-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h2>Candidate Database</h2>
+      <p class="subtitle">Manage and track all candidates in the recruitment pipeline</p>
+    </div>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <i class="fa fa-plus"></i> Add Candidate
+    </button>
+  </div>
+
+  <div class="stats-cards">
+    <div class="stat-card" [class.active]="activeTab === 'all'" (click)="setActiveTab('all')">
+      <div class="stat-value">{{ getStageCount('all') }}</div>
+      <div class="stat-label">All Candidates</div>
+    </div>
+    <div class="stat-card new" [class.active]="activeTab === 'new'" (click)="setActiveTab('new')">
+      <div class="stat-value">{{ getStageCount('new') }}</div>
+      <div class="stat-label">New</div>
+    </div>
+    <div class="stat-card screening" [class.active]="activeTab === 'screening'" (click)="setActiveTab('screening')">
+      <div class="stat-value">{{ getStageCount('screening') }}</div>
+      <div class="stat-label">Screening</div>
+    </div>
+    <div class="stat-card interview" [class.active]="activeTab === 'interview'" (click)="setActiveTab('interview')">
+      <div class="stat-value">{{ getStageCount('interview') }}</div>
+      <div class="stat-label">Interview</div>
+    </div>
+    <div class="stat-card offer" [class.active]="activeTab === 'offer'" (click)="setActiveTab('offer')">
+      <div class="stat-value">{{ getStageCount('offer') }}</div>
+      <div class="stat-label">Offer</div>
+    </div>
+    <div class="stat-card hired" [class.active]="activeTab === 'hired'" (click)="setActiveTab('hired')">
+      <div class="stat-value">{{ getStageCount('hired') }}</div>
+      <div class="stat-label">Hired</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fa fa-search"></i>
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Search by name, email, ID, position...">
+    </div>
+  </div>
+
+  <div class="content-card">
+    <div *ngIf="loading" class="loading">
+      <i class="fa fa-spinner fa-spin"></i>
+      <p>Loading candidates...</p>
+    </div>
+
+    <div *ngIf="!loading && filteredCandidates.length === 0" class="empty-state">
+      <i class="fa fa-users"></i>
+      <p>No candidates found</p>
+      <button class="btn btn-primary" (click)="openCreateModal()">Add First Candidate</button>
+    </div>
+
+    <table *ngIf="!loading && filteredCandidates.length > 0" class="data-table">
+      <thead>
+        <tr>
+          <th>Candidate</th>
+          <th>Position</th>
+          <th>Experience</th>
+          <th>Source</th>
+          <th>Rating</th>
+          <th>Stage</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let candidate of filteredCandidates">
+          <td>
+            <div class="candidate-info">
+              <div class="candidate-avatar">{{ candidate.firstName[0] }}{{ candidate.lastName[0] }}</div>
+              <div class="candidate-details">
+                <span class="candidate-name">{{ getFullName(candidate) }}</span>
+                <span class="candidate-id">{{ candidate.candidateNumber }}</span>
+                <span class="candidate-email">{{ candidate.email }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="position-info">
+              <span class="position-title">{{ candidate.appliedPosition || 'Not specified' }}</span>
+              <span class="current-role" *ngIf="candidate.currentJobTitle">
+                Currently: {{ candidate.currentJobTitle }}
+              </span>
+            </div>
+          </td>
+          <td>
+            <span class="experience">{{ candidate.experienceYears }} years</span>
+            <div class="education">{{ candidate.education }}</div>
+          </td>
+          <td>
+            <span class="source-badge">{{ candidate.source }}</span>
+            <div class="source-detail" *ngIf="candidate.sourceDetails">{{ candidate.sourceDetails }}</div>
+          </td>
+          <td>
+            <div class="rating">
+              <i *ngFor="let star of getRatingStars(candidate.rating || 0)" 
+                 class="fa fa-star" [class.filled]="star === 1"></i>
+            </div>
+          </td>
+          <td>
+            <span class="stage-badge" [ngClass]="getStageClass(candidate.stage)">{{ candidate.stage }}</span>
+          </td>
+          <td class="actions">
+            <button class="btn-icon" title="View" (click)="viewDetails(candidate)">
+              <i class="fa fa-eye"></i>
+            </button>
+            <button class="btn-icon" title="Edit" (click)="openEditModal(candidate)">
+              <i class="fa fa-pencil"></i>
+            </button>
+            <button class="btn-icon success" title="Update Stage" (click)="openStageModal(candidate)">
+              <i class="fa fa-exchange"></i>
+            </button>
+            <button class="btn-icon danger" title="Delete" (click)="deleteCandidate(candidate)">
+              <i class="fa fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditing ? 'Edit Candidate' : 'Add Candidate' }}</h3>
+      <button class="btn-close" (click)="closeModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section">
+        <h4>Personal Information</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Candidate ID</label>
+            <input type="text" [(ngModel)]="selectedCandidate.candidateNumber" class="readonly" readonly>
+          </div>
+          <div class="form-group">
+            <label>Applied Position</label>
+            <select [(ngModel)]="selectedCandidate.appliedPositionId">
+              <option value="">-- Select Position --</option>
+              <option *ngFor="let job of jobPostings" [value]="job.id">{{ job.jobTitle }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>First Name <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="selectedCandidate.firstName" placeholder="First name">
+          </div>
+          <div class="form-group">
+            <label>Last Name <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="selectedCandidate.lastName" placeholder="Last name">
+          </div>
+          <div class="form-group">
+            <label>Email <span class="required">*</span></label>
+            <input type="email" [(ngModel)]="selectedCandidate.email" placeholder="email@example.com">
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="tel" [(ngModel)]="selectedCandidate.phone" placeholder="+1 555-123-4567">
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" [(ngModel)]="selectedCandidate.location" placeholder="City, Country">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Professional Background</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Current Job Title</label>
+            <input type="text" [(ngModel)]="selectedCandidate.currentJobTitle" placeholder="e.g., Software Engineer">
+          </div>
+          <div class="form-group">
+            <label>Current Company</label>
+            <input type="text" [(ngModel)]="selectedCandidate.currentCompany" placeholder="Company name">
+          </div>
+          <div class="form-group">
+            <label>Years of Experience</label>
+            <input type="number" [(ngModel)]="selectedCandidate.experienceYears" min="0">
+          </div>
+          <div class="form-group">
+            <label>Education</label>
+            <select [(ngModel)]="selectedCandidate.education">
+              <option *ngFor="let edu of educationLevels" [value]="edu">{{ edu }}</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>Skills</label>
+            <div class="skills-input">
+              <input type="text" [(ngModel)]="newSkill" placeholder="Add skill..." (keyup.enter)="addSkill()">
+              <button type="button" class="btn btn-secondary" (click)="addSkill()">Add</button>
+            </div>
+            <div class="skill-tags" *ngIf="selectedCandidate.skills.length">
+              <span *ngFor="let skill of selectedCandidate.skills" class="skill-tag">
+                {{ skill }}
+                <i class="fa fa-times" (click)="removeSkill(skill)"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Source & Additional Info</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Source</label>
+            <select [(ngModel)]="selectedCandidate.source">
+              <option *ngFor="let src of sources" [value]="src">{{ src }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Source Details</label>
+            <input type="text" [(ngModel)]="selectedCandidate.sourceDetails" placeholder="e.g., Referred by John Doe">
+          </div>
+          <div class="form-group">
+            <label>Expected Salary</label>
+            <input type="number" [(ngModel)]="selectedCandidate.expectedSalary" placeholder="Annual salary">
+          </div>
+          <div class="form-group">
+            <label>Notice Period (Days)</label>
+            <input type="number" [(ngModel)]="selectedCandidate.noticePeriod" min="0">
+          </div>
+          <div class="form-group">
+            <label>LinkedIn URL</label>
+            <input type="url" [(ngModel)]="selectedCandidate.linkedinUrl" placeholder="https://linkedin.com/in/...">
+          </div>
+          <div class="form-group">
+            <label>Portfolio URL</label>
+            <input type="url" [(ngModel)]="selectedCandidate.portfolioUrl" placeholder="https://...">
+          </div>
+          <div class="form-group full-width">
+            <label>Tags</label>
+            <div class="skills-input">
+              <input type="text" [(ngModel)]="newTag" placeholder="Add tag..." (keyup.enter)="addTag()">
+              <button type="button" class="btn btn-secondary" (click)="addTag()">Add</button>
+            </div>
+            <div class="tag-list" *ngIf="selectedCandidate.tags.length">
+              <span *ngFor="let tag of selectedCandidate.tags" class="tag-badge">
+                {{ tag }}
+                <i class="fa fa-times" (click)="removeTag(tag)"></i>
+              </span>
+            </div>
+          </div>
+          <div class="form-group full-width">
+            <label>Notes</label>
+            <textarea [(ngModel)]="selectedCandidate.notes" rows="3" placeholder="Additional notes..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveCandidate()">
+        {{ isEditing ? 'Update Candidate' : 'Add Candidate' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- View Details Modal -->
+<div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Candidate Profile</h3>
+      <button class="btn-close" (click)="closeViewModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="modal-body" *ngIf="viewCandidate">
+      <div class="profile-header">
+        <div class="profile-avatar">{{ viewCandidate.firstName[0] }}{{ viewCandidate.lastName[0] }}</div>
+        <div class="profile-info">
+          <h2>{{ getFullName(viewCandidate) }}</h2>
+          <p class="profile-subtitle">{{ viewCandidate.currentJobTitle }} at {{ viewCandidate.currentCompany }}</p>
+          <div class="profile-meta">
+            <span><i class="fa fa-hashtag"></i> {{ viewCandidate.candidateNumber }}</span>
+            <span><i class="fa fa-envelope"></i> {{ viewCandidate.email }}</span>
+            <span><i class="fa fa-phone"></i> {{ viewCandidate.phone }}</span>
+            <span *ngIf="viewCandidate.location"><i class="fa fa-map-marker"></i> {{ viewCandidate.location }}</span>
+          </div>
+        </div>
+        <span class="stage-badge large" [ngClass]="getStageClass(viewCandidate.stage)">{{ viewCandidate.stage }}</span>
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-section">
+          <h4>Applied Position</h4>
+          <div class="detail-row">
+            <span class="label">Position</span>
+            <span class="value">{{ viewCandidate.appliedPosition || 'Not specified' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Experience</span>
+            <span class="value">{{ viewCandidate.experienceYears }} years</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Education</span>
+            <span class="value">{{ viewCandidate.education }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Rating</span>
+            <span class="value rating">
+              <i *ngFor="let star of getRatingStars(viewCandidate.rating || 0)" 
+                 class="fa fa-star" [class.filled]="star === 1"></i>
+            </span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Source & Compensation</h4>
+          <div class="detail-row">
+            <span class="label">Source</span>
+            <span class="value">{{ viewCandidate.source }}</span>
+          </div>
+          <div class="detail-row" *ngIf="viewCandidate.sourceDetails">
+            <span class="label">Source Details</span>
+            <span class="value">{{ viewCandidate.sourceDetails }}</span>
+          </div>
+          <div class="detail-row" *ngIf="viewCandidate.expectedSalary">
+            <span class="label">Expected Salary</span>
+            <span class="value">{{ viewCandidate.expectedSalary | number }}</span>
+          </div>
+          <div class="detail-row" *ngIf="viewCandidate.noticePeriod">
+            <span class="label">Notice Period</span>
+            <span class="value">{{ viewCandidate.noticePeriod }} days</span>
+          </div>
+        </div>
+
+        <div class="detail-section full" *ngIf="viewCandidate.skills.length">
+          <h4>Skills</h4>
+          <div class="skill-tags">
+            <span *ngFor="let skill of viewCandidate.skills" class="skill-tag">{{ skill }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section full" *ngIf="viewCandidate.tags.length">
+          <h4>Tags</h4>
+          <div class="tag-list">
+            <span *ngFor="let tag of viewCandidate.tags" class="tag-badge">{{ tag }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section full">
+          <h4>Stage History</h4>
+          <div class="stage-timeline">
+            <div *ngFor="let history of viewCandidate.stageHistory" class="timeline-item">
+              <div class="timeline-icon" [ngClass]="getStageClass(history.stage)">
+                <i class="fa fa-check"></i>
+              </div>
+              <div class="timeline-content">
+                <div class="timeline-header">
+                  <span class="stage-name">{{ history.stage }}</span>
+                  <span class="timeline-date">{{ history.movedAt | date:'MMM d, yyyy' }}</span>
+                </div>
+                <div class="timeline-meta" *ngIf="history.movedBy">By: {{ history.movedBy }}</div>
+                <div class="timeline-notes" *ngIf="history.notes">{{ history.notes }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section full" *ngIf="viewCandidate.notes">
+          <h4>Notes</h4>
+          <p class="detail-text">{{ viewCandidate.notes }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeViewModal()">Close</button>
+      <button class="btn btn-outline" (click)="openStageModal(viewCandidate!); closeViewModal()">
+        <i class="fa fa-exchange"></i> Update Stage
+      </button>
+      <button class="btn btn-primary" (click)="openEditModal(viewCandidate!); closeViewModal()">
+        <i class="fa fa-pencil"></i> Edit
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Stage Update Modal -->
+<div class="modal-overlay" *ngIf="showStageModal" (click)="closeStageModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Update Candidate Stage</h3>
+      <button class="btn-close" (click)="closeStageModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="modal-body" *ngIf="stageCandidate">
+      <div class="candidate-summary">
+        <strong>{{ getFullName(stageCandidate) }}</strong>
+        <span class="stage-badge" [ngClass]="getStageClass(stageCandidate.stage)">{{ stageCandidate.stage }}</span>
+      </div>
+      
+      <div class="form-group">
+        <label>Move to Stage <span class="required">*</span></label>
+        <select [(ngModel)]="newStage">
+          <option *ngFor="let stage of stages" [value]="stage">{{ stage }}</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea [(ngModel)]="stageNotes" rows="3" placeholder="Add notes about this stage change..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeStageModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="updateStage()">Update Stage</button>
+    </div>
+  </div>
 </div>

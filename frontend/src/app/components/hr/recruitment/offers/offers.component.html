@@ -1,4 +1,467 @@
-<div class="container-fluid p-4">
-  <h2>Offer Letters</h2>
-  <p>Offer letters page content</p>
+<div class="offers-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h2>Offer Letters</h2>
+      <p class="subtitle">Create and manage job offers for candidates</p>
+    </div>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <i class="fa fa-plus"></i> Create Offer
+    </button>
+  </div>
+
+  <div class="stats-cards">
+    <div class="stat-card" [class.active]="activeTab === 'all'" (click)="setActiveTab('all')">
+      <div class="stat-value">{{ getStatusCount('all') }}</div>
+      <div class="stat-label">All Offers</div>
+    </div>
+    <div class="stat-card draft" [class.active]="activeTab === 'draft'" (click)="setActiveTab('draft')">
+      <div class="stat-value">{{ getStatusCount('draft') }}</div>
+      <div class="stat-label">Drafts</div>
+    </div>
+    <div class="stat-card pending" [class.active]="activeTab === 'pending-approval'" (click)="setActiveTab('pending-approval')">
+      <div class="stat-value">{{ getStatusCount('pending-approval') }}</div>
+      <div class="stat-label">Pending</div>
+    </div>
+    <div class="stat-card sent" [class.active]="activeTab === 'sent'" (click)="setActiveTab('sent')">
+      <div class="stat-value">{{ getStatusCount('sent') }}</div>
+      <div class="stat-label">Sent</div>
+    </div>
+    <div class="stat-card accepted" [class.active]="activeTab === 'accepted'" (click)="setActiveTab('accepted')">
+      <div class="stat-value">{{ getStatusCount('accepted') }}</div>
+      <div class="stat-label">Accepted</div>
+    </div>
+    <div class="stat-card declined" [class.active]="activeTab === 'declined'" (click)="setActiveTab('declined')">
+      <div class="stat-value">{{ getStatusCount('declined') }}</div>
+      <div class="stat-label">Declined</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fa fa-search"></i>
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Search by name, ID, position, department...">
+    </div>
+  </div>
+
+  <div class="content-card">
+    <div *ngIf="loading" class="loading">
+      <i class="fa fa-spinner fa-spin"></i>
+      <p>Loading offers...</p>
+    </div>
+
+    <div *ngIf="!loading && filteredOffers.length === 0" class="empty-state">
+      <i class="fa fa-file-text-o"></i>
+      <p>No offers found</p>
+      <button class="btn btn-primary" (click)="openCreateModal()">Create First Offer</button>
+    </div>
+
+    <table *ngIf="!loading && filteredOffers.length > 0" class="data-table">
+      <thead>
+        <tr>
+          <th>Offer</th>
+          <th>Candidate</th>
+          <th>Compensation</th>
+          <th>Joining</th>
+          <th>Approval</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let offer of filteredOffers">
+          <td>
+            <span class="offer-number">{{ offer.offerNumber }}</span>
+            <div class="offer-meta">
+              <span>{{ offer.jobTitle }}</span>
+              <span>{{ offer.department }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="candidate-info">
+              <span class="candidate-name">{{ offer.candidateName }}</span>
+              <span class="candidate-email">{{ offer.candidateEmail }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="salary-info">
+              <span class="salary">{{ formatSalary(offer) }}</span>
+              <span class="bonus" *ngIf="offer.bonus">+ {{ offer.currency }} {{ offer.bonus | number }} {{ offer.bonusType }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="date-info">
+              <span class="join-date">{{ offer.joiningDate | date:'MMM d, yyyy' }}</span>
+              <span class="expiry" [class.expired]="isExpired(offer.expiryDate)">
+                Expires: {{ offer.expiryDate | date:'MMM d' }}
+              </span>
+            </div>
+          </td>
+          <td>
+            <span class="approval-badge" [ngClass]="getApprovalClass(offer.approvalStatus)">
+              {{ offer.approvalStatus }}
+            </span>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(offer.status)">{{ offer.status.replace('_', ' ') }}</span>
+          </td>
+          <td class="actions">
+            <button class="btn-icon" title="View" (click)="viewDetails(offer)">
+              <i class="fa fa-eye"></i>
+            </button>
+            <button class="btn-icon" title="Edit" (click)="openEditModal(offer)" *ngIf="offer.status === 'DRAFT'">
+              <i class="fa fa-pencil"></i>
+            </button>
+            <button class="btn-icon success" title="Submit for Approval" (click)="submitForApproval(offer)" *ngIf="offer.status === 'DRAFT'">
+              <i class="fa fa-check-circle"></i>
+            </button>
+            <button class="btn-icon success" title="Approve" (click)="openApprovalModal(offer, 'approve')" *ngIf="offer.status === 'PENDING_APPROVAL'">
+              <i class="fa fa-thumbs-up"></i>
+            </button>
+            <button class="btn-icon warning" title="Return for Revision" (click)="openApprovalModal(offer, 'reject')" *ngIf="offer.status === 'PENDING_APPROVAL'">
+              <i class="fa fa-undo"></i>
+            </button>
+            <button class="btn-icon success" title="Send to Candidate" (click)="sendOffer(offer)" *ngIf="offer.status === 'APPROVED'">
+              <i class="fa fa-paper-plane"></i>
+            </button>
+            <button class="btn-icon success" title="Mark Accepted" (click)="acceptOffer(offer)" *ngIf="offer.status === 'SENT'">
+              <i class="fa fa-check"></i>
+            </button>
+            <button class="btn-icon danger" title="Mark Declined" (click)="declineOffer(offer)" *ngIf="offer.status === 'SENT'">
+              <i class="fa fa-times"></i>
+            </button>
+            <button class="btn-icon danger" title="Delete" (click)="deleteOffer(offer)" *ngIf="offer.status === 'DRAFT'">
+              <i class="fa fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditing ? 'Edit Offer' : 'Create Offer' }}</h3>
+      <button class="btn-close" (click)="closeModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section">
+        <h4>Offer Details</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Offer Number</label>
+            <input type="text" [(ngModel)]="selectedOffer.offerNumber" class="readonly" readonly>
+          </div>
+          <div class="form-group">
+            <label>Template</label>
+            <select [(ngModel)]="selectedOffer.template">
+              <option *ngFor="let t of templates" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Candidate <span class="required">*</span></label>
+            <select (change)="selectCandidate($event)">
+              <option value="">-- Select Candidate --</option>
+              <option *ngFor="let candidate of candidates" [value]="candidate.id">
+                {{ candidate.firstName }} {{ candidate.lastName }} - {{ candidate.appliedPosition }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Offer Type</label>
+            <select [(ngModel)]="selectedOffer.offerType">
+              <option *ngFor="let type of offerTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Position Details</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Job Title <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="selectedOffer.jobTitle" placeholder="e.g., Senior Software Engineer">
+          </div>
+          <div class="form-group">
+            <label>Department</label>
+            <input type="text" [(ngModel)]="selectedOffer.department" placeholder="e.g., Engineering">
+          </div>
+          <div class="form-group">
+            <label>Reporting To</label>
+            <input type="text" [(ngModel)]="selectedOffer.reportingTo" placeholder="Manager name">
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" [(ngModel)]="selectedOffer.location" placeholder="e.g., New York, NY">
+          </div>
+          <div class="form-group">
+            <label>Employment Type</label>
+            <select [(ngModel)]="selectedOffer.employmentType">
+              <option *ngFor="let type of employmentTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Work Mode</label>
+            <select [(ngModel)]="selectedOffer.workMode">
+              <option *ngFor="let mode of workModes" [value]="mode">{{ mode }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Compensation</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Currency</label>
+            <select [(ngModel)]="selectedOffer.currency">
+              <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Base Salary <span class="required">*</span></label>
+            <input type="number" [(ngModel)]="selectedOffer.baseSalary" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Frequency</label>
+            <select [(ngModel)]="selectedOffer.salaryFrequency">
+              <option *ngFor="let f of salaryFrequencies" [value]="f">{{ f }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Bonus Type</label>
+            <select [(ngModel)]="selectedOffer.bonusType">
+              <option *ngFor="let b of bonusTypes" [value]="b">{{ b }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Bonus Amount</label>
+            <input type="number" [(ngModel)]="selectedOffer.bonus" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Stock Options</label>
+            <input type="text" [(ngModel)]="selectedOffer.stockOptions" placeholder="e.g., 5000 RSUs over 4 years">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Benefits</h4>
+        <div class="checkbox-grid">
+          <label *ngFor="let benefit of benefitOptions" class="checkbox-item">
+            <input type="checkbox" [(ngModel)]="selectedBenefits[benefit]" (change)="updateBenefits()">
+            {{ benefit }}
+          </label>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Terms & Dates</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Joining Date <span class="required">*</span></label>
+            <input type="date" [(ngModel)]="selectedOffer.joiningDate">
+          </div>
+          <div class="form-group">
+            <label>Offer Expiry Date</label>
+            <input type="date" [(ngModel)]="selectedOffer.expiryDate">
+          </div>
+          <div class="form-group">
+            <label>Probation Period (Days)</label>
+            <input type="number" [(ngModel)]="selectedOffer.probationPeriod" min="0">
+          </div>
+          <div class="form-group">
+            <label>Notice Period (Days)</label>
+            <input type="number" [(ngModel)]="selectedOffer.noticePeriod" min="0">
+          </div>
+          <div class="form-group full-width">
+            <label>Custom Terms & Conditions</label>
+            <textarea [(ngModel)]="selectedOffer.customTerms" rows="3" placeholder="Any additional terms..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveOffer()">
+        {{ isEditing ? 'Update Offer' : 'Save as Draft' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- View Details Modal -->
+<div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Offer Details</h3>
+      <button class="btn-close" (click)="closeViewModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="modal-body" *ngIf="viewOffer">
+      <div class="detail-header">
+        <div class="detail-title">
+          <h2>{{ viewOffer.jobTitle }}</h2>
+          <span class="status-badge large" [ngClass]="getStatusClass(viewOffer.status)">{{ viewOffer.status.replace('_', ' ') }}</span>
+        </div>
+        <div class="detail-meta">
+          <span><i class="fa fa-hashtag"></i> {{ viewOffer.offerNumber }}</span>
+          <span><i class="fa fa-building"></i> {{ viewOffer.department }}</span>
+          <span><i class="fa fa-file-text-o"></i> {{ viewOffer.template }}</span>
+        </div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-section">
+          <h4>Candidate</h4>
+          <div class="detail-row">
+            <span class="label">Name</span>
+            <span class="value">{{ viewOffer.candidateName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Email</span>
+            <span class="value">{{ viewOffer.candidateEmail }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Position</h4>
+          <div class="detail-row">
+            <span class="label">Offer Type</span>
+            <span class="value">{{ viewOffer.offerType }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Employment Type</span>
+            <span class="value">{{ viewOffer.employmentType }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Work Mode</span>
+            <span class="value">{{ viewOffer.workMode }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Location</span>
+            <span class="value">{{ viewOffer.location }}</span>
+          </div>
+          <div class="detail-row" *ngIf="viewOffer.reportingTo">
+            <span class="label">Reporting To</span>
+            <span class="value">{{ viewOffer.reportingTo }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Compensation</h4>
+          <div class="detail-row">
+            <span class="label">Base Salary</span>
+            <span class="value">{{ formatSalary(viewOffer) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="viewOffer.bonus">
+            <span class="label">{{ viewOffer.bonusType }}</span>
+            <span class="value">{{ viewOffer.currency }} {{ viewOffer.bonus | number }}</span>
+          </div>
+          <div class="detail-row" *ngIf="viewOffer.stockOptions">
+            <span class="label">Stock Options</span>
+            <span class="value">{{ viewOffer.stockOptions }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Timeline</h4>
+          <div class="detail-row">
+            <span class="label">Joining Date</span>
+            <span class="value">{{ viewOffer.joiningDate | date:'MMM d, yyyy' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Offer Expiry</span>
+            <span class="value" [class.expired]="isExpired(viewOffer.expiryDate)">
+              {{ viewOffer.expiryDate | date:'MMM d, yyyy' }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Probation</span>
+            <span class="value">{{ viewOffer.probationPeriod }} days</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Notice Period</span>
+            <span class="value">{{ viewOffer.noticePeriod }} days</span>
+          </div>
+        </div>
+
+        <div class="detail-section full" *ngIf="viewOffer.benefits.length">
+          <h4>Benefits</h4>
+          <div class="benefit-tags">
+            <span *ngFor="let benefit of viewOffer.benefits" class="benefit-tag">{{ benefit }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section full">
+          <h4>Approval Status</h4>
+          <div class="approval-info">
+            <span class="approval-badge large" [ngClass]="getApprovalClass(viewOffer.approvalStatus)">
+              {{ viewOffer.approvalStatus }}
+            </span>
+            <div class="approval-details" *ngIf="viewOffer.approvedBy">
+              <span>Approved by {{ viewOffer.approvedBy }} on {{ viewOffer.approvedDate | date:'MMM d, yyyy' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section full" *ngIf="viewOffer.sentDate">
+          <h4>Response Timeline</h4>
+          <div class="detail-row">
+            <span class="label">Sent Date</span>
+            <span class="value">{{ viewOffer.sentDate | date:'MMM d, yyyy' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="viewOffer.responseDate">
+            <span class="label">Response Date</span>
+            <span class="value">{{ viewOffer.responseDate | date:'MMM d, yyyy' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="viewOffer.declineReason">
+            <span class="label">Decline Reason</span>
+            <span class="value">{{ viewOffer.declineReason }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section full" *ngIf="viewOffer.customTerms">
+          <h4>Custom Terms</h4>
+          <p class="detail-text">{{ viewOffer.customTerms }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeViewModal()">Close</button>
+      <button class="btn btn-primary" (click)="sendOffer(viewOffer!); closeViewModal()" *ngIf="viewOffer?.status === 'APPROVED'">
+        <i class="fa fa-paper-plane"></i> Send to Candidate
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Approval Modal -->
+<div class="modal-overlay" *ngIf="showApprovalModal" (click)="closeApprovalModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ approvalAction === 'approve' ? 'Approve Offer' : 'Return for Revision' }}</h3>
+      <button class="btn-close" (click)="closeApprovalModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="modal-body" *ngIf="approvalOffer">
+      <div class="offer-summary">
+        <strong>{{ approvalOffer.candidateName }}</strong>
+        <span>{{ approvalOffer.jobTitle }} - {{ formatSalary(approvalOffer) }}</span>
+      </div>
+      
+      <div class="form-group">
+        <label>Comments</label>
+        <textarea [(ngModel)]="approvalComments" rows="3" 
+                  [placeholder]="approvalAction === 'approve' ? 'Add approval comments (optional)...' : 'Provide feedback for revision...'"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeApprovalModal()">Cancel</button>
+      <button class="btn" [ngClass]="approvalAction === 'approve' ? 'btn-success' : 'btn-warning'" (click)="submitApproval()">
+        {{ approvalAction === 'approve' ? 'Approve' : 'Return for Revision' }}
+      </button>
+    </div>
+  </div>
 </div>

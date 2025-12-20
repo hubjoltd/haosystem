@@ -1,4 +1,453 @@
-<div class="container-fluid p-4">
-  <h2>Job Postings</h2>
-  <p>Job postings page content</p>
+<div class="postings-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h2>Job Postings</h2>
+      <p class="subtitle">Manage internal and external job postings</p>
+    </div>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <i class="fa fa-plus"></i> Create Posting
+    </button>
+  </div>
+
+  <div class="stats-cards">
+    <div class="stat-card" [class.active]="activeTab === 'all'" (click)="setActiveTab('all')">
+      <div class="stat-value">{{ getStatusCount('all') }}</div>
+      <div class="stat-label">Total Postings</div>
+    </div>
+    <div class="stat-card draft" [class.active]="activeTab === 'draft'" (click)="setActiveTab('draft')">
+      <div class="stat-value">{{ getStatusCount('draft') }}</div>
+      <div class="stat-label">Drafts</div>
+    </div>
+    <div class="stat-card active" [class.active]="activeTab === 'active'" (click)="setActiveTab('active')">
+      <div class="stat-value">{{ getStatusCount('active') }}</div>
+      <div class="stat-label">Active</div>
+    </div>
+    <div class="stat-card paused" [class.active]="activeTab === 'paused'" (click)="setActiveTab('paused')">
+      <div class="stat-value">{{ getStatusCount('paused') }}</div>
+      <div class="stat-label">Paused</div>
+    </div>
+    <div class="stat-card closed" [class.active]="activeTab === 'closed'" (click)="setActiveTab('closed')">
+      <div class="stat-value">{{ getStatusCount('closed') }}</div>
+      <div class="stat-label">Closed</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="fa fa-search"></i>
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Search by title, ID, department, location...">
+    </div>
+  </div>
+
+  <div class="content-card">
+    <div *ngIf="loading" class="loading">
+      <i class="fa fa-spinner fa-spin"></i>
+      <p>Loading job postings...</p>
+    </div>
+
+    <div *ngIf="!loading && filteredPostings.length === 0" class="empty-state">
+      <i class="fa fa-briefcase"></i>
+      <p>No job postings found</p>
+      <button class="btn btn-primary" (click)="openCreateModal()">Create Your First Posting</button>
+    </div>
+
+    <table *ngIf="!loading && filteredPostings.length > 0" class="data-table">
+      <thead>
+        <tr>
+          <th>Posting ID</th>
+          <th>Job Title</th>
+          <th>Type</th>
+          <th>Channels</th>
+          <th>Deadline</th>
+          <th>Stats</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let posting of filteredPostings">
+          <td>
+            <span class="posting-number">{{ posting.postingNumber }}</span>
+            <div class="posting-meta" *ngIf="posting.requisitionNumber">
+              <small>From: {{ posting.requisitionNumber }}</small>
+            </div>
+          </td>
+          <td>
+            <div class="job-info">
+              <span class="job-title">{{ posting.jobTitle }}</span>
+              <div class="job-meta">
+                <span *ngIf="posting.department">{{ posting.department }}</span>
+                <span *ngIf="posting.location"><i class="fa fa-map-marker"></i> {{ posting.location }}</span>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="type-badge" [ngClass]="'type-' + posting.postingType.toLowerCase()">{{ posting.postingType }}</span>
+            <div class="work-info">
+              <small>{{ posting.employmentType }} | {{ posting.workMode }}</small>
+            </div>
+          </td>
+          <td>
+            <div class="channels-list">
+              <span *ngFor="let ch of posting.channels.slice(0, 2)" class="channel-tag">{{ ch }}</span>
+              <span *ngIf="posting.channels.length > 2" class="channel-more">+{{ posting.channels.length - 2 }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="deadline-info" [class.expired]="isExpired(posting.applicationDeadline)" [class.expiring]="isExpiringSoon(posting.applicationDeadline)">
+              <span class="deadline-date">{{ posting.applicationDeadline | date:'MMM d, yyyy' }}</span>
+              <span class="deadline-days" *ngIf="!isExpired(posting.applicationDeadline)">
+                {{ getDaysRemaining(posting.applicationDeadline) }} days left
+              </span>
+              <span class="deadline-days expired" *ngIf="isExpired(posting.applicationDeadline)">
+                Expired
+              </span>
+            </div>
+          </td>
+          <td>
+            <div class="stats-info">
+              <span class="stat-item"><i class="fa fa-eye"></i> {{ posting.views }}</span>
+              <span class="stat-item"><i class="fa fa-users"></i> {{ posting.applications }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(posting.status)">{{ posting.status }}</span>
+          </td>
+          <td class="actions">
+            <button class="btn-icon" title="View" (click)="viewDetails(posting)">
+              <i class="fa fa-eye"></i>
+            </button>
+            <button class="btn-icon" title="Edit" (click)="openEditModal(posting)" *ngIf="posting.status === 'DRAFT'">
+              <i class="fa fa-pencil"></i>
+            </button>
+            <button class="btn-icon success" title="Publish" (click)="publishPosting(posting)" *ngIf="posting.status === 'DRAFT'">
+              <i class="fa fa-rocket"></i>
+            </button>
+            <button class="btn-icon warning" title="Pause" (click)="pausePosting(posting)" *ngIf="posting.status === 'ACTIVE'">
+              <i class="fa fa-pause"></i>
+            </button>
+            <button class="btn-icon success" title="Resume" (click)="resumePosting(posting)" *ngIf="posting.status === 'PAUSED'">
+              <i class="fa fa-play"></i>
+            </button>
+            <button class="btn-icon" title="Close" (click)="closePosting(posting)" *ngIf="posting.status === 'ACTIVE' || posting.status === 'PAUSED'">
+              <i class="fa fa-times-circle"></i>
+            </button>
+            <button class="btn-icon" title="Duplicate" (click)="duplicatePosting(posting)">
+              <i class="fa fa-copy"></i>
+            </button>
+            <button class="btn-icon danger" title="Delete" (click)="deletePosting(posting)" *ngIf="posting.status === 'DRAFT' || posting.status === 'CLOSED'">
+              <i class="fa fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isEditing ? 'Edit Job Posting' : 'Create Job Posting' }}</h3>
+      <button class="btn-close" (click)="closeModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section">
+        <h4>Basic Information</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Posting Number</label>
+            <input type="text" [(ngModel)]="selectedPosting.postingNumber" class="readonly" readonly>
+          </div>
+          <div class="form-group">
+            <label>Link to Requisition</label>
+            <select (change)="linkToRequisition($event)">
+              <option value="">-- Select Requisition --</option>
+              <option *ngFor="let req of requisitions" [value]="req.id">
+                {{ req.requisitionNumber }} - {{ req.jobTitle }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>Job Title <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="selectedPosting.jobTitle" placeholder="e.g., Senior Software Engineer">
+          </div>
+          <div class="form-group">
+            <label>Department</label>
+            <input type="text" [(ngModel)]="selectedPosting.department" placeholder="e.g., Engineering">
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" [(ngModel)]="selectedPosting.location" placeholder="e.g., New York, NY">
+          </div>
+          <div class="form-group">
+            <label>Employment Type</label>
+            <select [(ngModel)]="selectedPosting.employmentType">
+              <option *ngFor="let type of employmentTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Work Mode</label>
+            <select [(ngModel)]="selectedPosting.workMode">
+              <option *ngFor="let mode of workModes" [value]="mode">{{ mode }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Posting Configuration</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Posting Type</label>
+            <select [(ngModel)]="selectedPosting.postingType">
+              <option *ngFor="let type of postingTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Application Deadline <span class="required">*</span></label>
+            <input type="date" [(ngModel)]="selectedPosting.applicationDeadline">
+          </div>
+          <div class="form-group">
+            <label>Expected Start Date</label>
+            <input type="date" [(ngModel)]="selectedPosting.startDate">
+          </div>
+          <div class="form-group full-width">
+            <label>Posting Channels</label>
+            <div class="checkbox-grid">
+              <label *ngFor="let ch of channels" class="checkbox-item">
+                <input type="checkbox" [(ngModel)]="selectedChannels[ch]" (change)="updateChannels()">
+                {{ ch }}
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Salary Information</h4>
+        <div class="form-grid cols-4">
+          <div class="form-group">
+            <label>Currency</label>
+            <select [(ngModel)]="selectedPosting.currency">
+              <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Min Salary</label>
+            <input type="number" [(ngModel)]="selectedPosting.minSalary" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label>Max Salary</label>
+            <input type="number" [(ngModel)]="selectedPosting.maxSalary" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label class="checkbox-inline">
+              <input type="checkbox" [(ngModel)]="selectedPosting.showSalary"> Show Salary
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Experience & Education</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Min Experience (Years)</label>
+            <input type="number" [(ngModel)]="selectedPosting.experienceMin" min="0">
+          </div>
+          <div class="form-group">
+            <label>Max Experience (Years)</label>
+            <input type="number" [(ngModel)]="selectedPosting.experienceMax" min="0">
+          </div>
+          <div class="form-group">
+            <label>Education Requirement</label>
+            <select [(ngModel)]="selectedPosting.education">
+              <option *ngFor="let edu of educationLevels" [value]="edu">{{ edu }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Required Skills</label>
+            <div class="skills-input">
+              <input type="text" [(ngModel)]="newSkill" placeholder="Add skill..." (keyup.enter)="addSkill()">
+              <button type="button" class="btn btn-secondary" (click)="addSkill()">Add</button>
+            </div>
+            <div class="skill-tags" *ngIf="selectedPosting.skills.length">
+              <span *ngFor="let skill of selectedPosting.skills" class="skill-tag">
+                {{ skill }}
+                <i class="fa fa-times" (click)="removeSkill(skill)"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Job Details</h4>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Job Description</label>
+            <textarea [(ngModel)]="selectedPosting.description" rows="4" placeholder="Describe the role and its purpose..."></textarea>
+          </div>
+          <div class="form-group full-width">
+            <label>Key Responsibilities</label>
+            <textarea [(ngModel)]="selectedPosting.responsibilities" rows="4" placeholder="List the main responsibilities..."></textarea>
+          </div>
+          <div class="form-group full-width">
+            <label>Requirements</label>
+            <textarea [(ngModel)]="selectedPosting.requirements" rows="4" placeholder="List the qualifications and requirements..."></textarea>
+          </div>
+          <div class="form-group full-width">
+            <label>Benefits</label>
+            <textarea [(ngModel)]="selectedPosting.benefits" rows="3" placeholder="List the benefits and perks..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="savePosting()">
+        {{ isEditing ? 'Update Posting' : 'Save as Draft' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- View Details Modal -->
+<div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Job Posting Details</h3>
+      <button class="btn-close" (click)="closeViewModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="modal-body" *ngIf="viewPosting">
+      <div class="detail-header">
+        <div class="detail-title">
+          <h2>{{ viewPosting.jobTitle }}</h2>
+          <span class="status-badge large" [ngClass]="getStatusClass(viewPosting.status)">{{ viewPosting.status }}</span>
+        </div>
+        <div class="detail-meta">
+          <span><i class="fa fa-hashtag"></i> {{ viewPosting.postingNumber }}</span>
+          <span *ngIf="viewPosting.department"><i class="fa fa-building"></i> {{ viewPosting.department }}</span>
+          <span><i class="fa fa-map-marker"></i> {{ viewPosting.location }}</span>
+        </div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-section">
+          <h4>Posting Information</h4>
+          <div class="detail-row">
+            <span class="label">Posting Type</span>
+            <span class="value">{{ viewPosting.postingType }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Employment Type</span>
+            <span class="value">{{ viewPosting.employmentType }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Work Mode</span>
+            <span class="value">{{ viewPosting.workMode }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Application Deadline</span>
+            <span class="value">{{ viewPosting.applicationDeadline | date:'MMM d, yyyy' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="viewPosting.startDate">
+            <span class="label">Expected Start Date</span>
+            <span class="value">{{ viewPosting.startDate | date:'MMM d, yyyy' }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Statistics</h4>
+          <div class="detail-row">
+            <span class="label">Views</span>
+            <span class="value">{{ viewPosting.views }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Applications</span>
+            <span class="value">{{ viewPosting.applications }}</span>
+          </div>
+          <div class="detail-row" *ngIf="viewPosting.publishedDate">
+            <span class="label">Published Date</span>
+            <span class="value">{{ viewPosting.publishedDate | date:'MMM d, yyyy' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="viewPosting.closedDate">
+            <span class="label">Closed Date</span>
+            <span class="value">{{ viewPosting.closedDate | date:'MMM d, yyyy' }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section" *ngIf="viewPosting.showSalary || viewPosting.minSalary">
+          <h4>Compensation</h4>
+          <div class="detail-row">
+            <span class="label">Salary Range</span>
+            <span class="value">
+              {{ viewPosting.currency }} {{ viewPosting.minSalary | number }} - {{ viewPosting.maxSalary | number }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Display to Candidates</span>
+            <span class="value">{{ viewPosting.showSalary ? 'Yes' : 'No' }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Requirements</h4>
+          <div class="detail-row">
+            <span class="label">Experience</span>
+            <span class="value">{{ viewPosting.experienceMin || 0 }} - {{ viewPosting.experienceMax || 'Any' }} years</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Education</span>
+            <span class="value">{{ viewPosting.education || 'Any' }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section full" *ngIf="viewPosting.channels.length">
+          <h4>Posting Channels</h4>
+          <div class="channel-tags">
+            <span *ngFor="let ch of viewPosting.channels" class="channel-tag">{{ ch }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section full" *ngIf="viewPosting.skills.length">
+          <h4>Required Skills</h4>
+          <div class="skill-tags">
+            <span *ngFor="let skill of viewPosting.skills" class="skill-tag">{{ skill }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section full" *ngIf="viewPosting.description">
+          <h4>Job Description</h4>
+          <p class="detail-text">{{ viewPosting.description }}</p>
+        </div>
+
+        <div class="detail-section full" *ngIf="viewPosting.responsibilities">
+          <h4>Key Responsibilities</h4>
+          <p class="detail-text">{{ viewPosting.responsibilities }}</p>
+        </div>
+
+        <div class="detail-section full" *ngIf="viewPosting.requirements">
+          <h4>Requirements</h4>
+          <p class="detail-text">{{ viewPosting.requirements }}</p>
+        </div>
+
+        <div class="detail-section full" *ngIf="viewPosting.benefits">
+          <h4>Benefits</h4>
+          <p class="detail-text">{{ viewPosting.benefits }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeViewModal()">Close</button>
+      <button class="btn btn-primary" (click)="openEditModal(viewPosting!); closeViewModal()" *ngIf="viewPosting?.status === 'DRAFT'">
+        <i class="fa fa-pencil"></i> Edit
+      </button>
+      <button class="btn btn-success" (click)="publishPosting(viewPosting!); closeViewModal()" *ngIf="viewPosting?.status === 'DRAFT'">
+        <i class="fa fa-rocket"></i> Publish
+      </button>
+    </div>
+  </div>
 </div>
