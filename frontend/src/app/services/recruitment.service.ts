@@ -173,4 +173,12 @@ export class RecruitmentService {
   cancelInterview(id: number, reason: string): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/interviews/${id}/cancel`, { reason });
   }
+
+  getRecruitmentHistoryByEmployee(employeeId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/employees/${employeeId}/recruitment-history`);
+  }
+
+  convertOfferToEmployee(offerId: number, employeeData: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/offers/${offerId}/convert-to-employee`, employeeData);
+  }
 }

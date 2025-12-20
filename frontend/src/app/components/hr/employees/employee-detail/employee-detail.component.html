@@ -33,6 +33,7 @@
     <button [class.active]="activeTab === 'ctcHistory'" (click)="setTab('ctcHistory')" [class.disabled]="isNewEmployee">CTC History</button>
     <button [class.active]="activeTab === 'assets'" (click)="setTab('assets')" [class.disabled]="isNewEmployee">Assets</button>
     <button [class.active]="activeTab === 'documents'" (click)="setTab('documents')" [class.disabled]="isNewEmployee">Documents</button>
+    <button [class.active]="activeTab === 'recruitment'" (click)="setTab('recruitment')" [class.disabled]="isNewEmployee">Recruitment History</button>
   </div>
 
   <div class="tab-content" *ngIf="activeTab === 'personal'">
@@ -672,6 +673,127 @@
       </tbody>
     </table>
     <p class="no-data" *ngIf="documents.length === 0">No documents uploaded</p>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'recruitment'">
+    <div class="section-header">
+      <h3>Recruitment History</h3>
+      <p class="section-description">Complete hiring journey from requisition to onboarding</p>
+    </div>
+
+    <div class="loading-spinner" *ngIf="loadingRecruitmentHistory">
+      <i class="fas fa-spinner fa-spin"></i> Loading recruitment history...
+    </div>
+
+    <div class="recruitment-timeline" *ngIf="recruitmentHistory && !loadingRecruitmentHistory">
+      <div class="timeline-item" *ngIf="recruitmentHistory.requisition">
+        <div class="timeline-icon requisition">
+          <i class="fas fa-file-alt"></i>
+        </div>
+        <div class="timeline-content">
+          <h4>Job Requisition</h4>
+          <div class="timeline-details">
+            <p><strong>Requisition #:</strong> {{ recruitmentHistory.requisition.requisitionNumber }}</p>
+            <p><strong>Position:</strong> {{ recruitmentHistory.requisition.title }}</p>
+            <p><strong>Department:</strong> {{ recruitmentHistory.requisition.department?.name }}</p>
+            <p><strong>Created:</strong> {{ recruitmentHistory.requisition.createdAt }}</p>
+            <span class="badge badge-success">{{ recruitmentHistory.requisition.status }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item" *ngIf="recruitmentHistory.jobPosting">
+        <div class="timeline-icon posting">
+          <i class="fas fa-bullhorn"></i>
+        </div>
+        <div class="timeline-content">
+          <h4>Job Posting</h4>
+          <div class="timeline-details">
+            <p><strong>Title:</strong> {{ recruitmentHistory.jobPosting.title }}</p>
+            <p><strong>Posted:</strong> {{ recruitmentHistory.jobPosting.postedDate }}</p>
+            <p><strong>Closed:</strong> {{ recruitmentHistory.jobPosting.closedDate }}</p>
+            <p><strong>Applications Received:</strong> {{ recruitmentHistory.jobPosting.applicationCount }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item" *ngIf="recruitmentHistory.candidate">
+        <div class="timeline-icon candidate">
+          <i class="fas fa-user"></i>
+        </div>
+        <div class="timeline-content">
+          <h4>Candidate Application</h4>
+          <div class="timeline-details">
+            <p><strong>Name:</strong> {{ recruitmentHistory.candidate.firstName }} {{ recruitmentHistory.candidate.lastName }}</p>
+            <p><strong>Applied:</strong> {{ recruitmentHistory.candidate.appliedDate }}</p>
+            <p><strong>Source:</strong> {{ recruitmentHistory.candidate.source }}</p>
+            <span class="badge badge-success">{{ recruitmentHistory.candidate.status }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item interviews" *ngIf="recruitmentHistory.interviews && recruitmentHistory.interviews.length > 0">
+        <div class="timeline-icon interview">
+          <i class="fas fa-comments"></i>
+        </div>
+        <div class="timeline-content">
+          <h4>Interview Rounds</h4>
+          <div class="interview-rounds">
+            <div class="interview-round" *ngFor="let interview of recruitmentHistory.interviews">
+              <div class="round-header">
+                <span class="round-number">Round {{ interview.round }}</span>
+                <span class="round-type">{{ getInterviewTypeLabel(interview.type) }}</span>
+              </div>
+              <div class="round-details">
+                <p><strong>Date:</strong> {{ interview.scheduledDate }}</p>
+                <p><strong>Interviewer:</strong> {{ interview.interviewer?.firstName }} {{ interview.interviewer?.lastName }}</p>
+                <p><strong>Rating:</strong> 
+                  <span class="rating-stars">
+                    <i class="fas fa-star" *ngFor="let star of [1,2,3,4,5]" [class.filled]="star <= interview.rating"></i>
+                  </span>
+                </p>
+                <p><strong>Recommendation:</strong> 
+                  <span class="badge" [ngClass]="getRecommendationClass(interview.recommendation)">{{ interview.recommendation }}</span>
+                </p>
+                <p *ngIf="interview.feedback"><strong>Feedback:</strong> {{ interview.feedback }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item" *ngIf="recruitmentHistory.offer">
+        <div class="timeline-icon offer">
+          <i class="fas fa-handshake"></i>
+        </div>
+        <div class="timeline-content">
+          <h4>Job Offer</h4>
+          <div class="timeline-details">
+            <p><strong>Offer #:</strong> {{ recruitmentHistory.offer.offerNumber }}</p>
+            <p><strong>Offered Salary:</strong> {{ recruitmentHistory.offer.offeredSalary | number }}</p>
+            <p><strong>Start Date:</strong> {{ recruitmentHistory.offer.joiningDate }}</p>
+            <p><strong>Accepted:</strong> {{ recruitmentHistory.offer.acceptedDate }}</p>
+            <span class="badge badge-success">{{ recruitmentHistory.offer.status }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item" *ngIf="recruitmentHistory.conversionDate">
+        <div class="timeline-icon employee">
+          <i class="fas fa-user-check"></i>
+        </div>
+        <div class="timeline-content">
+          <h4>Converted to Employee</h4>
+          <div class="timeline-details">
+            <p><strong>Employee Code:</strong> {{ employee.employeeCode }}</p>
+            <p><strong>Joining Date:</strong> {{ recruitmentHistory.conversionDate }}</p>
+            <span class="badge badge-primary">Active Employee</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="no-data" *ngIf="!recruitmentHistory && !loadingRecruitmentHistory">No recruitment history available for this employee</p>
   </div>
 </div>
 

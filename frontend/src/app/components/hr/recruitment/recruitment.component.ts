@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { RecruitmentService } from '../../../services/recruitment.service';
 
 @Component({
@@ -34,7 +35,10 @@ export class RecruitmentComponent implements OnInit {
   interviewData: any = {};
   allCandidates: any[] = [];
 
-  constructor(private recruitmentService: RecruitmentService) {}
+  constructor(
+    private recruitmentService: RecruitmentService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadDashboard();
@@ -225,5 +229,17 @@ export class RecruitmentComponent implements OnInit {
       next: () => { this.closeInterviewForm(); this.loadInterviews(); this.loadDashboard(); },
       error: (err) => { console.error(err); alert('Error scheduling interview'); }
     });
+  }
+
+  goToOffers(): void {
+    this.router.navigate(['/app/hr/recruitment/offers']);
+  }
+
+  goToEmployees(): void {
+    this.router.navigate(['/app/hr/employees']);
+  }
+
+  goToOnboarding(): void {
+    this.router.navigate(['/app/hr/onboarding']);
   }
 }

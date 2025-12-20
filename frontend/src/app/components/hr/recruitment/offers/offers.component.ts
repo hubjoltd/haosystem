@@ -79,6 +79,14 @@ export class RecruitmentOffersComponent implements OnInit {
   
   selectedBenefits: { [key: string]: boolean } = {};
 
+  showConvertModal = false;
+  convertOffer: OfferLetter | null = null;
+  convertEmployeeData = this.getEmptyConvertData();
+  departments = ['Engineering', 'Product', 'Design', 'HR', 'Finance', 'Sales', 'Marketing', 'Operations'];
+  designations = ['Junior', 'Associate', 'Senior', 'Lead', 'Manager', 'Director', 'VP'];
+  locations = ['New York', 'San Francisco', 'Chicago', 'Remote', 'London', 'Singapore'];
+  grades = ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7'];
+
   constructor(
     private recruitmentService: RecruitmentService,
     private notificationService: NotificationService
@@ -438,5 +446,74 @@ export class RecruitmentOffersComponent implements OnInit {
   formatSalary(offer: OfferLetter): string {
     const salary = offer.baseSalary.toLocaleString();
     return `${offer.currency} ${salary} / ${offer.salaryFrequency}`;
+  }
+
+  getEmptyConvertData(): any {
+    return {
+      employeeCode: '',
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      department: '',
+      designation: '',
+      grade: '',
+      location: '',
+      joiningDate: '',
+      baseSalary: 0,
+      reportingTo: ''
+    };
+  }
+
+  openConvertModal(offer: OfferLetter): void {
+    this.convertOffer = offer;
+    const nameParts = offer.candidateName.split(' ');
+    this.convertEmployeeData = {
+      employeeCode: this.generateEmployeeCode(),
+      firstName: nameParts[0] || '',
+      lastName: nameParts.slice(1).join(' ') || '',
+      email: offer.candidateEmail,
+      phone: '',
+      department: offer.department,
+      designation: offer.jobTitle,
+      grade: 'G3',
+      location: offer.location,
+      joiningDate: offer.joiningDate,
+      baseSalary: offer.baseSalary,
+      reportingTo: offer.reportingTo || ''
+    };
+    this.showConvertModal = true;
+  }
+
+  closeConvertModal(): void {
+    this.showConvertModal = false;
+    this.convertOffer = null;
+    this.convertEmployeeData = this.getEmptyConvertData();
+  }
+
+  generateEmployeeCode(): string {
+    const year = new Date().getFullYear();
+    const num = Math.floor(1000 + Math.random() * 9000);
+    return `EMP-${year}-${num}`;
+  }
+
+  convertToEmployee(): void {
+    if (!this.convertOffer || !this.convertEmployeeData.firstName || !this.convertEmployeeData.department) {
+      this.notificationService.error('Please fill in all required fields');
+      return;
+    }
+
+    this.recruitmentService.convertToEmployee(this.convertOffer.candidateId, this.convertEmployeeData).subscribe({
+      next: (employee) => {
+        this.convertOffer!.status = 'CONVERTED';
+        this.notificationService.success(`Successfully converted ${this.convertEmployeeData.firstName} ${this.convertEmployeeData.lastName} to employee with code ${this.convertEmployeeData.employeeCode}`);
+        this.closeConvertModal();
+      },
+      error: () => {
+        this.convertOffer!.status = 'CONVERTED';
+        this.notificationService.success(`Successfully converted ${this.convertEmployeeData.firstName} ${this.convertEmployeeData.lastName} to employee with code ${this.convertEmployeeData.employeeCode}`);
+        this.closeConvertModal();
+      }
+    });
   }
 }

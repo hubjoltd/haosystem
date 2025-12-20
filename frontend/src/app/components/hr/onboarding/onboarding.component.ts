@@ -16,6 +16,7 @@ export class OnboardingComponent implements OnInit {
   tasks: any[] = [];
   assets: any[] = [];
   employees: any[] = [];
+  newHiresPendingOnboarding: any[] = [];
   dashboard: any = {};
   loading = false;
   selectedPlan: any = null;
@@ -45,6 +46,21 @@ export class OnboardingComponent implements OnInit {
     this.loadEmployees();
   }
 
+  loadNewHiresPendingOnboarding(): void {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const employeesWithPlans = new Set(this.plans.map(p => p.employee?.id).filter(id => id));
+    
+    this.newHiresPendingOnboarding = this.employees.filter(emp => {
+      if (!emp.joiningDate) return false;
+      const joiningDate = new Date(emp.joiningDate);
+      const isRecentHire = joiningDate >= thirtyDaysAgo;
+      const hasNoPlan = !employeesWithPlans.has(emp.id);
+      return isRecentHire && hasNoPlan;
+    }).sort((a, b) => new Date(b.joiningDate).getTime() - new Date(a.joiningDate).getTime());
+  }
+
   loadDashboard(): void {
     this.onboardingService.getDashboard().subscribe({
       next: (data) => this.dashboard = data,
@@ -55,16 +71,42 @@ export class OnboardingComponent implements OnInit {
   loadPlans(): void {
     this.loading = true;
     this.onboardingService.getPlans().subscribe({
-      next: (data) => { this.plans = data; this.loading = false; },
+      next: (data) => { 
+        this.plans = data; 
+        this.loading = false; 
+        this.loadNewHiresPendingOnboarding();
+      },
       error: (err) => { console.error(err); this.loading = false; }
     });
   }
 
   loadEmployees(): void {
     this.employeeService.getActive().subscribe({
-      next: (data) => this.employees = data,
+      next: (data) => {
+        this.employees = data;
+        this.loadNewHiresPendingOnboarding();
+      },
       error: (err) => console.error('Error loading employees:', err)
     });
+  }
+
+  startOnboardingForNewHire(employee: any): void {
+    const today = new Date().toISOString().split('T')[0];
+    const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    this.planFormData = {
+      employeeId: employee.id,
+      startDate: today,
+      expectedEndDate: endDate,
+      notes: `Onboarding plan for ${employee.firstName} ${employee.lastName}`
+    };
+    this.showPlanForm = true;
+  }
+
+  getDaysSinceJoining(joiningDate: string): number {
+    const joining = new Date(joiningDate);
+    const today = new Date();
+    return Math.floor((today.getTime() - joining.getTime()) / (1000 * 60 * 60 * 24));
   }
 
   openPlanForm(plan?: any): void {

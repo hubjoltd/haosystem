@@ -1,6 +1,69 @@
 <div class="recruitment-container">
   <div class="page-header">
     <h2>Recruitment Management</h2>
+    <p class="subtitle">Complete hiring workflow from requisition to onboarding</p>
+  </div>
+
+  <!-- HR Workflow Pipeline -->
+  <div class="workflow-pipeline">
+    <h3 class="pipeline-title"><i class="fa fa-sitemap"></i> Employee Lifecycle Workflow</h3>
+    <div class="pipeline-stages">
+      <div class="pipeline-stage" [class.active]="activeTab === 'requisitions'" (click)="setTab('requisitions')">
+        <div class="stage-icon"><i class="fa fa-file-text"></i></div>
+        <div class="stage-info">
+          <span class="stage-name">Requisition</span>
+          <span class="stage-count">{{ dashboard.openRequisitions || 0 }}</span>
+        </div>
+        <div class="stage-arrow"><i class="fa fa-chevron-right"></i></div>
+      </div>
+      <div class="pipeline-stage" [class.active]="activeTab === 'postings'" (click)="setTab('postings')">
+        <div class="stage-icon"><i class="fa fa-bullhorn"></i></div>
+        <div class="stage-info">
+          <span class="stage-name">Job Posting</span>
+          <span class="stage-count">{{ dashboard.activePostings || 0 }}</span>
+        </div>
+        <div class="stage-arrow"><i class="fa fa-chevron-right"></i></div>
+      </div>
+      <div class="pipeline-stage" [class.active]="activeTab === 'candidates'" (click)="setTab('candidates')">
+        <div class="stage-icon"><i class="fa fa-users"></i></div>
+        <div class="stage-info">
+          <span class="stage-name">Candidates</span>
+          <span class="stage-count">{{ dashboard.totalCandidates || 0 }}</span>
+        </div>
+        <div class="stage-arrow"><i class="fa fa-chevron-right"></i></div>
+      </div>
+      <div class="pipeline-stage" [class.active]="activeTab === 'interviews'" (click)="setTab('interviews')">
+        <div class="stage-icon"><i class="fa fa-comments"></i></div>
+        <div class="stage-info">
+          <span class="stage-name">Interviews</span>
+          <span class="stage-count">{{ dashboard.upcomingInterviews || 0 }}</span>
+        </div>
+        <div class="stage-arrow"><i class="fa fa-chevron-right"></i></div>
+      </div>
+      <div class="pipeline-stage clickable" (click)="goToOffers()">
+        <div class="stage-icon"><i class="fa fa-envelope-open"></i></div>
+        <div class="stage-info">
+          <span class="stage-name">Offers</span>
+          <span class="stage-count">{{ dashboard.pendingOffers || 0 }}</span>
+        </div>
+        <div class="stage-arrow"><i class="fa fa-chevron-right"></i></div>
+      </div>
+      <div class="pipeline-stage clickable" (click)="goToEmployees()">
+        <div class="stage-icon"><i class="fa fa-user-circle"></i></div>
+        <div class="stage-info">
+          <span class="stage-name">Employee</span>
+          <span class="stage-count">{{ dashboard.newHires || 0 }}</span>
+        </div>
+        <div class="stage-arrow"><i class="fa fa-chevron-right"></i></div>
+      </div>
+      <div class="pipeline-stage clickable" (click)="goToOnboarding()">
+        <div class="stage-icon"><i class="fa fa-rocket"></i></div>
+        <div class="stage-info">
+          <span class="stage-name">Onboarding</span>
+          <span class="stage-count">{{ dashboard.pendingOnboarding || 0 }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="dashboard-cards">

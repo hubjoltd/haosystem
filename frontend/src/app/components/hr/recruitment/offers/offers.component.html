@@ -129,6 +129,9 @@
             <button class="btn-icon danger" title="Mark Declined" (click)="declineOffer(offer)" *ngIf="offer.status === 'SENT'">
               <i class="fa fa-times"></i>
             </button>
+            <button class="btn-icon primary" title="Convert to Employee" (click)="openConvertModal(offer)" *ngIf="offer.status === 'ACCEPTED'">
+              <i class="fa fa-user-plus"></i>
+            </button>
             <button class="btn-icon danger" title="Delete" (click)="deleteOffer(offer)" *ngIf="offer.status === 'DRAFT'">
               <i class="fa fa-trash"></i>
             </button>
@@ -461,6 +464,103 @@
       <button class="btn btn-secondary" (click)="closeApprovalModal()">Cancel</button>
       <button class="btn" [ngClass]="approvalAction === 'approve' ? 'btn-success' : 'btn-warning'" (click)="submitApproval()">
         {{ approvalAction === 'approve' ? 'Approve' : 'Return for Revision' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Convert to Employee Modal -->
+<div class="modal-overlay" *ngIf="showConvertModal" (click)="closeConvertModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fa fa-user-plus"></i> Convert to Employee</h3>
+      <button class="btn-close" (click)="closeConvertModal()"><i class="fa fa-times"></i></button>
+    </div>
+    <div class="modal-body" *ngIf="convertOffer">
+      <div class="convert-info-banner">
+        <i class="fa fa-info-circle"></i>
+        <span>Converting accepted offer for <strong>{{ convertOffer.candidateName }}</strong> to a new employee record.</span>
+      </div>
+
+      <div class="form-section">
+        <h4>Employee Information</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Employee Code</label>
+            <input type="text" [(ngModel)]="convertEmployeeData.employeeCode" class="readonly" readonly>
+          </div>
+          <div class="form-group">
+            <label>First Name <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="convertEmployeeData.firstName">
+          </div>
+          <div class="form-group">
+            <label>Last Name <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="convertEmployeeData.lastName">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="convertEmployeeData.email">
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="text" [(ngModel)]="convertEmployeeData.phone" placeholder="Enter phone number">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Position Details</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Department <span class="required">*</span></label>
+            <select [(ngModel)]="convertEmployeeData.department">
+              <option value="">Select Department</option>
+              <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Designation</label>
+            <input type="text" [(ngModel)]="convertEmployeeData.designation">
+          </div>
+          <div class="form-group">
+            <label>Grade</label>
+            <select [(ngModel)]="convertEmployeeData.grade">
+              <option value="">Select Grade</option>
+              <option *ngFor="let g of grades" [value]="g">{{ g }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <select [(ngModel)]="convertEmployeeData.location">
+              <option value="">Select Location</option>
+              <option *ngFor="let loc of locations" [value]="loc">{{ loc }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Reporting To</label>
+            <input type="text" [(ngModel)]="convertEmployeeData.reportingTo">
+          </div>
+          <div class="form-group">
+            <label>Joining Date</label>
+            <input type="date" [(ngModel)]="convertEmployeeData.joiningDate">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Compensation</h4>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Base Salary</label>
+            <input type="number" [(ngModel)]="convertEmployeeData.baseSalary">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeConvertModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="convertToEmployee()">
+        <i class="fa fa-user-plus"></i> Create Employee
       </button>
     </div>
   </div>

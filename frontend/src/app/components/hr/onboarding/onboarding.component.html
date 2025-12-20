@@ -23,6 +23,41 @@
     </div>
   </div>
 
+  <div class="new-hires-section" *ngIf="newHiresPendingOnboarding.length > 0">
+    <div class="section-header">
+      <h3><i class="fas fa-user-plus"></i> New Hires Pending Onboarding</h3>
+      <span class="badge bg-warning">{{ newHiresPendingOnboarding.length }} pending</span>
+    </div>
+    <div class="new-hires-list">
+      <div *ngFor="let emp of newHiresPendingOnboarding" class="new-hire-card">
+        <div class="new-hire-info">
+          <div class="new-hire-avatar">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="new-hire-details">
+            <h4>{{ emp.firstName }} {{ emp.lastName }}</h4>
+            <p class="emp-code">{{ emp.employeeCode }}</p>
+            <p class="emp-meta">
+              <span *ngIf="emp.department"><i class="fas fa-building"></i> {{ emp.department?.name }}</span>
+              <span *ngIf="emp.designation"><i class="fas fa-briefcase"></i> {{ emp.designation?.title }}</span>
+            </p>
+          </div>
+        </div>
+        <div class="new-hire-status">
+          <p class="joining-info">
+            <i class="fas fa-calendar-check"></i> Joined {{ formatDate(emp.joiningDate) }}
+          </p>
+          <span class="days-badge">{{ getDaysSinceJoining(emp.joiningDate) }} days ago</span>
+        </div>
+        <div class="new-hire-action">
+          <button class="btn btn-primary" (click)="startOnboardingForNewHire(emp)">
+            <i class="fas fa-play-circle"></i> Start Onboarding
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="section-header">
     <h3>Onboarding Plans</h3>
   </div>

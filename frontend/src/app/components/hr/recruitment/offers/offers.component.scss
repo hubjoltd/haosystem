@@ -184,6 +184,7 @@
   &.status-accepted { background: #d1fae5; color: #065f46; }
   &.status-declined { background: #fee2e2; color: #991b1b; }
   &.status-expired { background: #fef3c7; color: #92400e; }
+  &.status-converted { background: #008080; color: #fff; }
   
   &.large { padding: 6px 14px; font-size: 12px; }
 }
@@ -201,6 +202,32 @@
   &.success:hover { color: #10b981; }
   &.danger:hover { color: #ef4444; }
   &.warning:hover { color: #f59e0b; }
+  &.primary:hover { color: #008080; }
+}
+
+.convert-info-banner {
+  background: #e6f7f7;
+  border: 1px solid #008080;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  
+  i {
+    color: #008080;
+    font-size: 20px;
+  }
+  
+  span {
+    color: #005959;
+    font-size: 14px;
+    
+    strong {
+      color: #008080;
+    }
+  }
 }
 
 .btn {

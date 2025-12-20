@@ -436,3 +436,177 @@ tr.expired {
     color: #1e7e34;
   }
 }
+
+.loading-spinner {
+  text-align: center;
+  padding: 40px;
+  color: #008080;
+  font-size: 16px;
+
+  i {
+    margin-right: 8px;
+  }
+}
+
+.recruitment-timeline {
+  position: relative;
+  padding-left: 40px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e0e0e0;
+  }
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f0f0f0;
+
+  &:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.timeline-icon {
+  position: absolute;
+  left: -40px;
+  top: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  z-index: 1;
+
+  &.requisition {
+    background: #6c757d;
+  }
+
+  &.posting {
+    background: #17a2b8;
+  }
+
+  &.candidate {
+    background: #ffc107;
+    color: #333;
+  }
+
+  &.interview {
+    background: #007bff;
+  }
+
+  &.offer {
+    background: #28a745;
+  }
+
+  &.employee {
+    background: #008080;
+  }
+}
+
+.timeline-content {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  border-left: 3px solid #008080;
+
+  h4 {
+    margin: 0 0 12px 0;
+    color: #008080;
+    font-size: 16px;
+  }
+}
+
+.timeline-details {
+  p {
+    margin: 6px 0;
+    font-size: 14px;
+    color: #333;
+
+    strong {
+      color: #555;
+      font-weight: 500;
+      min-width: 120px;
+      display: inline-block;
+    }
+  }
+
+  .badge {
+    margin-top: 8px;
+  }
+}
+
+.interview-rounds {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.interview-round {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.round-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+
+  .round-number {
+    background: #008080;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .round-type {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+.round-details {
+  p {
+    margin: 4px 0;
+    font-size: 13px;
+  }
+}
+
+.rating-stars {
+  display: inline-flex;
+  gap: 2px;
+
+  i {
+    color: #ddd;
+    font-size: 12px;
+
+    &.filled {
+      color: #ffc107;
+    }
+  }
+}
+
+.badge-info {
+  background: #d1ecf1;
+  color: #0c5460;
+}

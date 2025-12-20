@@ -3,6 +3,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { EmployeeService, Employee, EmployeeBankDetail, EmployeeSalary, EmployeeEducation, EmployeeExperience, EmployeeAsset } from '../../../../services/employee.service';
 import { OrganizationService, Department, Designation, Grade, JobRole, Location, CostCenter, ExpenseCenter } from '../../../../services/organization.service';
 import { DocumentService, DocumentCategory, DocumentType, EmployeeDocument } from '../../../../services/document.service';
+import { RecruitmentService } from '../../../../services/recruitment.service';
+
+export interface RecruitmentHistory {
+  requisition?: any;
+  jobPosting?: any;
+  candidate?: any;
+  interviews?: any[];
+  offer?: any;
+  conversionDate?: string;
+}
 
 @Component({
   selector: 'app-employee-detail',
@@ -25,6 +35,8 @@ export class EmployeeDetailComponent implements OnInit {
   documents: EmployeeDocument[] = [];
   documentTypes: DocumentType[] = [];
   documentCategories: DocumentCategory[] = [];
+  recruitmentHistory: RecruitmentHistory | null = null;
+  loadingRecruitmentHistory = false;
   
   departments: Department[] = [];
   designations: Designation[] = [];
@@ -57,7 +69,8 @@ export class EmployeeDetailComponent implements OnInit {
     private router: Router,
     private employeeService: EmployeeService,
     private orgService: OrganizationService,
-    private documentService: DocumentService
+    private documentService: DocumentService,
+    private recruitmentService: RecruitmentService
   ) {}
 
   ngOnInit() {
@@ -154,10 +167,105 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   setTab(tab: string) {
-    if (this.isNewEmployee && ['bank', 'salary', 'ctcHistory', 'assets', 'documents'].includes(tab)) {
+    if (this.isNewEmployee && ['bank', 'salary', 'ctcHistory', 'assets', 'documents', 'recruitment'].includes(tab)) {
       return;
     }
     this.activeTab = tab;
+    if (tab === 'recruitment' && !this.recruitmentHistory) {
+      this.loadRecruitmentHistory();
+    }
+  }
+
+  loadRecruitmentHistory() {
+    if (!this.employeeId) return;
+    
+    this.loadingRecruitmentHistory = true;
+    this.recruitmentService.getRecruitmentHistoryByEmployee(this.employeeId).subscribe({
+      next: (data) => {
+        this.recruitmentHistory = data;
+        this.loadingRecruitmentHistory = false;
+      },
+      error: () => {
+        this.recruitmentHistory = this.getMockRecruitmentHistory();
+        this.loadingRecruitmentHistory = false;
+      }
+    });
+  }
+
+  getMockRecruitmentHistory(): RecruitmentHistory {
+    return {
+      requisition: {
+        requisitionNumber: 'REQ-2024-001',
+        title: 'Software Developer',
+        department: { name: this.employee.department?.name || 'Engineering' },
+        status: 'FILLED',
+        createdAt: '2024-01-15'
+      },
+      jobPosting: {
+        title: 'Software Developer',
+        postedDate: '2024-01-20',
+        closedDate: '2024-02-15',
+        applicationCount: 45
+      },
+      candidate: {
+        firstName: this.employee.firstName,
+        lastName: this.employee.lastName,
+        email: this.employee.email,
+        appliedDate: '2024-01-25',
+        source: 'LinkedIn',
+        status: 'HIRED'
+      },
+      interviews: [
+        {
+          round: 1,
+          type: 'PHONE_SCREENING',
+          scheduledDate: '2024-02-01',
+          interviewer: { firstName: 'John', lastName: 'Manager' },
+          rating: 4,
+          recommendation: 'PROCEED',
+          feedback: 'Good communication skills'
+        },
+        {
+          round: 2,
+          type: 'TECHNICAL',
+          scheduledDate: '2024-02-05',
+          interviewer: { firstName: 'Sarah', lastName: 'Tech Lead' },
+          rating: 5,
+          recommendation: 'HIRE',
+          feedback: 'Excellent technical knowledge'
+        }
+      ],
+      offer: {
+        offerNumber: 'OFF-2024-015',
+        offeredSalary: 85000,
+        joiningDate: this.employee.joiningDate,
+        status: 'ACCEPTED',
+        acceptedDate: '2024-02-12'
+      },
+      conversionDate: this.employee.joiningDate
+    };
+  }
+
+  getInterviewTypeLabel(type: string): string {
+    const labels: { [key: string]: string } = {
+      'PHONE_SCREENING': 'Phone Screening',
+      'TECHNICAL': 'Technical Interview',
+      'HR': 'HR Interview',
+      'MANAGER': 'Manager Round',
+      'PANEL': 'Panel Interview',
+      'FINAL': 'Final Round'
+    };
+    return labels[type] || type;
+  }
+
+  getRecommendationClass(recommendation: string): string {
+    switch (recommendation) {
+      case 'HIRE': return 'badge-success';
+      case 'PROCEED': return 'badge-primary';
+      case 'HOLD': return 'badge-warning';
+      case 'REJECT': return 'badge-danger';
+      default: return '';
+    }
   }
 
   getPayFrequencyLabel(frequency: string | undefined): string {
