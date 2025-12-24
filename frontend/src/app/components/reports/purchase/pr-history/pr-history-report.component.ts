@@ -11,7 +11,7 @@ import { ExportService } from '../../../../services/export.service';
 export class PrHistoryReportComponent implements OnInit {
   reportData: any[] = [];
   loading: boolean = false;  // Start with loading
-dataReady: boolean = true;  // Only show content when ready
+dataReady: boolean = false;  // Only show content when ready
   selectedType: string = '';
   fromDate: string = '';
   toDate: string = '';

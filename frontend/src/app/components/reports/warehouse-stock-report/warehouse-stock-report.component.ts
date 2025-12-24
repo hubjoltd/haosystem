@@ -14,7 +14,7 @@ export class WarehouseStockReportComponent implements OnInit {
   warehouses: Warehouse[] = [];
   selectedWarehouse: string = '';
   loading: boolean = false;  // Start with loading
-dataReady: boolean = true;  // Only show content when ready
+dataReady: boolean = false;  // Only show content when ready
   totalValue: number = 0;
 
   constructor(

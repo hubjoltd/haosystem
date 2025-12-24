@@ -10,7 +10,7 @@ import { ExportService } from '../../../../services/export.service';
 export class DirectPurchaseReportComponent implements OnInit {
   reportData: any[] = [];
   loading: boolean = false;  // Start with loading
-dataReady: boolean = true;  // Only show content when ready
+dataReady: boolean = false;  // Only show content when ready
   fromDate: string = '';
   toDate: string = '';
 

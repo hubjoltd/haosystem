@@ -32,7 +32,7 @@ export class LaborCostAllocationReportComponent implements OnInit {
   selectedRunId: number | null = null;
   
   loading = false;
-  dataReady = true;
+  dataReady = false;
   
   grandTotals = {
     employeeCount: 0,

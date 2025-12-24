@@ -11,7 +11,7 @@ export class LocationsComponent implements OnInit {
   locations: Location[] = [];
   
   loading = false;
-  dataReady = true;
+  dataReady = false;
   
   showModal = false;
   isEditMode = false;

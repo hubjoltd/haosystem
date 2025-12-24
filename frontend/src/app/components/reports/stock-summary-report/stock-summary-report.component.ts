@@ -26,7 +26,7 @@ export class StockSummaryReportComponent implements OnInit {
   fromDate: string = '';
   toDate: string = '';
   loading: boolean = false;  // Start with loading state
-  dataReady: boolean = true;  // Only show content when ready
+  dataReady: boolean = false;  // Only show content when ready
   
   totalOpening: number = 0;
   totalIn: number = 0;

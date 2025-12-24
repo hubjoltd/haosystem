@@ -32,7 +32,7 @@ export class PayrollSummaryReportComponent implements OnInit {
   
   loading = false;  // Start with loading to prevent empty screens
   isFirstLoad = true;  // Track if this is the first time loading
-  dataReady = true;  // Only show content when data is ready
+  dataReady = false;  // Only show content when data is ready
   
   grandTotals = {
     employeeCount: 0,

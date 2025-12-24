@@ -20,7 +20,7 @@ export class EmployeeListComponent implements OnInit {
   filterStatus = '';
   
   loading = false;
-  dataReady = true;
+  dataReady = false;
   private subscriptionCount = 0;
   private expectedSubscriptions = 3;
 

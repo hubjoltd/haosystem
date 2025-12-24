@@ -25,7 +25,7 @@ export class PayrollRegisterReportComponent implements OnInit {
   loading = false;  // Start with loading to prevent empty screens
   isFirstLoad = true;  // Track if this is the first time loading
   refreshing = false;  // Track background refresh
-  dataReady = true;  // Only show content when data is ready
+  dataReady = false;  // Only show content when data is ready
   
   // Modal properties
   showDetailsModal = false;

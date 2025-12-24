@@ -12,7 +12,7 @@ export class ExpenseCentersComponent implements OnInit {
   costCenters: CostCenter[] = [];
   
   loading = false;
-  dataReady = true;
+  dataReady = false;
   
   showModal = false;
   isEditMode = false;

@@ -13,7 +13,7 @@ export class DashboardComponent implements OnInit {
   dashboardStats: DashboardStats | null = null;
   lowStockItems: Item[] = [];
   loading = false;
-  dataReady = true;
+  dataReady = false;
   private subscriptionCount = 0;
   private expectedSubscriptions = 2;
 

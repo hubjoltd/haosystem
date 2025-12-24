@@ -11,7 +11,7 @@ export class CostCentersComponent implements OnInit {
   costCenters: CostCenter[] = [];
   
   loading = false;
-  dataReady = true;
+  dataReady = false;
   
   showModal = false;
   isEditMode = false;

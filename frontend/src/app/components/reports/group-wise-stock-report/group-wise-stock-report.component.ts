@@ -14,7 +14,7 @@ export class GroupWiseStockReportComponent implements OnInit {
   groups: ItemGroup[] = [];
   selectedGroup: string = '';
   loading: boolean = false;  // Start with loading
-dataReady: boolean = true;  // Only show content when ready
+dataReady: boolean = false;  // Only show content when ready
   totalQuantity: number = 0;
   totalValue: number = 0;
 

@@ -14,7 +14,7 @@ export class CustomerManagementComponent implements OnInit {
   editMode: boolean = false;
   selectedCustomer: Customer = this.getEmptyCustomer();
   loading = false;
-  dataReady = true;
+  dataReady = false;
 
   constructor(private customerService: CustomerService) {}
 

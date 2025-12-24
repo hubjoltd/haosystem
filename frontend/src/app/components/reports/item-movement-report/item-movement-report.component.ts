@@ -21,7 +21,7 @@ export class ItemMovementReportComponent implements OnInit {
   fromDate: string = '';
   toDate: string = '';
   loading: boolean = false;  // Start with loading
-dataReady: boolean = true;  // Only show content when ready
+dataReady: boolean = false;  // Only show content when ready
   
   totalIn: number = 0;
   totalOut: number = 0;

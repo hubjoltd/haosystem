@@ -25,7 +25,7 @@ export class ItemMasterComponent implements OnInit {
   selectedUomId: number | null = null;
   selectedSupplierId: number | null = null;
   loading = false;
-  dataReady = true;
+  dataReady = false;
   errorMessage: string = '';
   nameValidationMessage: string = '';
   private subscriptionCount = 0;

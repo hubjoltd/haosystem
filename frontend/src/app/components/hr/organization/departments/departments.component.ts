@@ -13,7 +13,7 @@ export class DepartmentsComponent implements OnInit {
   locations: Location[] = [];
   
   loading = false;
-  dataReady = true;
+  dataReady = false;
   
   showModal = false;
   isEditMode = false;

@@ -21,7 +21,7 @@ export class InventoryValuationReportComponent implements OnInit {
   selectedWarehouse: string = '';
   totalValue: number = 0;
   loading: boolean = false;  // Start with loading
-dataReady: boolean = true;  // Only show content when ready
+dataReady: boolean = false;  // Only show content when ready
   valuationMethod: string = 'FIFO';
   asOfDate: string = '';
 

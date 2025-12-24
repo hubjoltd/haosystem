@@ -13,7 +13,7 @@ export class JobRolesComponent implements OnInit {
   grades: Grade[] = [];
   
   loading = false;
-  dataReady = true;
+  dataReady = false;
   
   showModal = false;
   isEditMode = false;

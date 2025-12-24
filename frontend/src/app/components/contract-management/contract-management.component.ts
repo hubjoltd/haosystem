@@ -16,7 +16,7 @@ export class ContractManagementComponent implements OnInit {
   editMode: boolean = false;
   selectedContract: Contract = this.getEmptyContract();
   loading = false;
-  dataReady = true;
+  dataReady = false;
   private subscriptionCount = 0;
   private expectedSubscriptions = 2;
 
