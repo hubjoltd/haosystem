@@ -58,6 +58,8 @@ Preferred communication style: Simple, everyday language.
 -   **Angular**: `@angular/core`, `common`, `forms`, `router` (v21).
 -   **RxJS**: `rxjs` (v7.8) for reactive programming.
 -   **Charting**: `chart.js` & `ng2-charts` for data visualization.
+-   **PDF Generation**: `jspdf` for salary slip and report PDF exports.
+-   **Excel Parsing/Export**: `xlsx` for Excel file parsing (attendance uploads) and CSV/Excel exports.
 -   **Icons**: Font Awesome (CDN).
 -   **Fonts**: Google Fonts Poppins (CDN).
 
