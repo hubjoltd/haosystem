@@ -387,8 +387,6 @@ export class EmployeeSelfServiceComponent implements OnInit {
       employeeCode: emp?.employeeCode || `EMP-${this.currentEmployeeId}`,
       designation: emp?.designation?.title || 'Staff',
       dateOfJoining: emp?.joiningDate ? new Date(emp.joiningDate).toLocaleDateString() : 'N/A',
-      uanNumber: emp?.aadharNumber || undefined,
-      pfAccountNumber: emp?.panNumber || undefined,
       bankAccountNumber: undefined,
       department: emp?.department?.name || undefined
     };

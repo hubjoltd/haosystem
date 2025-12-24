@@ -7,8 +7,6 @@ export interface EmployeeSlipInfo {
   employeeCode: string;
   designation: string;
   dateOfJoining: string;
-  uanNumber?: string;
-  pfAccountNumber?: string;
   bankAccountNumber?: string;
   department?: string;
 }
@@ -64,7 +62,7 @@ export class SalarySlipService {
     const otherAllowance = Math.max(0, (record.grossPay || 0) - basicPay - hra - conveyance - childrenEducation);
     const grossEarnings = record.grossPay || 0;
 
-    const epf = record.retirement401k || (basicPay * 0.12);
+    const retirement401k = record.retirement401k || 0;
     const incomeTax = (record.federalTax || 0) + (record.stateTax || 0);
     const healthInsurance = record.healthInsurance || 0;
     const socialSecurity = record.socialSecurityTax || 0;
@@ -96,9 +94,9 @@ export class SalarySlipService {
     ];
     
     const deductions = [
-      { label: 'EPF Contribution', amount: epf },
       { label: 'Income Tax', amount: incomeTax },
     ];
+    if (retirement401k > 0) deductions.push({ label: '401(k) Contribution', amount: retirement401k });
     if (healthInsurance > 0) deductions.push({ label: 'Health Insurance', amount: healthInsurance });
     if (socialSecurity > 0) deductions.push({ label: 'Social Security', amount: socialSecurity });
     if (medicare > 0) deductions.push({ label: 'Medicare', amount: medicare });
@@ -166,10 +164,8 @@ export class SalarySlipService {
       { label: 'Employee Code', value: emp.employeeCode },
       { label: 'Designation', value: emp.designation },
       { label: 'Date of Joining', value: emp.dateOfJoining },
-      { label: 'UAN Number', value: emp.uanNumber || 'N/A' },
-      { label: 'PF A/C Number', value: emp.pfAccountNumber || 'N/A' },
-      { label: 'Bank A/C Number', value: emp.bankAccountNumber || 'N/A' },
       { label: 'Department', value: emp.department || 'N/A' },
+      { label: 'Bank A/C Number', value: emp.bankAccountNumber || 'N/A' },
     ];
 
     let xPos = margin + 3;
