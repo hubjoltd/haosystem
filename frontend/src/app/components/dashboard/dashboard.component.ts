@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { DashboardService, DashboardStats } from '../../services/dashboard.service';
 import { ItemService, Item } from '../../services/item.service';
 

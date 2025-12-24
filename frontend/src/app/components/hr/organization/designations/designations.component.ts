@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { OrganizationService, Designation, Grade } from '../../../../services/organization.service';
 
 @Component({
@@ -18,7 +18,7 @@ export class DesignationsComponent implements OnInit {
   isEditMode = false;
   editing: Designation = this.getEmpty();
 
-  constructor(private orgService: OrganizationService) {}
+  constructor(private orgService: OrganizationService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.loadData();
@@ -41,6 +41,7 @@ export class DesignationsComponent implements OnInit {
   completeLoading() {
     this.loading = false;
     this.dataReady = true;
+    this.cdr.detectChanges();
   }
 
   getEmpty(): Designation {

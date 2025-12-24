@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CustomerService, Customer } from '../../services/customer.service';
 
 @Component({
@@ -16,7 +16,7 @@ export class CustomerManagementComponent implements OnInit {
   loading = false;
   dataReady = false;
 
-  constructor(private customerService: CustomerService) {}
+  constructor(private customerService: CustomerService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadCustomers();

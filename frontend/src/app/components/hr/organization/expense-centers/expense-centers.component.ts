@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { OrganizationService, ExpenseCenter, CostCenter } from '../../../../services/organization.service';
 
 @Component({
@@ -18,7 +18,7 @@ export class ExpenseCentersComponent implements OnInit {
   isEditMode = false;
   editing: ExpenseCenter = this.getEmpty();
 
-  constructor(private orgService: OrganizationService) {}
+  constructor(private orgService: OrganizationService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.loadData();
@@ -41,6 +41,7 @@ export class ExpenseCentersComponent implements OnInit {
   completeLoading() {
     this.loading = false;
     this.dataReady = true;
+    this.cdr.detectChanges();
   }
 
   getEmpty(): ExpenseCenter {

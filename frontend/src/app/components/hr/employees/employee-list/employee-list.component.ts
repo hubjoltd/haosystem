@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { EmployeeService, Employee } from '../../../../services/employee.service';
 import { OrganizationService, Department, Designation } from '../../../../services/organization.service';
@@ -27,7 +27,8 @@ export class EmployeeListComponent implements OnInit {
   constructor(
     private employeeService: EmployeeService,
     private orgService: OrganizationService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -84,6 +85,7 @@ export class EmployeeListComponent implements OnInit {
   private completeLoading() {
     this.loading = false;
     this.dataReady = true;
+    this.cdr.detectChanges();
   }
 
   applyFilters() {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { OrganizationService, JobRole, Department, Grade } from '../../../../services/organization.service';
 
 @Component({
@@ -19,7 +19,7 @@ export class JobRolesComponent implements OnInit {
   isEditMode = false;
   editing: JobRole = this.getEmpty();
 
-  constructor(private orgService: OrganizationService) {}
+  constructor(private orgService: OrganizationService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.loadData();
@@ -46,6 +46,7 @@ export class JobRolesComponent implements OnInit {
   completeLoading() {
     this.loading = false;
     this.dataReady = true;
+    this.cdr.detectChanges();
   }
 
   getEmpty(): JobRole {

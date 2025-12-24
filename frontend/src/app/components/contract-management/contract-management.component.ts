@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ContractService, Contract } from '../../services/contract.service';
 import { CustomerService, Customer } from '../../services/customer.service';
 
