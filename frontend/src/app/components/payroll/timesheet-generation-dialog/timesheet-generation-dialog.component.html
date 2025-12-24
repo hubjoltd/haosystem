@@ -1,0 +1,227 @@
+<div class="modal-overlay" *ngIf="showDialog" (click)="close()">
+  <div class="modal dialog-large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Generate Timesheets</h3>
+      <button class="close-btn" (click)="close()">&times;</button>
+    </div>
+    
+    <div class="tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'attendance'" (click)="switchTab('attendance')">
+        <i class="fas fa-clock"></i> Attendance Timesheet
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'project'" (click)="switchTab('project')">
+        <i class="fas fa-project-diagram"></i> Project Timesheet
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="tab-content" *ngIf="activeTab === 'attendance' && !showResults">
+        <div class="info-box">
+          <i class="fas fa-info-circle"></i>
+          <span>Generate attendance timesheets from approved attendance records. The system will calculate total hours, regular hours, overtime hours, and attendance days.</span>
+        </div>
+
+        <div class="form-section">
+          <h4>Pay Period</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Pay Frequency</label>
+              <select [(ngModel)]="attendanceForm.payFrequency">
+                <option *ngFor="let freq of payFrequencies" [value]="freq.value">{{ freq.label }}</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Start Date *</label>
+              <input type="date" [(ngModel)]="attendanceForm.startDate" required>
+            </div>
+            <div class="form-group">
+              <label>End Date *</label>
+              <input type="date" [(ngModel)]="attendanceForm.endDate" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h4>Employee Selection</h4>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="selectAllEmployees" (change)="toggleSelectAll()">
+              <span>All Active Employees</span>
+            </label>
+          </div>
+          
+          <div class="employee-list" *ngIf="!selectAllEmployees">
+            <label class="checkbox-label" *ngFor="let emp of employees">
+              <input type="checkbox" 
+                     [checked]="isEmployeeSelected(emp.id)" 
+                     (change)="toggleEmployeeSelection(emp.id)">
+              <span>{{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" *ngIf="activeTab === 'project' && !showResults">
+        <div class="info-box">
+          <i class="fas fa-info-circle"></i>
+          <span>Generate project timesheets from approved attendance records. Assign all timesheet hours to a specific project.</span>
+        </div>
+
+        <div class="form-section">
+          <h4>Project Details</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Project Code *</label>
+              <input type="text" [(ngModel)]="projectForm.projectCode" placeholder="e.g., PRJ-001" required>
+            </div>
+            <div class="form-group">
+              <label>Project Name *</label>
+              <input type="text" [(ngModel)]="projectForm.projectName" placeholder="Project name" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h4>Period</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Start Date *</label>
+              <input type="date" [(ngModel)]="projectForm.startDate" required>
+            </div>
+            <div class="form-group">
+              <label>End Date *</label>
+              <input type="date" [(ngModel)]="projectForm.endDate" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h4>Employee Selection</h4>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="selectAllEmployees" (change)="toggleSelectAll()">
+              <span>All Active Employees</span>
+            </label>
+          </div>
+          
+          <div class="employee-list" *ngIf="!selectAllEmployees">
+            <label class="checkbox-label" *ngFor="let emp of employees">
+              <input type="checkbox" 
+                     [checked]="isEmployeeSelected(emp.id)" 
+                     (change)="toggleEmployeeSelection(emp.id)">
+              <span>{{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="results-section" *ngIf="showResults && activeTab === 'attendance'">
+        <div class="success-message" *ngIf="generatedAttendanceTimesheets.length > 0">
+          <i class="fas fa-check-circle"></i>
+          <span>Successfully generated {{ generatedAttendanceTimesheets.length }} attendance timesheets</span>
+        </div>
+        <div class="warning-message" *ngIf="generatedAttendanceTimesheets.length === 0">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>No timesheets generated. Make sure there are approved attendance records for the selected period.</span>
+        </div>
+        
+        <div class="table-container" *ngIf="generatedAttendanceTimesheets.length > 0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Timesheet #</th>
+                <th>Employee</th>
+                <th>Period</th>
+                <th>Regular Hrs</th>
+                <th>OT Hrs</th>
+                <th>Total Hrs</th>
+                <th>Present Days</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let ts of generatedAttendanceTimesheets">
+                <td class="code">{{ ts.timesheetNumber }}</td>
+                <td>{{ getEmployeeName(ts) }}</td>
+                <td>{{ ts.periodStartDate | date:'MMM d' }} - {{ ts.periodEndDate | date:'MMM d, yyyy' }}</td>
+                <td>{{ ts.totalRegularHours | number:'1.1-1' }}</td>
+                <td>{{ ts.totalOvertimeHours | number:'1.1-1' }}</td>
+                <td>{{ ts.totalHours | number:'1.1-1' }}</td>
+                <td>{{ ts.presentDays }}</td>
+                <td><span class="status-badge pending">{{ ts.status }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="results-section" *ngIf="showResults && activeTab === 'project'">
+        <div class="success-message" *ngIf="generatedProjectTimesheets.length > 0">
+          <i class="fas fa-check-circle"></i>
+          <span>Successfully generated {{ generatedProjectTimesheets.length }} project timesheets</span>
+        </div>
+        <div class="warning-message" *ngIf="generatedProjectTimesheets.length === 0">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>No timesheets generated. Make sure there are approved attendance records for the selected period.</span>
+        </div>
+        
+        <div class="table-container" *ngIf="generatedProjectTimesheets.length > 0">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Timesheet #</th>
+                <th>Employee</th>
+                <th>Project</th>
+                <th>Period</th>
+                <th>Regular Hrs</th>
+                <th>OT Hrs</th>
+                <th>Billable Hrs</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let ts of generatedProjectTimesheets">
+                <td class="code">{{ ts.projectTimesheetNumber }}</td>
+                <td>{{ getEmployeeName(ts) }}</td>
+                <td>{{ ts.projectCode }} - {{ ts.projectName }}</td>
+                <td>{{ ts.periodStartDate | date:'MMM d' }} - {{ ts.periodEndDate | date:'MMM d, yyyy' }}</td>
+                <td>{{ ts.regularHours | number:'1.1-1' }}</td>
+                <td>{{ ts.overtimeHours | number:'1.1-1' }}</td>
+                <td>{{ ts.billableHours | number:'1.1-1' }}</td>
+                <td><span class="status-badge pending">{{ ts.status }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="close()">Close</button>
+      
+      <button class="btn btn-primary" 
+              *ngIf="activeTab === 'attendance' && !showResults" 
+              (click)="generateAttendanceTimesheets()" 
+              [disabled]="generating">
+        <i class="fas fa-cog" [class.fa-spin]="generating"></i>
+        {{ generating ? 'Generating...' : 'Generate Attendance Timesheets' }}
+      </button>
+      
+      <button class="btn btn-primary" 
+              *ngIf="activeTab === 'project' && !showResults" 
+              (click)="generateProjectTimesheets()" 
+              [disabled]="generating">
+        <i class="fas fa-cog" [class.fa-spin]="generating"></i>
+        {{ generating ? 'Generating...' : 'Generate Project Timesheets' }}
+      </button>
+      
+      <button class="btn btn-primary" 
+              *ngIf="showResults" 
+              (click)="showResults = false">
+        <i class="fas fa-plus"></i> Generate More
+      </button>
+    </div>
+  </div>
+</div>

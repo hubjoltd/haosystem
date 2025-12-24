@@ -3,6 +3,7 @@ package com.erp.controller;
 import com.erp.model.*;
 import com.erp.repository.*;
 import com.erp.service.PayrollCalculationService;
+import java.math.BigDecimal;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +35,12 @@ public class PayrollController {
 
     @Autowired
     private PayrollCalculationService payrollCalculationService;
+
+    @Autowired
+    private ProjectTimesheetRepository projectTimesheetRepository;
+
+    @Autowired
+    private AttendanceRecordRepository attendanceRecordRepository;
 
     @GetMapping("/timesheets")
     public ResponseEntity<List<Timesheet>> getAllTimesheets() {
@@ -264,5 +271,260 @@ public class PayrollController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/project-timesheets")
+    public ResponseEntity<List<ProjectTimesheet>> getAllProjectTimesheets() {
+        return ResponseEntity.ok(projectTimesheetRepository.findAllByOrderByCreatedAtDesc());
+    }
+
+    @GetMapping("/project-timesheets/{id}")
+    public ResponseEntity<ProjectTimesheet> getProjectTimesheetById(@PathVariable Long id) {
+        return projectTimesheetRepository.findById(id)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/project-timesheets/employee/{employeeId}")
+    public ResponseEntity<List<ProjectTimesheet>> getProjectTimesheetsByEmployee(@PathVariable Long employeeId) {
+        return ResponseEntity.ok(projectTimesheetRepository.findByEmployeeId(employeeId));
+    }
+
+    @GetMapping("/project-timesheets/project/{projectCode}")
+    public ResponseEntity<List<ProjectTimesheet>> getProjectTimesheetsByProject(@PathVariable String projectCode) {
+        return ResponseEntity.ok(projectTimesheetRepository.findByProjectCode(projectCode));
+    }
+
+    @PostMapping("/project-timesheets")
+    public ResponseEntity<ProjectTimesheet> createProjectTimesheet(@RequestBody Map<String, Object> data) {
+        ProjectTimesheet timesheet = new ProjectTimesheet();
+        
+        Long employeeId = Long.valueOf(data.get("employeeId").toString());
+        employeeRepository.findById(employeeId).ifPresent(timesheet::setEmployee);
+        
+        timesheet.setProjectTimesheetNumber(generateProjectTimesheetNumber());
+        timesheet.setProjectCode((String) data.get("projectCode"));
+        timesheet.setProjectName((String) data.get("projectName"));
+        timesheet.setPeriodStartDate(LocalDate.parse(data.get("periodStartDate").toString()));
+        timesheet.setPeriodEndDate(LocalDate.parse(data.get("periodEndDate").toString()));
+        
+        if (data.containsKey("totalHours")) {
+            timesheet.setTotalHours(new BigDecimal(data.get("totalHours").toString()));
+        }
+        if (data.containsKey("billableHours")) {
+            timesheet.setBillableHours(new BigDecimal(data.get("billableHours").toString()));
+        }
+        if (data.containsKey("remarks")) {
+            timesheet.setRemarks((String) data.get("remarks"));
+        }
+        
+        return ResponseEntity.ok(projectTimesheetRepository.save(timesheet));
+    }
+
+    private String generateProjectTimesheetNumber() {
+        String prefix = "PTS";
+        String year = String.valueOf(LocalDate.now().getYear());
+        long count = projectTimesheetRepository.count() + 1;
+        return prefix + "-" + year + "-" + String.format("%05d", count);
+    }
+
+    @PutMapping("/project-timesheets/{id}/approve")
+    public ResponseEntity<ProjectTimesheet> approveProjectTimesheet(@PathVariable Long id, @RequestBody Map<String, Object> data) {
+        return projectTimesheetRepository.findById(id)
+            .map(timesheet -> {
+                timesheet.setStatus("APPROVED");
+                timesheet.setApprovedAt(LocalDateTime.now());
+                if (data.containsKey("approverRemarks")) {
+                    timesheet.setApproverRemarks((String) data.get("approverRemarks"));
+                }
+                if (data.containsKey("approverId")) {
+                    Long approverId = Long.valueOf(data.get("approverId").toString());
+                    employeeRepository.findById(approverId).ifPresent(timesheet::setApprovedBy);
+                }
+                return ResponseEntity.ok(projectTimesheetRepository.save(timesheet));
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/timesheets/generate-from-attendance")
+    public ResponseEntity<?> generateTimesheetsFromAttendance(@RequestBody Map<String, Object> data) {
+        LocalDate startDate = LocalDate.parse(data.get("startDate").toString());
+        LocalDate endDate = LocalDate.parse(data.get("endDate").toString());
+        String type = data.containsKey("type") ? (String) data.get("type") : "ATTENDANCE";
+        
+        List<Long> employeeIds = new ArrayList<>();
+        if (data.containsKey("employeeIds")) {
+            List<?> ids = (List<?>) data.get("employeeIds");
+            for (Object id : ids) {
+                employeeIds.add(Long.valueOf(id.toString()));
+            }
+        }
+        
+        List<Employee> employees;
+        if (employeeIds.isEmpty()) {
+            employees = employeeRepository.findByActiveTrue();
+        } else {
+            employees = employeeRepository.findAllById(employeeIds);
+        }
+        
+        List<Object> generatedTimesheets = new ArrayList<>();
+        
+        if ("ATTENDANCE".equals(type)) {
+            for (Employee employee : employees) {
+                List<AttendanceRecord> attendanceRecords = attendanceRecordRepository
+                    .findApprovedAttendanceByEmployeeAndDateRange(employee.getId(), startDate, endDate);
+                
+                if (!attendanceRecords.isEmpty()) {
+                    Timesheet timesheet = new Timesheet();
+                    timesheet.setTimesheetNumber(generateTimesheetNumber());
+                    timesheet.setEmployee(employee);
+                    timesheet.setPeriodStartDate(startDate);
+                    timesheet.setPeriodEndDate(endDate);
+                    
+                    BigDecimal totalRegular = BigDecimal.ZERO;
+                    BigDecimal totalOT = BigDecimal.ZERO;
+                    int presentDays = 0;
+                    int absentDays = 0;
+                    int leaveDays = 0;
+                    
+                    for (AttendanceRecord record : attendanceRecords) {
+                        if (record.getRegularHours() != null) {
+                            totalRegular = totalRegular.add(record.getRegularHours());
+                        }
+                        if (record.getOvertimeHours() != null) {
+                            totalOT = totalOT.add(record.getOvertimeHours());
+                        }
+                        if ("PRESENT".equals(record.getStatus())) {
+                            presentDays++;
+                        } else if ("ABSENT".equals(record.getStatus())) {
+                            absentDays++;
+                        } else if ("ON_LEAVE".equals(record.getStatus())) {
+                            leaveDays++;
+                        }
+                    }
+                    
+                    timesheet.setTotalRegularHours(totalRegular);
+                    timesheet.setTotalOvertimeHours(totalOT);
+                    timesheet.setTotalHours(totalRegular.add(totalOT));
+                    timesheet.setPresentDays(presentDays);
+                    timesheet.setAbsentDays(absentDays);
+                    timesheet.setLeaveDays(leaveDays);
+                    timesheet.setWorkingDays(presentDays + absentDays + leaveDays);
+                    timesheet.setStatus("PENDING_APPROVAL");
+                    
+                    generatedTimesheets.add(timesheetRepository.save(timesheet));
+                }
+            }
+        } else if ("PROJECT".equals(type)) {
+            String projectCode = data.containsKey("projectCode") ? (String) data.get("projectCode") : null;
+            String projectName = data.containsKey("projectName") ? (String) data.get("projectName") : null;
+            
+            for (Employee employee : employees) {
+                List<AttendanceRecord> attendanceRecords = attendanceRecordRepository
+                    .findApprovedAttendanceByEmployeeAndDateRange(employee.getId(), startDate, endDate);
+                
+                if (!attendanceRecords.isEmpty()) {
+                    ProjectTimesheet projectTimesheet = new ProjectTimesheet();
+                    projectTimesheet.setProjectTimesheetNumber(generateProjectTimesheetNumber());
+                    projectTimesheet.setEmployee(employee);
+                    projectTimesheet.setPeriodStartDate(startDate);
+                    projectTimesheet.setPeriodEndDate(endDate);
+                    projectTimesheet.setProjectCode(projectCode);
+                    projectTimesheet.setProjectName(projectName);
+                    
+                    BigDecimal totalRegular = BigDecimal.ZERO;
+                    BigDecimal totalOT = BigDecimal.ZERO;
+                    
+                    for (AttendanceRecord record : attendanceRecords) {
+                        if (record.getRegularHours() != null) {
+                            totalRegular = totalRegular.add(record.getRegularHours());
+                        }
+                        if (record.getOvertimeHours() != null) {
+                            totalOT = totalOT.add(record.getOvertimeHours());
+                        }
+                    }
+                    
+                    projectTimesheet.setRegularHours(totalRegular);
+                    projectTimesheet.setOvertimeHours(totalOT);
+                    projectTimesheet.setTotalHours(totalRegular.add(totalOT));
+                    projectTimesheet.setBillableHours(totalRegular.add(totalOT));
+                    projectTimesheet.setStatus("PENDING_APPROVAL");
+                    
+                    generatedTimesheets.add(projectTimesheetRepository.save(projectTimesheet));
+                }
+            }
+        }
+        
+        return ResponseEntity.ok(Map.of(
+            "generated", generatedTimesheets.size(),
+            "type", type,
+            "timesheets", generatedTimesheets
+        ));
+    }
+
+    @GetMapping("/attendance/approved")
+    public ResponseEntity<List<AttendanceRecord>> getApprovedAttendance(
+            @RequestParam String startDate, 
+            @RequestParam String endDate) {
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+        return ResponseEntity.ok(attendanceRecordRepository.findApprovedAttendanceBetweenDates(start, end));
+    }
+
+    @GetMapping("/attendance/summary")
+    public ResponseEntity<?> getAttendanceSummary(
+            @RequestParam String startDate, 
+            @RequestParam String endDate) {
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+        
+        List<AttendanceRecord> records = attendanceRecordRepository.findByAttendanceDateBetween(start, end);
+        
+        Map<Long, Map<String, Object>> employeeSummary = new HashMap<>();
+        
+        for (AttendanceRecord record : records) {
+            Long empId = record.getEmployee().getId();
+            
+            if (!employeeSummary.containsKey(empId)) {
+                Map<String, Object> summary = new HashMap<>();
+                summary.put("employeeId", empId);
+                summary.put("employeeName", record.getEmployee().getFirstName() + " " + record.getEmployee().getLastName());
+                summary.put("totalRegularHours", BigDecimal.ZERO);
+                summary.put("totalOvertimeHours", BigDecimal.ZERO);
+                summary.put("presentDays", 0);
+                summary.put("absentDays", 0);
+                summary.put("leaveDays", 0);
+                summary.put("approvedCount", 0);
+                summary.put("pendingCount", 0);
+                employeeSummary.put(empId, summary);
+            }
+            
+            Map<String, Object> summary = employeeSummary.get(empId);
+            
+            if (record.getRegularHours() != null) {
+                BigDecimal current = (BigDecimal) summary.get("totalRegularHours");
+                summary.put("totalRegularHours", current.add(record.getRegularHours()));
+            }
+            if (record.getOvertimeHours() != null) {
+                BigDecimal current = (BigDecimal) summary.get("totalOvertimeHours");
+                summary.put("totalOvertimeHours", current.add(record.getOvertimeHours()));
+            }
+            
+            if ("PRESENT".equals(record.getStatus())) {
+                summary.put("presentDays", (int) summary.get("presentDays") + 1);
+            } else if ("ABSENT".equals(record.getStatus())) {
+                summary.put("absentDays", (int) summary.get("absentDays") + 1);
+            } else if ("ON_LEAVE".equals(record.getStatus())) {
+                summary.put("leaveDays", (int) summary.get("leaveDays") + 1);
+            }
+            
+            if ("APPROVED".equals(record.getApprovalStatus())) {
+                summary.put("approvedCount", (int) summary.get("approvedCount") + 1);
+            } else if ("PENDING".equals(record.getApprovalStatus())) {
+                summary.put("pendingCount", (int) summary.get("pendingCount") + 1);
+            }
+        }
+        
+        return ResponseEntity.ok(new ArrayList<>(employeeSummary.values()));
     }
 }

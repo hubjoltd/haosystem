@@ -45,4 +45,10 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
     
     @Query("SELECT SUM(a.overtimeHours) FROM AttendanceRecord a WHERE a.employee.id = :employeeId AND a.attendanceDate BETWEEN :startDate AND :endDate")
     Double sumOvertimeHoursByEmployeeAndDateRange(@Param("employeeId") Long employeeId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT a FROM AttendanceRecord a WHERE a.attendanceDate BETWEEN :startDate AND :endDate AND a.approvalStatus = 'APPROVED'")
+    List<AttendanceRecord> findApprovedAttendanceBetweenDates(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT a FROM AttendanceRecord a WHERE a.employee.id = :employeeId AND a.attendanceDate BETWEEN :startDate AND :endDate AND a.approvalStatus = 'APPROVED'")
+    List<AttendanceRecord> findApprovedAttendanceByEmployeeAndDateRange(@Param("employeeId") Long employeeId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }

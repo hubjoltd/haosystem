@@ -1,19 +1,24 @@
 <div class="payroll-calc-container">
   <div class="page-header">
     <h2>Payroll Calculation</h2>
-    <button class="btn btn-primary" (click)="openCreateModal()">
-      <i class="fas fa-plus"></i> Create Payroll Run
-    </button>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="openTimesheetDialog()">
+        <i class="fas fa-clock"></i> Generate Timesheets
+      </button>
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        <i class="fas fa-plus"></i> Create Payroll Run
+      </button>
+    </div>
   </div>
 
   <div class="info-card">
     <i class="fas fa-info-circle"></i>
     <div>
-      <strong>Payroll Calculation Process:</strong>
+      <strong>3-Phase Payroll Processing Workflow:</strong>
       <ol>
-        <li>Create a new payroll run with the pay period dates</li>
-        <li>Click "Calculate" to auto-compute payroll from approved timesheets</li>
-        <li>Review the calculated amounts before processing</li>
+        <li><strong>Phase 1:</strong> Daily attendance tracking with clock in/out and approval</li>
+        <li><strong>Phase 2:</strong> Click "Generate Timesheets" to create attendance or project timesheets from approved records</li>
+        <li><strong>Phase 3:</strong> Create payroll run, calculate payroll from approved timesheets, review and process</li>
       </ol>
     </div>
   </div>
@@ -105,3 +110,9 @@
     </div>
   </div>
 </div>
+
+<app-timesheet-generation-dialog
+  [showDialog]="showTimesheetDialog"
+  (closeDialog)="closeTimesheetDialog()"
+  (timesheetsGenerated)="onTimesheetsGenerated($event)">
+</app-timesheet-generation-dialog>

@@ -39,6 +39,7 @@ com/erp/repository/ItemGroupRepository.class
 com/erp/model/OvertimeRule.class
 com/erp/repository/GoodsReceiptLineRepository.class
 com/erp/repository/CustomerGroupRepository.class
+com/erp/repository/ProjectTimesheetRepository.class
 com/erp/model/ExpenseItem.class
 com/erp/model/User.class
 com/erp/repository/TaxRuleRepository.class
@@ -74,6 +75,7 @@ com/erp/model/ContractStatus.class
 com/erp/model/EmployeeSalary.class
 com/erp/model/GoodsReceipt.class
 com/erp/controller/CustomerSettingsController.class
+com/erp/model/ProjectTimesheet.class
 com/erp/model/EmployeeBankDetail.class
 com/erp/model/CustomerGroup.class
 com/erp/repository/PayrollRunRepository.class

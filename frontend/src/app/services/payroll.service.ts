@@ -447,4 +447,36 @@ export class PayrollService {
   deleteEmployeeBenefit(id: number): Observable<void> {
     return this.http.delete<void>(`${this.payrollUrl}/benefits/${id}`);
   }
+
+  generateTimesheetsFromAttendance(data: any): Observable<any> {
+    return this.http.post<any>(`${this.payrollUrl}/timesheets/generate-from-attendance`, data);
+  }
+
+  getProjectTimesheets(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.payrollUrl}/project-timesheets`);
+  }
+
+  getProjectTimesheetsByEmployee(employeeId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.payrollUrl}/project-timesheets/employee/${employeeId}`);
+  }
+
+  getProjectTimesheetsByProject(projectCode: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.payrollUrl}/project-timesheets/project/${projectCode}`);
+  }
+
+  createProjectTimesheet(timesheet: any): Observable<any> {
+    return this.http.post<any>(`${this.payrollUrl}/project-timesheets`, timesheet);
+  }
+
+  approveProjectTimesheet(id: number, data: any): Observable<any> {
+    return this.http.put<any>(`${this.payrollUrl}/project-timesheets/${id}/approve`, data);
+  }
+
+  getApprovedAttendance(startDate: string, endDate: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.payrollUrl}/attendance/approved?startDate=${startDate}&endDate=${endDate}`);
+  }
+
+  getAttendanceSummary(startDate: string, endDate: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.payrollUrl}/attendance/summary?startDate=${startDate}&endDate=${endDate}`);
+  }
 }

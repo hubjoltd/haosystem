@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { PayrollService, PayrollRun, PayFrequency } from '../../../services/payroll.service';
+import { TimesheetGenerationDialogComponent } from '../timesheet-generation-dialog/timesheet-generation-dialog.component';
 
 @Component({
   selector: 'app-payroll-calculation',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, TimesheetGenerationDialogComponent],
   templateUrl: './payroll-calculation.component.html',
   styleUrls: ['./payroll-calculation.component.scss']
 })
@@ -16,6 +17,7 @@ export class PayrollCalculationComponent implements OnInit {
   payFrequencies: PayFrequency[] = [];
   
   showCreateModal = false;
+  showTimesheetDialog = false;
   newRun: any = {};
   creating = false;
   calculating = false;
@@ -110,5 +112,24 @@ export class PayrollCalculationComponent implements OnInit {
 
   canCalculate(run: PayrollRun): boolean {
     return run.status === 'DRAFT';
+  }
+
+  openTimesheetDialog(): void {
+    this.showTimesheetDialog = true;
+  }
+
+  closeTimesheetDialog(): void {
+    this.showTimesheetDialog = false;
+  }
+
+  onTimesheetsGenerated(event: any): void {
+    console.log('Timesheets generated:', event);
+    this.showTimesheetDialog = false;
+    this.loadPayrollRuns();
+    if (event.type === 'attendance') {
+      alert(`Successfully generated ${event.count || 0} attendance timesheet(s) from approved records.`);
+    } else if (event.type === 'project') {
+      alert(`Successfully created project timesheet for ${event.employeeName || 'employee'}.`);
+    }
   }
 }
