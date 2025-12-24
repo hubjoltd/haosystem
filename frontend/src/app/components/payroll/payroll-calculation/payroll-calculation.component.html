@@ -39,7 +39,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let run of payrollRuns" (click)="openDetailsModal(run)" class="clickable-row" [ngClass]="{'view-details': run.status !== 'DRAFT'}">
+        <tr *ngFor="let run of payrollRuns">
           <td class="run-number">{{ run.payrollRunNumber }}</td>
           <td>{{ run.description }}</td>
           <td>{{ run.periodStartDate | date:'MMM d' }} - {{ run.periodEndDate | date:'MMM d, yyyy' }}</td>
@@ -50,7 +50,10 @@
           <td>
             <span class="status-badge" [ngClass]="getStatusClass(run.status)">{{ run.status }}</span>
           </td>
-          <td class="actions" (click)="$event.stopPropagation()">
+          <td class="actions">
+            <button class="btn btn-sm btn-info" (click)="viewPayrollDetails(run)" *ngIf="run.status !== 'DRAFT'" title="View Details">
+              <i class="fas fa-eye"></i> View
+            </button>
             <button class="btn btn-sm btn-primary" *ngIf="canCalculate(run)" 
                     (click)="calculatePayroll(run)" [disabled]="calculating" title="Calculate Payroll">
               <i class="fas fa-calculator"></i> Calculate
@@ -116,206 +119,3 @@
   (closeDialog)="closeTimesheetDialog()"
   (timesheetsGenerated)="onTimesheetsGenerated($event)">
 </app-timesheet-generation-dialog>
-
-<!-- Payroll Details Modal -->
-<div class="payroll-modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
-  <div class="payroll-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3><i class="fas fa-receipt"></i> Payroll Run Details</h3>
-      <button class="close-btn" (click)="closeDetailsModal()"><i class="fas fa-times"></i></button>
-    </div>
-
-    <div class="modal-body">
-      <!-- Payroll Run Summary -->
-      <div *ngIf="selectedRun" class="run-summary">
-        <div class="summary-row">
-          <span class="label">Payroll Run:</span>
-          <span class="value">{{ selectedRun.payrollRunNumber }}</span>
-        </div>
-        <div class="summary-row">
-          <span class="label">Period:</span>
-          <span class="value">{{ selectedRun.periodStartDate | date:'MMM d, yyyy' }} - {{ selectedRun.periodEndDate | date:'MMM d, yyyy' }}</span>
-        </div>
-        <div class="summary-row">
-          <span class="label">Pay Date:</span>
-          <span class="value">{{ selectedRun.payDate | date:'MMM d, yyyy' }}</span>
-        </div>
-        <div class="summary-row">
-          <span class="label">Status:</span>
-          <span class="value"><span class="status-badge" [ngClass]="getStatusClass(selectedRun.status)">{{ selectedRun.status }}</span></span>
-        </div>
-      </div>
-
-      <!-- Loading State -->
-      <div *ngIf="loadingDetails" class="loading-state">
-        <i class="fas fa-spinner fa-spin"></i>
-        <p>Loading payroll details...</p>
-      </div>
-
-      <!-- Employees List -->
-      <div *ngIf="!loadingDetails && selectedRunRecords.length > 0" class="employees-section">
-        <h4><i class="fas fa-users"></i> Employees ({{ selectedRunRecords.length }})</h4>
-        <div class="employees-list">
-          <div *ngFor="let record of selectedRunRecords" (click)="openEmployeeDetails(record)" class="employee-card clickable">
-            <div class="employee-header">
-              <div class="employee-name">{{ getEmployeeName(record) }}</div>
-              <div class="employee-code">{{ getEmployeeCode(record) }}</div>
-            </div>
-            <div class="employee-body">
-              <div class="salary-row">
-                <span class="salary-label">Gross Pay:</span>
-                <span class="salary-amount gross">{{ formatCurrency(record.grossPay || 0) }}</span>
-              </div>
-              <div class="salary-row">
-                <span class="salary-label">Deductions:</span>
-                <span class="salary-amount deduction">{{ formatCurrency(record.totalDeductions || 0) }}</span>
-              </div>
-              <div class="salary-row">
-                <span class="salary-label">Taxes:</span>
-                <span class="salary-amount tax">{{ formatCurrency(record.totalTaxes || 0) }}</span>
-              </div>
-              <div class="salary-row highlight">
-                <span class="salary-label">Net Pay:</span>
-                <span class="salary-amount net">{{ formatCurrency(record.netPay || 0) }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- No Data State -->
-      <div *ngIf="!loadingDetails && selectedRunRecords.length === 0" class="empty-state">
-        <i class="fas fa-inbox"></i>
-        <p>No payroll records found for this run</p>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn-close" (click)="closeDetailsModal()">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- Employee Details Modal -->
-<div class="employee-details-overlay" *ngIf="selectedRecord" (click)="closeEmployeeDetails()">
-  <div class="employee-details-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3><i class="fas fa-receipt"></i> Employee Payroll Details</h3>
-      <button class="close-btn" (click)="closeEmployeeDetails()"><i class="fas fa-times"></i></button>
-    </div>
-
-    <div class="modal-body">
-      <!-- Employee Information -->
-      <div class="details-section">
-        <h4>Employee Information</h4>
-        <div class="details-grid">
-          <div class="detail-row">
-            <span class="label">Name:</span>
-            <span class="value">{{ getEmployeeName(selectedRecord) }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Code:</span>
-            <span class="value">{{ getEmployeeCode(selectedRecord) }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Department:</span>
-            <span class="value">{{ getDepartment(selectedRecord) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Earnings Section -->
-      <div class="details-section earnings">
-        <h4><i class="fas fa-plus-circle"></i> Earnings</h4>
-        <div class="details-grid">
-          <div class="detail-row">
-            <span class="label">Base Pay:</span>
-            <span class="value">{{ formatCurrency(selectedRecord.basePay || 0) }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Regular Hours:</span>
-            <span class="value">{{ selectedRecord.regularHours || 0 }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Overtime Pay:</span>
-            <span class="value">{{ formatCurrency(selectedRecord.overtimePay || 0) }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Bonuses:</span>
-            <span class="value">{{ formatCurrency(selectedRecord.bonuses || 0) }}</span>
-          </div>
-          <div class="detail-row highlight">
-            <span class="label">Gross Salary:</span>
-            <span class="value">{{ formatCurrency(selectedRecord.grossPay || 0) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Taxes Section -->
-      <div class="details-section taxes">
-        <h4><i class="fas fa-percent"></i> Taxes</h4>
-        <div class="details-grid">
-          <div class="detail-row">
-            <span class="label">Federal Tax:</span>
-            <span class="value tax">{{ formatCurrency(selectedRecord.federalTax || 0) }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">State Tax:</span>
-            <span class="value tax">{{ formatCurrency(selectedRecord.stateTax || 0) }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Social Security:</span>
-            <span class="value tax">{{ formatCurrency(selectedRecord.socialSecurityTax || 0) }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Medicare:</span>
-            <span class="value tax">{{ formatCurrency(selectedRecord.medicareTax || 0) }}</span>
-          </div>
-          <div class="detail-row highlight">
-            <span class="label">Total Taxes:</span>
-            <span class="value tax">{{ formatCurrency(selectedRecord.totalTaxes || 0) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Deductions Section -->
-      <div class="details-section deductions">
-        <h4><i class="fas fa-minus-circle"></i> Deductions</h4>
-        <div class="details-grid">
-          <div class="detail-row">
-            <span class="label">Health Insurance:</span>
-            <span class="value">{{ formatCurrency(selectedRecord.healthInsurance || 0) }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Dental Insurance:</span>
-            <span class="value">{{ formatCurrency(selectedRecord.dentalInsurance || 0) }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">401(k):</span>
-            <span class="value">{{ formatCurrency(selectedRecord.retirement401k || 0) }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Pre-Tax Deductions:</span>
-            <span class="value">{{ formatCurrency(selectedRecord.preTaxDeductions || 0) }}</span>
-          </div>
-          <div class="detail-row highlight">
-            <span class="label">Total Deductions:</span>
-            <span class="value">{{ formatCurrency(selectedRecord.totalDeductions || 0) }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Net Pay Section -->
-      <div class="details-section net-pay">
-        <h4><i class="fas fa-wallet"></i> Net Pay</h4>
-        <div class="net-pay-display">
-          <span class="net-pay-amount">{{ formatCurrency(selectedRecord.netPay || 0) }}</span>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn-close" (click)="closeEmployeeDetails()">Close</button>
-      </div>
-    </div>
-  </div>
-</div>

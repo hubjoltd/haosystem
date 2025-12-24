@@ -97,6 +97,7 @@ import { TaxRulesComponent } from './components/payroll/tax-rules/tax-rules.comp
 import { StatutoryRulesComponent } from './components/payroll/statutory-rules/statutory-rules.component';
 import { TimesheetApprovalComponent } from './components/payroll/timesheet-approval/timesheet-approval.component';
 import { PayrollCalculationComponent } from './components/payroll/payroll-calculation/payroll-calculation.component';
+import { PayrollRunDetailsComponent } from './components/payroll/payroll-run-details/payroll-run-details.component';
 import { ProcessPayrollComponent } from './components/payroll/process-payroll/process-payroll.component';
 import { EmployeeSelfServiceComponent } from './components/payroll/employee-self-service/employee-self-service.component';
 
@@ -218,6 +219,7 @@ const routes: Routes = [
       { path: 'payroll/rules/statutory-rules', component: StatutoryRulesComponent },
       { path: 'payroll/timesheets', component: TimesheetApprovalComponent },
       { path: 'payroll/calculation', component: PayrollCalculationComponent },
+      { path: 'payroll/run-details/:runId', component: PayrollRunDetailsComponent },
       { path: 'payroll/process/:id', component: ProcessPayrollComponent },
       { path: 'payroll/self-service', component: EmployeeSelfServiceComponent },
       { path: 'reports/payroll/summary', component: PayrollSummaryReportComponent },
