@@ -19,7 +19,10 @@ export class EmployeeListComponent implements OnInit {
   filterDepartment = '';
   filterStatus = '';
   
-  loading = false;
+  loading = true;
+  dataReady = false;
+  private subscriptionCount = 0;
+  private expectedSubscriptions = 3;
 
   constructor(
     private employeeService: EmployeeService,
@@ -33,27 +36,54 @@ export class EmployeeListComponent implements OnInit {
 
   loadData() {
     this.loading = true;
+    this.dataReady = false;
+    this.subscriptionCount = 0;
+    
     this.employeeService.getAll().subscribe({
       next: (data) => {
         this.employees = data;
         this.applyFilters();
-        this.loading = false;
+        this.incrementSubscriptionCount();
       },
       error: (err) => {
         console.error('Error loading employees:', err);
-        this.loading = false;
+        this.incrementSubscriptionCount();
       }
     });
     
     this.orgService.getDepartments().subscribe({
-      next: (data) => this.departments = data,
-      error: (err) => console.error('Error loading departments:', err)
+      next: (data) => {
+        this.departments = data;
+        this.incrementSubscriptionCount();
+      },
+      error: (err) => {
+        console.error('Error loading departments:', err);
+        this.incrementSubscriptionCount();
+      }
     });
     
     this.orgService.getDesignations().subscribe({
-      next: (data) => this.designations = data,
-      error: (err) => console.error('Error loading designations:', err)
+      next: (data) => {
+        this.designations = data;
+        this.incrementSubscriptionCount();
+      },
+      error: (err) => {
+        console.error('Error loading designations:', err);
+        this.incrementSubscriptionCount();
+      }
     });
+  }
+
+  private incrementSubscriptionCount() {
+    this.subscriptionCount++;
+    if (this.subscriptionCount >= this.expectedSubscriptions) {
+      this.completeLoading();
+    }
+  }
+
+  private completeLoading() {
+    this.loading = false;
+    this.dataReady = true;
   }
 
   applyFilters() {
