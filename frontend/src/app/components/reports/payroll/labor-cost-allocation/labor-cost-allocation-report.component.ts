@@ -31,8 +31,8 @@ export class LaborCostAllocationReportComponent implements OnInit {
   
   selectedRunId: number | null = null;
   
-  loading = true;
-  dataReady = false;
+  loading = false;
+  dataReady = true;
   
   grandTotals = {
     employeeCount: 0,
@@ -70,7 +70,7 @@ export class LaborCostAllocationReportComponent implements OnInit {
   loadPayrollRecords(): void {
     if (!this.selectedRunId) return;
     
-    this.loading = true;
+    this.loading = false;
     this.payrollService.getPayrollRecordsByRun(this.selectedRunId).subscribe({
       next: (data) => {
         this.payrollRecords = data;

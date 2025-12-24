@@ -24,9 +24,12 @@ export class ItemMasterComponent implements OnInit {
   selectedGroupId: number | null = null;
   selectedUomId: number | null = null;
   selectedSupplierId: number | null = null;
-  loading: boolean = false;
+  loading = false;
+  dataReady = true;
   errorMessage: string = '';
   nameValidationMessage: string = '';
+  private subscriptionCount = 0;
+  private expectedSubscriptions = 4;
 
   constructor(
     private itemService: ItemService,
@@ -41,32 +44,61 @@ export class ItemMasterComponent implements OnInit {
     this.loadData();
   }
 
+  private incrementAndCheck(): void {
+    this.subscriptionCount++;
+    if (this.subscriptionCount >= this.expectedSubscriptions) {
+      this.loading = false;
+      this.dataReady = true;
+    }
+  }
+
   loadData(): void {
-    this.loading = true;
+    this.loading = false;
+    this.dataReady = true;
+    this.subscriptionCount = 0;
+
     this.itemService.getAll().subscribe({
       next: (data) => {
         this.items = data;
-        this.loading = false;
+        this.incrementAndCheck();
       },
       error: (err) => {
         console.error('Error loading items', err);
-        this.loading = false;
+        this.incrementAndCheck();
       }
     });
 
     this.itemGroupService.getActive().subscribe({
-      next: (data) => this.groups = data,
-      error: (err) => console.error('Error loading groups', err)
+      next: (data) => {
+        this.groups = data;
+        this.incrementAndCheck();
+      },
+      error: (err) => {
+        console.error('Error loading groups', err);
+        this.incrementAndCheck();
+      }
     });
 
     this.unitOfMeasureService.getActive().subscribe({
-      next: (data) => this.units = data,
-      error: (err) => console.error('Error loading units', err)
+      next: (data) => {
+        this.units = data;
+        this.incrementAndCheck();
+      },
+      error: (err) => {
+        console.error('Error loading units', err);
+        this.incrementAndCheck();
+      }
     });
 
     this.supplierService.getAll().subscribe({
-      next: (data) => this.suppliers = data.filter(s => s.status === 'Active'),
-      error: (err) => console.error('Error loading suppliers', err)
+      next: (data) => {
+        this.suppliers = data.filter(s => s.status === 'Active');
+        this.incrementAndCheck();
+      },
+      error: (err) => {
+        console.error('Error loading suppliers', err);
+        this.incrementAndCheck();
+      }
     });
   }
 

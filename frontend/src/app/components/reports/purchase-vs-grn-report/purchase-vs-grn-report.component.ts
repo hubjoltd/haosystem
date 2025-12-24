@@ -18,8 +18,8 @@ export class PurchaseVsGrnReportComponent implements OnInit {
   selectedSupplier: string = '';
   fromDate: string = '';
   toDate: string = '';
-  loading: boolean = true;  // Start with loading
-dataReady: boolean = false;  // Only show content when ready
+  loading: boolean = false;  // Start with loading
+dataReady: boolean = true;  // Only show content when ready
   
   totalPOQty: number = 0;
   totalGRNQty: number = 0;
@@ -45,7 +45,7 @@ dataReady: boolean = false;  // Only show content when ready
   }
 
   generateReport(): void {
-    this.loading = true;
+    this.loading = false;
     
     forkJoin({
       pos: this.prFulfillmentService.getAllPOs(),

@@ -10,8 +10,8 @@ import { OrganizationService, Grade } from '../../../../services/organization.se
 export class GradesComponent implements OnInit {
   grades: Grade[] = [];
   
-  loading = true;
-  dataReady = false;
+  loading = false;
+  dataReady = true;
   
   showModal = false;
   isEditMode = false;

@@ -37,7 +37,7 @@ export class PurchaseInvoiceComponent implements OnInit {
   }
 
   loadInvoices(): void {
-    this.loading = true;
+    this.loading = false;
     this.invoiceService.getAll().subscribe({
       next: (data) => {
         this.invoices = data;

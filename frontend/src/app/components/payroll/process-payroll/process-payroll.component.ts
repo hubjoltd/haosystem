@@ -15,7 +15,7 @@ export class ProcessPayrollComponent implements OnInit {
   payrollRun: PayrollRun | null = null;
   payrollRecords: PayrollRecord[] = [];
   selectedRecordIds: Set<number> = new Set();
-  loading = true;
+  loading = false;
   processing = false;
   selectedRecord: PayrollRecord | null = null;
   showDetailModal = false;
@@ -46,7 +46,7 @@ export class ProcessPayrollComponent implements OnInit {
   }
 
   loadPayrollRun(id: number): void {
-    this.loading = true;
+    this.loading = false;
     this.payrollService.getPayrollRun(id).subscribe({
       next: (run) => {
         this.payrollRun = run;

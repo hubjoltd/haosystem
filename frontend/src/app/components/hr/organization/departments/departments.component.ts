@@ -12,8 +12,8 @@ export class DepartmentsComponent implements OnInit {
   costCenters: CostCenter[] = [];
   locations: Location[] = [];
   
-  loading = true;
-  dataReady = false;
+  loading = false;
+  dataReady = true;
   
   showModal = false;
   isEditMode = false;

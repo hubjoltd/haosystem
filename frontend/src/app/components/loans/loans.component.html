@@ -23,8 +23,6 @@
     <button class="btn btn-primary" (click)="openForm()">+ New Loan Application</button>
   </div>
 
-  <div *ngIf="loading" class="loading">Loading...</div>
-
   <div *ngIf="!loading && loans.length > 0" class="data-table-container">
     <table class="data-table">
       <thead>

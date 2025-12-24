@@ -30,7 +30,7 @@ export class GroupMasterComponent implements OnInit {
   }
 
   loadGroups(): void {
-    this.loading = true;
+    this.loading = false;
     this.groupService.getAll().subscribe({
       next: (data) => {
         this.groups = data;

@@ -9,7 +9,7 @@ import { MisDashboardService, AttendanceDashboardStats } from '../../../services
 })
 export class AttendanceDashboardComponent implements OnInit {
   stats: AttendanceDashboardStats | null = null;
-  loading = true;
+  loading = false;
   selectedPeriod = 'week';
 
   constructor(private dashboardService: MisDashboardService) {}
@@ -19,7 +19,7 @@ export class AttendanceDashboardComponent implements OnInit {
   }
 
   loadStats(): void {
-    this.loading = true;
+    this.loading = false;
     this.dashboardService.getAttendanceStats().subscribe({
       next: (data) => {
         this.stats = data;

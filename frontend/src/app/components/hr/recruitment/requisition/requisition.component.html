@@ -40,10 +40,6 @@
   </div>
 
   <div class="content-card">
-    <div *ngIf="loading" class="loading">
-      <i class="fas fa-spinner fa-spin"></i> Loading requisitions...
-    </div>
-
     <div *ngIf="!loading && getFilteredRequisitions().length === 0" class="empty-state">
       <i class="fas fa-file-alt"></i>
       <p>No requisitions found</p>

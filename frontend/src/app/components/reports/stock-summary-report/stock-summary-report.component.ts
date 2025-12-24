@@ -25,8 +25,8 @@ export class StockSummaryReportComponent implements OnInit {
   selectedSupplier: string = '';
   fromDate: string = '';
   toDate: string = '';
-  loading: boolean = true;  // Start with loading state
-  dataReady: boolean = false;  // Only show content when ready
+  loading: boolean = false;  // Start with loading state
+  dataReady: boolean = true;  // Only show content when ready
   
   totalOpening: number = 0;
   totalIn: number = 0;
@@ -48,7 +48,7 @@ export class StockSummaryReportComponent implements OnInit {
   }
 
   loadFilters(): void {
-    this.loading = true;
+    this.loading = false;
     forkJoin({
       groups: this.itemGroupService.getAll(),
       warehouses: this.warehouseService.getAllWarehouses(),
@@ -66,7 +66,7 @@ export class StockSummaryReportComponent implements OnInit {
   }
 
   generateReport(): void {
-    this.loading = true;
+    this.loading = false;
     
     forkJoin({
       items: this.itemService.getAll(),

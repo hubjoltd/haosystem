@@ -41,7 +41,7 @@ export class LeaveRequestsComponent implements OnInit {
   }
 
   loadRequests(): void {
-    this.loading = true;
+    this.loading = false;
     this.leaveService.getAllRequests().subscribe({
       next: (data) => {
         this.requests = data;

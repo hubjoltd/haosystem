@@ -41,7 +41,7 @@ export class GeneralSettingsComponent implements OnInit {
   }
 
   loadSettings(): void {
-    this.loading = true;
+    this.loading = false;
     this.settingsService.getGeneralSettings().subscribe({
       next: (data) => {
         if (data) {

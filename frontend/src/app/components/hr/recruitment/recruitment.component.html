@@ -98,8 +98,7 @@
         <h3>Job Requisitions</h3>
         <button class="btn btn-primary" (click)="openForm()">+ New Requisition</button>
       </div>
-      <div *ngIf="loading" class="loading">Loading...</div>
-      <table *ngIf="!loading" class="data-table">
+      <table  class="data-table">
         <thead>
           <tr>
             <th>Number</th>
@@ -132,8 +131,7 @@
         <h3>Job Postings</h3>
         <button class="btn btn-primary" (click)="openPostingForm()">+ New Job Posting</button>
       </div>
-      <div *ngIf="loading" class="loading">Loading...</div>
-      <table *ngIf="!loading" class="data-table">
+      <table  class="data-table">
         <thead>
           <tr>
             <th>Code</th>
@@ -164,8 +162,7 @@
         <h3>Candidates</h3>
         <button class="btn btn-primary" (click)="openCandidateForm()">+ Add Candidate</button>
       </div>
-      <div *ngIf="loading" class="loading">Loading...</div>
-      <table *ngIf="!loading" class="data-table">
+      <table  class="data-table">
         <thead>
           <tr>
             <th>Name</th>
@@ -192,8 +189,7 @@
         <h3>Upcoming Interviews</h3>
         <button class="btn btn-primary" (click)="openInterviewForm()">+ Schedule Interview</button>
       </div>
-      <div *ngIf="loading" class="loading">Loading...</div>
-      <table *ngIf="!loading" class="data-table">
+      <table  class="data-table">
         <thead>
           <tr>
             <th>Candidate</th>

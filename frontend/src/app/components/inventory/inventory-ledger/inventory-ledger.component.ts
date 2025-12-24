@@ -49,7 +49,7 @@ export class InventoryLedgerComponent implements OnInit {
   }
 
   loadLedger(): void {
-    this.loading = true;
+    this.loading = false;
     const filter: LedgerFilter = {};
     if (this.selectedItemId) filter.itemId = this.selectedItemId;
     if (this.selectedWarehouseId) filter.warehouseId = this.selectedWarehouseId;

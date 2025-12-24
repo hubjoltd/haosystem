@@ -35,7 +35,6 @@
         <h3>Training Programs</h3>
         <button class="btn btn-primary" (click)="openForm()">+ New Program</button>
       </div>
-      <div *ngIf="loading" class="loading">Loading...</div>
       <div *ngIf="!loading && programs.length === 0" class="empty-state">
         <p>No training programs yet. Click "New Program" to create one.</p>
       </div>
@@ -72,7 +71,6 @@
         <h3>Training Sessions</h3>
         <button class="btn btn-primary" (click)="openSessionForm()">+ New Session</button>
       </div>
-      <div *ngIf="loading" class="loading">Loading...</div>
       <div *ngIf="!loading && sessions.length === 0" class="empty-state">
         <p>No training sessions yet. Click "New Session" to create one.</p>
       </div>

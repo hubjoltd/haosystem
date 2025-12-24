@@ -15,7 +15,10 @@ export class ContractManagementComponent implements OnInit {
   showModal: boolean = false;
   editMode: boolean = false;
   selectedContract: Contract = this.getEmptyContract();
-  loading: boolean = false;
+  loading = false;
+  dataReady = true;
+  private subscriptionCount = 0;
+  private expectedSubscriptions = 2;
 
   constructor(
     private contractService: ContractService,
@@ -26,22 +29,39 @@ export class ContractManagementComponent implements OnInit {
     this.loadData();
   }
 
+  private incrementAndCheck(): void {
+    this.subscriptionCount++;
+    if (this.subscriptionCount >= this.expectedSubscriptions) {
+      this.loading = false;
+      this.dataReady = true;
+    }
+  }
+
   loadData(): void {
-    this.loading = true;
+    this.loading = false;
+    this.dataReady = true;
+    this.subscriptionCount = 0;
+
     this.contractService.getAll().subscribe({
       next: (data) => {
         this.contracts = data;
-        this.loading = false;
+        this.incrementAndCheck();
       },
       error: (err) => {
         console.error('Error loading contracts', err);
-        this.loading = false;
+        this.incrementAndCheck();
       }
     });
 
     this.customerService.getAll().subscribe({
-      next: (data) => this.customers = data,
-      error: (err) => console.error('Error loading customers', err)
+      next: (data) => {
+        this.customers = data;
+        this.incrementAndCheck();
+      },
+      error: (err) => {
+        console.error('Error loading customers', err);
+        this.incrementAndCheck();
+      }
     });
   }
 

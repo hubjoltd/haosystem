@@ -10,8 +10,8 @@ import { ExportService } from '../../../../services/export.service';
 })
 export class PrListReportComponent implements OnInit {
   reportData: any[] = [];
-  loading: boolean = true;  // Start with loading state
-  dataReady: boolean = false;  // Only show content when ready
+  loading: boolean = false;  // Start with loading state
+  dataReady: boolean = true;  // Only show content when ready
   selectedStatus: string = '';
   fromDate: string = '';
   toDate: string = '';
@@ -26,7 +26,7 @@ export class PrListReportComponent implements OnInit {
   }
 
   generateReport(): void {
-    this.loading = true;
+    this.loading = false;
     this.prService.getAll().subscribe({
       next: (data) => {
         this.reportData = data.map((pr: any) => ({

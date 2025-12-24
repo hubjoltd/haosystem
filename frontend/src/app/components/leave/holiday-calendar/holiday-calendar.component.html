@@ -21,7 +21,7 @@
     <button class="tab optional" (click)="filterByType('OPTIONAL')">Optional</button>
   </div>
 
-  <div class="holidays-list" *ngIf="!loading">
+  <div class="holidays-list" >
     <div class="holiday-card" *ngFor="let holiday of filteredHolidays" [style.border-left-color]="getTypeColor(holiday.holidayType || '')">
       <div class="holiday-date">
         <span class="day">{{ holiday.holidayDate | date:'d' }}</span>

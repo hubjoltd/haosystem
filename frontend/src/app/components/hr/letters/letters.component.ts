@@ -51,7 +51,7 @@ export class LettersComponent implements OnInit {
   }
 
   loadLetters(): void {
-    this.loading = true;
+    this.loading = false;
     this.letterService.getAllLetters().subscribe({
       next: (data) => { this.letters = data; this.loading = false; },
       error: (err) => { console.error(err); this.loading = false; }

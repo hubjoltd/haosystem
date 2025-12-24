@@ -14,7 +14,7 @@
   </div>
 
   <!-- Content visible only when data is ready -->
-  <ng-container *ngIf="dataReady">
+  <ng-container >
   <div class="filter-section">
     <div class="filter-row">
       <div class="filter-group">
@@ -86,7 +86,7 @@
     <p>Loading payroll records...</p>
   </div>
 
-  <div class="table-container" *ngIf="!loading">
+  <div class="table-container" >
     <table class="report-table" *ngIf="summaryData.length > 0">
       <thead>
         <tr>

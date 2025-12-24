@@ -3,8 +3,6 @@
     <h2>Loan Approvals</h2>
   </div>
 
-  <div *ngIf="loading" class="loading">Loading...</div>
-
   <div *ngIf="!loading && pendingLoans.length > 0" class="data-table-container">
     <table class="data-table">
       <thead>

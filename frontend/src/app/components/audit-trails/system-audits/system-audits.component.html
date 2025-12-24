@@ -39,10 +39,10 @@
 
   <div class="table-container">
     <div class="loading-overlay" *ngIf="loading">
-      <i class="fas fa-spinner fa-spin"></i> Loading...
+      
     </div>
     
-    <table class="data-table" *ngIf="!loading">
+    <table class="data-table" >
       <thead>
         <tr>
           <th>Timestamp</th>
@@ -80,7 +80,7 @@
     </table>
   </div>
 
-  <div class="results-summary" *ngIf="!loading">
+  <div class="results-summary" >
     Showing {{ filteredAudits.length }} of {{ audits.length }} records
   </div>
 </div>

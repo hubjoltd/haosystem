@@ -26,7 +26,7 @@ export class SupplierComponent implements OnInit {
   }
 
   loadSuppliers(): void {
-    this.loading = true;
+    this.loading = false;
     this.supplierService.getAll().subscribe({
       next: (data) => {
         this.suppliers = data;

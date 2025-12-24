@@ -225,7 +225,7 @@ export class CustomReportBuilderComponent implements OnInit {
   generatePreview(): void {
     if (this.selectedFields.length === 0) return;
     
-    this.loading = true;
+    this.loading = false;
     this.showPreview = true;
     
     setTimeout(() => {

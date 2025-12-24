@@ -20,8 +20,8 @@ export class ItemMovementReportComponent implements OnInit {
   selectedWarehouse: string = '';
   fromDate: string = '';
   toDate: string = '';
-  loading: boolean = true;  // Start with loading
-dataReady: boolean = false;  // Only show content when ready
+  loading: boolean = false;  // Start with loading
+dataReady: boolean = true;  // Only show content when ready
   
   totalIn: number = 0;
   totalOut: number = 0;
@@ -56,7 +56,7 @@ dataReady: boolean = false;  // Only show content when ready
       return;
     }
     
-    this.loading = true;
+    this.loading = false;
     
     const filter: LedgerFilter = {
       itemId: parseInt(this.selectedItem)

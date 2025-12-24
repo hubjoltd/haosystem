@@ -86,7 +86,7 @@ export class RecruitmentPostingsComponent implements OnInit {
   }
 
   loadData(): void {
-    this.loading = true;
+    this.loading = false;
     this.recruitmentService.getJobPostings().subscribe({
       next: (data) => {
         this.postings = data;

@@ -9,8 +9,8 @@ import { ExportService } from '../../../../services/export.service';
 })
 export class DirectPurchaseReportComponent implements OnInit {
   reportData: any[] = [];
-  loading: boolean = true;  // Start with loading
-dataReady: boolean = false;  // Only show content when ready
+  loading: boolean = false;  // Start with loading
+dataReady: boolean = true;  // Only show content when ready
   fromDate: string = '';
   toDate: string = '';
 
@@ -19,7 +19,7 @@ dataReady: boolean = false;  // Only show content when ready
   ngOnInit(): void {}
 
   generateReport(): void {
-    this.loading = true;
+    this.loading = false;
     setTimeout(() => {
       this.reportData = [];
       this.completeLoading();

@@ -40,11 +40,6 @@
   </div>
 
   <div class="content-card">
-    <div *ngIf="loading" class="loading">
-      <i class="fa fa-spinner fa-spin"></i>
-      <p>Loading job postings...</p>
-    </div>
-
     <div *ngIf="!loading && filteredPostings.length === 0" class="empty-state">
       <i class="fa fa-briefcase"></i>
       <p>No job postings found</p>

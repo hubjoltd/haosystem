@@ -36,11 +36,6 @@
   </div>
 
   <div class="content-card">
-    <div *ngIf="loading" class="loading">
-      <i class="fa fa-spinner fa-spin"></i>
-      <p>Loading interviews...</p>
-    </div>
-
     <div *ngIf="!loading && filteredInterviews.length === 0" class="empty-state">
       <i class="fa fa-calendar"></i>
       <p>No interviews scheduled</p>

@@ -17,8 +17,6 @@
     <button class="btn btn-primary" (click)="openForm()">+ Add New</button>
   </div>
 
-  <div *ngIf="loading" class="loading">Loading...</div>
-
   <!-- Salary Bands Table -->
   <div *ngIf="!loading && activeTab === 'salary-bands'" class="table-container">
     <table class="data-table">

@@ -1,4 +1,4 @@
-<div class="process-payroll-container" *ngIf="!loading">
+<div class="process-payroll-container" >
   <div class="page-header">
     <div class="header-left">
       <button class="btn btn-back" (click)="goBack()">
@@ -176,10 +176,6 @@
       </tfoot>
     </table>
   </div>
-</div>
-
-<div class="loading" *ngIf="loading">
-  <i class="fas fa-spinner fa-spin"></i> Loading payroll data...
 </div>
 
 <div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">

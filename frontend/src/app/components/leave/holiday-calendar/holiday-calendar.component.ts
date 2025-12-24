@@ -50,7 +50,7 @@ export class HolidayCalendarComponent implements OnInit {
   }
 
   loadHolidays(): void {
-    this.loading = true;
+    this.loading = false;
     this.leaveService.getHolidaysByYear(this.selectedYear).subscribe({
       next: (data) => {
         this.holidays = data;

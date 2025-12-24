@@ -7,7 +7,7 @@
 </div>
 
 <!-- Content only when ready -->
-<ng-container *ngIf="dataReady">
+<ng-container >
 <div class="report-container">
   <div class="report-header">
     <h2><i class="fas fa-chart-area"></i> Labor Cost Allocation Report</h2>
@@ -70,7 +70,7 @@
     </div>
   </div>
 
-  <div class="table-container" *ngIf="!loading">
+  <div class="table-container" >
     <table class="report-table" *ngIf="laborCostData.length > 0">
       <thead>
         <tr>

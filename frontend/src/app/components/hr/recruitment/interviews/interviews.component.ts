@@ -92,7 +92,7 @@ export class RecruitmentInterviewsComponent implements OnInit {
   }
 
   loadData(): void {
-    this.loading = true;
+    this.loading = false;
     this.recruitmentService.getInterviews().subscribe({
       next: (data) => {
         this.interviews = data;

@@ -11,8 +11,8 @@ export class DesignationsComponent implements OnInit {
   designations: Designation[] = [];
   grades: Grade[] = [];
   
-  loading = true;
-  dataReady = false;
+  loading = false;
+  dataReady = true;
   
   showModal = false;
   isEditMode = false;

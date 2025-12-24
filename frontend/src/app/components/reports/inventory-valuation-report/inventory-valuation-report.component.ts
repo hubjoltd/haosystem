@@ -20,8 +20,8 @@ export class InventoryValuationReportComponent implements OnInit {
   selectedGroup: string = '';
   selectedWarehouse: string = '';
   totalValue: number = 0;
-  loading: boolean = true;  // Start with loading
-dataReady: boolean = false;  // Only show content when ready
+  loading: boolean = false;  // Start with loading
+dataReady: boolean = true;  // Only show content when ready
   valuationMethod: string = 'FIFO';
   asOfDate: string = '';
 
@@ -63,7 +63,7 @@ dataReady: boolean = false;  // Only show content when ready
   }
 
   generateReport(): void {
-    this.loading = true;
+    this.loading = false;
     this.itemService.getAll().subscribe({
       next: (data) => {
         let filteredData = data;

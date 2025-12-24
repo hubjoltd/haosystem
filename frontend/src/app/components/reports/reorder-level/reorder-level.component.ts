@@ -22,7 +22,7 @@ export class ReorderLevelComponent implements OnInit {
   }
 
   generateReport(): void {
-    this.loading = true;
+    this.loading = false;
     this.itemService.getLowStock().subscribe({
       next: (data) => {
         this.reportData = data.map(item => ({

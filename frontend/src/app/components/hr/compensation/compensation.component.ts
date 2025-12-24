@@ -69,7 +69,7 @@ export class CompensationComponent implements OnInit {
   }
 
   loadData(): void {
-    this.loading = true;
+    this.loading = false;
 
     switch (this.activeTab) {
       case 'salary-bands':

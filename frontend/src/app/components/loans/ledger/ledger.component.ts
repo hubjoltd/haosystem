@@ -18,7 +18,7 @@ export class LoanLedgerComponent implements OnInit {
   }
 
   loadLedger(): void {
-    this.loading = true;
+    this.loading = false;
     setTimeout(() => { this.loading = false; }, 500);
   }
 }

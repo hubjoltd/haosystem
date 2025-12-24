@@ -9,7 +9,7 @@ import { MisDashboardService, PayrollDashboardStats } from '../../../services/mi
 })
 export class PayrollDashboardComponent implements OnInit {
   stats: PayrollDashboardStats | null = null;
-  loading = true;
+  loading = false;
   selectedPeriod = 'month';
 
   constructor(private dashboardService: MisDashboardService) {}
@@ -19,7 +19,7 @@ export class PayrollDashboardComponent implements OnInit {
   }
 
   loadStats(): void {
-    this.loading = true;
+    this.loading = false;
     this.dashboardService.getPayrollStats().subscribe({
       next: (data) => {
         this.stats = data;

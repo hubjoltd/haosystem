@@ -18,7 +18,7 @@ export class LoanEmiComponent implements OnInit {
   }
 
   loadEmiSchedules(): void {
-    this.loading = true;
+    this.loading = false;
     setTimeout(() => { this.loading = false; this.emiSchedules = []; }, 500);
   }
 }

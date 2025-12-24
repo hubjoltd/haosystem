@@ -18,8 +18,8 @@ export class SlowMovingItemsReportComponent implements OnInit {
   selectedGroup: string = '';
   selectedWarehouse: string = '';
   daysWithoutMovement: number = 30;
-  loading: boolean = true;  // Start with loading
-dataReady: boolean = false;  // Only show content when ready
+  loading: boolean = false;  // Start with loading
+dataReady: boolean = true;  // Only show content when ready
   totalValue: number = 0;
   totalItems: number = 0;
 
@@ -47,7 +47,7 @@ dataReady: boolean = false;  // Only show content when ready
   }
 
   generateReport(): void {
-    this.loading = true;
+    this.loading = false;
     this.itemService.getAll().subscribe({
       next: (data) => {
         const cutoffDate = new Date();

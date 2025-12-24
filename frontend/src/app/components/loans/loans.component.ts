@@ -36,7 +36,7 @@ export class LoansApplicationComponent implements OnInit {
   }
 
   loadLoans(): void {
-    this.loading = true;
+    this.loading = false;
     this.loanService.getLoans().subscribe({
       next: (data) => { this.loans = data; this.loading = false; },
       error: (err) => { console.error(err); this.loading = false; }

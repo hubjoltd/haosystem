@@ -37,7 +37,7 @@ export class DirectPurchaseComponent implements OnInit {
   }
 
   loadPurchases(): void {
-    this.loading = true;
+    this.loading = false;
     this.directPurchaseService.getAll().subscribe({
       next: (data) => {
         this.purchases = data;

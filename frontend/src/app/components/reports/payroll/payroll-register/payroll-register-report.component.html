@@ -14,7 +14,7 @@
   </div>
 
   <!-- Filters and Summary (visible only when data is ready) -->
-  <ng-container *ngIf="dataReady">
+  <ng-container >
     <div class="filter-section">
       <div class="filter-row">
         <div class="filter-group">
@@ -60,7 +60,7 @@
       </div>
     </div>
 
-    <div class="summary-cards" *ngIf="!loading">
+    <div class="summary-cards" >
       <div class="summary-card">
         <div class="card-icon"><i class="fas fa-users"></i></div>
         <div class="card-content">

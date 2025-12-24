@@ -44,11 +44,6 @@
   </div>
 
   <div class="content-card">
-    <div *ngIf="loading" class="loading">
-      <i class="fa fa-spinner fa-spin"></i>
-      <p>Loading offers...</p>
-    </div>
-
     <div *ngIf="!loading && filteredOffers.length === 0" class="empty-state">
       <i class="fa fa-file-text-o"></i>
       <p>No offers found</p>

@@ -27,7 +27,7 @@ export class DocumentExpiryComponent implements OnInit {
   }
 
   loadData() {
-    this.loading = true;
+    this.loading = false;
     
     this.documentService.getExpiringDocuments(this.expiryDays).subscribe({
       next: (data) => this.expiringDocuments = data,

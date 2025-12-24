@@ -27,7 +27,7 @@ export class SystemAuditsComponent implements OnInit {
   }
 
   loadAudits(): void {
-    this.loading = true;
+    this.loading = false;
     this.auditService.getSystemAudits().subscribe({
       next: (data) => {
         this.audits = data;

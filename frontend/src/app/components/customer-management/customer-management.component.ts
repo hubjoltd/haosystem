@@ -13,7 +13,8 @@ export class CustomerManagementComponent implements OnInit {
   showModal: boolean = false;
   editMode: boolean = false;
   selectedCustomer: Customer = this.getEmptyCustomer();
-  loading: boolean = false;
+  loading = false;
+  dataReady = true;
 
   constructor(private customerService: CustomerService) {}
 
@@ -21,16 +22,22 @@ export class CustomerManagementComponent implements OnInit {
     this.loadCustomers();
   }
 
+  private completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
+  }
+
   loadCustomers(): void {
-    this.loading = true;
+    this.loading = false;
+    this.dataReady = true;
     this.customerService.getAll().subscribe({
       next: (data) => {
         this.customers = data;
-        this.loading = false;
+        this.completeLoading();
       },
       error: (err) => {
         console.error('Error loading customers', err);
-        this.loading = false;
+        this.completeLoading();
       }
     });
   }

@@ -10,8 +10,8 @@ import { OrganizationService, CostCenter } from '../../../../services/organizati
 export class CostCentersComponent implements OnInit {
   costCenters: CostCenter[] = [];
   
-  loading = true;
-  dataReady = false;
+  loading = false;
+  dataReady = true;
   
   showModal = false;
   isEditMode = false;

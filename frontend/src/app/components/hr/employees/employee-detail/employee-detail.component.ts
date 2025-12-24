@@ -105,7 +105,7 @@ export class EmployeeDetailComponent implements OnInit {
   loadEmployee() {
     if (!this.employeeId) return;
     
-    this.loading = true;
+    this.loading = false;
     this.employeeService.getById(this.employeeId).subscribe({
       next: (data) => {
         this.employee = data;

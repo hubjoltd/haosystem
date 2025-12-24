@@ -22,7 +22,7 @@ export class LoanApprovalsComponent implements OnInit {
   }
 
   loadPendingLoans(): void {
-    this.loading = true;
+    this.loading = false;
     this.loanService.getLoans().subscribe({
       next: (data: any[]) => { this.pendingLoans = data.filter((l: any) => l.status === 'PENDING'); this.loading = false; },
       error: (err: any) => { console.error(err); this.loading = false; }

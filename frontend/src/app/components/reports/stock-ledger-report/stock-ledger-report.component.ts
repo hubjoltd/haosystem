@@ -20,8 +20,8 @@ export class StockLedgerReportComponent implements OnInit {
   selectedWarehouse: string = '';
   fromDate: string = '';
   toDate: string = '';
-  loading: boolean = true;  // Start with loading
-dataReady: boolean = false;  // Only show content when ready
+  loading: boolean = false;  // Start with loading
+dataReady: boolean = true;  // Only show content when ready
 
   constructor(
     private ledgerService: InventoryLedgerService,
@@ -48,7 +48,7 @@ dataReady: boolean = false;  // Only show content when ready
   }
 
   generateReport(): void {
-    this.loading = true;
+    this.loading = false;
     
     const filter: LedgerFilter = {};
     if (this.selectedItem) filter.itemId = parseInt(this.selectedItem);

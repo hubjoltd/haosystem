@@ -7,7 +7,7 @@
 </div>
 
 <!-- Content only when ready -->
-<ng-container *ngIf="dataReady">
+<ng-container >
 <div class="report-page">
   <div class="page-header">
     <div>
@@ -97,7 +97,7 @@
           <tr *ngIf="loading">
             <td colspan="9" class="empty-state">
               <i class="fas fa-spinner fa-spin"></i>
-              <p>Loading...</p>
+              
             </td>
           </tr>
           <tr *ngFor="let row of reportData">

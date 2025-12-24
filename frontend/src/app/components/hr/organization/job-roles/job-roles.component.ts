@@ -12,8 +12,8 @@ export class JobRolesComponent implements OnInit {
   departments: Department[] = [];
   grades: Grade[] = [];
   
-  loading = true;
-  dataReady = false;
+  loading = false;
+  dataReady = true;
   
   showModal = false;
   isEditMode = false;

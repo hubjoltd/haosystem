@@ -30,9 +30,9 @@ export class PayrollSummaryReportComponent implements OnInit {
   selectedRunId: number | null = null;
   groupBy: 'employee' | 'department' | 'project' = 'employee';
   
-  loading = true;  // Start with loading to prevent empty screens
+  loading = false;  // Start with loading to prevent empty screens
   isFirstLoad = true;  // Track if this is the first time loading
-  dataReady = false;  // Only show content when data is ready
+  dataReady = true;  // Only show content when data is ready
   
   grandTotals = {
     employeeCount: 0,

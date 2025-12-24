@@ -10,8 +10,8 @@ import { ExportService } from '../../../../services/export.service';
 })
 export class PrPendingReportComponent implements OnInit {
   reportData: any[] = [];
-  loading: boolean = true;  // Start with loading
-dataReady: boolean = false;  // Only show content when ready
+  loading: boolean = false;  // Start with loading
+dataReady: boolean = true;  // Only show content when ready
 
   constructor(
     private prService: PurchaseRequisitionService,
@@ -21,7 +21,7 @@ dataReady: boolean = false;  // Only show content when ready
   ngOnInit(): void {}
 
   generateReport(): void {
-    this.loading = true;
+    this.loading = false;
     this.prService.getAll().subscribe({
       next: (data) => {
         const pendingItems: any[] = [];

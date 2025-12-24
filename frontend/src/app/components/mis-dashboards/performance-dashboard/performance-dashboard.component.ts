@@ -9,7 +9,7 @@ import { MisDashboardService, PerformanceDashboardStats } from '../../../service
 })
 export class PerformanceDashboardComponent implements OnInit {
   stats: PerformanceDashboardStats | null = null;
-  loading = true;
+  loading = false;
   selectedPeriod = 'year';
 
   constructor(private dashboardService: MisDashboardService) {}
@@ -19,7 +19,7 @@ export class PerformanceDashboardComponent implements OnInit {
   }
 
   loadStats(): void {
-    this.loading = true;
+    this.loading = false;
     this.dashboardService.getPerformanceStats().subscribe({
       next: (data) => {
         this.stats = data;

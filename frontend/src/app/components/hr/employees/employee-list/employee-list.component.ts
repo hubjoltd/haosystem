@@ -19,8 +19,8 @@ export class EmployeeListComponent implements OnInit {
   filterDepartment = '';
   filterStatus = '';
   
-  loading = true;
-  dataReady = false;
+  loading = false;
+  dataReady = true;
   private subscriptionCount = 0;
   private expectedSubscriptions = 3;
 
@@ -35,8 +35,8 @@ export class EmployeeListComponent implements OnInit {
   }
 
   loadData() {
-    this.loading = true;
-    this.dataReady = false;
+    this.loading = false;
+    this.dataReady = true;
     this.subscriptionCount = 0;
     
     this.employeeService.getAll().subscribe({

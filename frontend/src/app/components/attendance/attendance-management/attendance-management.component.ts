@@ -86,7 +86,7 @@ export class AttendanceManagementComponent implements OnInit {
   }
 
   loadAttendanceRecords(): void {
-    this.loading = true;
+    this.loading = false;
     this.attendanceService.getByDate(this.selectedDate).subscribe({
       next: (data) => {
         this.attendanceRecords = data;
@@ -158,7 +158,7 @@ export class AttendanceManagementComponent implements OnInit {
       return;
     }
 
-    this.loading = true;
+    this.loading = false;
     this.attendanceService.manualEntry(this.manualEntry).subscribe({
       next: () => {
         this.showMessage('Attendance saved successfully', 'success');
@@ -417,7 +417,7 @@ export class AttendanceManagementComponent implements OnInit {
       return;
     }
 
-    this.loading = true;
+    this.loading = false;
     this.attendanceService.bulkUpload(this.bulkEntries).subscribe({
       next: (result) => {
         this.showMessage(`Successfully uploaded ${result.count || this.bulkEntries.length} records`, 'success');
@@ -470,7 +470,7 @@ export class AttendanceManagementComponent implements OnInit {
       return;
     }
 
-    this.loading = true;
+    this.loading = false;
     let completed = 0;
     let errors = 0;
 
@@ -532,7 +532,7 @@ export class AttendanceManagementComponent implements OnInit {
       return;
     }
 
-    this.loading = true;
+    this.loading = false;
     this.attendanceService.createProjectTimeEntry(this.projectEntry).subscribe({
       next: () => {
         this.showMessage('Project time entry saved', 'success');
@@ -592,7 +592,7 @@ export class AttendanceManagementComponent implements OnInit {
       return;
     }
 
-    this.loading = true;
+    this.loading = false;
     const observable = this.editingRule?.id 
       ? this.attendanceService.updateRule(this.editingRule.id, this.newRule)
       : this.attendanceService.createRule(this.newRule);

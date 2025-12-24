@@ -10,8 +10,8 @@ import { OrganizationService, Location } from '../../../../services/organization
 export class LocationsComponent implements OnInit {
   locations: Location[] = [];
   
-  loading = true;
-  dataReady = false;
+  loading = false;
+  dataReady = true;
   
   showModal = false;
   isEditMode = false;

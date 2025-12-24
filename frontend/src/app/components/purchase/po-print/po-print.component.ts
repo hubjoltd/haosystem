@@ -11,7 +11,7 @@ import { DirectPurchaseService, DirectPurchase, DirectPurchaseItem } from '../..
 export class PoPrintComponent implements OnInit {
   po: DirectPurchase | null = null;
   poId: number = 0;
-  loading: boolean = true;
+  loading: boolean = false;
   
   companyName: string = 'Hao System';
   companyTagline: string = 'Enterprise Solutions';

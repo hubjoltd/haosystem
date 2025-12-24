@@ -32,7 +32,7 @@ export class ClockInOutComponent implements OnInit {
       this.showMessage('Please select an employee', 'error');
       return;
     }
-    this.loading = true;
+    this.loading = false;
     this.attendanceService.clockIn(this.selectedEmployeeId, 'WEB').subscribe({
       next: (record) => {
         this.todayRecord = record;
@@ -51,7 +51,7 @@ export class ClockInOutComponent implements OnInit {
       this.showMessage('Please select an employee', 'error');
       return;
     }
-    this.loading = true;
+    this.loading = false;
     this.attendanceService.clockOut(this.selectedEmployeeId).subscribe({
       next: (record) => {
         this.todayRecord = record;

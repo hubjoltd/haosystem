@@ -32,7 +32,7 @@ export class WarehouseBinComponent implements OnInit {
   }
 
   loadWarehouses(): void {
-    this.loading = true;
+    this.loading = false;
     this.warehouseService.getAllWarehouses().subscribe({
       next: (data) => {
         this.warehouses = data;

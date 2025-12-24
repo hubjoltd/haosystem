@@ -50,7 +50,7 @@ export class ConvertToPoComponent implements OnInit {
   }
 
   loadData(): void {
-    this.loading = true;
+    this.loading = false;
     
     this.generatePONumber();
     

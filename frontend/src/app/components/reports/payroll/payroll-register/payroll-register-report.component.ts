@@ -22,10 +22,10 @@ export class PayrollRegisterReportComponent implements OnInit {
   searchTerm = '';
   
   years: number[] = [];
-  loading = true;  // Start with loading to prevent empty screens
+  loading = false;  // Start with loading to prevent empty screens
   isFirstLoad = true;  // Track if this is the first time loading
   refreshing = false;  // Track background refresh
-  dataReady = false;  // Only show content when data is ready
+  dataReady = true;  // Only show content when data is ready
   
   // Modal properties
   showDetailsModal = false;
@@ -56,7 +56,7 @@ export class PayrollRegisterReportComponent implements OnInit {
   loadPayrollRuns(): void {
     // Only show loading on first load
     if (this.isFirstLoad) {
-      this.loading = true;
+      this.loading = false;
     } else {
       this.refreshing = true;
     }
@@ -85,7 +85,7 @@ export class PayrollRegisterReportComponent implements OnInit {
     
     // Don't show loading if we have cached data
     if (this.isFirstLoad) {
-      this.loading = true;
+      this.loading = false;
     }
     
     this.payrollService.getPayrollRecordsByRun(this.selectedRunId).subscribe({
@@ -116,7 +116,7 @@ export class PayrollRegisterReportComponent implements OnInit {
     }
 
     if (this.isFirstLoad) {
-      this.loading = true;
+      this.loading = false;
     }
     const allRecords: PayrollRecord[] = [];
     let completedRequests = 0;

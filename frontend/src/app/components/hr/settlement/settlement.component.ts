@@ -38,7 +38,7 @@ export class SettlementComponent implements OnInit {
   }
 
   loadSettlements(): void {
-    this.loading = true;
+    this.loading = false;
     this.settlementService.getAll().subscribe({
       next: (data) => { this.settlements = data; this.loading = false; },
       error: (err) => { console.error(err); this.loading = false; }

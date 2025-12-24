@@ -30,7 +30,7 @@ export class UnitsOfMeasureComponent implements OnInit {
   }
 
   loadUnits(): void {
-    this.loading = true;
+    this.loading = false;
     this.unitService.getAll().subscribe({
       next: (data) => {
         this.units = data;

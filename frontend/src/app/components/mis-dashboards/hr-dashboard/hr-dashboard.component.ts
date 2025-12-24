@@ -9,7 +9,7 @@ import { MisDashboardService, HRDashboardStats } from '../../../services/mis-das
 })
 export class HRDashboardComponent implements OnInit {
   stats: HRDashboardStats | null = null;
-  loading = true;
+  loading = false;
   error = '';
   selectedPeriod = 'month';
 
@@ -20,7 +20,7 @@ export class HRDashboardComponent implements OnInit {
   }
 
   loadStats(): void {
-    this.loading = true;
+    this.loading = false;
     this.dashboardService.getHRStats().subscribe({
       next: (data) => {
         this.stats = data;
