@@ -1,4 +1,13 @@
 <div class="settings-page">
+  <!-- Loading Spinner -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Loading designations...</p>
+    </div>
+  </div>
+
+  <ng-container *ngIf="dataReady">
   <div class="page-header">
     <div>
       <h1>Designations</h1>
@@ -55,9 +64,8 @@
       </table>
     </div>
   </div>
-</div>
 
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ isEditMode ? 'Edit' : 'Add' }} Designation</h3>
@@ -99,4 +107,6 @@
       </form>
     </div>
   </div>
+  </div>
+  </ng-container>
 </div>

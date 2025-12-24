@@ -39,11 +39,11 @@ dataReady: boolean = false;  // Only show content when ready
             status: 'Created'
           }));
 
-        this.loading = false;
+        this.completeLoading();
       },
       error: (err: any) => {
         console.error('Error generating report', err);
-        this.loading = false;
+        this.completeLoading();
       }
     });
   }
@@ -60,7 +60,7 @@ dataReady: boolean = false;  // Only show content when ready
     this.exportService.exportToCSV(this.reportData, 'po-list-report');
   }
   completeLoading(): void {
-    this.loading = false;
+    this.completeLoading();
     this.dataReady = true;
   }
 }

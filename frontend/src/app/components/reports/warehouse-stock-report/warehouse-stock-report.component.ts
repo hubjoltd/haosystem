@@ -52,11 +52,11 @@ dataReady: boolean = false;  // Only show content when ready
         }
 
         this.totalValue = this.reportData.reduce((sum, r) => sum + r.value, 0);
-        this.loading = false;
+        this.completeLoading();
       },
       error: (err) => {
         console.error('Error generating report', err);
-        this.loading = false;
+        this.completeLoading();
       }
     });
   }
@@ -73,7 +73,7 @@ dataReady: boolean = false;  // Only show content when ready
     this.exportService.exportToCSV(this.reportData, 'warehouse-stock-report');
   }
   completeLoading(): void {
-    this.loading = false;
+    this.completeLoading();
     this.dataReady = true;
   }
 }

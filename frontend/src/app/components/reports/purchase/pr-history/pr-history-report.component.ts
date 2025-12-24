@@ -43,11 +43,11 @@ dataReady: boolean = false;  // Only show content when ready
           this.reportData = this.reportData.filter(r => r.fulfillmentType === this.selectedType);
         }
 
-        this.loading = false;
+        this.completeLoading();
       },
       error: (err) => {
         console.error('Error generating report', err);
-        this.loading = false;
+        this.completeLoading();
       }
     });
   }
@@ -73,7 +73,7 @@ dataReady: boolean = false;  // Only show content when ready
     }
   }
   completeLoading(): void {
-    this.loading = false;
+    this.completeLoading();
     this.dataReady = true;
   }
 }

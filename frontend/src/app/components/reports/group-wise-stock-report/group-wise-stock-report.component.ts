@@ -26,6 +26,7 @@ dataReady: boolean = false;  // Only show content when ready
 
   ngOnInit(): void {
     this.loadGroups();
+    this.generateReport();
   }
 
   loadGroups(): void {
@@ -59,11 +60,11 @@ dataReady: boolean = false;  // Only show content when ready
 
         this.totalQuantity = this.reportData.reduce((sum, r) => sum + r.totalQuantity, 0);
         this.totalValue = this.reportData.reduce((sum, r) => sum + r.totalValue, 0);
-        this.loading = false;
+        this.completeLoading();
       },
       error: (err) => {
         console.error('Error generating report', err);
-        this.loading = false;
+        this.completeLoading();
       }
     });
   }

@@ -73,11 +73,11 @@ dataReady: boolean = false;  // Only show content when ready
           value: entry.totalValue || 0,
           remarks: entry.remarks || ''
         }));
-        this.loading = false;
+        this.completeLoading();
       },
       error: (err) => {
         console.error('Error generating report', err);
-        this.loading = false;
+        this.completeLoading();
       }
     });
   }
@@ -113,7 +113,7 @@ dataReady: boolean = false;  // Only show content when ready
     this.exportService.exportToCSV(this.reportData, 'stock-ledger-report');
   }
   completeLoading(): void {
-    this.loading = false;
+    this.completeLoading();
     this.dataReady = true;
   }
 }

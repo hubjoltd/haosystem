@@ -11,6 +11,9 @@ export class DesignationsComponent implements OnInit {
   designations: Designation[] = [];
   grades: Grade[] = [];
   
+  loading = true;
+  dataReady = false;
+  
   showModal = false;
   isEditMode = false;
   editing: Designation = this.getEmpty();
@@ -22,14 +25,22 @@ export class DesignationsComponent implements OnInit {
   }
 
   loadData() {
+    let count = 0;
+    const check = () => { count++; if (count >= 2) this.completeLoading(); };
+    
     this.orgService.getDesignations().subscribe({
-      next: (data) => this.designations = data,
-      error: (err) => console.error('Error loading designations:', err)
+      next: (data) => { this.designations = data; check(); },
+      error: (err) => { console.error('Error loading designations:', err); check(); }
     });
     this.orgService.getGrades().subscribe({
-      next: (data) => this.grades = data,
-      error: (err) => console.error('Error loading grades:', err)
+      next: (data) => { this.grades = data; check(); },
+      error: (err) => { console.error('Error loading grades:', err); check(); }
     });
+  }
+  
+  completeLoading() {
+    this.loading = false;
+    this.dataReady = true;
   }
 
   getEmpty(): Designation {

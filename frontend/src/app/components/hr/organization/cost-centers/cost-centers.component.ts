@@ -10,6 +10,9 @@ import { OrganizationService, CostCenter } from '../../../../services/organizati
 export class CostCentersComponent implements OnInit {
   costCenters: CostCenter[] = [];
   
+  loading = true;
+  dataReady = false;
+  
   showModal = false;
   isEditMode = false;
   editing: CostCenter = this.getEmpty();
@@ -22,9 +25,14 @@ export class CostCentersComponent implements OnInit {
 
   loadData() {
     this.orgService.getCostCenters().subscribe({
-      next: (data) => this.costCenters = data,
-      error: (err) => console.error('Error loading cost centers:', err)
+      next: (data) => { this.costCenters = data; this.completeLoading(); },
+      error: (err) => { console.error('Error loading cost centers:', err); this.completeLoading(); }
     });
+  }
+  
+  completeLoading() {
+    this.loading = false;
+    this.dataReady = true;
   }
 
   getEmpty(): CostCenter {

@@ -110,11 +110,11 @@ dataReady: boolean = false;  // Only show content when ready
         }
         
         this.calculateTotals();
-        this.loading = false;
+        this.completeLoading();
       },
       error: (err) => {
         console.error('Error generating report', err);
-        this.loading = false;
+        this.completeLoading();
       }
     });
   }
@@ -151,7 +151,7 @@ dataReady: boolean = false;  // Only show content when ready
     return 'badge-info';
   }
   completeLoading(): void {
-    this.loading = false;
+    this.completeLoading();
     this.dataReady = true;
   }
 }

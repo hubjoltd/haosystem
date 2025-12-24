@@ -11,6 +11,9 @@ export class ExpenseCentersComponent implements OnInit {
   expenseCenters: ExpenseCenter[] = [];
   costCenters: CostCenter[] = [];
   
+  loading = true;
+  dataReady = false;
+  
   showModal = false;
   isEditMode = false;
   editing: ExpenseCenter = this.getEmpty();
@@ -22,14 +25,22 @@ export class ExpenseCentersComponent implements OnInit {
   }
 
   loadData() {
+    let count = 0;
+    const check = () => { count++; if (count >= 2) this.completeLoading(); };
+    
     this.orgService.getExpenseCenters().subscribe({
-      next: (data) => this.expenseCenters = data,
-      error: (err) => console.error('Error loading expense centers:', err)
+      next: (data) => { this.expenseCenters = data; check(); },
+      error: (err) => { console.error('Error loading expense centers:', err); check(); }
     });
     this.orgService.getCostCenters().subscribe({
-      next: (data) => this.costCenters = data,
-      error: (err) => console.error('Error loading cost centers:', err)
+      next: (data) => { this.costCenters = data; check(); },
+      error: (err) => { console.error('Error loading cost centers:', err); check(); }
     });
+  }
+  
+  completeLoading() {
+    this.loading = false;
+    this.dataReady = true;
   }
 
   getEmpty(): ExpenseCenter {

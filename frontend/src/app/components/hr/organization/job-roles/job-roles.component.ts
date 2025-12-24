@@ -12,6 +12,9 @@ export class JobRolesComponent implements OnInit {
   departments: Department[] = [];
   grades: Grade[] = [];
   
+  loading = true;
+  dataReady = false;
+  
   showModal = false;
   isEditMode = false;
   editing: JobRole = this.getEmpty();
@@ -23,18 +26,26 @@ export class JobRolesComponent implements OnInit {
   }
 
   loadData() {
+    let count = 0;
+    const check = () => { count++; if (count >= 3) this.completeLoading(); };
+    
     this.orgService.getJobRoles().subscribe({
-      next: (data) => this.jobRoles = data,
-      error: (err) => console.error('Error loading job roles:', err)
+      next: (data) => { this.jobRoles = data; check(); },
+      error: (err) => { console.error('Error loading job roles:', err); check(); }
     });
     this.orgService.getDepartments().subscribe({
-      next: (data) => this.departments = data,
-      error: (err) => console.error('Error loading departments:', err)
+      next: (data) => { this.departments = data; check(); },
+      error: (err) => { console.error('Error loading departments:', err); check(); }
     });
     this.orgService.getGrades().subscribe({
-      next: (data) => this.grades = data,
-      error: (err) => console.error('Error loading grades:', err)
+      next: (data) => { this.grades = data; check(); },
+      error: (err) => { console.error('Error loading grades:', err); check(); }
     });
+  }
+  
+  completeLoading() {
+    this.loading = false;
+    this.dataReady = true;
   }
 
   getEmpty(): JobRole {

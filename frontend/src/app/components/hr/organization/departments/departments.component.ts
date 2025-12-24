@@ -12,6 +12,9 @@ export class DepartmentsComponent implements OnInit {
   costCenters: CostCenter[] = [];
   locations: Location[] = [];
   
+  loading = true;
+  dataReady = false;
+  
   showModal = false;
   isEditMode = false;
   editing: Department = this.getEmptyDepartment();
@@ -23,18 +26,31 @@ export class DepartmentsComponent implements OnInit {
   }
 
   loadData() {
+    let loadedCount = 0;
+    const checkComplete = () => {
+      loadedCount++;
+      if (loadedCount >= 3) {
+        this.completeLoading();
+      }
+    };
+    
     this.orgService.getDepartments().subscribe({
-      next: (data) => this.departments = data,
-      error: (err) => console.error('Error loading departments:', err)
+      next: (data) => { this.departments = data; checkComplete(); },
+      error: (err) => { console.error('Error loading departments:', err); checkComplete(); }
     });
     this.orgService.getCostCenters().subscribe({
-      next: (data) => this.costCenters = data,
-      error: (err) => console.error('Error loading cost centers:', err)
+      next: (data) => { this.costCenters = data; checkComplete(); },
+      error: (err) => { console.error('Error loading cost centers:', err); checkComplete(); }
     });
     this.orgService.getLocations().subscribe({
-      next: (data) => this.locations = data,
-      error: (err) => console.error('Error loading locations:', err)
+      next: (data) => { this.locations = data; checkComplete(); },
+      error: (err) => { console.error('Error loading locations:', err); checkComplete(); }
     });
+  }
+  
+  completeLoading() {
+    this.loading = false;
+    this.dataReady = true;
   }
 
   getEmptyDepartment(): Department {

@@ -48,11 +48,11 @@ dataReady: boolean = false;  // Only show content when ready
             itemCount: f.items?.length || 0
           }));
 
-        this.loading = false;
+        this.completeLoading();
       },
       error: (err: any) => {
         console.error('Error generating report', err);
-        this.loading = false;
+        this.completeLoading();
       }
     });
   }
@@ -73,7 +73,7 @@ dataReady: boolean = false;  // Only show content when ready
     return type === 'Stock Issue' ? 'badge-success' : 'badge-info';
   }
   completeLoading(): void {
-    this.loading = false;
+    this.completeLoading();
     this.dataReady = true;
   }
 }

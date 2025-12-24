@@ -48,11 +48,11 @@ dataReady: boolean = false;  // Only show content when ready
         });
 
         this.reportData = pendingItems;
-        this.loading = false;
+        this.completeLoading();
       },
       error: (err) => {
         console.error('Error generating report', err);
-        this.loading = false;
+        this.completeLoading();
       }
     });
   }
@@ -69,7 +69,7 @@ dataReady: boolean = false;  // Only show content when ready
     this.exportService.exportToCSV(this.reportData, 'pr-pending-items-report');
   }
   completeLoading(): void {
-    this.loading = false;
+    this.completeLoading();
     this.dataReady = true;
   }
 }

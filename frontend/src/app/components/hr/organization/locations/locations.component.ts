@@ -10,6 +10,9 @@ import { OrganizationService, Location } from '../../../../services/organization
 export class LocationsComponent implements OnInit {
   locations: Location[] = [];
   
+  loading = true;
+  dataReady = false;
+  
   showModal = false;
   isEditMode = false;
   editing: Location = this.getEmpty();
@@ -24,9 +27,14 @@ export class LocationsComponent implements OnInit {
 
   loadData() {
     this.orgService.getLocations().subscribe({
-      next: (data) => this.locations = data,
-      error: (err) => console.error('Error loading locations:', err)
+      next: (data) => { this.locations = data; this.completeLoading(); },
+      error: (err) => { console.error('Error loading locations:', err); this.completeLoading(); }
     });
+  }
+  
+  completeLoading() {
+    this.loading = false;
+    this.dataReady = true;
   }
 
   getEmpty(): Location {

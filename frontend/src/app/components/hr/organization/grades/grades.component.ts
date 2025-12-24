@@ -10,6 +10,9 @@ import { OrganizationService, Grade } from '../../../../services/organization.se
 export class GradesComponent implements OnInit {
   grades: Grade[] = [];
   
+  loading = true;
+  dataReady = false;
+  
   showModal = false;
   isEditMode = false;
   editing: Grade = this.getEmpty();
@@ -22,9 +25,14 @@ export class GradesComponent implements OnInit {
 
   loadData() {
     this.orgService.getGrades().subscribe({
-      next: (data) => this.grades = data,
-      error: (err) => console.error('Error loading grades:', err)
+      next: (data) => { this.grades = data; this.completeLoading(); },
+      error: (err) => { console.error('Error loading grades:', err); this.completeLoading(); }
     });
+  }
+  
+  completeLoading() {
+    this.loading = false;
+    this.dataReady = true;
   }
 
   getEmpty(): Grade {

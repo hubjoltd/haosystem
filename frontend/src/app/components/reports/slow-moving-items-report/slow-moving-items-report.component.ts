@@ -82,11 +82,11 @@ dataReady: boolean = false;  // Only show content when ready
 
         this.totalValue = this.reportData.reduce((sum, r) => sum + r.value, 0);
         this.totalItems = this.reportData.length;
-        this.loading = false;
+        this.completeLoading();
       },
       error: (err) => {
         console.error('Error generating report', err);
-        this.loading = false;
+        this.completeLoading();
       }
     });
   }
@@ -103,7 +103,7 @@ dataReady: boolean = false;  // Only show content when ready
     this.exportService.exportToCSV(this.reportData, 'slow-moving-items-report');
   }
   completeLoading(): void {
-    this.loading = false;
+    this.completeLoading();
     this.dataReady = true;
   }
 }

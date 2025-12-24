@@ -15,10 +15,6 @@ interface LaborCostRow {
   taxes: number;
   employerContributions: number;
   totalLaborCost: number;
-  completeLoading(): void {
-    this.loading = false;
-    this.dataReady = true;
-  }
 }
 
 @Component({
@@ -35,7 +31,8 @@ export class LaborCostAllocationReportComponent implements OnInit {
   
   selectedRunId: number | null = null;
   
-  loading = false;
+  loading = true;
+  dataReady = false;
   
   grandTotals = {
     employeeCount: 0,
@@ -78,11 +75,11 @@ export class LaborCostAllocationReportComponent implements OnInit {
       next: (data) => {
         this.payrollRecords = data;
         this.generateLaborCostReport();
-        this.loading = false;
+        this.completeLoading();
       },
       error: (err) => {
         console.error('Error loading payroll records:', err);
-        this.loading = false;
+        this.completeLoading();
       }
     });
   }
@@ -207,7 +204,7 @@ export class LaborCostAllocationReportComponent implements OnInit {
     this.exportService.exportToCSV(headers, data, 'labor_cost_allocation');
   }
   completeLoading(): void {
-    this.loading = false;
+    this.completeLoading();
     this.dataReady = true;
   }
 }

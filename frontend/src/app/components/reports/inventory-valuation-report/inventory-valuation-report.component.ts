@@ -90,11 +90,11 @@ dataReady: boolean = false;  // Only show content when ready
         });
         
         this.totalValue = this.reportData.reduce((sum, item) => sum + item.totalValue, 0);
-        this.loading = false;
+        this.completeLoading();
       },
       error: (err) => {
         console.error('Error generating report', err);
-        this.loading = false;
+        this.completeLoading();
       }
     });
   }
@@ -121,7 +121,7 @@ dataReady: boolean = false;  // Only show content when ready
     this.exportService.exportToCSV(this.reportData, 'inventory-valuation-report');
   }
   completeLoading(): void {
-    this.loading = false;
+    this.completeLoading();
     this.dataReady = true;
   }
 }

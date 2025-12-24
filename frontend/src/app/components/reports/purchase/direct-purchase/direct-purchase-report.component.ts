@@ -22,7 +22,7 @@ dataReady: boolean = false;  // Only show content when ready
     this.loading = true;
     setTimeout(() => {
       this.reportData = [];
-      this.loading = false;
+      this.completeLoading();
     }, 500);
   }
 
@@ -38,7 +38,7 @@ dataReady: boolean = false;  // Only show content when ready
     this.exportService.exportToCSV(this.reportData, 'direct-purchase-report');
   }
   completeLoading(): void {
-    this.loading = false;
+    this.completeLoading();
     this.dataReady = true;
   }
 }

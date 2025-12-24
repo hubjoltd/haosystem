@@ -83,11 +83,11 @@ dataReady: boolean = false;  // Only show content when ready
         this.totalIn = this.reportData.reduce((sum, r) => sum + r.quantityIn, 0);
         this.totalOut = this.reportData.reduce((sum, r) => sum + r.quantityOut, 0);
         
-        this.loading = false;
+        this.completeLoading();
       },
       error: (err) => {
         console.error('Error generating report', err);
-        this.loading = false;
+        this.completeLoading();
       }
     });
   }
@@ -142,7 +142,7 @@ dataReady: boolean = false;  // Only show content when ready
     this.exportService.exportToCSV(this.reportData, 'item-movement-report');
   }
   completeLoading(): void {
-    this.loading = false;
+    this.completeLoading();
     this.dataReady = true;
   }
 }
