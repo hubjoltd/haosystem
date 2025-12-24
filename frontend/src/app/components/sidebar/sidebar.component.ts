@@ -132,6 +132,18 @@ export class SidebarComponent implements OnInit {
             { icon: 'fas fa-cart-arrow-down', label: 'Direct Purchase Report', route: '/app/reports/purchase/direct-purchase' },
             { icon: 'fas fa-exchange-alt', label: 'Stock Issue/Transfer Report', route: '/app/reports/purchase/stock-issue-transfer' }
           ]
+        },
+        {
+          icon: 'fas fa-money-check-alt',
+          label: 'Payroll Reports',
+          expanded: false,
+          permissionKey: 'Reports - Payroll',
+          children: [
+            { icon: 'fas fa-file-invoice-dollar', label: 'Pay Slips', route: '/app/payroll/self-service' },
+            { icon: 'fas fa-chart-pie', label: 'Payroll Summary', route: '/app/reports/payroll/summary' },
+            { icon: 'fas fa-chart-area', label: 'Labor Cost Allocation', route: '/app/reports/payroll/labor-cost' },
+            { icon: 'fas fa-clipboard-list', label: 'Payroll Register', route: '/app/reports/payroll/register' }
+          ]
         }
       ]
     },

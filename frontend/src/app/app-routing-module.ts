@@ -99,6 +99,10 @@ import { PayrollCalculationComponent } from './components/payroll/payroll-calcul
 import { ProcessPayrollComponent } from './components/payroll/process-payroll/process-payroll.component';
 import { EmployeeSelfServiceComponent } from './components/payroll/employee-self-service/employee-self-service.component';
 
+import { PayrollSummaryReportComponent } from './components/reports/payroll/payroll-summary/payroll-summary-report.component';
+import { LaborCostAllocationReportComponent } from './components/reports/payroll/labor-cost-allocation/labor-cost-allocation-report.component';
+import { PayrollRegisterReportComponent } from './components/reports/payroll/payroll-register/payroll-register-report.component';
+
 import { IntegrationsComponent } from './components/settings/integrations/integrations';
 import { ExpenseListComponent } from './components/expenses/expense-list/expense-list';
 import { ExpenseFormComponent } from './components/expenses/expense-form/expense-form';
@@ -214,6 +218,9 @@ const routes: Routes = [
       { path: 'payroll/calculation', component: PayrollCalculationComponent },
       { path: 'payroll/process/:id', component: ProcessPayrollComponent },
       { path: 'payroll/self-service', component: EmployeeSelfServiceComponent },
+      { path: 'reports/payroll/summary', component: PayrollSummaryReportComponent },
+      { path: 'reports/payroll/labor-cost', component: LaborCostAllocationReportComponent },
+      { path: 'reports/payroll/register', component: PayrollRegisterReportComponent },
       { path: 'expenses', component: ExpenseListComponent },
       { path: 'expenses/new', component: ExpenseFormComponent },
       { path: 'expenses/:id', component: ExpenseFormComponent },

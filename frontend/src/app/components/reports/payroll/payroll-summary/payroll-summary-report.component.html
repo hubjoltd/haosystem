@@ -1,0 +1,119 @@
+<div class="report-container">
+  <div class="report-header">
+    <h2><i class="fas fa-chart-pie"></i> Payroll Summary Report</h2>
+    <p class="subtitle">View payroll summary grouped by employee, department, or project</p>
+  </div>
+
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Payroll Run</label>
+        <select [(ngModel)]="selectedRunId" (change)="onRunChange()">
+          <option *ngFor="let run of payrollRuns" [ngValue]="run.id">
+            {{ run.payrollRunNumber }} ({{ formatDate(run.periodStartDate) }} - {{ formatDate(run.periodEndDate) }})
+          </option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Group By</label>
+        <select [(ngModel)]="groupBy" (change)="onGroupByChange()">
+          <option value="employee">Employee</option>
+          <option value="department">Department</option>
+          <option value="project">Project</option>
+        </select>
+      </div>
+      
+      <div class="export-buttons">
+        <button class="btn-export pdf" (click)="exportToPDF()" [disabled]="summaryData.length === 0">
+          <i class="fas fa-file-pdf"></i> PDF
+        </button>
+        <button class="btn-export excel" (click)="exportToExcel()" [disabled]="summaryData.length === 0">
+          <i class="fas fa-file-excel"></i> Excel
+        </button>
+        <button class="btn-export csv" (click)="exportToCSV()" [disabled]="summaryData.length === 0">
+          <i class="fas fa-file-csv"></i> CSV
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-cards">
+    <div class="summary-card">
+      <div class="card-icon"><i class="fas fa-users"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ grandTotals.employeeCount }}</span>
+        <span class="card-label">Total Employees</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon gross"><i class="fas fa-dollar-sign"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatCurrency(grandTotals.totalGrossPay) }}</span>
+        <span class="card-label">Total Gross Pay</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon deductions"><i class="fas fa-minus-circle"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatCurrency(grandTotals.totalDeductions) }}</span>
+        <span class="card-label">Total Deductions</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon net"><i class="fas fa-wallet"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatCurrency(grandTotals.totalNetPay) }}</span>
+        <span class="card-label">Total Net Pay</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container" *ngIf="!loading">
+    <table class="report-table" *ngIf="summaryData.length > 0">
+      <thead>
+        <tr>
+          <th>{{ getGroupByLabel() }}</th>
+          <th *ngIf="groupBy !== 'employee'" class="text-center">Employees</th>
+          <th class="text-right">Gross Pay</th>
+          <th class="text-right">Deductions</th>
+          <th class="text-right">Taxes</th>
+          <th class="text-right">Net Pay</th>
+          <th class="text-right">Employer Cost</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of summaryData">
+          <td>{{ row.groupName }}</td>
+          <td *ngIf="groupBy !== 'employee'" class="text-center">{{ row.employeeCount }}</td>
+          <td class="text-right">{{ formatCurrency(row.totalGrossPay) }}</td>
+          <td class="text-right">{{ formatCurrency(row.totalDeductions) }}</td>
+          <td class="text-right">{{ formatCurrency(row.totalTaxes) }}</td>
+          <td class="text-right">{{ formatCurrency(row.totalNetPay) }}</td>
+          <td class="text-right">{{ formatCurrency(row.totalEmployerContributions) }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="totals-row">
+          <td><strong>Grand Total</strong></td>
+          <td *ngIf="groupBy !== 'employee'" class="text-center"><strong>{{ grandTotals.employeeCount }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.totalGrossPay) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.totalDeductions) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.totalTaxes) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.totalNetPay) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.totalEmployerContributions) }}</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="empty-state" *ngIf="summaryData.length === 0">
+      <i class="fas fa-chart-bar"></i>
+      <p>No payroll data available for the selected period</p>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Loading payroll data...</p>
+  </div>
+</div>

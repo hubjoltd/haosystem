@@ -1,0 +1,120 @@
+<div class="report-container">
+  <div class="report-header">
+    <h2><i class="fas fa-chart-area"></i> Labor Cost Allocation Report</h2>
+    <p class="subtitle">View labor costs allocated by cost center and department</p>
+  </div>
+
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Payroll Run</label>
+        <select [(ngModel)]="selectedRunId" (change)="onRunChange()">
+          <option *ngFor="let run of payrollRuns" [ngValue]="run.id">
+            {{ run.payrollRunNumber }} ({{ formatDate(run.periodStartDate) }} - {{ formatDate(run.periodEndDate) }})
+          </option>
+        </select>
+      </div>
+      
+      <div class="export-buttons">
+        <button class="btn-export pdf" (click)="exportToPDF()" [disabled]="laborCostData.length === 0">
+          <i class="fas fa-file-pdf"></i> PDF
+        </button>
+        <button class="btn-export excel" (click)="exportToExcel()" [disabled]="laborCostData.length === 0">
+          <i class="fas fa-file-excel"></i> Excel
+        </button>
+        <button class="btn-export csv" (click)="exportToCSV()" [disabled]="laborCostData.length === 0">
+          <i class="fas fa-file-csv"></i> CSV
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-cards">
+    <div class="summary-card highlight">
+      <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatCurrency(grandTotals.totalLaborCost) }}</span>
+        <span class="card-label">Total Labor Cost</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon regular"><i class="fas fa-clock"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatCurrency(grandTotals.regularPay) }}</span>
+        <span class="card-label">Regular Pay</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon overtime"><i class="fas fa-hourglass-half"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatCurrency(grandTotals.overtimePay) }}</span>
+        <span class="card-label">Overtime Pay</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon employer"><i class="fas fa-building"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatCurrency(grandTotals.employerContributions) }}</span>
+        <span class="card-label">Employer Contributions</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container" *ngIf="!loading">
+    <table class="report-table" *ngIf="laborCostData.length > 0">
+      <thead>
+        <tr>
+          <th>Cost Center</th>
+          <th>Department</th>
+          <th class="text-center">Employees</th>
+          <th class="text-right">Regular Pay</th>
+          <th class="text-right">Overtime</th>
+          <th class="text-right">Bonuses</th>
+          <th class="text-right">Employer Cost</th>
+          <th class="text-right">Total Cost</th>
+          <th class="text-center">% of Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of laborCostData">
+          <td><span class="cost-center-badge">{{ row.costCenter }}</span></td>
+          <td>{{ row.department }}</td>
+          <td class="text-center">{{ row.employeeCount }}</td>
+          <td class="text-right">{{ formatCurrency(row.regularPay) }}</td>
+          <td class="text-right">{{ formatCurrency(row.overtimePay) }}</td>
+          <td class="text-right">{{ formatCurrency(row.bonuses) }}</td>
+          <td class="text-right">{{ formatCurrency(row.employerContributions) }}</td>
+          <td class="text-right amount-highlight">{{ formatCurrency(row.totalLaborCost) }}</td>
+          <td class="text-center">
+            <div class="percentage-bar">
+              <div class="bar-fill" [style.width]="getCostPercentage(row.totalLaborCost)"></div>
+              <span class="bar-label">{{ getCostPercentage(row.totalLaborCost) }}</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="totals-row">
+          <td colspan="2"><strong>Grand Total</strong></td>
+          <td class="text-center"><strong>{{ grandTotals.employeeCount }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.regularPay) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.overtimePay) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.bonuses) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.employerContributions) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.totalLaborCost) }}</strong></td>
+          <td class="text-center"><strong>100%</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="empty-state" *ngIf="laborCostData.length === 0">
+      <i class="fas fa-chart-area"></i>
+      <p>No labor cost data available for the selected period</p>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Loading labor cost data...</p>
+  </div>
+</div>

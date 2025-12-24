@@ -1,0 +1,138 @@
+<div class="report-container">
+  <div class="report-header">
+    <h2><i class="fas fa-clipboard-list"></i> Payroll Register</h2>
+    <p class="subtitle">Monthly or annual payroll register with detailed employee records</p>
+  </div>
+
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Report Type</label>
+        <select [(ngModel)]="reportType" (change)="onReportTypeChange()">
+          <option value="monthly">Monthly</option>
+          <option value="annual">Annual</option>
+        </select>
+      </div>
+      
+      <div class="filter-group" *ngIf="reportType === 'monthly'">
+        <label>Payroll Run</label>
+        <select [(ngModel)]="selectedRunId" (change)="onRunChange()">
+          <option *ngFor="let run of payrollRuns" [ngValue]="run.id">
+            {{ run.payrollRunNumber }} ({{ formatDate(run.periodStartDate) }} - {{ formatDate(run.periodEndDate) }})
+          </option>
+        </select>
+      </div>
+      
+      <div class="filter-group" *ngIf="reportType === 'annual'">
+        <label>Year</label>
+        <select [(ngModel)]="selectedYear" (change)="onYearChange()">
+          <option *ngFor="let year of years" [ngValue]="year">{{ year }}</option>
+        </select>
+      </div>
+      
+      <div class="filter-group search">
+        <label>Search</label>
+        <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search by name or code...">
+      </div>
+      
+      <div class="export-buttons">
+        <button class="btn-export pdf" (click)="exportToPDF()" [disabled]="filteredRecords.length === 0">
+          <i class="fas fa-file-pdf"></i> PDF
+        </button>
+        <button class="btn-export excel" (click)="exportToExcel()" [disabled]="filteredRecords.length === 0">
+          <i class="fas fa-file-excel"></i> Excel
+        </button>
+        <button class="btn-export csv" (click)="exportToCSV()" [disabled]="filteredRecords.length === 0">
+          <i class="fas fa-file-csv"></i> CSV
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-cards">
+    <div class="summary-card">
+      <div class="card-icon"><i class="fas fa-users"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ filteredRecords.length }}</span>
+        <span class="card-label">Employees</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon gross"><i class="fas fa-dollar-sign"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatCurrency(totals.grossPay) }}</span>
+        <span class="card-label">Total Gross Pay</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon deductions"><i class="fas fa-minus-circle"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatCurrency(totals.totalDeductions) }}</span>
+        <span class="card-label">Total Deductions</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon net"><i class="fas fa-wallet"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatCurrency(totals.netPay) }}</span>
+        <span class="card-label">Total Net Pay</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container" *ngIf="!loading">
+    <table class="report-table" *ngIf="filteredRecords.length > 0">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Code</th>
+          <th>Department</th>
+          <th class="text-right">Base Pay</th>
+          <th class="text-right">Overtime</th>
+          <th class="text-right">Gross Pay</th>
+          <th class="text-right">Deductions</th>
+          <th class="text-right">Taxes</th>
+          <th class="text-right">Net Pay</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let record of filteredRecords">
+          <td>
+            <div class="employee-info">
+              <span class="name">{{ getEmployeeName(record) }}</span>
+            </div>
+          </td>
+          <td><span class="employee-code">{{ getEmployeeCode(record) }}</span></td>
+          <td>{{ getDepartment(record) }}</td>
+          <td class="text-right">{{ formatCurrency(record.basePay || 0) }}</td>
+          <td class="text-right">{{ formatCurrency(record.overtimePay || 0) }}</td>
+          <td class="text-right amount-gross">{{ formatCurrency(record.grossPay || 0) }}</td>
+          <td class="text-right amount-deduction">{{ formatCurrency(record.totalDeductions || 0) }}</td>
+          <td class="text-right amount-tax">{{ formatCurrency(record.totalTaxes || 0) }}</td>
+          <td class="text-right amount-net">{{ formatCurrency(record.netPay || 0) }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="totals-row">
+          <td colspan="3"><strong>Grand Total ({{ filteredRecords.length }} employees)</strong></td>
+          <td class="text-right"><strong>-</strong></td>
+          <td class="text-right"><strong>-</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(totals.grossPay) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(totals.totalDeductions) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(totals.totalTaxes) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(totals.netPay) }}</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="empty-state" *ngIf="filteredRecords.length === 0">
+      <i class="fas fa-clipboard-list"></i>
+      <p>No payroll records found for the selected period</p>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Loading payroll data...</p>
+  </div>
+</div>
