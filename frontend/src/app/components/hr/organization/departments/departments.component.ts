@@ -26,25 +26,17 @@ export class DepartmentsComponent implements OnInit {
   }
 
   loadData() {
-    let loadedCount = 0;
-    const checkComplete = () => {
-      loadedCount++;
-      if (loadedCount >= 3) {
-        this.completeLoading();
-      }
-    };
-    
     this.orgService.getDepartments().subscribe({
-      next: (data) => { this.departments = data; checkComplete(); },
-      error: (err) => { console.error('Error loading departments:', err); checkComplete(); }
+      next: (data) => { this.departments = data; this.cdr.detectChanges(); },
+      error: (err) => { console.error('Error loading departments:', err); }
     });
     this.orgService.getCostCenters().subscribe({
-      next: (data) => { this.costCenters = data; checkComplete(); },
-      error: (err) => { console.error('Error loading cost centers:', err); checkComplete(); }
+      next: (data) => { this.costCenters = data; this.cdr.detectChanges(); },
+      error: (err) => { console.error('Error loading cost centers:', err); }
     });
     this.orgService.getLocations().subscribe({
-      next: (data) => { this.locations = data; checkComplete(); },
-      error: (err) => { console.error('Error loading locations:', err); checkComplete(); }
+      next: (data) => { this.locations = data; this.cdr.detectChanges(); },
+      error: (err) => { console.error('Error loading locations:', err); }
     });
   }
   

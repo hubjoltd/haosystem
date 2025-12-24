@@ -44,33 +44,30 @@ export class EmployeeListComponent implements OnInit {
       next: (data) => {
         this.employees = data;
         this.applyFilters();
-        this.incrementSubscriptionCount();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading employees:', err);
-        this.incrementSubscriptionCount();
       }
     });
     
     this.orgService.getDepartments().subscribe({
       next: (data) => {
         this.departments = data;
-        this.incrementSubscriptionCount();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading departments:', err);
-        this.incrementSubscriptionCount();
       }
     });
     
     this.orgService.getDesignations().subscribe({
       next: (data) => {
         this.designations = data;
-        this.incrementSubscriptionCount();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading designations:', err);
-        this.incrementSubscriptionCount();
       }
     });
   }
