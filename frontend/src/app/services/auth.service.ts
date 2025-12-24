@@ -71,10 +71,18 @@ export class AuthService {
     }
   }
 
+  private normalizeToken(token: string): string {
+    // Strip "Bearer " prefix if the backend included it
+    if (token && token.startsWith('Bearer ')) {
+      return token.substring(7);
+    }
+    return token;
+  }
+
   login(request: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.baseUrl}/login`, request).pipe(
       tap(response => {
-        localStorage.setItem('token', response.token);
+        localStorage.setItem('token', this.normalizeToken(response.token));
         const user: CurrentUser = {
           userId: response.userId,
           username: response.username,
@@ -93,7 +101,7 @@ export class AuthService {
   register(request: RegisterRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.baseUrl}/register`, request).pipe(
       tap(response => {
-        localStorage.setItem('token', response.token);
+        localStorage.setItem('token', this.normalizeToken(response.token));
         const user: CurrentUser = {
           userId: response.userId,
           username: response.username,
