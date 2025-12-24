@@ -22,7 +22,7 @@ export class PayrollRegisterReportComponent implements OnInit {
   searchTerm = '';
   
   years: number[] = [];
-  loading = false;
+  loading = true;  // Start with loading state when page loads
   
   // Modal properties
   showDetailsModal = false;
@@ -51,6 +51,7 @@ export class PayrollRegisterReportComponent implements OnInit {
   }
 
   loadPayrollRuns(): void {
+    this.loading = true;
     this.payrollService.getPayrollRuns().subscribe({
       next: (data) => {
         this.payrollRuns = data.filter(run => run.status === 'PROCESSED' || run.status === 'APPROVED');
@@ -59,9 +60,14 @@ export class PayrollRegisterReportComponent implements OnInit {
           this.loadPayrollRecords();
         } else if (this.reportType === 'annual') {
           this.loadAnnualData();
+        } else {
+          this.loading = false;
         }
       },
-      error: (err) => console.error('Error loading payroll runs:', err)
+      error: (err) => {
+        console.error('Error loading payroll runs:', err);
+        this.loading = false;
+      }
     });
   }
 

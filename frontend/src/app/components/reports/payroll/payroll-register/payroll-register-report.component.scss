@@ -584,3 +584,78 @@
     }
   }
 }
+
+// Loading Container Styles
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  width: 100%;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 40px;
+  
+  i {
+    font-size: 3rem;
+    color: #008080;
+    display: block;
+    margin-bottom: 20px;
+    animation: spinAnimation 1s linear infinite;
+  }
+  
+  p {
+    font-size: 1.3rem;
+    color: #333;
+    margin: 15px 0;
+    font-weight: 500;
+  }
+  
+  .loading-subtext {
+    font-size: 0.9rem;
+    color: #999;
+    display: block;
+  }
+}
+
+@keyframes spinAnimation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Updated loading state styles
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  margin: 20px 0;
+  
+  i {
+    font-size: 1.5rem;
+    color: #008080;
+    animation: spinAnimation 1s linear infinite;
+  }
+  
+  p {
+    color: #666;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+}
+
+// Disable filters during loading
+select[disabled],
+input[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
