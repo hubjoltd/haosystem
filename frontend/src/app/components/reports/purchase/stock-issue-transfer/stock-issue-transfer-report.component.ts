@@ -10,7 +10,8 @@ import { ExportService } from '../../../../services/export.service';
 })
 export class StockIssueTransferReportComponent implements OnInit {
   reportData: any[] = [];
-  loading: boolean = false;
+  loading: boolean = true;  // Start with loading
+dataReady: boolean = false;  // Only show content when ready
   selectedType: string = '';
   fromDate: string = '';
   toDate: string = '';
@@ -70,5 +71,9 @@ export class StockIssueTransferReportComponent implements OnInit {
 
   getTypeClass(type: string): string {
     return type === 'Stock Issue' ? 'badge-success' : 'badge-info';
+  }
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
   }
 }

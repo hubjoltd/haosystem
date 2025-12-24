@@ -11,6 +11,7 @@ import { ExportService } from '../../../../services/export.service';
 export class PrListReportComponent implements OnInit {
   reportData: any[] = [];
   loading: boolean = true;  // Start with loading state
+  dataReady: boolean = false;  // Only show content when ready
   selectedStatus: string = '';
   fromDate: string = '';
   toDate: string = '';
@@ -21,11 +22,7 @@ export class PrListReportComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadInitialData();
-  }
-
-  loadInitialData(): void {
-    this.loading = true;
+    this.generateReport();
   }
 
   generateReport(): void {
@@ -47,13 +44,18 @@ export class PrListReportComponent implements OnInit {
           this.reportData = this.reportData.filter(r => r.status === this.selectedStatus);
         }
 
-        this.loading = false;
+        this.completeLoading();
       },
       error: (err) => {
         console.error('Error generating report', err);
-        this.loading = false;
+        this.completeLoading();
       }
     });
+  }
+
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
   }
 
   exportToExcel(): void {

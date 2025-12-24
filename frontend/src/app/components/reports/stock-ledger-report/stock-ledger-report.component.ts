@@ -20,7 +20,8 @@ export class StockLedgerReportComponent implements OnInit {
   selectedWarehouse: string = '';
   fromDate: string = '';
   toDate: string = '';
-  loading: boolean = false;
+  loading: boolean = true;  // Start with loading
+dataReady: boolean = false;  // Only show content when ready
 
   constructor(
     private ledgerService: InventoryLedgerService,
@@ -110,5 +111,9 @@ export class StockLedgerReportComponent implements OnInit {
 
   exportToCSV(): void {
     this.exportService.exportToCSV(this.reportData, 'stock-ledger-report');
+  }
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
   }
 }

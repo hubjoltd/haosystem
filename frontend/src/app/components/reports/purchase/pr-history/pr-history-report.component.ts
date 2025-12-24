@@ -10,7 +10,8 @@ import { ExportService } from '../../../../services/export.service';
 })
 export class PrHistoryReportComponent implements OnInit {
   reportData: any[] = [];
-  loading: boolean = false;
+  loading: boolean = true;  // Start with loading
+dataReady: boolean = false;  // Only show content when ready
   selectedType: string = '';
   fromDate: string = '';
   toDate: string = '';
@@ -70,5 +71,9 @@ export class PrHistoryReportComponent implements OnInit {
       case 'Material Transfer': return 'badge-info';
       default: return 'badge-secondary';
     }
+  }
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
   }
 }

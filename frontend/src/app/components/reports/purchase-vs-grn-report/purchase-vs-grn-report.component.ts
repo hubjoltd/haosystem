@@ -18,7 +18,8 @@ export class PurchaseVsGrnReportComponent implements OnInit {
   selectedSupplier: string = '';
   fromDate: string = '';
   toDate: string = '';
-  loading: boolean = false;
+  loading: boolean = true;  // Start with loading
+dataReady: boolean = false;  // Only show content when ready
   
   totalPOQty: number = 0;
   totalGRNQty: number = 0;
@@ -148,5 +149,9 @@ export class PurchaseVsGrnReportComponent implements OnInit {
     if (status === 'Pending') return 'badge-warning';
     if (status === 'Complete') return 'badge-success';
     return 'badge-info';
+  }
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
   }
 }

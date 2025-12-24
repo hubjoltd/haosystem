@@ -13,7 +13,8 @@ export class GroupWiseStockReportComponent implements OnInit {
   reportData: any[] = [];
   groups: ItemGroup[] = [];
   selectedGroup: string = '';
-  loading: boolean = false;
+  loading: boolean = true;  // Start with loading
+dataReady: boolean = false;  // Only show content when ready
   totalQuantity: number = 0;
   totalValue: number = 0;
 
@@ -77,5 +78,9 @@ export class GroupWiseStockReportComponent implements OnInit {
 
   exportToCSV(): void {
     this.exportService.exportToCSV(this.reportData, 'group-wise-stock-report');
+  }
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
   }
 }

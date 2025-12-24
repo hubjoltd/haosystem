@@ -9,7 +9,8 @@ import { ExportService } from '../../../../services/export.service';
 })
 export class DirectPurchaseReportComponent implements OnInit {
   reportData: any[] = [];
-  loading: boolean = false;
+  loading: boolean = true;  // Start with loading
+dataReady: boolean = false;  // Only show content when ready
   fromDate: string = '';
   toDate: string = '';
 
@@ -35,5 +36,9 @@ export class DirectPurchaseReportComponent implements OnInit {
 
   exportToCSV(): void {
     this.exportService.exportToCSV(this.reportData, 'direct-purchase-report');
+  }
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
   }
 }

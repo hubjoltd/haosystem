@@ -13,7 +13,8 @@ export class WarehouseStockReportComponent implements OnInit {
   reportData: any[] = [];
   warehouses: Warehouse[] = [];
   selectedWarehouse: string = '';
-  loading: boolean = false;
+  loading: boolean = true;  // Start with loading
+dataReady: boolean = false;  // Only show content when ready
   totalValue: number = 0;
 
   constructor(
@@ -70,5 +71,9 @@ export class WarehouseStockReportComponent implements OnInit {
 
   exportToCSV(): void {
     this.exportService.exportToCSV(this.reportData, 'warehouse-stock-report');
+  }
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
   }
 }

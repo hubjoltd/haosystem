@@ -1,4 +1,14 @@
 <div class="report-page">
+  <!-- Loading Spinner -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Loading report data...</p>
+    </div>
+  </div>
+
+  <!-- Content only when ready -->
+  <ng-container *ngIf="dataReady">
   <div class="page-header">
     <div>
       <h1>Stock Summary Report</h1>
@@ -122,4 +132,5 @@
       </table>
     </div>
   </div>
+  </ng-container>
 </div>

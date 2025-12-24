@@ -26,6 +26,7 @@ export class StockSummaryReportComponent implements OnInit {
   fromDate: string = '';
   toDate: string = '';
   loading: boolean = true;  // Start with loading state
+  dataReady: boolean = false;  // Only show content when ready
   
   totalOpening: number = 0;
   totalIn: number = 0;
@@ -43,6 +44,7 @@ export class StockSummaryReportComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadFilters();
+    this.generateReport();
   }
 
   loadFilters(): void {
@@ -56,11 +58,9 @@ export class StockSummaryReportComponent implements OnInit {
         this.groups = groups;
         this.warehouses = warehouses;
         this.suppliers = suppliers;
-        this.loading = false;
       },
       error: (err) => {
         console.error('Error loading filters', err);
-        this.loading = false;
       }
     });
   }
@@ -124,13 +124,18 @@ export class StockSummaryReportComponent implements OnInit {
         });
         
         this.calculateTotals();
-        this.loading = false;
+        this.completeLoading();
       },
       error: (err) => {
         console.error('Error generating report', err);
-        this.loading = false;
+        this.completeLoading();
       }
     });
+  }
+
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
   }
 
   calculateTotals(): void {

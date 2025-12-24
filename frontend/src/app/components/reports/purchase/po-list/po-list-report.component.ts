@@ -10,7 +10,8 @@ import { ExportService } from '../../../../services/export.service';
 })
 export class PoListReportComponent implements OnInit {
   reportData: any[] = [];
-  loading: boolean = false;
+  loading: boolean = true;  // Start with loading
+dataReady: boolean = false;  // Only show content when ready
   fromDate: string = '';
   toDate: string = '';
 
@@ -57,5 +58,9 @@ export class PoListReportComponent implements OnInit {
 
   exportToCSV(): void {
     this.exportService.exportToCSV(this.reportData, 'po-list-report');
+  }
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
   }
 }

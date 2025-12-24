@@ -1,3 +1,13 @@
+<!-- Loading Spinner -->
+<div class="loading-container" *ngIf="loading">
+  <div class="loading-spinner">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Loading report data...</p>
+  </div>
+</div>
+
+<!-- Content only when ready -->
+<ng-container *ngIf="dataReady">
 <div class="report-page">
   <div class="page-header">
     <div>
@@ -69,4 +79,5 @@
       </table>
     </div>
   </div>
+  </ng-container>
 </div>

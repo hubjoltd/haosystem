@@ -20,7 +20,8 @@ export class ItemMovementReportComponent implements OnInit {
   selectedWarehouse: string = '';
   fromDate: string = '';
   toDate: string = '';
-  loading: boolean = false;
+  loading: boolean = true;  // Start with loading
+dataReady: boolean = false;  // Only show content when ready
   
   totalIn: number = 0;
   totalOut: number = 0;
@@ -139,5 +140,9 @@ export class ItemMovementReportComponent implements OnInit {
 
   exportToCSV(): void {
     this.exportService.exportToCSV(this.reportData, 'item-movement-report');
+  }
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
   }
 }

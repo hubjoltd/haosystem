@@ -10,7 +10,8 @@ import { ExportService } from '../../../../services/export.service';
 })
 export class PrPendingReportComponent implements OnInit {
   reportData: any[] = [];
-  loading: boolean = false;
+  loading: boolean = true;  // Start with loading
+dataReady: boolean = false;  // Only show content when ready
 
   constructor(
     private prService: PurchaseRequisitionService,
@@ -66,5 +67,9 @@ export class PrPendingReportComponent implements OnInit {
 
   exportToCSV(): void {
     this.exportService.exportToCSV(this.reportData, 'pr-pending-items-report');
+  }
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
   }
 }

@@ -18,7 +18,8 @@ export class SlowMovingItemsReportComponent implements OnInit {
   selectedGroup: string = '';
   selectedWarehouse: string = '';
   daysWithoutMovement: number = 30;
-  loading: boolean = false;
+  loading: boolean = true;  // Start with loading
+dataReady: boolean = false;  // Only show content when ready
   totalValue: number = 0;
   totalItems: number = 0;
 
@@ -100,5 +101,9 @@ export class SlowMovingItemsReportComponent implements OnInit {
 
   exportToCSV(): void {
     this.exportService.exportToCSV(this.reportData, 'slow-moving-items-report');
+  }
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
   }
 }

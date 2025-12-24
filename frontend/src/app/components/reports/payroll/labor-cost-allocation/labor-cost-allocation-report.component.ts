@@ -15,6 +15,10 @@ interface LaborCostRow {
   taxes: number;
   employerContributions: number;
   totalLaborCost: number;
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
+  }
 }
 
 @Component({
@@ -201,5 +205,9 @@ export class LaborCostAllocationReportComponent implements OnInit {
     ]);
     
     this.exportService.exportToCSV(headers, data, 'labor_cost_allocation');
+  }
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
   }
 }

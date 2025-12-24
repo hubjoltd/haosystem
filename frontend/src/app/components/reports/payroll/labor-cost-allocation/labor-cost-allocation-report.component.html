@@ -1,3 +1,13 @@
+<!-- Loading Spinner -->
+<div class="loading-container" *ngIf="loading">
+  <div class="loading-spinner">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Loading report data...</p>
+  </div>
+</div>
+
+<!-- Content only when ready -->
+<ng-container *ngIf="dataReady">
 <div class="report-container">
   <div class="report-header">
     <h2><i class="fas fa-chart-area"></i> Labor Cost Allocation Report</h2>
@@ -117,4 +127,5 @@
     <i class="fas fa-spinner fa-spin"></i>
     <p>Loading labor cost data...</p>
   </div>
+  </ng-container>
 </div>

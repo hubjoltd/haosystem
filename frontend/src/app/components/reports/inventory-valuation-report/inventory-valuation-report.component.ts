@@ -20,7 +20,8 @@ export class InventoryValuationReportComponent implements OnInit {
   selectedGroup: string = '';
   selectedWarehouse: string = '';
   totalValue: number = 0;
-  loading: boolean = false;
+  loading: boolean = true;  // Start with loading
+dataReady: boolean = false;  // Only show content when ready
   valuationMethod: string = 'FIFO';
   asOfDate: string = '';
 
@@ -118,5 +119,9 @@ export class InventoryValuationReportComponent implements OnInit {
 
   exportToCSV(): void {
     this.exportService.exportToCSV(this.reportData, 'inventory-valuation-report');
+  }
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
   }
 }
