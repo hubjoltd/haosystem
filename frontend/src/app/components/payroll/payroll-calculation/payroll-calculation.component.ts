@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { PayrollService, PayrollRun, PayFrequency } from '../../../services/payroll.service';
 import { TimesheetGenerationDialogComponent } from '../timesheet-generation-dialog/timesheet-generation-dialog.component';
 
@@ -18,12 +18,11 @@ export class PayrollCalculationComponent implements OnInit {
   
   showCreateModal = false;
   showTimesheetDialog = false;
-  
   newRun: any = {};
   creating = false;
   calculating = false;
 
-  constructor(private payrollService: PayrollService, private router: Router) {}
+  constructor(private payrollService: PayrollService) {}
 
   ngOnInit(): void {
     this.loadPayrollRuns();
@@ -131,12 +130,6 @@ export class PayrollCalculationComponent implements OnInit {
       alert(`Successfully generated ${event.count || 0} attendance timesheet(s) from approved records.`);
     } else if (event.type === 'project') {
       alert(`Successfully created project timesheet for ${event.employeeName || 'employee'}.`);
-    }
-  }
-
-  viewPayrollDetails(run: PayrollRun): void {
-    if (run.id) {
-      this.router.navigate(['/app/payroll/run-details', run.id]);
     }
   }
 }

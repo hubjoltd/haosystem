@@ -35,12 +35,6 @@ Preferred communication style: Simple, everyday language.
 15. **Compensation & Benefits**: Salary bands, revisions, bonus setup, health insurance, allowances.
 16. **F&F Settlement**: Final and Full Settlement processing for employee separations, automatic calculations, and workflow.
 17. **Payroll Management**: A 5-phase workflow covering Payroll Rules Configuration, Attendance Approval & Timesheets, Payroll Calculation (with exact formulas for salaried/hourly employees), Process Payroll (with selective employee checkbox processing and automated account postings), and Employee Self-Service (ESS).
-    - **Payroll Calculation Enhancement**: New "Payroll Run Details" page with:
-      - Complete employee list display for each payroll run
-      - Checkbox-based employee selection (with select all functionality)
-      - Real-time selection counter showing selected vs total employees
-      - Process Selected button to handle payroll processing
-      - Clean, responsive table layout with salary information (Gross Pay, Deductions, Taxes, Net Pay)
 18. **Employee Self-Service (ESS) Portal**: Complete Phase 5 implementation with:
     - Pay Stubs viewing with detailed breakdown (earnings, deductions, taxes, net pay)
     - Salary slip download/print functionality (PDF generation via jsPDF)

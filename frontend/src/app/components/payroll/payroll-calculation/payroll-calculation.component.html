@@ -51,9 +51,6 @@
             <span class="status-badge" [ngClass]="getStatusClass(run.status)">{{ run.status }}</span>
           </td>
           <td class="actions">
-            <button class="btn btn-sm btn-info" (click)="viewPayrollDetails(run)" *ngIf="run.status !== 'DRAFT'" title="View Details">
-              <i class="fas fa-eye"></i> View
-            </button>
             <button class="btn btn-sm btn-primary" *ngIf="canCalculate(run)" 
                     (click)="calculatePayroll(run)" [disabled]="calculating" title="Calculate Payroll">
               <i class="fas fa-calculator"></i> Calculate
