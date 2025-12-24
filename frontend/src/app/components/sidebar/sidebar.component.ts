@@ -233,10 +233,8 @@ export class SidebarComponent implements OnInit {
       expanded: false,
       permissionKey: 'Attendance',
       children: [
-        { icon: 'fas fa-sign-in-alt', label: 'Clock In / Out', route: '/app/attendance/clock-in-out' },
-        { icon: 'fas fa-calendar-alt', label: 'Attendance Records', route: '/app/attendance/records' },
-        { icon: 'fas fa-sliders-h', label: 'Attendance Rules', route: '/app/attendance/rules' },
-        { icon: 'fas fa-project-diagram', label: 'Project Time Entry', route: '/app/attendance/project-time' }
+        { icon: 'fas fa-user-clock', label: 'Attendance Management', route: '/app/attendance/management' },
+        { icon: 'fas fa-sign-in-alt', label: 'Clock In / Out', route: '/app/attendance/clock-in-out' }
       ]
     },
     {
