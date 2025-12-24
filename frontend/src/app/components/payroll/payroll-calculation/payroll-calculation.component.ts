@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { PayrollService, PayrollRun, PayFrequency } from '../../../services/payroll.service';
+import { PayrollService, PayrollRun, PayFrequency, PayrollRecord } from '../../../services/payroll.service';
 import { TimesheetGenerationDialogComponent } from '../timesheet-generation-dialog/timesheet-generation-dialog.component';
 
 @Component({
@@ -18,6 +18,12 @@ export class PayrollCalculationComponent implements OnInit {
   
   showCreateModal = false;
   showTimesheetDialog = false;
+  showDetailsModal = false;
+  selectedRecord: PayrollRecord | null = null;
+  selectedRunRecords: PayrollRecord[] = [];
+  selectedRun: PayrollRun | null = null;
+  loadingDetails = false;
+  
   newRun: any = {};
   creating = false;
   calculating = false;
@@ -131,5 +137,56 @@ export class PayrollCalculationComponent implements OnInit {
     } else if (event.type === 'project') {
       alert(`Successfully created project timesheet for ${event.employeeName || 'employee'}.`);
     }
+  }
+
+  openDetailsModal(run: PayrollRun): void {
+    this.selectedRun = run;
+    this.showDetailsModal = true;
+    this.loadingDetails = true;
+    
+    if (run.id) {
+      this.payrollService.getPayrollRecordsByRun(run.id).subscribe({
+        next: (records) => {
+          this.selectedRunRecords = records;
+          this.loadingDetails = false;
+        },
+        error: (err) => {
+          console.error('Error loading payroll records:', err);
+          this.loadingDetails = false;
+          this.selectedRunRecords = [];
+        }
+      });
+    }
+  }
+
+  closeDetailsModal(): void {
+    this.showDetailsModal = false;
+    this.selectedRecord = null;
+    this.selectedRun = null;
+    this.selectedRunRecords = [];
+  }
+
+  openEmployeeDetails(record: PayrollRecord): void {
+    this.selectedRecord = record;
+  }
+
+  closeEmployeeDetails(): void {
+    this.selectedRecord = null;
+  }
+
+  getEmployeeName(record: PayrollRecord): string {
+    return `${record.employee?.firstName || ''} ${record.employee?.lastName || ''}`.trim() || 'Unknown';
+  }
+
+  getEmployeeCode(record: PayrollRecord): string {
+    return record.employee?.employeeCode || 'N/A';
+  }
+
+  getDepartment(record: PayrollRecord): string {
+    return record.employee?.department?.name || 'N/A';
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
   }
 }
