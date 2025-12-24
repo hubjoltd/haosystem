@@ -183,21 +183,79 @@ public class PayrollController {
                     return ResponseEntity.badRequest().body(Map.of("error", "Payroll must be calculated or approved before processing"));
                 }
                 
-                run.setStatus("PROCESSED");
-                run.setProcessedAt(LocalDateTime.now());
+                List<Long> selectedRecordIds = new ArrayList<>();
+                if (data.containsKey("recordIds")) {
+                    List<?> ids = (List<?>) data.get("recordIds");
+                    for (Object recordId : ids) {
+                        selectedRecordIds.add(Long.valueOf(recordId.toString()));
+                    }
+                }
+                
+                List<PayrollRecord> records;
+                if (!selectedRecordIds.isEmpty()) {
+                    records = payrollRecordRepository.findAllById(selectedRecordIds);
+                } else {
+                    records = payrollRecordRepository.findByPayrollRunId(id);
+                }
+                
+                BigDecimal totalGross = BigDecimal.ZERO;
+                BigDecimal totalDeductions = BigDecimal.ZERO;
+                BigDecimal totalTaxes = BigDecimal.ZERO;
+                BigDecimal totalNet = BigDecimal.ZERO;
+                BigDecimal totalEmployerContrib = BigDecimal.ZERO;
+                int processedCount = 0;
+                
+                for (PayrollRecord record : records) {
+                    if (record.getPayrollRun().getId().equals(id)) {
+                        record.setStatus("PROCESSED");
+                        payrollRecordRepository.save(record);
+                        processedCount++;
+                        
+                        totalGross = totalGross.add(record.getGrossPay() != null ? record.getGrossPay() : BigDecimal.ZERO);
+                        totalDeductions = totalDeductions.add(record.getTotalDeductions() != null ? record.getTotalDeductions() : BigDecimal.ZERO);
+                        totalTaxes = totalTaxes.add(record.getTotalTaxes() != null ? record.getTotalTaxes() : BigDecimal.ZERO);
+                        totalNet = totalNet.add(record.getNetPay() != null ? record.getNetPay() : BigDecimal.ZERO);
+                        totalEmployerContrib = totalEmployerContrib.add(record.getTotalEmployerContributions() != null ? record.getTotalEmployerContributions() : BigDecimal.ZERO);
+                    }
+                }
+                
+                List<PayrollRecord> allRecords = payrollRecordRepository.findByPayrollRunId(id);
+                boolean allProcessed = allRecords.stream().allMatch(r -> "PROCESSED".equals(r.getStatus()));
+                
+                if (allProcessed) {
+                    run.setStatus("PROCESSED");
+                    run.setProcessedAt(LocalDateTime.now());
+                    run.setIsPostedToAccounts(true);
+                    run.setPostedAt(LocalDateTime.now());
+                }
                 
                 if (data.containsKey("processedById")) {
                     Long processedById = Long.valueOf(data.get("processedById").toString());
                     employeeRepository.findById(processedById).ifPresent(run::setProcessedBy);
                 }
                 
-                List<PayrollRecord> records = payrollRecordRepository.findByPayrollRunId(id);
-                for (PayrollRecord record : records) {
-                    record.setStatus("PROCESSED");
-                    payrollRecordRepository.save(record);
-                }
+                payrollRunRepository.save(run);
                 
-                return ResponseEntity.ok(payrollRunRepository.save(run));
+                Map<String, Object> accountPostings = new HashMap<>();
+                accountPostings.put("salaryExpenses", totalGross);
+                accountPostings.put("employerContributions", totalEmployerContrib);
+                accountPostings.put("loanDeductions", records.stream()
+                    .map(r -> r.getLoanDeductions() != null ? r.getLoanDeductions() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add));
+                accountPostings.put("taxLiabilities", totalTaxes);
+                accountPostings.put("netPayable", totalNet);
+                
+                return ResponseEntity.ok(Map.of(
+                    "payrollRun", run,
+                    "processedCount", processedCount,
+                    "totalGrossPay", totalGross,
+                    "totalDeductions", totalDeductions,
+                    "totalTaxes", totalTaxes,
+                    "totalNetPay", totalNet,
+                    "totalEmployerContributions", totalEmployerContrib,
+                    "accountPostings", accountPostings,
+                    "status", allProcessed ? "FULLY_PROCESSED" : "PARTIALLY_PROCESSED"
+                ));
             })
             .orElse(ResponseEntity.notFound().build());
     }

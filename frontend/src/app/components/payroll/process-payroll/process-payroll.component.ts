@@ -14,10 +14,20 @@ import { PayrollService, PayrollRun, PayrollRecord } from '../../../services/pay
 export class ProcessPayrollComponent implements OnInit {
   payrollRun: PayrollRun | null = null;
   payrollRecords: PayrollRecord[] = [];
+  selectedRecordIds: Set<number> = new Set();
   loading = true;
   processing = false;
   selectedRecord: PayrollRecord | null = null;
   showDetailModal = false;
+  accountPostings: any = null;
+
+  summary = {
+    totalGrossPay: 0,
+    totalDeductions: 0,
+    totalTaxes: 0,
+    totalNetPay: 0,
+    totalEmployerContributions: 0
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -50,6 +60,7 @@ export class ProcessPayrollComponent implements OnInit {
     this.payrollService.getPayrollRecordsByRun(runId).subscribe({
       next: (records) => {
         this.payrollRecords = records;
+        this.calculateSummary();
         this.loading = false;
       },
       error: (err) => {
@@ -59,24 +70,95 @@ export class ProcessPayrollComponent implements OnInit {
     });
   }
 
-  processPayroll(): void {
-    if (!this.payrollRun?.id) return;
+  calculateSummary(): void {
+    const selectedRecords = this.getSelectedRecords();
+    const recordsToSum = selectedRecords.length > 0 ? selectedRecords : this.payrollRecords;
     
-    if (!confirm('Are you sure you want to process this payroll? This action cannot be undone.')) {
+    this.summary = {
+      totalGrossPay: recordsToSum.reduce((sum, r) => sum + (r.grossPay || 0), 0),
+      totalDeductions: recordsToSum.reduce((sum, r) => sum + (r.totalDeductions || 0), 0),
+      totalTaxes: recordsToSum.reduce((sum, r) => sum + (r.totalTaxes || 0), 0),
+      totalNetPay: recordsToSum.reduce((sum, r) => sum + (r.netPay || 0), 0),
+      totalEmployerContributions: recordsToSum.reduce((sum, r) => sum + (r.totalEmployerContributions || 0), 0)
+    };
+  }
+
+  toggleSelectAll(event: any): void {
+    if (event.target.checked) {
+      this.payrollRecords.forEach(r => {
+        if (r.id && r.status !== 'PROCESSED') {
+          this.selectedRecordIds.add(r.id);
+        }
+      });
+    } else {
+      this.selectedRecordIds.clear();
+    }
+    this.calculateSummary();
+  }
+
+  toggleRecord(record: PayrollRecord): void {
+    if (record.id) {
+      if (this.selectedRecordIds.has(record.id)) {
+        this.selectedRecordIds.delete(record.id);
+      } else {
+        this.selectedRecordIds.add(record.id);
+      }
+      this.calculateSummary();
+    }
+  }
+
+  isSelected(record: PayrollRecord): boolean {
+    return record.id ? this.selectedRecordIds.has(record.id) : false;
+  }
+
+  isAllSelected(): boolean {
+    const processableRecords = this.payrollRecords.filter(r => r.status !== 'PROCESSED');
+    return processableRecords.length > 0 && 
+           processableRecords.every(r => r.id && this.selectedRecordIds.has(r.id));
+  }
+
+  getSelectedRecords(): PayrollRecord[] {
+    return this.payrollRecords.filter(r => r.id && this.selectedRecordIds.has(r.id));
+  }
+
+  canProcess(): boolean {
+    if (!this.payrollRun) return false;
+    const status = this.payrollRun.status;
+    return (status === 'CALCULATED' || status === 'APPROVED') && 
+           (this.selectedRecordIds.size > 0 || this.payrollRecords.some(r => r.status !== 'PROCESSED'));
+  }
+
+  processPayroll(): void {
+    if (!this.payrollRun?.id || !this.canProcess()) return;
+    
+    const selectedIds = Array.from(this.selectedRecordIds);
+    const count = selectedIds.length > 0 ? selectedIds.length : this.payrollRecords.filter(r => r.status !== 'PROCESSED').length;
+    
+    if (!confirm(`Are you sure you want to process payroll for ${count} employee(s)? This action will:\n\n• Mark selected records as PROCESSED\n• Post to accounting ledgers\n• Generate pay stubs\n\nThis action cannot be undone.`)) {
       return;
     }
 
     this.processing = true;
-    this.payrollService.processPayroll(this.payrollRun.id, {}).subscribe({
-      next: () => {
+    this.payrollService.processPayroll(this.payrollRun.id, { recordIds: selectedIds }).subscribe({
+      next: (response: any) => {
         this.processing = false;
-        alert('Payroll processed successfully!');
-        this.router.navigate(['/app/payroll/calculation']);
+        this.accountPostings = response.accountPostings;
+        
+        const message = `Successfully processed ${response.processedCount} payroll record(s).\n\n` +
+          `Account Postings:\n` +
+          `• Salary Expenses: $${response.totalGrossPay?.toFixed(2) || '0.00'}\n` +
+          `• Employer Contributions: $${response.totalEmployerContributions?.toFixed(2) || '0.00'}\n` +
+          `• Tax Liabilities: $${response.totalTaxes?.toFixed(2) || '0.00'}\n` +
+          `• Net Payable: $${response.totalNetPay?.toFixed(2) || '0.00'}`;
+        
+        alert(message);
+        this.selectedRecordIds.clear();
+        this.loadPayrollRun(this.payrollRun!.id!);
       },
       error: (err) => {
         this.processing = false;
         console.error('Error processing payroll:', err);
-        alert('Error processing payroll');
+        alert('Error processing payroll: ' + (err.error?.error || 'Unknown error'));
       }
     });
   }
@@ -96,6 +178,19 @@ export class ProcessPayrollComponent implements OnInit {
       return `${record.employee.firstName || ''} ${record.employee.lastName || ''}`.trim() || 'Unknown';
     }
     return 'Unknown';
+  }
+
+  getEmployeeCode(record: PayrollRecord): string {
+    return record.employee?.employeeCode || 'N/A';
+  }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'CALCULATED': return 'status-calculated';
+      case 'APPROVED': return 'status-approved';
+      case 'PROCESSED': return 'status-processed';
+      default: return 'status-draft';
+    }
   }
 
   goBack(): void {
