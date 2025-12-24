@@ -22,9 +22,10 @@ export class PayrollRegisterReportComponent implements OnInit {
   searchTerm = '';
   
   years: number[] = [];
-  loading = false;  // Only show loading on first load
+  loading = true;  // Start with loading to prevent empty screens
   isFirstLoad = true;  // Track if this is the first time loading
   refreshing = false;  // Track background refresh
+  dataReady = false;  // Only show content when data is ready
   
   // Modal properties
   showDetailsModal = false;
@@ -69,16 +70,12 @@ export class PayrollRegisterReportComponent implements OnInit {
         } else if (this.reportType === 'annual') {
           this.loadAnnualData();
         } else {
-          this.loading = false;
-          this.refreshing = false;
-          this.isFirstLoad = false;
+          this.completeLoading();
         }
       },
       error: (err) => {
         console.error('Error loading payroll runs:', err);
-        this.loading = false;
-        this.refreshing = false;
-        this.isFirstLoad = false;
+        this.completeLoading();
       }
     });
   }
@@ -95,15 +92,11 @@ export class PayrollRegisterReportComponent implements OnInit {
       next: (data) => {
         this.payrollRecords = data;
         this.applyFilters();
-        this.loading = false;
-        this.refreshing = false;
-        this.isFirstLoad = false;
+        this.completeLoading();
       },
       error: (err) => {
         console.error('Error loading payroll records:', err);
-        this.loading = false;
-        this.refreshing = false;
-        this.isFirstLoad = false;
+        this.completeLoading();
       }
     });
   }
@@ -118,9 +111,7 @@ export class PayrollRegisterReportComponent implements OnInit {
       this.payrollRecords = [];
       this.filteredRecords = [];
       this.calculateTotals();
-      this.loading = false;
-      this.refreshing = false;
-      this.isFirstLoad = false;
+      this.completeLoading();
       return;
     }
 
@@ -139,9 +130,7 @@ export class PayrollRegisterReportComponent implements OnInit {
           if (completedRequests === yearRuns.length) {
             this.payrollRecords = this.aggregateAnnualRecords(allRecords);
             this.applyFilters();
-            this.loading = false;
-            this.refreshing = false;
-            this.isFirstLoad = false;
+            this.completeLoading();
           }
         },
         error: (err) => {
@@ -150,9 +139,7 @@ export class PayrollRegisterReportComponent implements OnInit {
           if (completedRequests === yearRuns.length) {
             this.payrollRecords = this.aggregateAnnualRecords(allRecords);
             this.applyFilters();
-            this.loading = false;
-            this.refreshing = false;
-            this.isFirstLoad = false;
+            this.completeLoading();
           }
         }
       });
@@ -335,5 +322,12 @@ export class PayrollRegisterReportComponent implements OnInit {
   closeDetailsModal(): void {
     this.showDetailsModal = false;
     this.selectedRecord = null;
+  }
+
+  completeLoading(): void {
+    this.loading = false;
+    this.refreshing = false;
+    this.dataReady = true;
+    this.isFirstLoad = false;
   }
 }

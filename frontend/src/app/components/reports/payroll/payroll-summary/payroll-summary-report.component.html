@@ -4,8 +4,8 @@
     <p class="subtitle">View payroll summary grouped by employee, department, or project</p>
   </div>
 
-  <!-- Loading State on Page Load -->
-  <div class="loading-container" *ngIf="loading && payrollRuns.length === 0">
+  <!-- Loading State - Full Screen Spinner -->
+  <div class="loading-container" *ngIf="loading">
     <div class="loading-spinner">
       <i class="fas fa-spinner fa-spin"></i>
       <p>Loading payroll data...</p>
@@ -13,7 +13,8 @@
     </div>
   </div>
 
-  <ng-container *ngIf="payrollRuns.length > 0 || !loading">
+  <!-- Content visible only when data is ready -->
+  <ng-container *ngIf="dataReady">
   <div class="filter-section">
     <div class="filter-row">
       <div class="filter-group">
@@ -48,7 +49,7 @@
     </div>
   </div>
 
-  <div class="summary-cards" *ngIf="!loading">
+  <div class="summary-cards">
     <div class="summary-card">
       <div class="card-icon"><i class="fas fa-users"></i></div>
       <div class="card-content">

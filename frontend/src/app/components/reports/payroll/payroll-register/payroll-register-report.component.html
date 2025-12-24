@@ -4,8 +4,8 @@
     <p class="subtitle">Monthly or annual payroll register with detailed employee records</p>
   </div>
 
-  <!-- Loading State on Page Load -->
-  <div class="loading-container" *ngIf="loading && payrollRuns.length === 0">
+  <!-- Loading State - Full Screen Spinner -->
+  <div class="loading-container" *ngIf="loading">
     <div class="loading-spinner">
       <i class="fas fa-spinner fa-spin"></i>
       <p>Loading payroll data...</p>
@@ -13,8 +13,8 @@
     </div>
   </div>
 
-  <!-- Filters and Summary (visible after initial load) -->
-  <ng-container *ngIf="payrollRuns.length > 0 || !loading">
+  <!-- Filters and Summary (visible only when data is ready) -->
+  <ng-container *ngIf="dataReady">
     <div class="filter-section">
       <div class="filter-row">
         <div class="filter-group">

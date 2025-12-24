@@ -30,8 +30,9 @@ export class PayrollSummaryReportComponent implements OnInit {
   selectedRunId: number | null = null;
   groupBy: 'employee' | 'department' | 'project' = 'employee';
   
-  loading = false;  // Only show loading on first load
+  loading = true;  // Start with loading to prevent empty screens
   isFirstLoad = true;  // Track if this is the first time loading
+  dataReady = false;  // Only show content when data is ready
   
   grandTotals = {
     employeeCount: 0,
@@ -52,10 +53,6 @@ export class PayrollSummaryReportComponent implements OnInit {
   }
 
   loadPayrollRuns(): void {
-    if (this.isFirstLoad) {
-      this.loading = true;
-    }
-    
     this.payrollService.getPayrollRuns().subscribe({
       next: (data) => {
         this.payrollRuns = data.filter(run => run.status === 'PROCESSED' || run.status === 'APPROVED');
@@ -63,14 +60,12 @@ export class PayrollSummaryReportComponent implements OnInit {
           this.selectedRunId = this.payrollRuns[0].id!;
           this.loadPayrollRecords();
         } else {
-          this.loading = false;
-          this.isFirstLoad = false;
+          this.completeLoading();
         }
       },
       error: (err) => {
         console.error('Error loading payroll runs:', err);
-        this.loading = false;
-        this.isFirstLoad = false;
+        this.completeLoading();
       }
     });
   }
@@ -78,21 +73,15 @@ export class PayrollSummaryReportComponent implements OnInit {
   loadPayrollRecords(): void {
     if (!this.selectedRunId) return;
     
-    if (this.isFirstLoad) {
-      this.loading = true;
-    }
-    
     this.payrollService.getPayrollRecordsByRun(this.selectedRunId).subscribe({
       next: (data) => {
         this.payrollRecords = data;
         this.generateSummary();
-        this.loading = false;
-        this.isFirstLoad = false;
+        this.completeLoading();
       },
       error: (err) => {
         console.error('Error loading payroll records:', err);
-        this.loading = false;
-        this.isFirstLoad = false;
+        this.completeLoading();
       }
     });
   }
@@ -237,5 +226,11 @@ export class PayrollSummaryReportComponent implements OnInit {
     ]);
     
     this.exportService.exportToCSV(headers, data, `payroll_summary_${this.groupBy}`);
+  }
+
+  completeLoading(): void {
+    this.loading = false;
+    this.dataReady = true;
+    this.isFirstLoad = false;
   }
 }
