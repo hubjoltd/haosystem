@@ -96,7 +96,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let record of filteredRecords">
+        <tr *ngFor="let record of filteredRecords" (click)="openDetailsModal(record)" class="clickable-row">
           <td>
             <div class="employee-info">
               <span class="name">{{ getEmployeeName(record) }}</span>
@@ -134,5 +134,201 @@
   <div class="loading-state" *ngIf="loading">
     <i class="fas fa-spinner fa-spin"></i>
     <p>Loading payroll data...</p>
+  </div>
+</div>
+
+<!-- Payroll Details Modal -->
+<div class="payroll-modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
+  <div class="payroll-modal" (click)="$event.stopPropagation()" *ngIf="selectedRecord">
+    <div class="modal-header">
+      <h3><i class="fas fa-receipt"></i> Payroll Details</h3>
+      <button class="close-btn" (click)="closeDetailsModal()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Employee Information -->
+      <div class="details-section">
+        <h4>Employee Information</h4>
+        <div class="details-grid">
+          <div class="detail-row">
+            <span class="label">Employee Name:</span>
+            <span class="value">{{ getEmployeeName(selectedRecord) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Employee Code:</span>
+            <span class="value">{{ getEmployeeCode(selectedRecord) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Department:</span>
+            <span class="value">{{ getDepartment(selectedRecord) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Employee Type:</span>
+            <span class="value">{{ selectedRecord.employeeType || 'Full-time' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Earnings Section -->
+      <div class="details-section earnings">
+        <h4><i class="fas fa-plus-circle"></i> Earnings</h4>
+        <div class="details-grid">
+          <div class="detail-row">
+            <span class="label">Base Pay:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.basePay || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Hourly Rate:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.hourlyRate || 0) }}/hr</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Regular Hours:</span>
+            <span class="value">{{ selectedRecord.regularHours || 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Overtime Hours:</span>
+            <span class="value">{{ selectedRecord.overtimeHours || 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Overtime Pay:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.overtimePay || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Bonuses:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.bonuses || 0) }}</span>
+          </div>
+          <div class="detail-row highlight">
+            <span class="label">Gross Salary:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.grossPay || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Reimbursement:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.reimbursements || 0) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Taxes Section -->
+      <div class="details-section taxes">
+        <h4><i class="fas fa-percent"></i> Taxes</h4>
+        <div class="details-grid">
+          <div class="detail-row">
+            <span class="label">Federal Tax:</span>
+            <span class="value tax">{{ formatCurrency(selectedRecord.federalTax || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">State Tax:</span>
+            <span class="value tax">{{ formatCurrency(selectedRecord.stateTax || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Local Tax:</span>
+            <span class="value tax">{{ formatCurrency(selectedRecord.localTax || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Social Security:</span>
+            <span class="value tax">{{ formatCurrency(selectedRecord.socialSecurityTax || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Medicare:</span>
+            <span class="value tax">{{ formatCurrency(selectedRecord.medicareTax || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Disability Tax:</span>
+            <span class="value tax">{{ formatCurrency(selectedRecord.disabilityTax || 0) }}</span>
+          </div>
+          <div class="detail-row highlight">
+            <span class="label">Total Taxes:</span>
+            <span class="value tax">{{ formatCurrency(selectedRecord.totalTaxes || 0) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Deductions Section -->
+      <div class="details-section deductions">
+        <h4><i class="fas fa-minus-circle"></i> Deductions</h4>
+        <div class="details-grid">
+          <div class="detail-row">
+            <span class="label">Health Insurance:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.healthInsurance || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Dental Insurance:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.dentalInsurance || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Vision Insurance:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.visionInsurance || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">401(k) Retirement:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.retirement401k || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">HSA Contribution:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.hsaContribution || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Pre-Tax Deductions:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.preTaxDeductions || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Post-Tax Deductions:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.postTaxDeductions || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Loan Deductions:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.loanDeductions || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Garnishments:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.garnishments || 0) }}</span>
+          </div>
+          <div class="detail-row highlight">
+            <span class="label">Total Deductions:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.totalDeductions || 0) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Employer Contributions Section -->
+      <div class="details-section contributions">
+        <h4><i class="fas fa-building"></i> Employer Contributions</h4>
+        <div class="details-grid">
+          <div class="detail-row">
+            <span class="label">Employer SS:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.employerSocialSecurity || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Employer Medicare:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.employerMedicare || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Employer Health Insurance:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.employerHealthContribution || 0) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Employer 401(k) Match:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.employer401kMatch || 0) }}</span>
+          </div>
+          <div class="detail-row highlight">
+            <span class="label">Total Contributions:</span>
+            <span class="value">{{ formatCurrency(selectedRecord.totalEmployerContributions || 0) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Net Pay Section -->
+      <div class="details-section net-pay">
+        <h4><i class="fas fa-wallet"></i> Net Pay</h4>
+        <div class="net-pay-display">
+          <span class="net-pay-label">Total Net Pay:</span>
+          <span class="net-pay-amount">{{ formatCurrency(selectedRecord.netPay || 0) }}</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-close" (click)="closeDetailsModal()">Close</button>
+      </div>
+    </div>
   </div>
 </div>

@@ -24,6 +24,10 @@ export class PayrollRegisterReportComponent implements OnInit {
   years: number[] = [];
   loading = false;
   
+  // Modal properties
+  showDetailsModal = false;
+  selectedRecord: PayrollRecord | null = null;
+  
   totals = {
     grossPay: 0,
     totalDeductions: 0,
@@ -286,5 +290,15 @@ export class PayrollRegisterReportComponent implements OnInit {
     ]);
     
     this.exportService.exportToCSV(headers, data, `payroll_register_${this.reportType}`);
+  }
+
+  openDetailsModal(record: PayrollRecord): void {
+    this.selectedRecord = record;
+    this.showDetailsModal = true;
+  }
+
+  closeDetailsModal(): void {
+    this.showDetailsModal = false;
+    this.selectedRecord = null;
   }
 }

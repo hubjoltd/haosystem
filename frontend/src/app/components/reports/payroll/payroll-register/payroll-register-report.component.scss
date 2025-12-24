@@ -318,3 +318,269 @@
 .loading-state i {
   color: #008080;
 }
+
+// Payroll Modal Styles
+.clickable-row {
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #f0f8f8;
+  }
+}
+
+.payroll-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.payroll-modal {
+  background: white;
+  border-radius: 12px;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 2px solid #f0f0f0;
+  background: linear-gradient(135deg, #008080 0%, #006666 100%);
+  color: white;
+  position: sticky;
+  top: 0;
+  
+  h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    i {
+      font-size: 1.25rem;
+    }
+  }
+  
+  .close-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+    
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.details-section {
+  margin-bottom: 28px;
+  
+  h4 {
+    color: #008080;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 8px;
+    
+    i {
+      font-size: 1rem;
+    }
+  }
+  
+  &.earnings {
+    background: #f0fffe;
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid #28a745;
+  }
+  
+  &.taxes {
+    background: #fff5f5;
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid #dc3545;
+  }
+  
+  &.deductions {
+    background: #f5f5ff;
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid #0066cc;
+  }
+  
+  &.contributions {
+    background: #fff9f0;
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid #ff9800;
+  }
+  
+  &.net-pay {
+    background: linear-gradient(135deg, #008080 0%, #006666 100%);
+    padding: 20px;
+    border-radius: 8px;
+    color: white;
+  }
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  
+  .label {
+    font-weight: 500;
+    color: #555;
+    font-size: 0.9rem;
+  }
+  
+  .value {
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+    
+    &.tax {
+      color: #dc3545;
+    }
+  }
+  
+  &.highlight {
+    background: #f9f9f9;
+    border: 2px solid #008080;
+    
+    .label {
+      color: #008080;
+      font-weight: 600;
+    }
+    
+    .value {
+      color: #008080;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+  }
+}
+
+.net-pay-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  
+  .net-pay-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  
+  .net-pay-amount {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+}
+
+.modal-footer {
+  padding: 20px 24px;
+  border-top: 2px solid #f0f0f0;
+  background: #f9f9f9;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  position: sticky;
+  bottom: 0;
+  
+  .btn-close {
+    padding: 10px 24px;
+    background: #008080;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+    
+    &:hover {
+      background: #006666;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .payroll-modal {
+    max-height: 95vh;
+    max-width: 95vw;
+  }
+  
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .net-pay-display {
+    flex-direction: column;
+    gap: 12px;
+    
+    .net-pay-amount {
+      font-size: 1.5rem;
+    }
+  }
+}
