@@ -25,7 +25,7 @@ export class StockSummaryReportComponent implements OnInit {
   selectedSupplier: string = '';
   fromDate: string = '';
   toDate: string = '';
-  loading: boolean = false;
+  loading: boolean = true;  // Start with loading state
   
   totalOpening: number = 0;
   totalIn: number = 0;
@@ -46,19 +46,22 @@ export class StockSummaryReportComponent implements OnInit {
   }
 
   loadFilters(): void {
-    this.itemGroupService.getAll().subscribe({
-      next: (data) => this.groups = data,
-      error: (err) => console.error('Error loading groups', err)
-    });
-    
-    this.warehouseService.getAllWarehouses().subscribe({
-      next: (data) => this.warehouses = data,
-      error: (err) => console.error('Error loading warehouses', err)
-    });
-    
-    this.supplierService.getAll().subscribe({
-      next: (data) => this.suppliers = data,
-      error: (err) => console.error('Error loading suppliers', err)
+    this.loading = true;
+    forkJoin({
+      groups: this.itemGroupService.getAll(),
+      warehouses: this.warehouseService.getAllWarehouses(),
+      suppliers: this.supplierService.getAll()
+    }).subscribe({
+      next: ({ groups, warehouses, suppliers }) => {
+        this.groups = groups;
+        this.warehouses = warehouses;
+        this.suppliers = suppliers;
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading filters', err);
+        this.loading = false;
+      }
     });
   }
 

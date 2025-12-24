@@ -10,7 +10,7 @@ import { ExportService } from '../../../../services/export.service';
 })
 export class PrListReportComponent implements OnInit {
   reportData: any[] = [];
-  loading: boolean = false;
+  loading: boolean = true;  // Start with loading state
   selectedStatus: string = '';
   fromDate: string = '';
   toDate: string = '';
@@ -20,7 +20,13 @@ export class PrListReportComponent implements OnInit {
     private exportService: ExportService
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.loadInitialData();
+  }
+
+  loadInitialData(): void {
+    this.loading = true;
+  }
 
   generateReport(): void {
     this.loading = true;

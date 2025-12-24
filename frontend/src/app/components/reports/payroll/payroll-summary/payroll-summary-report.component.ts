@@ -30,7 +30,7 @@ export class PayrollSummaryReportComponent implements OnInit {
   selectedRunId: number | null = null;
   groupBy: 'employee' | 'department' | 'project' = 'employee';
   
-  loading = false;
+  loading = true;  // Start with loading to prevent showing empty data
   
   grandTotals = {
     employeeCount: 0,
@@ -51,15 +51,21 @@ export class PayrollSummaryReportComponent implements OnInit {
   }
 
   loadPayrollRuns(): void {
+    this.loading = true;
     this.payrollService.getPayrollRuns().subscribe({
       next: (data) => {
         this.payrollRuns = data.filter(run => run.status === 'PROCESSED' || run.status === 'APPROVED');
         if (this.payrollRuns.length > 0) {
           this.selectedRunId = this.payrollRuns[0].id!;
           this.loadPayrollRecords();
+        } else {
+          this.loading = false;
         }
       },
-      error: (err) => console.error('Error loading payroll runs:', err)
+      error: (err) => {
+        console.error('Error loading payroll runs:', err);
+        this.loading = false;
+      }
     });
   }
 

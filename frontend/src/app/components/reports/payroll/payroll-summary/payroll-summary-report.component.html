@@ -4,6 +4,16 @@
     <p class="subtitle">View payroll summary grouped by employee, department, or project</p>
   </div>
 
+  <!-- Loading State on Page Load -->
+  <div class="loading-container" *ngIf="loading && payrollRuns.length === 0">
+    <div class="loading-spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Loading payroll data...</p>
+      <span class="loading-subtext">Please wait while we fetch your payroll information</span>
+    </div>
+  </div>
+
+  <ng-container *ngIf="payrollRuns.length > 0 || !loading">
   <div class="filter-section">
     <div class="filter-row">
       <div class="filter-group">
@@ -38,7 +48,7 @@
     </div>
   </div>
 
-  <div class="summary-cards">
+  <div class="summary-cards" *ngIf="!loading">
     <div class="summary-card">
       <div class="card-icon"><i class="fas fa-users"></i></div>
       <div class="card-content">
@@ -67,6 +77,12 @@
         <span class="card-label">Total Net Pay</span>
       </div>
     </div>
+  </div>
+
+  <!-- Loading State While Fetching Records -->
+  <div class="loading-state" *ngIf="loading && payrollRuns.length > 0">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Loading payroll records...</p>
   </div>
 
   <div class="table-container" *ngIf="!loading">
@@ -111,9 +127,5 @@
       <p>No payroll data available for the selected period</p>
     </div>
   </div>
-
-  <div class="loading-state" *ngIf="loading">
-    <i class="fas fa-spinner fa-spin"></i>
-    <p>Loading payroll data...</p>
-  </div>
+  </ng-container>
 </div>
