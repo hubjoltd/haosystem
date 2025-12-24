@@ -15,6 +15,10 @@ export class ExpenseService {
     return this.http.get<ExpenseCategory[]>(`${this.apiUrl}/categories`);
   }
 
+  getCategories(): Observable<ExpenseCategory[]> {
+    return this.getAllCategories();
+  }
+
   getActiveCategories(): Observable<ExpenseCategory[]> {
     return this.http.get<ExpenseCategory[]>(`${this.apiUrl}/categories/active`);
   }

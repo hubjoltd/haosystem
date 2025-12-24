@@ -29,6 +29,8 @@ export class EmployeeSelfServiceComponent implements OnInit {
   documents: EmployeeDocument[] = [];
   documentTypes: DocumentType[] = [];
   assets: EmployeeAsset[] = [];
+  policies: any[] = [];
+  expenseCategories: any[] = [];
   
   currentEmployeeId: number = 0;
   currentEmployee: Employee | null = null;
@@ -43,6 +45,36 @@ export class EmployeeSelfServiceComponent implements OnInit {
     reason: ''
   };
   leaveTypes: any[] = [];
+
+  // Expense Request Modal
+  showExpenseRequestModal = false;
+  newExpenseRequest = {
+    categoryId: 0,
+    amount: 0,
+    description: '',
+    expenseDate: '',
+    receiptNumber: ''
+  };
+
+  // Loan Request Modal
+  showLoanRequestModal = false;
+  newLoanRequest = {
+    loanType: 'PERSONAL',
+    amount: 0,
+    numberOfEmi: 12,
+    reason: ''
+  };
+  loanTypes = ['PERSONAL', 'SALARY_ADVANCE', 'EMERGENCY', 'EDUCATION', 'MEDICAL', 'TRAVEL'];
+
+  // Attendance Summary
+  attendanceSummary = {
+    presentDays: 0,
+    absentDays: 0,
+    lateDays: 0,
+    overtimeHours: 0,
+    totalWorkingHours: 0,
+    currentMonth: ''
+  };
 
   companyName = 'Hao System Corporation';
   companyAddress = '123 Business Park, Suite 500, New York, NY 10001';
@@ -69,9 +101,11 @@ export class EmployeeSelfServiceComponent implements OnInit {
     this.loadLeaveTypes();
     this.loadLoans();
     this.loadExpenses();
+    this.loadExpenseCategories();
     this.loadAttendance();
     this.loadDocuments();
     this.loadAssets();
+    this.loadPolicies();
   }
 
   loadCurrentEmployee(): void {
@@ -202,9 +236,134 @@ export class EmployeeSelfServiceComponent implements OnInit {
 
   loadAttendance(): void {
     this.attendanceService.getByEmployee(this.currentEmployeeId).subscribe({
-      next: (data) => this.attendanceRecords = data,
+      next: (data) => {
+        this.attendanceRecords = data;
+        this.calculateAttendanceSummary();
+      },
       error: (err) => console.error('Error loading attendance:', err)
     });
+  }
+
+  calculateAttendanceSummary(): void {
+    const now = new Date();
+    this.attendanceSummary.currentMonth = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+    
+    const currentMonthRecords = this.attendanceRecords.filter(r => {
+      const recordDate = new Date(r.attendanceDate);
+      return recordDate.getMonth() === now.getMonth() && recordDate.getFullYear() === now.getFullYear();
+    });
+
+    this.attendanceSummary.presentDays = currentMonthRecords.filter(r => 
+      r.status === 'PRESENT' || r.status === 'HALF_DAY' || r.status === 'LATE'
+    ).length;
+    this.attendanceSummary.absentDays = currentMonthRecords.filter(r => r.status === 'ABSENT').length;
+    this.attendanceSummary.lateDays = currentMonthRecords.filter(r => r.status === 'LATE').length;
+    this.attendanceSummary.overtimeHours = currentMonthRecords.reduce((sum, r) => sum + (r.overtimeHours || 0), 0);
+    this.attendanceSummary.totalWorkingHours = currentMonthRecords.reduce((sum, r) => sum + (r.regularHours || 0), 0);
+  }
+
+  loadExpenseCategories(): void {
+    this.expenseService.getCategories().subscribe({
+      next: (data) => this.expenseCategories = data,
+      error: (err) => console.error('Error loading expense categories:', err)
+    });
+  }
+
+  loadPolicies(): void {
+    // Load HR Policies (using a mock for now, can be connected to backend)
+    this.policies = [
+      { id: 1, title: 'Leave Policy', category: 'HR', description: 'Guidelines for leave applications and approvals', updatedAt: '2024-01-15' },
+      { id: 2, title: 'Expense Reimbursement Policy', category: 'Finance', description: 'Rules for expense claims and reimbursements', updatedAt: '2024-02-01' },
+      { id: 3, title: 'Code of Conduct', category: 'HR', description: 'Employee behavior and ethics guidelines', updatedAt: '2024-01-10' },
+      { id: 4, title: 'Remote Work Policy', category: 'HR', description: 'Guidelines for work from home arrangements', updatedAt: '2024-03-01' },
+      { id: 5, title: 'IT Security Policy', category: 'IT', description: 'Information security and data protection guidelines', updatedAt: '2024-02-15' },
+      { id: 6, title: 'Performance Review Policy', category: 'HR', description: 'Annual performance evaluation process', updatedAt: '2024-01-20' }
+    ];
+  }
+
+  // Expense Request Methods
+  openExpenseRequestModal(): void {
+    this.newExpenseRequest = {
+      categoryId: this.expenseCategories.length > 0 ? this.expenseCategories[0].id : 0,
+      amount: 0,
+      description: '',
+      expenseDate: new Date().toISOString().split('T')[0],
+      receiptNumber: ''
+    };
+    this.showExpenseRequestModal = true;
+  }
+
+  closeExpenseRequestModal(): void {
+    this.showExpenseRequestModal = false;
+  }
+
+  submitExpenseRequest(): void {
+    const request = {
+      employeeId: this.currentEmployeeId,
+      categoryId: this.newExpenseRequest.categoryId,
+      totalAmount: this.newExpenseRequest.amount,
+      description: this.newExpenseRequest.description,
+      expenseDate: this.newExpenseRequest.expenseDate,
+      receiptNumber: this.newExpenseRequest.receiptNumber,
+      status: 'PENDING_APPROVAL'
+    };
+
+    this.expenseService.createRequest(request).subscribe({
+      next: () => {
+        this.closeExpenseRequestModal();
+        this.loadExpenses();
+        alert('Expense request submitted successfully!');
+      },
+      error: (err: Error) => {
+        console.error('Error submitting expense request:', err);
+        alert('Error submitting expense request');
+      }
+    });
+  }
+
+  // Loan Request Methods
+  openLoanRequestModal(): void {
+    this.newLoanRequest = {
+      loanType: 'PERSONAL',
+      amount: 0,
+      numberOfEmi: 12,
+      reason: ''
+    };
+    this.showLoanRequestModal = true;
+  }
+
+  closeLoanRequestModal(): void {
+    this.showLoanRequestModal = false;
+  }
+
+  submitLoanRequest(): void {
+    const request = {
+      employeeId: this.currentEmployeeId,
+      loanType: this.newLoanRequest.loanType,
+      loanAmount: this.newLoanRequest.amount,
+      numberOfEmi: this.newLoanRequest.numberOfEmi,
+      reason: this.newLoanRequest.reason,
+      status: 'PENDING'
+    };
+
+    this.loanService.createApplication(request).subscribe({
+      next: () => {
+        this.closeLoanRequestModal();
+        this.loadLoans();
+        alert('Loan application submitted successfully!');
+      },
+      error: (err: Error) => {
+        console.error('Error submitting loan application:', err);
+        alert('Error submitting loan application');
+      }
+    });
+  }
+
+  getEmiAmount(): number {
+    if (this.newLoanRequest.amount > 0 && this.newLoanRequest.numberOfEmi > 0) {
+      return this.newLoanRequest.amount / this.newLoanRequest.numberOfEmi;
+    }
+    return 0;
   }
 
   downloadPaystub(record: PayrollRecord): void {

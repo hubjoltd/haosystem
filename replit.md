@@ -35,6 +35,17 @@ Preferred communication style: Simple, everyday language.
 15. **Compensation & Benefits**: Salary bands, revisions, bonus setup, health insurance, allowances.
 16. **F&F Settlement**: Final and Full Settlement processing for employee separations, automatic calculations, and workflow.
 17. **Payroll Management**: A 5-phase workflow covering Payroll Rules Configuration, Attendance Approval & Timesheets, Payroll Calculation (with exact formulas for salaried/hourly employees), Process Payroll (with selective employee checkbox processing and automated account postings), and Employee Self-Service (ESS).
+18. **Employee Self-Service (ESS) Portal**: Complete Phase 5 implementation with:
+    - Pay Stubs viewing with detailed breakdown (earnings, deductions, taxes, net pay)
+    - Salary slip download/print functionality (PDF generation via jsPDF)
+    - Attendance Summary with monthly cards (Present Days, Absent Days, Late Arrivals, Total Hours, Overtime)
+    - Leave Balance visualization with progress bars
+    - Submit Leave Requests modal with leave type, dates, and reason
+    - Submit Expense Requests modal with category, amount, date, receipt number, and description
+    - Submit Loan/Advance Applications modal with loan type, amount, EMI configuration, and EMI preview calculation
+    - HR Policies & Documents tab showing company policies with category badges
+    - My Documents tab with expiry tracking and verification status
+    - Assigned Assets tab showing company equipment assigned to employee
 
 ### Routing
 -   Root path redirects to login.

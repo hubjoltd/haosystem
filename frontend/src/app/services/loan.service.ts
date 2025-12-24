@@ -50,6 +50,10 @@ export class LoanService {
     return this.http.post<any>(`${this.baseUrl}`, data);
   }
 
+  createApplication(data: any): Observable<any> {
+    return this.applyForLoan(data);
+  }
+
   updateLoan(id: number, data: any): Observable<any> {
     return this.http.put<any>(`${this.baseUrl}/${id}`, data);
   }

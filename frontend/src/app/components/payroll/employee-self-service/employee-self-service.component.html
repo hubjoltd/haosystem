@@ -25,6 +25,9 @@
     <button class="tab" [class.active]="activeTab === 'assets'" (click)="activeTab = 'assets'">
       <i class="fas fa-laptop"></i> Assets
     </button>
+    <button class="tab" [class.active]="activeTab === 'policies'" (click)="activeTab = 'policies'">
+      <i class="fas fa-book"></i> Policies
+    </button>
   </div>
 
   <div class="tab-content" *ngIf="activeTab === 'paystubs'">
@@ -123,6 +126,47 @@
 
   <div class="tab-content" *ngIf="activeTab === 'attendance'">
     <div class="section-header">
+      <h3>Attendance Summary - {{ attendanceSummary.currentMonth }}</h3>
+    </div>
+    <div class="summary-cards">
+      <div class="summary-card present">
+        <div class="card-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="card-info">
+          <span class="label">Present Days</span>
+          <span class="value">{{ attendanceSummary.presentDays }}</span>
+        </div>
+      </div>
+      <div class="summary-card absent">
+        <div class="card-icon"><i class="fas fa-times-circle"></i></div>
+        <div class="card-info">
+          <span class="label">Absent Days</span>
+          <span class="value">{{ attendanceSummary.absentDays }}</span>
+        </div>
+      </div>
+      <div class="summary-card late">
+        <div class="card-icon"><i class="fas fa-clock"></i></div>
+        <div class="card-info">
+          <span class="label">Late Arrivals</span>
+          <span class="value">{{ attendanceSummary.lateDays }}</span>
+        </div>
+      </div>
+      <div class="summary-card hours">
+        <div class="card-icon"><i class="fas fa-business-time"></i></div>
+        <div class="card-info">
+          <span class="label">Total Hours</span>
+          <span class="value">{{ attendanceSummary.totalWorkingHours | number:'1.1-1' }}h</span>
+        </div>
+      </div>
+      <div class="summary-card overtime">
+        <div class="card-icon"><i class="fas fa-hourglass-half"></i></div>
+        <div class="card-info">
+          <span class="label">Overtime Hours</span>
+          <span class="value">{{ attendanceSummary.overtimeHours | number:'1.1-1' }}h</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-header" style="margin-top: 24px;">
       <h3>Attendance Records</h3>
     </div>
     <div class="table-container">
@@ -161,6 +205,9 @@
   <div class="tab-content" *ngIf="activeTab === 'loans'">
     <div class="section-header">
       <h3>My Loans & Advances</h3>
+      <button class="btn btn-primary" (click)="openLoanRequestModal()">
+        <i class="fas fa-plus"></i> Apply for Loan
+      </button>
     </div>
     <div class="cards-grid">
       <div class="card" *ngFor="let loan of loans">
@@ -197,6 +244,9 @@
   <div class="tab-content" *ngIf="activeTab === 'expenses'">
     <div class="section-header">
       <h3>My Expense Requests</h3>
+      <button class="btn btn-primary" (click)="openExpenseRequestModal()">
+        <i class="fas fa-plus"></i> Submit Expense
+      </button>
     </div>
     <div class="table-container">
       <table class="data-table">
@@ -320,6 +370,42 @@
       </div>
     </div>
   </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'policies'">
+    <div class="section-header">
+      <h3>HR Policies & Documents</h3>
+    </div>
+    <div class="info-card" style="margin-bottom: 20px;">
+      <i class="fas fa-info-circle"></i>
+      <p>Review company policies and HR documents. Contact HR for any clarifications or questions.</p>
+    </div>
+    <div class="policies-grid">
+      <div class="policy-card" *ngFor="let policy of policies">
+        <div class="policy-icon">
+          <i class="fas" [ngClass]="{
+            'fa-calendar-alt': policy.category === 'HR',
+            'fa-dollar-sign': policy.category === 'Finance',
+            'fa-shield-alt': policy.category === 'IT'
+          }"></i>
+        </div>
+        <div class="policy-info">
+          <h4>{{ policy.title }}</h4>
+          <p class="description">{{ policy.description }}</p>
+          <div class="policy-meta">
+            <span class="category-badge" [ngClass]="policy.category.toLowerCase()">{{ policy.category }}</span>
+            <span class="updated">Updated: {{ policy.updatedAt | date:'MMM d, yyyy' }}</span>
+          </div>
+        </div>
+        <button class="btn btn-outline-primary btn-sm">
+          <i class="fas fa-eye"></i> View
+        </button>
+      </div>
+      <div class="no-data" *ngIf="policies.length === 0">
+        <i class="fas fa-book"></i>
+        <p>No policies available</p>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="modal-overlay" *ngIf="showPaystubModal" (click)="closePaystubModal()">
@@ -432,6 +518,90 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeLeaveRequestModal()">Cancel</button>
       <button class="btn btn-primary" (click)="submitLeaveRequest()">Submit Request</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showExpenseRequestModal" (click)="closeExpenseRequestModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Submit Expense Request</h3>
+      <button class="close-btn" (click)="closeExpenseRequestModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Expense Category *</label>
+        <select [(ngModel)]="newExpenseRequest.categoryId">
+          <option *ngFor="let cat of expenseCategories" [value]="cat.id">{{ cat.name }}</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Expense Date *</label>
+          <input type="date" [(ngModel)]="newExpenseRequest.expenseDate" required>
+        </div>
+        <div class="form-group">
+          <label>Amount ($) *</label>
+          <input type="number" [(ngModel)]="newExpenseRequest.amount" min="0" step="0.01" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Receipt Number</label>
+        <input type="text" [(ngModel)]="newExpenseRequest.receiptNumber" placeholder="Optional">
+      </div>
+      <div class="form-group">
+        <label>Description *</label>
+        <textarea [(ngModel)]="newExpenseRequest.description" rows="3" placeholder="Describe the expense..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeExpenseRequestModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="submitExpenseRequest()">Submit Expense</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showLoanRequestModal" (click)="closeLoanRequestModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Apply for Loan/Advance</h3>
+      <button class="close-btn" (click)="closeLoanRequestModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Loan Type *</label>
+        <select [(ngModel)]="newLoanRequest.loanType">
+          <option *ngFor="let type of loanTypes" [value]="type">{{ type.replace('_', ' ') }}</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Loan Amount ($) *</label>
+          <input type="number" [(ngModel)]="newLoanRequest.amount" min="0" step="100" required>
+        </div>
+        <div class="form-group">
+          <label>Number of EMIs *</label>
+          <select [(ngModel)]="newLoanRequest.numberOfEmi">
+            <option [value]="3">3 Months</option>
+            <option [value]="6">6 Months</option>
+            <option [value]="12">12 Months</option>
+            <option [value]="18">18 Months</option>
+            <option [value]="24">24 Months</option>
+          </select>
+        </div>
+      </div>
+      <div class="emi-preview" *ngIf="newLoanRequest.amount > 0">
+        <span class="label">Estimated Monthly EMI:</span>
+        <span class="amount">${{ getEmiAmount() | number:'1.2-2' }}</span>
+      </div>
+      <div class="form-group">
+        <label>Reason for Loan *</label>
+        <textarea [(ngModel)]="newLoanRequest.reason" rows="3" placeholder="Explain why you need this loan..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeLoanRequestModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="submitLoanRequest()">Submit Application</button>
     </div>
   </div>
 </div>
