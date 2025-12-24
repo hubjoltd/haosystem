@@ -26,7 +26,9 @@ export class ProcessPayrollComponent implements OnInit {
     totalDeductions: 0,
     totalTaxes: 0,
     totalNetPay: 0,
-    totalEmployerContributions: 0
+    totalEmployerContributions: 0,
+    totalBasePay: 0,
+    totalOvertimePay: 0
   };
 
   constructor(
@@ -79,7 +81,9 @@ export class ProcessPayrollComponent implements OnInit {
       totalDeductions: recordsToSum.reduce((sum, r) => sum + (r.totalDeductions || 0), 0),
       totalTaxes: recordsToSum.reduce((sum, r) => sum + (r.totalTaxes || 0), 0),
       totalNetPay: recordsToSum.reduce((sum, r) => sum + (r.netPay || 0), 0),
-      totalEmployerContributions: recordsToSum.reduce((sum, r) => sum + (r.totalEmployerContributions || 0), 0)
+      totalEmployerContributions: recordsToSum.reduce((sum, r) => sum + (r.totalEmployerContributions || 0), 0),
+      totalBasePay: recordsToSum.reduce((sum, r) => sum + (r.basePay || 0), 0),
+      totalOvertimePay: recordsToSum.reduce((sum, r) => sum + (r.overtimePay || 0), 0)
     };
   }
 

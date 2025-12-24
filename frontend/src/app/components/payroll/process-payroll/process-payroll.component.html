@@ -162,8 +162,8 @@
       <tfoot *ngIf="payrollRecords.length > 0">
         <tr class="totals-row">
           <td colspan="6"><strong>Totals {{ selectedRecordIds.size > 0 ? '(Selected)' : '(All)' }}</strong></td>
-          <td class="number-col"><strong>${{ (selectedRecordIds.size > 0 ? getSelectedRecords() : payrollRecords).reduce((s, r) => s + (r.basePay || 0), 0).toFixed(2) }}</strong></td>
-          <td class="number-col"><strong>${{ (selectedRecordIds.size > 0 ? getSelectedRecords() : payrollRecords).reduce((s, r) => s + (r.overtimePay || 0), 0).toFixed(2) }}</strong></td>
+          <td class="number-col"><strong>${{ summary.totalBasePay.toFixed(2) }}</strong></td>
+          <td class="number-col"><strong>${{ summary.totalOvertimePay.toFixed(2) }}</strong></td>
           <td class="number-col amount"><strong>${{ summary.totalGrossPay.toFixed(2) }}</strong></td>
           <td class="number-col amount deduction"><strong>${{ summary.totalDeductions.toFixed(2) }}</strong></td>
           <td class="number-col"><strong>${{ summary.totalTaxes.toFixed(2) }}</strong></td>

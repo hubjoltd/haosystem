@@ -34,7 +34,7 @@ Preferred communication style: Simple, everyday language.
 14. **Loans & Advances Management**: Loan applications, approval workflow, EMI configuration, auto-deduction, ledger, repayment history.
 15. **Compensation & Benefits**: Salary bands, revisions, bonus setup, health insurance, allowances.
 16. **F&F Settlement**: Final and Full Settlement processing for employee separations, automatic calculations, and workflow.
-17. **Payroll Management**: A 5-phase workflow covering Payroll Rules Configuration, Attendance Approval & Timesheets, Payroll Calculation, Process Payroll, and Employee Self-Service (ESS).
+17. **Payroll Management**: A 5-phase workflow covering Payroll Rules Configuration, Attendance Approval & Timesheets, Payroll Calculation (with exact formulas for salaried/hourly employees), Process Payroll (with selective employee checkbox processing and automated account postings), and Employee Self-Service (ESS).
 
 ### Routing
 -   Root path redirects to login.
