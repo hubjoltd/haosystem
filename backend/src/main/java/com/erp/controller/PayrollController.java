@@ -64,11 +64,18 @@ public class PayrollController {
         Long employeeId = Long.valueOf(data.get("employeeId").toString());
         employeeRepository.findById(employeeId).ifPresent(timesheet::setEmployee);
         
-        timesheet.setTimesheetNumber((String) data.get("timesheetNumber"));
+        timesheet.setTimesheetNumber(generateTimesheetNumber());
         timesheet.setPeriodStartDate(LocalDate.parse(data.get("periodStartDate").toString()));
         timesheet.setPeriodEndDate(LocalDate.parse(data.get("periodEndDate").toString()));
         
         return ResponseEntity.ok(timesheetRepository.save(timesheet));
+    }
+
+    private String generateTimesheetNumber() {
+        String prefix = "TS";
+        String year = String.valueOf(LocalDate.now().getYear());
+        long count = timesheetRepository.count() + 1;
+        return prefix + "-" + year + "-" + String.format("%05d", count);
     }
 
     @PostMapping("/timesheets/generate")
@@ -131,13 +138,20 @@ public class PayrollController {
     @PostMapping("/runs")
     public ResponseEntity<PayrollRun> createPayrollRun(@RequestBody Map<String, Object> data) {
         PayrollRun run = new PayrollRun();
-        run.setPayrollRunNumber((String) data.get("payrollRunNumber"));
+        run.setPayrollRunNumber(generatePayrollRunNumber());
         run.setDescription((String) data.get("description"));
         run.setPeriodStartDate(LocalDate.parse(data.get("periodStartDate").toString()));
         run.setPeriodEndDate(LocalDate.parse(data.get("periodEndDate").toString()));
         run.setPayDate(LocalDate.parse(data.get("payDate").toString()));
         
         return ResponseEntity.ok(payrollRunRepository.save(run));
+    }
+
+    private String generatePayrollRunNumber() {
+        String prefix = "PAY";
+        String year = String.valueOf(LocalDate.now().getYear());
+        long count = payrollRunRepository.count() + 1;
+        return prefix + "-" + year + "-" + String.format("%05d", count);
     }
 
     @PostMapping("/runs/{id}/calculate")
