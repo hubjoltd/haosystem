@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceService, AttendanceRecord, AttendanceRule, ProjectTimeEntry } from '../../../services/attendance.service';
 import { EmployeeService, Employee } from '../../../services/employee.service';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-attendance-management',
@@ -35,6 +36,10 @@ export class AttendanceManagementComponent implements OnInit {
   manualEntry: AttendanceRecord = this.getEmptyManualEntry();
   bulkEntries: any[] = [];
   bulkUploadText = '';
+  bulkUploadMode: 'file' | 'paste' = 'file';
+  selectedFileName = '';
+  selectedFile: File | null = null;
+  isDragOver = false;
   
   newRule: AttendanceRule = this.getEmptyRule();
   editingRule: AttendanceRule | null = null;
@@ -171,11 +176,220 @@ export class AttendanceManagementComponent implements OnInit {
   openBulkUploadModal(): void {
     this.bulkUploadText = '';
     this.bulkEntries = [];
+    this.selectedFile = null;
+    this.selectedFileName = '';
+    this.bulkUploadMode = 'file';
     this.showBulkUploadModal = true;
   }
 
   closeBulkUploadModal(): void {
     this.showBulkUploadModal = false;
+    this.clearSelectedFile();
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+  }
+
+  onFileDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+    
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.handleFileSelection(files[0]);
+    }
+  }
+
+  onFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.handleFileSelection(input.files[0]);
+    }
+  }
+
+  handleFileSelection(file: File): void {
+    const validTypes = ['.xlsx', '.xls', '.csv'];
+    const fileName = file.name.toLowerCase();
+    
+    if (!validTypes.some(ext => fileName.endsWith(ext))) {
+      this.showMessage('Please select a valid Excel or CSV file', 'error');
+      return;
+    }
+
+    this.selectedFile = file;
+    this.selectedFileName = file.name;
+  }
+
+  clearSelectedFile(): void {
+    this.selectedFile = null;
+    this.selectedFileName = '';
+    this.bulkEntries = [];
+  }
+
+  parseFileUpload(): void {
+    if (!this.selectedFile) {
+      this.showMessage('Please select a file first', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    const fileName = this.selectedFile.name.toLowerCase();
+
+    if (fileName.endsWith('.csv')) {
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        this.parseCSVContent(content);
+      };
+      reader.readAsText(this.selectedFile);
+    } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+      reader.onload = (e) => {
+        const content = e.target?.result as ArrayBuffer;
+        this.parseExcelContent(content);
+      };
+      reader.readAsArrayBuffer(this.selectedFile);
+    }
+  }
+
+  parseCSVContent(content: string): void {
+    const lines = content.trim().split('\n');
+    this.bulkEntries = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(',').map(c => c.trim().replace(/"/g, ''));
+      if (cols.length >= 4 && cols[0]) {
+        this.bulkEntries.push({
+          employeeCode: cols[0],
+          date: cols[1],
+          clockIn: cols[2],
+          clockOut: cols[3],
+          status: cols[4] || 'PRESENT',
+          remarks: cols[5] || ''
+        });
+      }
+    }
+
+    if (this.bulkEntries.length > 0) {
+      this.showMessage(`Parsed ${this.bulkEntries.length} entries from file`, 'success');
+    } else {
+      this.showMessage('No valid entries found in file', 'error');
+    }
+  }
+
+  parseExcelContent(content: ArrayBuffer): void {
+    try {
+      const workbook = XLSX.read(content, { type: 'array' });
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+      
+      const jsonData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+      
+      if (jsonData.length < 2) {
+        this.showMessage('Excel file is empty or has no data rows', 'error');
+        return;
+      }
+
+      this.bulkEntries = [];
+      const headers = jsonData[0].map((h: any) => String(h).toLowerCase().replace(/\s+/g, ''));
+      
+      const empCodeIdx = headers.findIndex((h: string) => h.includes('employee') || h.includes('empcode') || h.includes('code'));
+      const dateIdx = headers.findIndex((h: string) => h.includes('date'));
+      const clockInIdx = headers.findIndex((h: string) => h.includes('clockin') || h.includes('in') || h.includes('start'));
+      const clockOutIdx = headers.findIndex((h: string) => h.includes('clockout') || h.includes('out') || h.includes('end'));
+      const statusIdx = headers.findIndex((h: string) => h.includes('status'));
+      const remarksIdx = headers.findIndex((h: string) => h.includes('remark') || h.includes('note'));
+
+      for (let i = 1; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        if (!row || row.length < 2) continue;
+
+        const employeeCode = empCodeIdx >= 0 ? String(row[empCodeIdx] || '').trim() : String(row[0] || '').trim();
+        let dateValue = dateIdx >= 0 ? row[dateIdx] : row[1];
+        const clockIn = clockInIdx >= 0 ? this.formatExcelTime(row[clockInIdx]) : this.formatExcelTime(row[2]);
+        const clockOut = clockOutIdx >= 0 ? this.formatExcelTime(row[clockOutIdx]) : this.formatExcelTime(row[3]);
+        const status = statusIdx >= 0 ? String(row[statusIdx] || 'PRESENT').toUpperCase().trim() : 'PRESENT';
+        const remarks = remarksIdx >= 0 ? String(row[remarksIdx] || '').trim() : '';
+
+        if (!employeeCode) continue;
+
+        const formattedDate = this.formatExcelDate(dateValue);
+        if (!formattedDate) continue;
+
+        this.bulkEntries.push({
+          employeeCode,
+          date: formattedDate,
+          clockIn: clockIn || '09:00',
+          clockOut: clockOut || '18:00',
+          status: ['PRESENT', 'ABSENT', 'HALF_DAY', 'ON_LEAVE', 'HOLIDAY', 'WEEKEND'].includes(status) ? status : 'PRESENT',
+          remarks
+        });
+      }
+
+      if (this.bulkEntries.length > 0) {
+        this.showMessage(`Successfully parsed ${this.bulkEntries.length} entries from Excel file`, 'success');
+      } else {
+        this.showMessage('No valid attendance entries found in Excel file', 'error');
+      }
+    } catch (error) {
+      console.error('Error parsing Excel file:', error);
+      this.showMessage('Error parsing Excel file. Please check the file format.', 'error');
+    }
+  }
+
+  formatExcelDate(value: any): string | null {
+    if (!value) return null;
+    
+    if (typeof value === 'number') {
+      const date = XLSX.SSF.parse_date_code(value);
+      if (date) {
+        const year = date.y;
+        const month = String(date.m).padStart(2, '0');
+        const day = String(date.d).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+    }
+    
+    const strValue = String(value).trim();
+    
+    const isoMatch = strValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoMatch) return strValue.substring(0, 10);
+    
+    const usMatch = strValue.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (usMatch) {
+      const month = String(usMatch[1]).padStart(2, '0');
+      const day = String(usMatch[2]).padStart(2, '0');
+      return `${usMatch[3]}-${month}-${day}`;
+    }
+    
+    return null;
+  }
+
+  formatExcelTime(value: any): string {
+    if (!value) return '';
+    
+    if (typeof value === 'number') {
+      const totalMinutes = Math.round(value * 24 * 60);
+      const hours = Math.floor(totalMinutes / 60) % 24;
+      const minutes = totalMinutes % 60;
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    }
+    
+    const strValue = String(value).trim();
+    const timeMatch = strValue.match(/(\d{1,2}):(\d{2})/);
+    if (timeMatch) {
+      return `${String(timeMatch[1]).padStart(2, '0')}:${timeMatch[2]}`;
+    }
+    
+    return '';
   }
 
   parseBulkUpload(): void {

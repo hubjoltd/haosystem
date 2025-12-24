@@ -371,20 +371,61 @@
       <button class="close-btn" (click)="closeBulkUploadModal()">&times;</button>
     </div>
     <div class="modal-body">
-      <div class="upload-instructions">
-        <h4>CSV Format Instructions:</h4>
-        <p>Paste CSV data with columns: EmployeeCode, Date, ClockIn, ClockOut, Status, Remarks</p>
-        <code>EMP001,2024-01-15,09:00,18:00,PRESENT,Regular day</code>
+      <div class="upload-tabs">
+        <button [class.active]="bulkUploadMode === 'file'" (click)="bulkUploadMode = 'file'">
+          <i class="fas fa-file-upload"></i> Upload File
+        </button>
+        <button [class.active]="bulkUploadMode === 'paste'" (click)="bulkUploadMode = 'paste'">
+          <i class="fas fa-paste"></i> Paste Data
+        </button>
       </div>
-      <div class="form-group">
-        <label>Paste CSV Data</label>
-        <textarea [(ngModel)]="bulkUploadText" rows="10" placeholder="EmployeeCode,Date,ClockIn,ClockOut,Status,Remarks
+
+      <div class="file-upload-section" *ngIf="bulkUploadMode === 'file'">
+        <div class="upload-instructions">
+          <h4>Upload Excel or CSV File</h4>
+          <p>Columns: EmployeeCode, Date (YYYY-MM-DD), ClockIn, ClockOut, Status, Remarks</p>
+        </div>
+        <div class="file-drop-zone" 
+             (dragover)="onDragOver($event)" 
+             (dragleave)="onDragLeave($event)" 
+             (drop)="onFileDrop($event)"
+             [class.dragover]="isDragOver">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Drag and drop your Excel/CSV file here</p>
+          <span>or</span>
+          <label class="file-select-btn">
+            <input type="file" accept=".xlsx,.xls,.csv" (change)="onFileSelect($event)" hidden />
+            Browse Files
+          </label>
+          <p class="file-types">Supported: .xlsx, .xls, .csv</p>
+        </div>
+        <div class="selected-file" *ngIf="selectedFileName">
+          <i class="fas fa-file-excel"></i>
+          <span>{{ selectedFileName }}</span>
+          <button class="btn-icon" (click)="clearSelectedFile()"><i class="fas fa-times"></i></button>
+        </div>
+        <button class="btn-secondary" (click)="parseFileUpload()" [disabled]="!selectedFileName">
+          <i class="fas fa-check"></i> Parse File
+        </button>
+      </div>
+
+      <div class="paste-section" *ngIf="bulkUploadMode === 'paste'">
+        <div class="upload-instructions">
+          <h4>Paste CSV Data</h4>
+          <p>Columns: EmployeeCode, Date, ClockIn, ClockOut, Status, Remarks</p>
+          <code>EMP001,2024-01-15,09:00,18:00,PRESENT,Regular day</code>
+        </div>
+        <div class="form-group">
+          <label>Paste CSV Data</label>
+          <textarea [(ngModel)]="bulkUploadText" rows="10" placeholder="EmployeeCode,Date,ClockIn,ClockOut,Status,Remarks
 EMP001,2024-01-15,09:00,18:00,PRESENT,
 EMP002,2024-01-15,09:15,17:45,PRESENT,Late arrival"></textarea>
+        </div>
+        <button class="btn-secondary" (click)="parseBulkUpload()">
+          <i class="fas fa-check"></i> Parse Data
+        </button>
       </div>
-      <button class="btn-secondary" (click)="parseBulkUpload()">
-        <i class="fas fa-check"></i> Parse Data
-      </button>
+
       <div class="parsed-preview" *ngIf="bulkEntries.length > 0">
         <h4>Preview ({{ bulkEntries.length }} entries)</h4>
         <table class="preview-table">
