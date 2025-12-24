@@ -114,6 +114,7 @@
           <th class="number-col">OT Hrs</th>
           <th class="number-col">Base Pay</th>
           <th class="number-col">OT Pay</th>
+          <th class="number-col">Reimburse</th>
           <th class="number-col">Gross Pay</th>
           <th class="number-col">Deductions</th>
           <th class="number-col">Taxes</th>
@@ -140,6 +141,7 @@
           <td class="number-col">{{ record.overtimeHours?.toFixed(2) || '0.00' }}</td>
           <td class="number-col">${{ record.basePay?.toFixed(2) || '0.00' }}</td>
           <td class="number-col">${{ record.overtimePay?.toFixed(2) || '0.00' }}</td>
+          <td class="number-col">${{ record.reimbursements?.toFixed(2) || '0.00' }}</td>
           <td class="number-col amount">${{ record.grossPay?.toFixed(2) || '0.00' }}</td>
           <td class="number-col amount deduction">${{ record.totalDeductions?.toFixed(2) || '0.00' }}</td>
           <td class="number-col">${{ record.totalTaxes?.toFixed(2) || '0.00' }}</td>
@@ -156,7 +158,7 @@
           </td>
         </tr>
         <tr *ngIf="payrollRecords.length === 0">
-          <td colspan="14" class="no-data">No payroll records found. Calculate payroll first.</td>
+          <td colspan="15" class="no-data">No payroll records found. Calculate payroll first.</td>
         </tr>
       </tbody>
       <tfoot *ngIf="payrollRecords.length > 0">
@@ -164,6 +166,7 @@
           <td colspan="6"><strong>Totals {{ selectedRecordIds.size > 0 ? '(Selected)' : '(All)' }}</strong></td>
           <td class="number-col"><strong>${{ summary.totalBasePay.toFixed(2) }}</strong></td>
           <td class="number-col"><strong>${{ summary.totalOvertimePay.toFixed(2) }}</strong></td>
+          <td class="number-col"><strong>${{ summary.totalReimbursements.toFixed(2) }}</strong></td>
           <td class="number-col amount"><strong>${{ summary.totalGrossPay.toFixed(2) }}</strong></td>
           <td class="number-col amount deduction"><strong>${{ summary.totalDeductions.toFixed(2) }}</strong></td>
           <td class="number-col"><strong>${{ summary.totalTaxes.toFixed(2) }}</strong></td>
