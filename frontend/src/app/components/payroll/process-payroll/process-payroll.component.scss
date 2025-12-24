@@ -96,6 +96,13 @@
       .label { color: rgba(255,255,255,0.8); }
       .value { color: white; }
     }
+
+    &.employer {
+      background: #f3e5f5;
+      
+      .label { color: #7b1fa2; }
+      .value { color: #6a1b9a; }
+    }
   }
 }
 

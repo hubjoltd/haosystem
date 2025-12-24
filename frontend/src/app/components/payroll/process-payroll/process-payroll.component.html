@@ -41,9 +41,17 @@
       <span class="label">Deductions</span>
       <span class="value amount deduction">${{ summary.totalDeductions.toFixed(2) }}</span>
     </div>
+    <div class="summary-card">
+      <span class="label">Taxes</span>
+      <span class="value amount">${{ summary.totalTaxes.toFixed(2) }}</span>
+    </div>
     <div class="summary-card highlight">
       <span class="label">Net Pay</span>
       <span class="value amount net">${{ summary.totalNetPay.toFixed(2) }}</span>
+    </div>
+    <div class="summary-card employer">
+      <span class="label">Employer Contributions</span>
+      <span class="value amount">${{ summary.totalEmployerContributions.toFixed(2) }}</span>
     </div>
   </div>
 
