@@ -30,7 +30,8 @@ export class PayrollSummaryReportComponent implements OnInit {
   selectedRunId: number | null = null;
   groupBy: 'employee' | 'department' | 'project' = 'employee';
   
-  loading = true;  // Start with loading to prevent showing empty data
+  loading = false;  // Only show loading on first load
+  isFirstLoad = true;  // Track if this is the first time loading
   
   grandTotals = {
     employeeCount: 0,
@@ -51,7 +52,10 @@ export class PayrollSummaryReportComponent implements OnInit {
   }
 
   loadPayrollRuns(): void {
-    this.loading = true;
+    if (this.isFirstLoad) {
+      this.loading = true;
+    }
+    
     this.payrollService.getPayrollRuns().subscribe({
       next: (data) => {
         this.payrollRuns = data.filter(run => run.status === 'PROCESSED' || run.status === 'APPROVED');
@@ -60,11 +64,13 @@ export class PayrollSummaryReportComponent implements OnInit {
           this.loadPayrollRecords();
         } else {
           this.loading = false;
+          this.isFirstLoad = false;
         }
       },
       error: (err) => {
         console.error('Error loading payroll runs:', err);
         this.loading = false;
+        this.isFirstLoad = false;
       }
     });
   }
@@ -72,16 +78,21 @@ export class PayrollSummaryReportComponent implements OnInit {
   loadPayrollRecords(): void {
     if (!this.selectedRunId) return;
     
-    this.loading = true;
+    if (this.isFirstLoad) {
+      this.loading = true;
+    }
+    
     this.payrollService.getPayrollRecordsByRun(this.selectedRunId).subscribe({
       next: (data) => {
         this.payrollRecords = data;
         this.generateSummary();
         this.loading = false;
+        this.isFirstLoad = false;
       },
       error: (err) => {
         console.error('Error loading payroll records:', err);
         this.loading = false;
+        this.isFirstLoad = false;
       }
     });
   }

@@ -22,7 +22,9 @@ export class PayrollRegisterReportComponent implements OnInit {
   searchTerm = '';
   
   years: number[] = [];
-  loading = true;  // Start with loading state when page loads
+  loading = false;  // Only show loading on first load
+  isFirstLoad = true;  // Track if this is the first time loading
+  refreshing = false;  // Track background refresh
   
   // Modal properties
   showDetailsModal = false;
@@ -51,7 +53,13 @@ export class PayrollRegisterReportComponent implements OnInit {
   }
 
   loadPayrollRuns(): void {
-    this.loading = true;
+    // Only show loading on first load
+    if (this.isFirstLoad) {
+      this.loading = true;
+    } else {
+      this.refreshing = true;
+    }
+    
     this.payrollService.getPayrollRuns().subscribe({
       next: (data) => {
         this.payrollRuns = data.filter(run => run.status === 'PROCESSED' || run.status === 'APPROVED');
@@ -62,11 +70,15 @@ export class PayrollRegisterReportComponent implements OnInit {
           this.loadAnnualData();
         } else {
           this.loading = false;
+          this.refreshing = false;
+          this.isFirstLoad = false;
         }
       },
       error: (err) => {
         console.error('Error loading payroll runs:', err);
         this.loading = false;
+        this.refreshing = false;
+        this.isFirstLoad = false;
       }
     });
   }
@@ -74,16 +86,24 @@ export class PayrollRegisterReportComponent implements OnInit {
   loadPayrollRecords(): void {
     if (!this.selectedRunId) return;
     
-    this.loading = true;
+    // Don't show loading if we have cached data
+    if (this.isFirstLoad) {
+      this.loading = true;
+    }
+    
     this.payrollService.getPayrollRecordsByRun(this.selectedRunId).subscribe({
       next: (data) => {
         this.payrollRecords = data;
         this.applyFilters();
         this.loading = false;
+        this.refreshing = false;
+        this.isFirstLoad = false;
       },
       error: (err) => {
         console.error('Error loading payroll records:', err);
         this.loading = false;
+        this.refreshing = false;
+        this.isFirstLoad = false;
       }
     });
   }
@@ -98,10 +118,15 @@ export class PayrollRegisterReportComponent implements OnInit {
       this.payrollRecords = [];
       this.filteredRecords = [];
       this.calculateTotals();
+      this.loading = false;
+      this.refreshing = false;
+      this.isFirstLoad = false;
       return;
     }
 
-    this.loading = true;
+    if (this.isFirstLoad) {
+      this.loading = true;
+    }
     const allRecords: PayrollRecord[] = [];
     let completedRequests = 0;
 
@@ -115,6 +140,8 @@ export class PayrollRegisterReportComponent implements OnInit {
             this.payrollRecords = this.aggregateAnnualRecords(allRecords);
             this.applyFilters();
             this.loading = false;
+            this.refreshing = false;
+            this.isFirstLoad = false;
           }
         },
         error: (err) => {
@@ -124,6 +151,8 @@ export class PayrollRegisterReportComponent implements OnInit {
             this.payrollRecords = this.aggregateAnnualRecords(allRecords);
             this.applyFilters();
             this.loading = false;
+            this.refreshing = false;
+            this.isFirstLoad = false;
           }
         }
       });
