@@ -48,6 +48,11 @@ public class LeaveType {
 
     private String colorCode;
 
+    @Column(length = 20)
+    private String timeUnit; // DAYS, HOURS - for hourly-based leave types
+
+    private Boolean allowHourlyLeave; // Whether this leave type allows hourly requests
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -128,4 +133,10 @@ public class LeaveType {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getTimeUnit() { return timeUnit; }
+    public void setTimeUnit(String timeUnit) { this.timeUnit = timeUnit; }
+
+    public Boolean getAllowHourlyLeave() { return allowHourlyLeave; }
+    public void setAllowHourlyLeave(Boolean allowHourlyLeave) { this.allowHourlyLeave = allowHourlyLeave; }
 }

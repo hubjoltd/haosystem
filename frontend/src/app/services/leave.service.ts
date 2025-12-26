@@ -22,6 +22,8 @@ export interface LeaveType {
   documentRequired?: boolean;
   applicableGender?: string;
   colorCode?: string;
+  timeUnit?: string; // DAYS, HOURS - for hourly-based leave types
+  allowHourlyLeave?: boolean; // Whether this leave type allows hourly requests
 }
 
 export interface LeaveRequest {
@@ -41,6 +43,10 @@ export interface LeaveRequest {
   approverRemarks?: string;
   attachmentUrl?: string;
   emergencyContact?: string;
+  startTime?: string; // For hourly leave requests (HH:mm format)
+  endTime?: string; // For hourly leave requests (HH:mm format)
+  totalHours?: number; // Hours requested for hourly leave
+  isHourlyLeave?: boolean; // Whether this is an hourly leave request
 }
 
 export interface LeaveBalance {

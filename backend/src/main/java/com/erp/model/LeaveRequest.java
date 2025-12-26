@@ -3,6 +3,7 @@ package com.erp.model;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.math.BigDecimal;
 
 @Entity
@@ -31,6 +32,12 @@ public class LeaveRequest {
 
     @Column(length = 20)
     private String dayType; // FULL_DAY, HALF_DAY_AM, HALF_DAY_PM
+
+    // Hourly leave support
+    private LocalTime startTime; // For hourly leave requests
+    private LocalTime endTime; // For hourly leave requests
+    private BigDecimal totalHours; // Hours requested for hourly leave
+    private Boolean isHourlyLeave; // Whether this is an hourly leave request
 
     @Column(length = 1000)
     private String reason;
@@ -121,4 +128,16 @@ public class LeaveRequest {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public LocalTime getStartTime() { return startTime; }
+    public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
+
+    public LocalTime getEndTime() { return endTime; }
+    public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
+
+    public BigDecimal getTotalHours() { return totalHours; }
+    public void setTotalHours(BigDecimal totalHours) { this.totalHours = totalHours; }
+
+    public Boolean getIsHourlyLeave() { return isHourlyLeave; }
+    public void setIsHourlyLeave(Boolean isHourlyLeave) { this.isHourlyLeave = isHourlyLeave; }
 }

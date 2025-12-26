@@ -1,9 +1,14 @@
 <div class="employee-list-container">
   <div class="page-header">
     <h2>Employee Master</h2>
-    <button class="btn-primary" (click)="addEmployee()">
-      <i class="fas fa-plus"></i> Add Employee
-    </button>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="exportEmployees()">
+        <i class="fas fa-download"></i> Export
+      </button>
+      <button class="btn-primary" (click)="addEmployee()">
+        <i class="fas fa-plus"></i> Add Employee
+      </button>
+    </div>
   </div>
 
   <div class="filters-section">
@@ -36,13 +41,17 @@
   </div>
 
   <div class="stats-bar">
-    <div class="stat-item">
-      <span class="stat-number">{{ filteredEmployees.length }}</span>
+    <div class="stat-item stat-total">
+      <span class="stat-number">{{ employees.length }}</span>
       <span class="stat-label">Total Employees</span>
     </div>
-    <div class="stat-item">
+    <div class="stat-item stat-active">
       <span class="stat-number">{{ activeCount }}</span>
       <span class="stat-label">Active</span>
+    </div>
+    <div class="stat-item stat-inactive">
+      <span class="stat-number">{{ inactiveCount }}</span>
+      <span class="stat-label">Inactive</span>
     </div>
   </div>
 

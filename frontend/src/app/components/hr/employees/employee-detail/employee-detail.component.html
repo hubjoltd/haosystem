@@ -245,16 +245,16 @@
       <h3>Emergency Contact</h3>
       <div class="form-grid">
         <div class="form-group">
-          <label>Contact Name</label>
-          <input type="text" [(ngModel)]="employee.emergencyContactName" [disabled]="!isEditMode" />
+          <label>Contact Name *</label>
+          <input type="text" [(ngModel)]="employee.emergencyContactName" [disabled]="!isEditMode" required />
         </div>
         <div class="form-group">
-          <label>Contact Phone</label>
-          <input type="text" [(ngModel)]="employee.emergencyContactPhone" [disabled]="!isEditMode" />
+          <label>Contact Phone *</label>
+          <input type="text" [(ngModel)]="employee.emergencyContactPhone" [disabled]="!isEditMode" required />
         </div>
         <div class="form-group">
-          <label>Relationship</label>
-          <input type="text" [(ngModel)]="employee.emergencyContactRelation" [disabled]="!isEditMode" />
+          <label>Relationship *</label>
+          <input type="text" [(ngModel)]="employee.emergencyContactRelation" [disabled]="!isEditMode" required />
         </div>
       </div>
     </div>
@@ -395,10 +395,9 @@
       <thead>
         <tr>
           <th>Bank Name</th>
-          <th>Branch</th>
           <th>Account Number</th>
           <th>Account Type</th>
-          <th>IFSC Code</th>
+          <th>Routing Number</th>
           <th>Primary</th>
           <th>Actions</th>
         </tr>
@@ -406,10 +405,9 @@
       <tbody>
         <tr *ngFor="let b of bankDetails">
           <td>{{ b.bankName }}</td>
-          <td>{{ b.branchName }}</td>
           <td>{{ b.accountNumber }}</td>
-          <td>{{ b.accountType }}</td>
-          <td>{{ b.ifscCode }}</td>
+          <td>{{ b.accountType === 'CHECKING' ? 'Checking Account' : (b.accountType === 'SAVINGS' ? 'Savings' : b.accountType) }}</td>
+          <td>{{ b.routingNumber || '-' }}</td>
           <td><span class="badge" [class.badge-primary]="b.isPrimary">{{ b.isPrimary ? 'Yes' : 'No' }}</span></td>
           <td>
             <button class="btn-icon" (click)="openBankModal(b)"><i class="fas fa-edit"></i></button>
@@ -447,7 +445,7 @@
           <td>{{ s.basicSalary | number }}</td>
           <td>{{ s.hraAmount | number }}</td>
           <td>{{ s.grossSalary | number }}</td>
-          <td>{{ (s.tdsDeduction || 0) + (s.otherDeductions || 0) | number }}</td>
+          <td>{{ (s.pfDeduction || 0) + (s.otherDeductions || 0) | number }}</td>
           <td>{{ s.netSalary | number }}</td>
           <td>{{ s.ctcAnnual | number }}</td>
           <td><span class="badge badge-primary" *ngIf="s.isCurrent">Current</span></td>
@@ -809,29 +807,16 @@
         <input type="text" [(ngModel)]="editingBank.bankName" />
       </div>
       <div class="form-group">
-        <label>Branch Name</label>
-        <input type="text" [(ngModel)]="editingBank.branchName" />
-      </div>
-      <div class="form-group">
         <label>Account Number *</label>
         <input type="text" [(ngModel)]="editingBank.accountNumber" />
       </div>
       <div class="form-group">
-        <label>Account Type</label>
+        <label>Account Type *</label>
         <select [(ngModel)]="editingBank.accountType">
           <option value="">Select</option>
           <option value="SAVINGS">Savings</option>
-          <option value="CURRENT">Current</option>
-          <option value="SALARY">Salary</option>
+          <option value="CHECKING">Checking Account</option>
         </select>
-      </div>
-      <div class="form-group">
-        <label>IFSC Code</label>
-        <input type="text" [(ngModel)]="editingBank.ifscCode" />
-      </div>
-      <div class="form-group">
-        <label>SWIFT Code</label>
-        <input type="text" [(ngModel)]="editingBank.swiftCode" />
       </div>
       <div class="form-group">
         <label>Routing Number</label>
@@ -900,16 +885,8 @@
           <input type="number" [(ngModel)]="editingSalary.otherAllowances" />
         </div>
         <div class="form-group">
-          <label>ESI Deduction</label>
-          <input type="number" [(ngModel)]="editingSalary.esiDeduction" />
-        </div>
-        <div class="form-group">
-          <label>Professional Tax</label>
-          <input type="number" [(ngModel)]="editingSalary.professionalTax" />
-        </div>
-        <div class="form-group">
-          <label>TDS Deduction</label>
-          <input type="number" [(ngModel)]="editingSalary.tdsDeduction" />
+          <label>PF Deduction</label>
+          <input type="number" [(ngModel)]="editingSalary.pfDeduction" />
         </div>
         <div class="form-group">
           <label>Other Deductions</label>

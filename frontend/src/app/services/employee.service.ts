@@ -94,9 +94,6 @@ export interface EmployeeSalary {
   specialAllowance?: number;
   otherAllowances?: number;
   pfDeduction?: number;
-  esiDeduction?: number;
-  professionalTax?: number;
-  tdsDeduction?: number;
   otherDeductions?: number;
   grossSalary?: number;
   netSalary?: number;

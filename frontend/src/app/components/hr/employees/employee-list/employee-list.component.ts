@@ -148,6 +148,35 @@ export class EmployeeListComponent implements OnInit {
   }
 
   get activeCount(): number {
-    return this.filteredEmployees.filter(emp => emp.active).length;
+    return this.employees.filter(emp => emp.active).length;
+  }
+
+  get inactiveCount(): number {
+    return this.employees.filter(emp => !emp.active).length;
+  }
+
+  exportEmployees(): void {
+    const headers = ['Employee Code', 'First Name', 'Last Name', 'Email', 'Phone', 'Department', 'Designation', 'Status', 'Joining Date'];
+    const rows = this.filteredEmployees.map(emp => [
+      emp.employeeCode,
+      emp.firstName,
+      emp.lastName,
+      emp.email,
+      emp.phone || '',
+      emp.department?.name || '',
+      emp.designation?.title || '',
+      emp.active ? 'Active' : 'Inactive',
+      emp.joiningDate || ''
+    ]);
+    
+    const csvContent = [headers.join(','), ...rows.map(row => row.map(cell => `"${cell}"`).join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `employees_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }

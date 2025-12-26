@@ -119,11 +119,42 @@ public class LeaveController {
         request.setReason((String) requestData.get("reason"));
         request.setDayType((String) requestData.getOrDefault("dayType", "FULL_DAY"));
 
-        long daysBetween = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1;
-        long holidays = holidayRepository.countHolidaysBetweenDates(request.getStartDate(), request.getEndDate());
-        BigDecimal totalDays = BigDecimal.valueOf(daysBetween - holidays);
-        if ("HALF_DAY_AM".equals(request.getDayType()) || "HALF_DAY_PM".equals(request.getDayType())) {
-            totalDays = totalDays.subtract(BigDecimal.valueOf(0.5));
+        Boolean isHourlyLeave = requestData.get("isHourlyLeave") != null && 
+            Boolean.parseBoolean(requestData.get("isHourlyLeave").toString());
+        request.setIsHourlyLeave(isHourlyLeave);
+
+        BigDecimal totalDays;
+        
+        if (isHourlyLeave) {
+            if (!Boolean.TRUE.equals(leaveType.getAllowHourlyLeave())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "This leave type does not allow hourly leave"));
+            }
+            
+            String startTime = (String) requestData.get("startTime");
+            String endTime = (String) requestData.get("endTime");
+            
+            if (startTime == null || endTime == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Start time and end time are required for hourly leave"));
+            }
+            
+            request.setStartTime(java.time.LocalTime.parse(startTime));
+            request.setEndTime(java.time.LocalTime.parse(endTime));
+            
+            long minutes = java.time.Duration.between(request.getStartTime(), request.getEndTime()).toMinutes();
+            if (minutes <= 0) {
+                return ResponseEntity.badRequest().body(Map.of("error", "End time must be after start time"));
+            }
+            BigDecimal totalHours = BigDecimal.valueOf(minutes).divide(BigDecimal.valueOf(60), 2, java.math.RoundingMode.HALF_UP);
+            request.setTotalHours(totalHours);
+            
+            totalDays = totalHours.divide(BigDecimal.valueOf(8), 2, java.math.RoundingMode.HALF_UP);
+        } else {
+            long daysBetween = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1;
+            long holidays = holidayRepository.countHolidaysBetweenDates(request.getStartDate(), request.getEndDate());
+            totalDays = BigDecimal.valueOf(daysBetween - holidays);
+            if ("HALF_DAY_AM".equals(request.getDayType()) || "HALF_DAY_PM".equals(request.getDayType())) {
+                totalDays = totalDays.subtract(BigDecimal.valueOf(0.5));
+            }
         }
         request.setTotalDays(totalDays);
 

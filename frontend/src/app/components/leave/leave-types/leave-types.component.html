@@ -51,6 +51,10 @@
             <span class="label">Paid Leave</span>
             <span class="value">{{ lt.isPaid ? 'Yes' : 'No' }}</span>
           </div>
+          <div class="info-item">
+            <span class="label">Time Unit</span>
+            <span class="value">{{ lt.timeUnit || 'Days' }}</span>
+          </div>
         </div>
         <div class="badges">
           <span class="badge" [class.active]="lt.isActive" [class.inactive]="!lt.isActive">
@@ -58,6 +62,7 @@
           </span>
           <span class="badge approval" *ngIf="lt.requiresApproval">Requires Approval</span>
           <span class="badge document" *ngIf="lt.documentRequired">Document Required</span>
+          <span class="badge hourly" *ngIf="lt.allowHourlyLeave">Hourly Leave</span>
         </div>
       </div>
     </div>
@@ -127,6 +132,15 @@
             <input type="color" [(ngModel)]="formData.colorCode">
           </div>
         </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Time Unit</label>
+            <select [(ngModel)]="formData.timeUnit">
+              <option value="DAYS">Days</option>
+              <option value="HOURS">Hours</option>
+            </select>
+          </div>
+        </div>
         <div class="form-row checkboxes">
           <label class="checkbox-label">
             <input type="checkbox" [(ngModel)]="formData.isPaid"> Paid Leave
@@ -139,6 +153,9 @@
           </label>
           <label class="checkbox-label">
             <input type="checkbox" [(ngModel)]="formData.documentRequired"> Document Required
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="formData.allowHourlyLeave"> Allow Hourly Leave
           </label>
           <label class="checkbox-label">
             <input type="checkbox" [(ngModel)]="formData.isActive"> Active

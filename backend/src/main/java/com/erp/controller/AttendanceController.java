@@ -172,6 +172,29 @@ public class AttendanceController {
             return ResponseEntity.badRequest().body(Map.of("error", "Employee not found"));
         }
 
+        // Check for existing entry to prevent duplicates
+        Optional<AttendanceRecord> existing = attendanceRecordRepository.findByEmployeeIdAndAttendanceDate(
+            employee.getId(), record.getAttendanceDate());
+        if (existing.isPresent()) {
+            // Update existing record instead of creating duplicate
+            AttendanceRecord existingRecord = existing.get();
+            existingRecord.setClockIn(record.getClockIn());
+            existingRecord.setClockOut(record.getClockOut());
+            existingRecord.setStatus(record.getStatus());
+            existingRecord.setRemarks(record.getRemarks());
+            existingRecord.setCaptureMethod("MANUAL");
+            existingRecord.setApprovalStatus("PENDING");
+
+            if (record.getClockIn() != null && record.getClockOut() != null) {
+                long minutesWorked = ChronoUnit.MINUTES.between(record.getClockIn(), record.getClockOut());
+                BigDecimal hoursWorked = BigDecimal.valueOf(minutesWorked / 60.0);
+                existingRecord.setRegularHours(hoursWorked.compareTo(BigDecimal.valueOf(8)) > 0 ? BigDecimal.valueOf(8) : hoursWorked);
+                existingRecord.setOvertimeHours(hoursWorked.compareTo(BigDecimal.valueOf(8)) > 0 ? hoursWorked.subtract(BigDecimal.valueOf(8)) : BigDecimal.ZERO);
+            }
+
+            return ResponseEntity.ok(attendanceRecordRepository.save(existingRecord));
+        }
+
         record.setEmployee(employee);
         record.setCaptureMethod("MANUAL");
         record.setApprovalStatus("PENDING");
@@ -200,9 +223,19 @@ public class AttendanceController {
                     continue;
                 }
 
-                AttendanceRecord record = new AttendanceRecord();
-                record.setEmployee(employee);
-                record.setAttendanceDate(LocalDate.parse(data.get("date").toString()));
+                LocalDate attendanceDate = LocalDate.parse(data.get("date").toString());
+                
+                // Check for existing entry to prevent duplicates - update instead
+                Optional<AttendanceRecord> existing = attendanceRecordRepository.findByEmployeeIdAndAttendanceDate(employeeId, attendanceDate);
+                AttendanceRecord record;
+                if (existing.isPresent()) {
+                    record = existing.get();
+                } else {
+                    record = new AttendanceRecord();
+                    record.setEmployee(employee);
+                    record.setAttendanceDate(attendanceDate);
+                }
+                
                 record.setStatus((String) data.getOrDefault("status", "PRESENT"));
                 record.setCaptureMethod("EXCEL_UPLOAD");
                 record.setApprovalStatus("APPROVED");
@@ -249,6 +282,24 @@ public class AttendanceController {
         }
 
         LocalDate date = dateStr != null ? LocalDate.parse(dateStr) : LocalDate.now();
+
+        // Check for existing entry to prevent duplicates
+        Optional<AttendanceRecord> existing = attendanceRecordRepository.findByEmployeeIdAndAttendanceDate(employeeId, date);
+        if (existing.isPresent()) {
+            // Update existing record instead of creating duplicate
+            AttendanceRecord existingRecord = existing.get();
+            existingRecord.setStatus(status);
+            existingRecord.setCaptureMethod("MANUAL");
+            existingRecord.setApprovalStatus("APPROVED");
+
+            if (status.equals("PRESENT")) {
+                existingRecord.setRegularHours(BigDecimal.valueOf(8));
+            } else if (status.equals("HALF_DAY")) {
+                existingRecord.setRegularHours(BigDecimal.valueOf(4));
+            }
+
+            return ResponseEntity.ok(attendanceRecordRepository.save(existingRecord));
+        }
 
         AttendanceRecord record = new AttendanceRecord();
         record.setEmployee(employee);

@@ -46,7 +46,9 @@ export class LeaveTypesComponent implements OnInit {
       isActive: true,
       documentRequired: false,
       applicableGender: 'ALL',
-      colorCode: '#008080'
+      colorCode: '#008080',
+      timeUnit: 'DAYS',
+      allowHourlyLeave: false
     };
   }
 
