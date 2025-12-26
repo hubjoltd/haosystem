@@ -445,7 +445,7 @@
           <td>{{ s.basicSalary | number }}</td>
           <td>{{ s.hraAmount | number }}</td>
           <td>{{ s.grossSalary | number }}</td>
-          <td>{{ (s.pfDeduction || 0) + (s.otherDeductions || 0) | number }}</td>
+          <td>{{ (s.otherDeductions || 0) | number }}</td>
           <td>{{ s.netSalary | number }}</td>
           <td>{{ s.ctcAnnual | number }}</td>
           <td><span class="badge badge-primary" *ngIf="s.isCurrent">Current</span></td>
@@ -829,6 +829,7 @@
           <option value="DIRECT_DEPOSIT">Direct Deposit</option>
           <option value="CHECK">Check</option>
           <option value="WIRE">Wire Transfer</option>
+          <option value="ADP">ADP</option>
         </select>
       </div>
       <div class="form-group">
@@ -883,10 +884,6 @@
         <div class="form-group">
           <label>Other Allowances</label>
           <input type="number" [(ngModel)]="editingSalary.otherAllowances" />
-        </div>
-        <div class="form-group">
-          <label>PF Deduction</label>
-          <input type="number" [(ngModel)]="editingSalary.pfDeduction" />
         </div>
         <div class="form-group">
           <label>Other Deductions</label>
