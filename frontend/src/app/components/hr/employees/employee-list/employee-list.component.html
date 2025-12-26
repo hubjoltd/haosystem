@@ -2,12 +2,59 @@
   <div class="page-header">
     <h2>Employee Master</h2>
     <div class="header-actions">
-      <button class="btn-secondary" (click)="exportEmployees()">
-        <i class="fas fa-download"></i> Export
-      </button>
+      <div class="export-dropdown">
+        <button class="btn-secondary export-btn" (click)="toggleExportMenu()">
+          <i class="fas fa-download"></i> Export
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="export-menu" *ngIf="showExportMenu">
+          <button (click)="exportToExcel()">
+            <i class="fas fa-file-excel"></i> Excel
+          </button>
+          <button (click)="exportToCSV()">
+            <i class="fas fa-file-csv"></i> CSV
+          </button>
+          <button (click)="exportToPDF()">
+            <i class="fas fa-file-pdf"></i> PDF
+          </button>
+          <button (click)="printEmployees()">
+            <i class="fas fa-print"></i> Print
+          </button>
+        </div>
+      </div>
       <button class="btn-primary" (click)="addEmployee()">
         <i class="fas fa-plus"></i> Add Employee
       </button>
+    </div>
+  </div>
+
+  <div class="stats-cards">
+    <div class="stat-card stat-total">
+      <div class="stat-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-number">{{ employees.length }}</span>
+        <span class="stat-label">Total Employees</span>
+      </div>
+    </div>
+    <div class="stat-card stat-active">
+      <div class="stat-icon">
+        <i class="fas fa-user-check"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-number">{{ activeCount }}</span>
+        <span class="stat-label">Active</span>
+      </div>
+    </div>
+    <div class="stat-card stat-inactive">
+      <div class="stat-icon">
+        <i class="fas fa-user-times"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-number">{{ inactiveCount }}</span>
+        <span class="stat-label">Inactive</span>
+      </div>
     </div>
   </div>
 
@@ -37,21 +84,6 @@
       <button class="btn-secondary" (click)="clearFilters()">
         <i class="fas fa-times"></i> Clear
       </button>
-    </div>
-  </div>
-
-  <div class="stats-bar">
-    <div class="stat-item stat-total">
-      <span class="stat-number">{{ employees.length }}</span>
-      <span class="stat-label">Total Employees</span>
-    </div>
-    <div class="stat-item stat-active">
-      <span class="stat-number">{{ activeCount }}</span>
-      <span class="stat-label">Active</span>
-    </div>
-    <div class="stat-item stat-inactive">
-      <span class="stat-number">{{ inactiveCount }}</span>
-      <span class="stat-label">Inactive</span>
     </div>
   </div>
 
