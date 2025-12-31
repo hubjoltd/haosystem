@@ -101,6 +101,7 @@ import { TimesheetApprovalComponent } from './components/payroll/timesheet-appro
 import { PayrollCalculationComponent } from './components/payroll/payroll-calculation/payroll-calculation.component';
 import { ProcessPayrollComponent } from './components/payroll/process-payroll/process-payroll.component';
 import { EmployeeSelfServiceComponent } from './components/payroll/employee-self-service/employee-self-service.component';
+import { PayrollHistoryComponent } from './components/payroll/payroll-history/payroll-history.component';
 
 import { PayrollSummaryReportComponent } from './components/reports/payroll/payroll-summary/payroll-summary-report.component';
 import { LaborCostAllocationReportComponent } from './components/reports/payroll/labor-cost-allocation/labor-cost-allocation-report.component';
@@ -223,6 +224,7 @@ const routes: Routes = [
       { path: 'payroll/timesheets', component: TimesheetApprovalComponent },
       { path: 'payroll/calculation', component: PayrollCalculationComponent },
       { path: 'payroll/process/:id', component: ProcessPayrollComponent },
+      { path: 'payroll/history', component: PayrollHistoryComponent },
       { path: 'payroll/self-service', component: EmployeeSelfServiceComponent },
       { path: 'reports/payroll/summary', component: PayrollSummaryReportComponent },
       { path: 'reports/payroll/labor-cost', component: LaborCostAllocationReportComponent },

@@ -540,3 +540,258 @@
     background: #f8f9fa;
   }
 }
+
+.pdf-modal {
+  width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  .pdf-header {
+    background: #003366;
+    color: white;
+
+    h3 { color: white; }
+    .close-btn { color: rgba(255,255,255,0.7); &:hover { color: white; } }
+  }
+
+  .pdf-body {
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .pdf-preview {
+    .pdf-banner {
+      background: #003366;
+      color: white;
+      padding: 20px;
+      text-align: center;
+
+      h2 { margin: 0 0 8px; font-size: 22px; }
+      p { margin: 0; font-size: 14px; opacity: 0.9; }
+    }
+
+    .pdf-info {
+      padding: 20px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #eee;
+
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+
+        &:last-child { margin-bottom: 0; }
+      }
+
+      .info-item {
+        .label {
+          color: #666;
+          font-size: 12px;
+          margin-right: 8px;
+        }
+        .value {
+          font-weight: 600;
+          color: #333;
+        }
+      }
+    }
+
+    .pdf-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th, td {
+        padding: 10px 12px;
+        text-align: center;
+        border: 1px solid #ddd;
+      }
+
+      th {
+        background: #ffc850;
+        font-weight: 600;
+        font-size: 12px;
+        color: #333;
+      }
+
+      .alt-row { background: #fff8e0; }
+
+      .no-data {
+        text-align: center;
+        color: #999;
+        padding: 30px;
+      }
+    }
+  }
+
+  .pdf-footer {
+    background: #f8f9fa;
+  }
+}
+
+.btn-info {
+  background: #17a2b8;
+  color: white;
+  &:hover { background: #138496; }
+}
+
+.payables-header {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #e3f2fd;
+  border-radius: 8px;
+
+  p { margin: 4px 0; color: #333; }
+  small { color: #666; }
+}
+
+.payables-summary {
+  grid-template-columns: repeat(4, 1fr);
+
+  @media (max-width: 992px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 576px) { grid-template-columns: 1fr; }
+
+  .summary-card {
+    &.gross {
+      border-left-color: #28a745;
+      .card-icon { background: #d4edda; color: #28a745; }
+    }
+    &.net {
+      border-left-color: #17a2b8;
+      .card-icon { background: #d1ecf1; color: #17a2b8; }
+    }
+    &.zero {
+      border-left-color: #6c757d;
+      .card-icon { background: #e9ecef; color: #6c757d; }
+    }
+
+    .amount-green { color: #28a745 !important; }
+  }
+}
+
+.payables-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eee;
+
+  h4 { margin: 0; color: #333; font-size: 16px; }
+}
+
+.payables-table {
+  .tax-col { color: #dc3545; }
+  .net-amount { color: #28a745; font-weight: 600; }
+
+  tfoot .totals-row {
+    background: #f8f9fa;
+    font-weight: 600;
+    td { border-top: 2px solid #ddd; }
+  }
+}
+
+.payables-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.payroll-summary-section {
+  margin-top: 24px;
+
+  .summary-box {
+    border: 2px solid #28a745;
+    
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #eee;
+
+      h3 {
+        margin: 0;
+        color: #28a745;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: none;
+        padding: 0;
+      }
+    }
+
+    .summary-stats {
+      display: flex;
+      gap: 40px;
+      margin-bottom: 24px;
+      padding: 16px;
+      background: #d4edda;
+      border-radius: 8px;
+
+      .stat-item {
+        display: flex;
+        flex-direction: column;
+
+        .stat-value {
+          font-size: 24px;
+          font-weight: 700;
+          color: #155724;
+        }
+        .stat-label {
+          font-size: 12px;
+          color: #666;
+          text-transform: uppercase;
+        }
+      }
+    }
+
+    .category-section {
+      margin-bottom: 24px;
+
+      h4 {
+        color: #333;
+        font-size: 16px;
+        margin: 0 0 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 6px;
+
+        i { color: #008080; }
+      }
+
+      .summary-table {
+        th { background: #e8f5f5; }
+      }
+    }
+
+    .grand-total {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 20px;
+      padding: 16px 24px;
+      background: #28a745;
+      color: white;
+      border-radius: 8px;
+      font-size: 18px;
+
+      .total-value {
+        font-size: 28px;
+        font-weight: 700;
+      }
+    }
+  }
+}
+
+.text-success { color: #28a745; }

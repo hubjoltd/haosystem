@@ -20,10 +20,14 @@
       <i class="fas fa-calendar-check"></i> Daily Attendance Review
     </button>
     <button [class.active]="activeTab === 'timesheet'" (click)="switchTab('timesheet')">
-      <i class="fas fa-file-alt"></i> Timesheet Summary
+      <i class="fas fa-file-alt"></i> Attendance Approval
+    </button>
+    <button [class.active]="activeTab === 'payables'" (click)="switchTab('payables')">
+      <i class="fas fa-calculator"></i> Generate Payables
     </button>
   </div>
 
+  <!-- Daily Attendance Review Tab -->
   <div class="tab-content" *ngIf="activeTab === 'attendance'">
     <div class="section-box">
       <h3><i class="fas fa-calendar-day"></i> Daily Attendance Review</h3>
@@ -62,6 +66,7 @@
         <table class="data-table">
           <thead>
             <tr>
+              <th>#</th>
               <th>EMP ID</th>
               <th>NAME</th>
               <th>CLOCK IN</th>
@@ -72,6 +77,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let record of attendanceRecords; let i = index">
+              <td>{{ i + 1 }}</td>
               <td class="emp-id">{{ record.employee?.employeeCode || 'EMP' + (i + 1) }}</td>
               <td class="emp-name">{{ record.employee?.firstName }} {{ record.employee?.lastName }}</td>
               <td>{{ record.clockIn || '-' }}</td>
@@ -84,13 +90,13 @@
               </td>
             </tr>
             <tr *ngIf="attendanceRecords.length === 0 && !loading">
-              <td colspan="6" class="no-data">
+              <td colspan="7" class="no-data">
                 <i class="fas fa-calendar-times"></i>
                 No attendance records found for this date
               </td>
             </tr>
             <tr *ngIf="loading">
-              <td colspan="6" class="loading-row">
+              <td colspan="7" class="loading-row">
                 <i class="fas fa-spinner fa-spin"></i> Loading attendance records...
               </td>
             </tr>
@@ -100,6 +106,7 @@
     </div>
   </div>
 
+  <!-- Attendance Approval Tab -->
   <div class="tab-content" *ngIf="activeTab === 'timesheet'">
     <div class="section-box">
       <h3><i class="fas fa-file-invoice"></i> Last Pending for Timesheets</h3>
@@ -183,7 +190,15 @@
                       <i class="fas fa-times"></i>
                     </button>
                   </ng-container>
-                  <span *ngIf="ts.status !== 'PENDING_APPROVAL'" class="no-action">-</span>
+                  <ng-container *ngIf="ts.status === 'APPROVED'">
+                    <button class="btn btn-sm btn-info" (click)="viewTimesheetPdf(ts); $event.stopPropagation()" title="View">
+                      <i class="fas fa-eye"></i> View
+                    </button>
+                    <button class="btn btn-sm btn-secondary" (click)="downloadTimesheetPdf(ts); $event.stopPropagation()" title="Download PDF">
+                      <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                  </ng-container>
+                  <span *ngIf="ts.status !== 'PENDING_APPROVAL' && ts.status !== 'APPROVED'" class="no-action">-</span>
                 </td>
               </tr>
               <tr *ngIf="filteredTimesheets.length === 0 && !loading">
@@ -221,8 +236,213 @@
       </div>
     </div>
   </div>
+
+  <!-- Generate Payables Tab -->
+  <div class="tab-content" *ngIf="activeTab === 'payables'">
+    <div class="section-box">
+      <div class="payables-header">
+        <div class="header-info">
+          <p><strong>Start Payables Generation:</strong> Click on employees to include in Payroll Run.</p>
+          <p><small>* Only employees with approved Timesheets can be added</small></p>
+        </div>
+      </div>
+
+      <div class="summary-cards payables-summary">
+        <div class="summary-card employees">
+          <div class="card-content">
+            <span class="card-value">{{ employeesToProcess }}</span>
+            <span class="card-label">Employees to Process</span>
+          </div>
+        </div>
+        <div class="summary-card gross">
+          <div class="card-content">
+            <span class="card-value">{{ formatCurrency(totalGrossPay) }}</span>
+            <span class="card-label">Total Gross Pay</span>
+          </div>
+        </div>
+        <div class="summary-card net">
+          <div class="card-content">
+            <span class="card-value amount-green">{{ formatCurrency(totalNetPay) }}</span>
+            <span class="card-label">Arrears Net Pay</span>
+          </div>
+        </div>
+        <div class="summary-card zero">
+          <div class="card-content">
+            <span class="card-value">$0.00</span>
+            <span class="card-label">Total Arrears</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-header payables-section-header">
+        <h4>Select Employees for Payroll Processing</h4>
+        <div class="header-actions">
+          <button class="btn btn-sm btn-outline" (click)="selectAllPayables()">
+            {{ areAllPayablesSelected() ? 'Deselect All' : 'Select All' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table payables-table">
+          <thead>
+            <tr>
+              <th class="checkbox-col">
+                <input type="checkbox" 
+                       [checked]="areAllPayablesSelected()"
+                       (change)="selectAllPayables()" />
+              </th>
+              <th>#</th>
+              <th>EMP ID</th>
+              <th>NAME</th>
+              <th>Rate</th>
+              <th>Hourly Rate</th>
+              <th>Taxes</th>
+              <th>Net Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let emp of payableEmployees; let i = index" 
+                [class.selected]="emp.selected"
+                (click)="togglePayableSelection(emp)">
+              <td class="checkbox-col">
+                <input type="checkbox" 
+                       [checked]="emp.selected"
+                       (click)="$event.stopPropagation()"
+                       (change)="togglePayableSelection(emp)" />
+              </td>
+              <td>{{ i + 1 }}</td>
+              <td class="emp-id">{{ emp.empId }}</td>
+              <td class="emp-name">{{ emp.name }}</td>
+              <td>{{ formatCurrency(emp.rate) }}</td>
+              <td>{{ formatCurrency(emp.hourlyRate) }}</td>
+              <td class="tax-col">{{ formatCurrency(emp.taxes) }}</td>
+              <td class="net-amount">{{ formatCurrency(emp.netAmount) }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="emp.status === 'Ready' ? 'approved' : 'pending'">
+                  {{ emp.status }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="payableEmployees.length === 0 && !payablesLoading">
+              <td colspan="9" class="no-data">
+                <i class="fas fa-users"></i>
+                No employees available for payroll processing
+              </td>
+            </tr>
+            <tr *ngIf="payablesLoading">
+              <td colspan="9" class="loading-row">
+                <i class="fas fa-spinner fa-spin"></i> Loading employees...
+              </td>
+            </tr>
+          </tbody>
+          <tfoot *ngIf="payableEmployees.length > 0">
+            <tr class="totals-row">
+              <td colspan="6"><strong>TOTAL</strong></td>
+              <td><strong>{{ formatCurrency(totalGrossPay * 0.22) }}</strong></td>
+              <td><strong>{{ formatCurrency(totalNetPay) }}</strong></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="payables-actions">
+        <button class="btn btn-info" (click)="calculateSelectedPayroll()" [disabled]="employeesToProcess === 0">
+          <i class="fas fa-calculator"></i> Calculate Selected
+        </button>
+        <button class="btn btn-success" (click)="processPayables()" [disabled]="!showPayrollSummary">
+          <i class="fas fa-check-circle"></i> Process Payables
+        </button>
+      </div>
+    </div>
+
+    <!-- Payroll Summary Section -->
+    <div class="payroll-summary-section" *ngIf="showPayrollSummary">
+      <div class="section-box summary-box">
+        <div class="summary-header">
+          <h3><i class="fas fa-check-circle text-success"></i> Payroll Processed Successfully</h3>
+          <button class="btn btn-sm btn-outline" (click)="closeSummary()">
+            <i class="fas fa-times"></i> Close
+          </button>
+        </div>
+
+        <div class="summary-stats">
+          <div class="stat-item">
+            <span class="stat-value">{{ processedSalariedEmployees.length + processedHourlyEmployees.length }}</span>
+            <span class="stat-label">Employees Processed</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ formatCurrency(processedNetTotal) }}</span>
+            <span class="stat-label">Net Total Amount</span>
+          </div>
+        </div>
+
+        <!-- Salaried Employees Table -->
+        <div class="category-section" *ngIf="processedSalariedEmployees.length > 0">
+          <h4><i class="fas fa-users"></i> Salaried Employees ({{ processedSalariedEmployees.length }})</h4>
+          <table class="data-table summary-table">
+            <thead>
+              <tr>
+                <th>EMP ID</th>
+                <th>NAME</th>
+                <th>Basic</th>
+                <th>Gross</th>
+                <th>Taxes</th>
+                <th>Net Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let emp of processedSalariedEmployees">
+                <td class="emp-id">{{ emp.empId }}</td>
+                <td class="emp-name">{{ emp.name }}</td>
+                <td>{{ formatCurrency(emp.basic) }}</td>
+                <td>{{ formatCurrency(emp.gross) }}</td>
+                <td class="tax-col">{{ formatCurrency(emp.taxes) }}</td>
+                <td class="net-amount">{{ formatCurrency(emp.netAmount) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Hourly Employees Table -->
+        <div class="category-section" *ngIf="processedHourlyEmployees.length > 0">
+          <h4><i class="fas fa-clock"></i> Hourly / Co-Sales Employees ({{ processedHourlyEmployees.length }})</h4>
+          <table class="data-table summary-table">
+            <thead>
+              <tr>
+                <th>EMP ID</th>
+                <th>NAME</th>
+                <th>Basic</th>
+                <th>Gross</th>
+                <th>Taxes</th>
+                <th>Net Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let emp of processedHourlyEmployees">
+                <td class="emp-id">{{ emp.empId }}</td>
+                <td class="emp-name">{{ emp.name }}</td>
+                <td>{{ formatCurrency(emp.basic) }}</td>
+                <td>{{ formatCurrency(emp.gross) }}</td>
+                <td class="tax-col">{{ formatCurrency(emp.taxes) }}</td>
+                <td class="net-amount">{{ formatCurrency(emp.netAmount) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="grand-total">
+          <span>Grand Total Net Amount:</span>
+          <span class="total-value">{{ formatCurrency(processedNetTotal) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
+<!-- Generate Timesheets Modal -->
 <div class="modal-overlay" *ngIf="showGenerateModal" (click)="closeGenerateModal()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -250,6 +470,81 @@
       <button class="btn btn-primary" (click)="generateTimesheets()" [disabled]="generating">
         <i class="fas fa-spinner fa-spin" *ngIf="generating"></i>
         {{ generating ? 'Generating...' : 'Generate Timesheets' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Timesheet PDF View Modal -->
+<div class="modal-overlay pdf-modal-overlay" *ngIf="showTimesheetPdfModal" (click)="closeTimesheetPdfModal()">
+  <div class="modal pdf-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header pdf-header">
+      <h3><i class="fas fa-file-alt"></i> Single Employee Time Sheet</h3>
+      <button class="close-btn" (click)="closeTimesheetPdfModal()">&times;</button>
+    </div>
+    <div class="modal-body pdf-body" *ngIf="pdfTimesheet">
+      <div class="pdf-preview">
+        <div class="pdf-banner">
+          <h2>Single Employee Time Sheet</h2>
+          <p>PayrollPro - Time & Payroll System</p>
+        </div>
+        
+        <div class="pdf-info">
+          <div class="info-row">
+            <div class="info-item">
+              <span class="label">EMP ID:</span>
+              <span class="value">{{ pdfTimesheet.employee?.employeeCode || 'EMP' + pdfTimesheet.employeeId }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">PERIOD:</span>
+              <span class="value">{{ pdfTimesheet.periodStartDate | date:'MMM dd, yyyy' }} - {{ pdfTimesheet.periodEndDate | date:'MMM dd, yyyy' }}</span>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-item">
+              <span class="label">NAME:</span>
+              <span class="value">{{ pdfTimesheet.employee?.firstName }} {{ pdfTimesheet.employee?.lastName }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">TOTAL HOURS:</span>
+              <span class="value">{{ pdfTimesheet.totalHours?.toFixed(1) || '0.0' }}h</span>
+            </div>
+          </div>
+        </div>
+
+        <table class="pdf-table">
+          <thead>
+            <tr>
+              <th>DATE</th>
+              <th>CLOCK IN</th>
+              <th>CLOCK OUT</th>
+              <th>LUNCH HOURS</th>
+              <th>REG HOURS</th>
+              <th>OT HOURS</th>
+              <th>TOTAL HOURS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let record of pdfAttendanceRecords; let odd = odd" [class.alt-row]="odd">
+              <td>{{ record.attendanceDate | date:'MM/dd/yyyy' }}</td>
+              <td>{{ record.clockIn || '-' }}</td>
+              <td>{{ record.clockOut || '-' }}</td>
+              <td>1</td>
+              <td>{{ (record.regularHours || 0).toFixed(1) }}</td>
+              <td>{{ (record.overtimeHours || 0).toFixed(1) }}</td>
+              <td>{{ ((record.regularHours || 0) + (record.overtimeHours || 0)).toFixed(1) }}</td>
+            </tr>
+            <tr *ngIf="pdfAttendanceRecords.length === 0">
+              <td colspan="7" class="no-data">No attendance records found for this period</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer pdf-footer">
+      <button class="btn btn-secondary" (click)="closeTimesheetPdfModal()">Close</button>
+      <button class="btn btn-primary" (click)="downloadTimesheetPdf(pdfTimesheet!)">
+        <i class="fas fa-download"></i> Download PDF
       </button>
     </div>
   </div>

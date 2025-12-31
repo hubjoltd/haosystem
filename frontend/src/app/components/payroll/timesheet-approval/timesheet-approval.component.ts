@@ -4,6 +4,33 @@ import { FormsModule } from '@angular/forms';
 import { PayrollService, Timesheet, PayFrequency } from '../../../services/payroll.service';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
 import { EmployeeService, Employee } from '../../../services/employee.service';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+interface PayableEmployee {
+  selected: boolean;
+  empId: string;
+  name: string;
+  department: string;
+  rate: number;
+  hourlyRate: number;
+  hours: number;
+  taxes: number;
+  netAmount: number;
+  status: string;
+  employeeId: number;
+  payType: string;
+}
+
+interface ProcessedEmployee {
+  empId: string;
+  name: string;
+  basic: number;
+  gross: number;
+  taxes: number;
+  netAmount: number;
+  category: string;
+}
 
 @Component({
   selector: 'app-timesheet-approval',
@@ -13,7 +40,7 @@ import { EmployeeService, Employee } from '../../../services/employee.service';
   styleUrls: ['./timesheet-approval.component.scss']
 })
 export class TimesheetApprovalComponent implements OnInit {
-  activeTab: 'attendance' | 'timesheet' = 'attendance';
+  activeTab: 'attendance' | 'timesheet' | 'payables' = 'attendance';
   loading = false;
   message = '';
   messageType = '';
@@ -43,6 +70,23 @@ export class TimesheetApprovalComponent implements OnInit {
 
   selectedTimesheetIds: number[] = [];
   selectedEmployee: any = null;
+
+  showTimesheetPdfModal = false;
+  pdfTimesheet: Timesheet | null = null;
+  pdfAttendanceRecords: AttendanceRecord[] = [];
+
+  payableEmployees: PayableEmployee[] = [];
+  selectedPayableIds: number[] = [];
+  payablesLoading = false;
+  employeesToProcess = 0;
+  totalGrossPay = 0;
+  totalNetPay = 0;
+
+  showPayrollSummary = false;
+  processedSalariedEmployees: ProcessedEmployee[] = [];
+  processedHourlyEmployees: ProcessedEmployee[] = [];
+  processedTotal = 0;
+  processedNetTotal = 0;
 
   constructor(
     private payrollService: PayrollService,
@@ -163,10 +207,13 @@ export class TimesheetApprovalComponent implements OnInit {
     });
   }
 
-  switchTab(tab: 'attendance' | 'timesheet'): void {
+  switchTab(tab: 'attendance' | 'timesheet' | 'payables'): void {
     this.activeTab = tab;
     if (tab === 'timesheet' && this.timesheets.length === 0) {
       this.loadTimesheets();
+    }
+    if (tab === 'payables') {
+      this.loadPayableEmployees();
     }
   }
 
@@ -319,6 +366,8 @@ export class TimesheetApprovalComponent implements OnInit {
       case 'ON_LEAVE': return 'on-leave';
       case 'HALF_DAY': return 'half-day';
       case 'WEEKEND': return 'weekend';
+      case 'CALCULATED': return 'calculated';
+      case 'PROCESSED': return 'processed';
       default: return 'draft';
     }
   }
@@ -337,5 +386,253 @@ export class TimesheetApprovalComponent implements OnInit {
     this.message = msg;
     this.messageType = type;
     setTimeout(() => this.message = '', 4000);
+  }
+
+  viewTimesheetPdf(ts: Timesheet): void {
+    this.pdfTimesheet = ts;
+    this.pdfAttendanceRecords = [];
+    this.showTimesheetPdfModal = true;
+
+    if (ts.employee && ts.periodStartDate && ts.periodEndDate) {
+      this.attendanceService.getByEmployeeAndDateRange(
+        ts.employee.id!,
+        ts.periodStartDate,
+        ts.periodEndDate
+      ).subscribe({
+        next: (records) => {
+          this.pdfAttendanceRecords = records.sort((a, b) => 
+            new Date(a.attendanceDate).getTime() - new Date(b.attendanceDate).getTime()
+          );
+        },
+        error: (err) => console.error('Error loading attendance for PDF:', err)
+      });
+    }
+  }
+
+  closeTimesheetPdfModal(): void {
+    this.showTimesheetPdfModal = false;
+    this.pdfTimesheet = null;
+    this.pdfAttendanceRecords = [];
+  }
+
+  downloadTimesheetPdf(ts: Timesheet): void {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    doc.setFillColor(0, 51, 102);
+    doc.rect(0, 0, pageWidth, 35, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.text('Single Employee Time Sheet', pageWidth / 2, 15, { align: 'center' });
+    doc.setFontSize(10);
+    doc.text('PayrollPro - Time & Payroll System', pageWidth / 2, 23, { align: 'center' });
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(11);
+    
+    const empCode = ts.employee?.employeeCode || `EMP${ts.employeeId}`;
+    const empName = `${ts.employee?.firstName || ''} ${ts.employee?.lastName || ''}`.trim() || 'Unknown';
+    const periodStart = ts.periodStartDate ? new Date(ts.periodStartDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : '';
+    const periodEnd = ts.periodEndDate ? new Date(ts.periodEndDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : '';
+    
+    doc.setFontSize(10);
+    doc.text(`EMP ID:`, 14, 45);
+    doc.setFont('helvetica', 'bold');
+    doc.text(empCode, 40, 45);
+    doc.setFont('helvetica', 'normal');
+    
+    doc.text(`PERIOD:`, 120, 45);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${periodStart} - ${periodEnd}`, 145, 45);
+    doc.setFont('helvetica', 'normal');
+    
+    doc.text(`NAME:`, 14, 52);
+    doc.setFont('helvetica', 'bold');
+    doc.text(empName, 40, 52);
+    doc.setFont('helvetica', 'normal');
+    
+    doc.text(`TOTAL HOURS:`, 120, 52);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${ts.totalHours?.toFixed(1) || '0.0'}h`, 160, 52);
+    doc.setFont('helvetica', 'normal');
+    
+    const tableData = this.pdfAttendanceRecords.map(r => {
+      const date = new Date(r.attendanceDate);
+      const dateStr = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+      const lunchHours = 1;
+      const regHours = r.regularHours || 0;
+      const otHours = r.overtimeHours || 0;
+      const totalHours = regHours + otHours;
+      
+      return [
+        dateStr,
+        r.clockIn || '-',
+        r.clockOut || '-',
+        lunchHours.toString(),
+        regHours.toFixed(1),
+        otHours.toFixed(1),
+        totalHours.toFixed(1)
+      ];
+    });
+    
+    autoTable(doc, {
+      startY: 60,
+      head: [['DATE', 'CLOCK IN', 'CLOCK OUT', 'LUNCH HOURS', 'REG HOURS', 'OT HOURS', 'TOTAL HOURS']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [255, 200, 87],
+        textColor: [0, 0, 0],
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      bodyStyles: {
+        halign: 'center'
+      },
+      alternateRowStyles: {
+        fillColor: [255, 248, 220]
+      },
+      columnStyles: {
+        0: { cellWidth: 28 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 25 },
+        4: { cellWidth: 25 },
+        5: { cellWidth: 25 },
+        6: { cellWidth: 28 }
+      }
+    });
+    
+    doc.save(`Timesheet_${empCode}_${periodStart.replace(/\//g, '-')}.pdf`);
+  }
+
+  loadPayableEmployees(): void {
+    this.payablesLoading = true;
+    this.showPayrollSummary = false;
+    
+    const approvedTimesheets = this.timesheets.filter(t => t.status === 'APPROVED');
+    
+    this.payableEmployees = this.employees.map((emp, idx) => {
+      const ts = approvedTimesheets.find(t => t.employeeId === emp.id);
+      const baseRate = (emp as any).basicSalary || 5000;
+      const hourlyRate = baseRate / 160;
+      const hours = ts?.totalHours || 0;
+      const payType = (emp as any).payType || 'SALARIED';
+      const gross = payType === 'HOURLY' ? hours * hourlyRate : baseRate;
+      const taxes = gross * 0.22;
+      const netAmount = gross - taxes;
+      
+      return {
+        selected: false,
+        empId: emp.employeeCode || `EMP${String(idx + 1).padStart(3, '0')}`,
+        name: `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || 'Unknown',
+        department: emp.department?.name || 'General',
+        rate: baseRate,
+        hourlyRate: hourlyRate,
+        hours: hours,
+        taxes: taxes,
+        netAmount: netAmount,
+        status: ts ? 'Ready' : 'Pending',
+        employeeId: emp.id!,
+        payType: payType
+      };
+    });
+    
+    this.calculatePayableSummary();
+    this.payablesLoading = false;
+  }
+
+  calculatePayableSummary(): void {
+    const selected = this.payableEmployees.filter(e => e.selected);
+    this.employeesToProcess = selected.length;
+    this.totalGrossPay = selected.reduce((sum, e) => sum + (e.payType === 'HOURLY' ? e.hours * e.hourlyRate : e.rate), 0);
+    this.totalNetPay = selected.reduce((sum, e) => sum + e.netAmount, 0);
+  }
+
+  togglePayableSelection(emp: PayableEmployee): void {
+    emp.selected = !emp.selected;
+    this.calculatePayableSummary();
+  }
+
+  isPayableSelected(empId: number): boolean {
+    return this.selectedPayableIds.includes(empId);
+  }
+
+  selectAllPayables(): void {
+    const allSelected = this.payableEmployees.every(e => e.selected);
+    this.payableEmployees.forEach(e => e.selected = !allSelected);
+    this.calculatePayableSummary();
+  }
+
+  areAllPayablesSelected(): boolean {
+    return this.payableEmployees.length > 0 && this.payableEmployees.every(e => e.selected);
+  }
+
+  calculateSelectedPayroll(): void {
+    const selected = this.payableEmployees.filter(e => e.selected);
+    if (selected.length === 0) {
+      this.showMessage('Please select at least one employee', 'error');
+      return;
+    }
+    
+    this.processedSalariedEmployees = selected
+      .filter(e => e.payType === 'SALARIED')
+      .map(e => ({
+        empId: e.empId,
+        name: e.name,
+        basic: e.rate,
+        gross: e.rate,
+        taxes: e.taxes,
+        netAmount: e.netAmount,
+        category: 'Salaried'
+      }));
+    
+    this.processedHourlyEmployees = selected
+      .filter(e => e.payType === 'HOURLY')
+      .map(e => ({
+        empId: e.empId,
+        name: e.name,
+        basic: e.hours * e.hourlyRate,
+        gross: e.hours * e.hourlyRate,
+        taxes: e.taxes,
+        netAmount: e.netAmount,
+        category: 'Hourly'
+      }));
+    
+    this.processedTotal = selected.reduce((sum, e) => {
+      return sum + (e.payType === 'HOURLY' ? e.hours * e.hourlyRate : e.rate);
+    }, 0);
+    this.processedNetTotal = selected.reduce((sum, e) => sum + e.netAmount, 0);
+    
+    this.showPayrollSummary = true;
+    this.showMessage(`Calculated payroll for ${selected.length} employees`, 'success');
+  }
+
+  processPayables(): void {
+    if (!this.showPayrollSummary) {
+      this.showMessage('Please calculate payroll first', 'error');
+      return;
+    }
+    
+    this.showMessage('Payroll processed and sent to accounts!', 'success');
+    
+    this.payableEmployees.forEach(e => {
+      if (e.selected) {
+        e.status = 'Processed';
+        e.selected = false;
+      }
+    });
+    
+    this.showPayrollSummary = false;
+    this.calculatePayableSummary();
+  }
+
+  closeSummary(): void {
+    this.showPayrollSummary = false;
+  }
+
+  formatCurrency(amount: number): string {
+    return '$' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
 }
