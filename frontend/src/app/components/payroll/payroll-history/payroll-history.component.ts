@@ -176,76 +176,94 @@ export class PayrollHistoryComponent implements OnInit {
   }
 
   generateSampleData(): void {
-    const names = ['John Smith', 'Jane Doe', 'Mike Johnson', 'Sarah Williams', 'David Brown'];
-    const projects = ['Sales', 'Engineering', 'Marketing', 'HR', 'Finance'];
-    
-    this.historyRecords = this.employees.length > 0 
-      ? this.employees.map((emp, idx) => {
-          const basePay = 5000 + Math.random() * 3000;
-          const bonus = Math.random() > 0.7 ? Math.random() * 500 : 0;
-          const allowances = Math.random() * 200;
-          const gross = basePay + bonus + allowances;
-          const fedTax = gross * 0.15;
-          const stateTax = gross * 0.05;
-          const deductions = gross * 0.08;
-          const netPay = gross - fedTax - stateTax - deductions;
+    const salariedData: PayrollHistoryRecord[] = [
+      {
+        empId: 'EMP001', name: 'Ganesh M', project: 'Apollo Manufacturing',
+        payRatePeriod: 'Monthly', payDate: '2024-12-15', periodTo: '2024-12-31',
+        regular: 8500.00, bonus: 500.00, allowances: 250.00, deductions: 450.00,
+        gross: 9250.00, ytdGross: 111000.00, fedTax: 1387.50, stateTax: 462.50,
+        netPay: 6950.00, paymentDate: '2024-12-15', payStatus: 'Paid'
+      },
+      {
+        empId: 'EMP002', name: 'Priya Sharma', project: 'Tech Solutions',
+        payRatePeriod: 'Monthly', payDate: '2024-12-15', periodTo: '2024-12-31',
+        regular: 7200.00, bonus: 300.00, allowances: 200.00, deductions: 380.00,
+        gross: 7700.00, ytdGross: 92400.00, fedTax: 1155.00, stateTax: 385.00,
+        netPay: 5780.00, paymentDate: '2024-12-15', payStatus: 'Paid'
+      },
+      {
+        empId: 'EMP003', name: 'Rahul Kumar', project: 'Finance Dept',
+        payRatePeriod: 'Bi-Weekly', payDate: '2024-12-15', periodTo: '2024-12-31',
+        regular: 4200.00, bonus: 0.00, allowances: 150.00, deductions: 220.00,
+        gross: 4350.00, ytdGross: 113100.00, fedTax: 652.50, stateTax: 217.50,
+        netPay: 3260.00, paymentDate: '2024-12-15', payStatus: 'Paid'
+      },
+      {
+        empId: 'EMP004', name: 'Anita Patel', project: 'HR Operations',
+        payRatePeriod: 'Monthly', payDate: '2024-12-15', periodTo: '2024-12-31',
+        regular: 6800.00, bonus: 400.00, allowances: 180.00, deductions: 360.00,
+        gross: 7380.00, ytdGross: 88560.00, fedTax: 1107.00, stateTax: 369.00,
+        netPay: 5544.00, paymentDate: '2024-12-15', payStatus: 'Paid'
+      },
+      {
+        empId: 'EMP005', name: 'Vijay Singh', project: 'Sales Division',
+        payRatePeriod: 'Weekly', payDate: '2024-12-15', periodTo: '2024-12-31',
+        regular: 1850.00, bonus: 250.00, allowances: 100.00, deductions: 110.00,
+        gross: 2200.00, ytdGross: 114400.00, fedTax: 330.00, stateTax: 110.00,
+        netPay: 1650.00, paymentDate: '2024-12-15', payStatus: 'Paid'
+      }
+    ];
 
-          return {
-            empId: emp.employeeCode || `EMP${String(idx + 1).padStart(3, '0')}`,
-            name: `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || names[idx % names.length],
-            project: emp.department?.name || projects[idx % projects.length],
-            payRatePeriod: 'Monthly',
-            payDate: new Date().toISOString().split('T')[0],
-            periodTo: new Date().toISOString().split('T')[0],
-            regular: basePay,
-            bonus: bonus,
-            allowances: allowances,
-            deductions: deductions,
-            gross: gross,
-            ytdGross: gross * 12,
-            fedTax: fedTax,
-            stateTax: stateTax,
-            netPay: netPay,
-            paymentDate: new Date().toISOString().split('T')[0],
-            payStatus: 'Paid'
-          };
-        })
-      : names.map((name, idx) => {
-          const basePay = 5000 + Math.random() * 3000;
-          const bonus = Math.random() > 0.7 ? Math.random() * 500 : 0;
-          const allowances = Math.random() * 200;
-          const gross = basePay + bonus + allowances;
-          const fedTax = gross * 0.15;
-          const stateTax = gross * 0.05;
-          const deductions = gross * 0.08;
-          const netPay = gross - fedTax - stateTax - deductions;
+    const hourlyData: PayrollHistoryRecord[] = [
+      {
+        empId: 'EMP006', name: 'Sanjay Verma', project: 'Warehouse Ops',
+        payRatePeriod: 'Hourly', payDate: '2024-12-15', periodTo: '2024-12-31',
+        regular: 3200.00, bonus: 0.00, allowances: 80.00, deductions: 165.00,
+        gross: 3280.00, ytdGross: 39360.00, fedTax: 492.00, stateTax: 164.00,
+        netPay: 2459.00, paymentDate: '2024-12-15', payStatus: 'Paid'
+      },
+      {
+        empId: 'EMP007', name: 'Meera Reddy', project: 'Customer Support',
+        payRatePeriod: 'Hourly', payDate: '2024-12-15', periodTo: '2024-12-31',
+        regular: 2880.00, bonus: 100.00, allowances: 50.00, deductions: 150.00,
+        gross: 3030.00, ytdGross: 36360.00, fedTax: 454.50, stateTax: 151.50,
+        netPay: 2274.00, paymentDate: '2024-12-15', payStatus: 'Paid'
+      },
+      {
+        empId: 'EMP008', name: 'Arjun Nair', project: 'IT Support',
+        payRatePeriod: 'Daily', payDate: '2024-12-15', periodTo: '2024-12-31',
+        regular: 4400.00, bonus: 0.00, allowances: 120.00, deductions: 230.00,
+        gross: 4520.00, ytdGross: 54240.00, fedTax: 678.00, stateTax: 226.00,
+        netPay: 3386.00, paymentDate: '2024-12-15', payStatus: 'Paid'
+      },
+      {
+        empId: 'EMP009', name: 'Kavitha Das', project: 'Quality Control',
+        payRatePeriod: 'Hourly', payDate: '2024-12-15', periodTo: '2024-12-31',
+        regular: 3520.00, bonus: 150.00, allowances: 90.00, deductions: 190.00,
+        gross: 3760.00, ytdGross: 45120.00, fedTax: 564.00, stateTax: 188.00,
+        netPay: 2818.00, paymentDate: '2024-12-15', payStatus: 'Pending'
+      },
+      {
+        empId: 'EMP010', name: 'Rajesh Iyer', project: 'Logistics',
+        payRatePeriod: 'Contract', payDate: '2024-12-15', periodTo: '2024-12-31',
+        regular: 5500.00, bonus: 0.00, allowances: 200.00, deductions: 290.00,
+        gross: 5700.00, ytdGross: 68400.00, fedTax: 855.00, stateTax: 285.00,
+        netPay: 4270.00, paymentDate: '2024-12-15', payStatus: 'Paid'
+      }
+    ];
 
-          return {
-            empId: `EMP${String(idx + 1).padStart(3, '0')}`,
-            name: name,
-            project: projects[idx % projects.length],
-            payRatePeriod: 'Monthly',
-            payDate: new Date().toISOString().split('T')[0],
-            periodTo: new Date().toISOString().split('T')[0],
-            regular: basePay,
-            bonus: bonus,
-            allowances: allowances,
-            deductions: deductions,
-            gross: gross,
-            ytdGross: gross * 12,
-            fedTax: fedTax,
-            stateTax: stateTax,
-            netPay: netPay,
-            paymentDate: new Date().toISOString().split('T')[0],
-            payStatus: 'Paid'
-          };
-        });
-
+    this.historyRecords = [...salariedData, ...hourlyData];
+    this.completedRuns = 8;
     this.calculateSummary();
   }
 
   calculateSummary(): void {
-    this.completedRuns = this.payrollRuns.filter(r => r.status === 'COMPLETED').length || 1;
+    const runsCount = this.payrollRuns.filter(r => r.status === 'COMPLETED').length;
+    if (runsCount > 0) {
+      this.completedRuns = runsCount;
+    } else if (this.completedRuns === 0) {
+      this.completedRuns = 8;
+    }
     this.totalGross = this.historyRecords.reduce((sum, r) => sum + r.gross, 0);
     this.totalNet = this.historyRecords.reduce((sum, r) => sum + r.netPay, 0);
     this.avgNetPerRun = this.completedRuns > 0 ? this.totalNet / this.completedRuns : 0;
