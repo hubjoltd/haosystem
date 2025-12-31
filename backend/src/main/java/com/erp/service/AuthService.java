@@ -45,7 +45,12 @@ public class AuthService {
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
         
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().getName());
+        Long branchId = user.getBranch() != null ? user.getBranch().getId() : null;
+        String branchName = user.getBranch() != null ? user.getBranch().getName() : null;
+        String branchCode = user.getBranch() != null ? user.getBranch().getCode() : null;
+        Boolean isSuperAdmin = user.getIsSuperAdmin();
+        
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().getName(), branchId, isSuperAdmin);
         
         return new AuthResponse(
             token,
@@ -55,7 +60,11 @@ public class AuthService {
             user.getFirstName(),
             user.getLastName(),
             user.getRole().getName(),
-            user.getRole().getPermissions()
+            user.getRole().getPermissions(),
+            branchId,
+            branchName,
+            branchCode,
+            isSuperAdmin
         );
     }
     
@@ -89,11 +98,12 @@ public class AuthService {
         user.setPhone(request.getPhone());
         user.setRole(role);
         user.setActive(true);
+        user.setIsSuperAdmin(false);
         user.setCreatedAt(LocalDateTime.now());
         
         userRepository.save(user);
         
-        String token = jwtUtil.generateToken(user.getUsername(), role.getName());
+        String token = jwtUtil.generateToken(user.getUsername(), role.getName(), null, false);
         
         return new AuthResponse(
             token,
@@ -103,13 +113,18 @@ public class AuthService {
             user.getFirstName(),
             user.getLastName(),
             role.getName(),
-            role.getPermissions()
+            role.getPermissions(),
+            null,
+            null,
+            null,
+            false
         );
     }
     
     public void initializeDefaultRoles() {
         if (roleRepository.count() == 0) {
-            roleRepository.save(new Role("ADMIN", "System Administrator", "all"));
+            roleRepository.save(new Role("SUPER_ADMIN", "Super Administrator with all branches access", "all"));
+            roleRepository.save(new Role("ADMIN", "Branch Administrator", "all"));
             roleRepository.save(new Role("MANAGER", "Manager with full access", "read,create,update,delete,reports"));
             roleRepository.save(new Role("STAFF", "Standard staff member", "read,create,update"));
             roleRepository.save(new Role("VIEWER", "Read-only access", "read"));
@@ -120,8 +135,8 @@ public class AuthService {
         if (!userRepository.existsByUsername("admin")) {
             initializeDefaultRoles();
             
-            Role adminRole = roleRepository.findByName("ADMIN")
-                .orElseGet(() -> roleRepository.save(new Role("ADMIN", "System Administrator", "all")));
+            Role superAdminRole = roleRepository.findByName("SUPER_ADMIN")
+                .orElseGet(() -> roleRepository.save(new Role("SUPER_ADMIN", "Super Administrator with all branches access", "all")));
             
             User admin = new User();
             admin.setUsername("admin");
@@ -129,8 +144,9 @@ public class AuthService {
             admin.setPassword(passwordEncoder.encode("admin123"));
             admin.setFirstName("System");
             admin.setLastName("Administrator");
-            admin.setRole(adminRole);
+            admin.setRole(superAdminRole);
             admin.setActive(true);
+            admin.setIsSuperAdmin(true);
             admin.setCreatedAt(LocalDateTime.now());
             
             userRepository.save(admin);

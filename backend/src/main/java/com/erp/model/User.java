@@ -25,6 +25,12 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
     
+    @ManyToOne
+    @JoinColumn(name = "branch_id")
+    private Branch branch;
+    
+    private Boolean isSuperAdmin = false;
+    
     private Boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime lastLogin;
@@ -47,6 +53,10 @@ public class User {
     public void setPhone(String phone) { this.phone = phone; }
     public Role getRole() { return role; }
     public void setRole(Role role) { this.role = role; }
+    public Branch getBranch() { return branch; }
+    public void setBranch(Branch branch) { this.branch = branch; }
+    public Boolean getIsSuperAdmin() { return isSuperAdmin != null ? isSuperAdmin : false; }
+    public void setIsSuperAdmin(Boolean isSuperAdmin) { this.isSuperAdmin = isSuperAdmin; }
     public Boolean getActive() { return active; }
     public void setActive(Boolean active) { this.active = active; }
     public LocalDateTime getCreatedAt() { return createdAt; }

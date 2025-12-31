@@ -29,7 +29,9 @@
 /home/runner/workspace/backend/src/main/java/com/erp/model/HRLetter.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/DesignationRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Candidate.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/BranchController.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/TrainingController.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/Branch.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/ExpenseRequestRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/HRLetterRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/HRLetterController.java
@@ -153,6 +155,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/controller/PRFulfillmentController.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/StatutoryRuleRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/FinalSettlementService.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/BranchRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GoodsIssueLineRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Holiday.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/TrainingSessionRepository.java

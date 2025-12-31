@@ -18,13 +18,22 @@ public class JwtUtil {
     }
     
     public String generateToken(String username, String role) {
-        return Jwts.builder()
+        return generateToken(username, role, null, false);
+    }
+    
+    public String generateToken(String username, String role, Long branchId, boolean isSuperAdmin) {
+        var builder = Jwts.builder()
             .subject(username)
             .claim("role", role)
+            .claim("isSuperAdmin", isSuperAdmin)
             .issuedAt(new Date())
-            .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
-            .signWith(secretKey)
-            .compact();
+            .expiration(new Date(System.currentTimeMillis() + jwtExpiration));
+        
+        if (branchId != null) {
+            builder.claim("branchId", branchId);
+        }
+        
+        return builder.signWith(secretKey).compact();
     }
     
     public String extractUsername(String token) {
@@ -33,6 +42,20 @@ public class JwtUtil {
     
     public String extractRole(String token) {
         return getClaims(token).get("role", String.class);
+    }
+    
+    public Long extractBranchId(String token) {
+        Object branchId = getClaims(token).get("branchId");
+        if (branchId == null) return null;
+        if (branchId instanceof Long) return (Long) branchId;
+        if (branchId instanceof Integer) return ((Integer) branchId).longValue();
+        return null;
+    }
+    
+    public Boolean extractIsSuperAdmin(String token) {
+        Object isSuperAdmin = getClaims(token).get("isSuperAdmin");
+        if (isSuperAdmin == null) return false;
+        return (Boolean) isSuperAdmin;
     }
     
     public boolean validateToken(String token) {

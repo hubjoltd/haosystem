@@ -27,6 +27,10 @@ export interface AuthResponse {
   lastName: string;
   role: string;
   permissions: string;
+  branchId?: number;
+  branchName?: string;
+  branchCode?: string;
+  isSuperAdmin?: boolean;
 }
 
 export interface CurrentUser {
@@ -37,6 +41,29 @@ export interface CurrentUser {
   lastName: string;
   role: string;
   permissions: { [key: string]: string[] };
+  branchId?: number;
+  branchName?: string;
+  branchCode?: string;
+  isSuperAdmin: boolean;
+}
+
+export interface Branch {
+  id: number;
+  code: string;
+  name: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zipCode?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  logoPath?: string;
+  currency?: string;
+  dateFormat?: string;
+  timezone?: string;
+  active: boolean;
 }
 
 @Injectable({
@@ -72,7 +99,6 @@ export class AuthService {
   }
 
   private normalizeToken(token: string): string {
-    // Strip "Bearer " prefix if the backend included it
     if (token && token.startsWith('Bearer ')) {
       return token.substring(7);
     }
@@ -90,7 +116,11 @@ export class AuthService {
           firstName: response.firstName,
           lastName: response.lastName,
           role: response.role,
-          permissions: this.parsePermissions(response.permissions)
+          permissions: this.parsePermissions(response.permissions),
+          branchId: response.branchId,
+          branchName: response.branchName,
+          branchCode: response.branchCode,
+          isSuperAdmin: response.isSuperAdmin || false
         };
         localStorage.setItem('user', JSON.stringify(user));
         this.currentUserSubject.next(user);
@@ -109,7 +139,11 @@ export class AuthService {
           firstName: response.firstName,
           lastName: response.lastName,
           role: response.role,
-          permissions: this.parsePermissions(response.permissions)
+          permissions: this.parsePermissions(response.permissions),
+          branchId: response.branchId,
+          branchName: response.branchName,
+          branchCode: response.branchCode,
+          isSuperAdmin: response.isSuperAdmin || false
         };
         localStorage.setItem('user', JSON.stringify(user));
         this.currentUserSubject.next(user);
@@ -140,6 +174,21 @@ export class AuthService {
     return user?.userId || null;
   }
 
+  getCurrentBranchId(): number | null {
+    const user = this.getCurrentUser();
+    return user?.branchId || null;
+  }
+
+  getCurrentBranchName(): string | null {
+    const user = this.getCurrentUser();
+    return user?.branchName || null;
+  }
+
+  isSuperAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user?.isSuperAdmin || false;
+  }
+
   hasRole(role: string): boolean {
     const user = this.getCurrentUser();
     return user?.role === role;
@@ -148,7 +197,7 @@ export class AuthService {
   isAdmin(): boolean {
     const user = this.getCurrentUser();
     if (!user) return false;
-    return user.role === 'ADMIN' || (user.permissions?.['all']?.includes('all') ?? false);
+    return user.role === 'ADMIN' || user.role === 'SUPER_ADMIN' || user.isSuperAdmin || (user.permissions?.['all']?.includes('all') ?? false);
   }
 
   hasFeatureAccess(feature: string): boolean {

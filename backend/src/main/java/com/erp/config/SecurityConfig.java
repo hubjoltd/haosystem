@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .requestMatchers("/*.css").permitAll()
                 .requestMatchers("/assets/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/branches/active").permitAll()
                 .requestMatchers("/api/health").permitAll()
                 .requestMatchers("/health").permitAll()
                 .requestMatchers("/healthz").permitAll()

@@ -65,6 +65,7 @@ import { PurchaseInvoiceComponent } from './components/purchase/purchase-invoice
 import { PrefixSettingsComponent } from './components/settings/prefix-settings/prefix-settings.component';
 import { AddRoleComponent } from './components/settings/roles-settings/add-role/add-role.component';
 import { AddStaffComponent } from './components/settings/staff-management/add-staff/add-staff.component';
+import { BranchManagementComponent } from './components/settings/branch-management/branch-management.component';
 
 import { DepartmentsComponent } from './components/hr/organization/departments/departments.component';
 import { LocationsComponent } from './components/hr/organization/locations/locations.component';
@@ -150,6 +151,7 @@ const routes: Routes = [
       { path: 'settings/staff/add', component: AddStaffComponent },
       { path: 'settings/staff/edit/:id', component: AddStaffComponent },
       { path: 'settings/prefixes', component: PrefixSettingsComponent },
+      { path: 'settings/branches', component: BranchManagementComponent },
       { path: 'settings/integrations', component: IntegrationsComponent },
       { path: 'customers', component: CustomerManagementComponent },
       { path: 'contracts', component: ContractManagementComponent },

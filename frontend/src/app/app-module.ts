@@ -76,6 +76,7 @@ import { PrefixSettingsComponent } from './components/settings/prefix-settings/p
 import { AddRoleComponent } from './components/settings/roles-settings/add-role/add-role.component';
 import { AddStaffComponent } from './components/settings/staff-management/add-staff/add-staff.component';
 import { NotificationComponent } from './components/notification/notification.component';
+import { BranchManagementComponent } from './components/settings/branch-management/branch-management.component';
 
 import { DepartmentsComponent } from './components/hr/organization/departments/departments.component';
 import { LocationsComponent } from './components/hr/organization/locations/locations.component';
@@ -169,6 +170,7 @@ import { HolidayCalendarComponent } from './components/leave/holiday-calendar/ho
     AddRoleComponent,
     AddStaffComponent,
     NotificationComponent,
+    BranchManagementComponent,
     DepartmentsComponent,
     LocationsComponent,
     JobRolesComponent,

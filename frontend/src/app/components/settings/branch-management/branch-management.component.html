@@ -1,0 +1,296 @@
+<div class="branch-management">
+  <div class="page-header">
+    <div class="header-left">
+      <button *ngIf="activeTab === 'users'" class="btn-back" (click)="backToBranches()">
+        <i class="fas fa-arrow-left"></i> Back to Branches
+      </button>
+      <h1>
+        <i class="fas fa-building"></i>
+        {{ activeTab === 'branches' ? 'Branch Management' : 'Branch Users - ' + selectedBranch?.name }}
+      </h1>
+    </div>
+    <div class="header-actions">
+      <button *ngIf="activeTab === 'branches'" class="btn btn-primary" (click)="openAddBranchModal()">
+        <i class="fas fa-plus"></i> Add Branch
+      </button>
+      <button *ngIf="activeTab === 'users'" class="btn btn-primary" (click)="openAddUserModal()">
+        <i class="fas fa-user-plus"></i> Add User
+      </button>
+    </div>
+  </div>
+
+  <div class="content-area" *ngIf="activeTab === 'branches'">
+    <div class="loading" *ngIf="isLoading">
+      <i class="fas fa-spinner fa-spin"></i> Loading branches...
+    </div>
+
+    <div class="empty-state" *ngIf="!isLoading && branches.length === 0">
+      <i class="fas fa-building"></i>
+      <h3>No Branches Found</h3>
+      <p>Create your first branch to get started with multi-branch management.</p>
+      <button class="btn btn-primary" (click)="openAddBranchModal()">
+        <i class="fas fa-plus"></i> Create Branch
+      </button>
+    </div>
+
+    <div class="branches-grid" *ngIf="!isLoading && branches.length > 0">
+      <div class="branch-card" *ngFor="let branch of branches" [class.inactive]="!branch.active">
+        <div class="branch-header">
+          <div class="branch-logo">
+            <img *ngIf="branch.logoPath" [src]="branch.logoPath" [alt]="branch.name" />
+            <i *ngIf="!branch.logoPath" class="fas fa-store"></i>
+          </div>
+          <div class="branch-status" [class.active]="branch.active" [class.inactive]="!branch.active">
+            {{ branch.active ? 'Active' : 'Inactive' }}
+          </div>
+        </div>
+        <div class="branch-body">
+          <h3>{{ branch.name }}</h3>
+          <span class="branch-code">{{ branch.code }}</span>
+          <div class="branch-details">
+            <p *ngIf="branch.address"><i class="fas fa-map-marker-alt"></i> {{ branch.address }}</p>
+            <p *ngIf="branch.phone"><i class="fas fa-phone"></i> {{ branch.phone }}</p>
+            <p *ngIf="branch.email"><i class="fas fa-envelope"></i> {{ branch.email }}</p>
+          </div>
+        </div>
+        <div class="branch-actions">
+          <button class="btn btn-sm btn-secondary" (click)="selectBranch(branch)" title="Manage Users">
+            <i class="fas fa-users"></i> Users
+          </button>
+          <button class="btn btn-sm btn-secondary" (click)="openEditBranchModal(branch)" title="Edit Branch">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn btn-sm btn-danger" (click)="deleteBranch(branch)" title="Delete Branch">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-area" *ngIf="activeTab === 'users'">
+    <div class="loading" *ngIf="isLoading">
+      <i class="fas fa-spinner fa-spin"></i> Loading users...
+    </div>
+
+    <div class="empty-state" *ngIf="!isLoading && branchUsers.length === 0">
+      <i class="fas fa-users"></i>
+      <h3>No Users in This Branch</h3>
+      <p>Add users to allow them to access this branch's data.</p>
+      <button class="btn btn-primary" (click)="openAddUserModal()">
+        <i class="fas fa-user-plus"></i> Add User
+      </button>
+    </div>
+
+    <div class="users-table" *ngIf="!isLoading && branchUsers.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of branchUsers">
+            <td>
+              <div class="user-info">
+                <div class="avatar">{{ user.firstName?.charAt(0) || '?' }}</div>
+                <span>{{ user.firstName }} {{ user.lastName }}</span>
+              </div>
+            </td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td><span class="role-badge">{{ user.role?.name || 'N/A' }}</span></td>
+            <td>
+              <span class="status-badge" [class.active]="user.active" [class.inactive]="!user.active">
+                {{ user.active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="actions-cell">
+              <button class="btn btn-sm btn-secondary" (click)="openEditUserModal(user)" title="Edit User">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-sm btn-secondary" (click)="openPasswordModal(user)" title="Reset Password">
+                <i class="fas fa-key"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" (click)="deleteUser(user)" title="Delete User">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showBranchModal" (click)="closeBranchModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editMode ? 'Edit Branch' : 'Add New Branch' }}</h2>
+      <button class="close-btn" (click)="closeBranchModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Branch Code *</label>
+          <input type="text" [(ngModel)]="branchForm.code" placeholder="e.g., BR001" [disabled]="editMode" />
+        </div>
+        <div class="form-group">
+          <label>Branch Name *</label>
+          <input type="text" [(ngModel)]="branchForm.name" placeholder="Branch name" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Address</label>
+        <input type="text" [(ngModel)]="branchForm.address" placeholder="Street address" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>City</label>
+          <input type="text" [(ngModel)]="branchForm.city" placeholder="City" />
+        </div>
+        <div class="form-group">
+          <label>State</label>
+          <input type="text" [(ngModel)]="branchForm.state" placeholder="State" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Country</label>
+          <input type="text" [(ngModel)]="branchForm.country" placeholder="Country" />
+        </div>
+        <div class="form-group">
+          <label>Zip Code</label>
+          <input type="text" [(ngModel)]="branchForm.zipCode" placeholder="Zip code" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" [(ngModel)]="branchForm.phone" placeholder="Phone number" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" [(ngModel)]="branchForm.email" placeholder="Email address" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Currency</label>
+          <select [(ngModel)]="branchForm.currency">
+            <option value="USD">USD - US Dollar</option>
+            <option value="EUR">EUR - Euro</option>
+            <option value="GBP">GBP - British Pound</option>
+            <option value="JPY">JPY - Japanese Yen</option>
+            <option value="CNY">CNY - Chinese Yuan</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Timezone</label>
+          <select [(ngModel)]="branchForm.timezone">
+            <option value="UTC">UTC</option>
+            <option value="America/New_York">Eastern Time (ET)</option>
+            <option value="America/Chicago">Central Time (CT)</option>
+            <option value="America/Denver">Mountain Time (MT)</option>
+            <option value="America/Los_Angeles">Pacific Time (PT)</option>
+            <option value="Europe/London">London (GMT)</option>
+            <option value="Asia/Tokyo">Tokyo (JST)</option>
+            <option value="Asia/Shanghai">Shanghai (CST)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="branchForm.active" />
+          <span>Active</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeBranchModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveBranch()" [disabled]="isLoading">
+        <i *ngIf="isLoading" class="fas fa-spinner fa-spin"></i>
+        {{ editMode ? 'Update Branch' : 'Create Branch' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showUserModal" (click)="closeUserModal()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editMode ? 'Edit User' : 'Add New User' }}</h2>
+      <button class="close-btn" (click)="closeUserModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>First Name *</label>
+          <input type="text" [(ngModel)]="userForm.firstName" placeholder="First name" />
+        </div>
+        <div class="form-group">
+          <label>Last Name *</label>
+          <input type="text" [(ngModel)]="userForm.lastName" placeholder="Last name" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Username *</label>
+          <input type="text" [(ngModel)]="userForm.username" placeholder="Username" [disabled]="editMode" />
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" [(ngModel)]="userForm.email" placeholder="Email address" />
+        </div>
+      </div>
+      <div class="form-group" *ngIf="!editMode">
+        <label>Password *</label>
+        <input type="password" [(ngModel)]="userForm.password" placeholder="Password (min 6 characters)" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" [(ngModel)]="userForm.phone" placeholder="Phone number" />
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <select [(ngModel)]="userForm.roleId">
+            <option [ngValue]="undefined">Select a role</option>
+            <option *ngFor="let role of roles" [ngValue]="role.id">{{ role.name }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeUserModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveUser()" [disabled]="isLoading">
+        <i *ngIf="isLoading" class="fas fa-spinner fa-spin"></i>
+        {{ editMode ? 'Update User' : 'Create User' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showPasswordModal" (click)="closePasswordModal()">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Reset Password</h2>
+      <button class="close-btn" (click)="closePasswordModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>New Password *</label>
+        <input type="password" [(ngModel)]="newPassword" placeholder="Enter new password (min 6 characters)" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closePasswordModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="resetPassword()">Reset Password</button>
+    </div>
+  </div>
+</div>
