@@ -68,7 +68,7 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.payrollService.getPayrollRuns().subscribe({
       next: (runs) => {
-        this.payrollRuns = runs.filter(r => r.status === 'APPROVED' || r.status === 'CALCULATED' || r.status === 'PROCESSED');
+        this.payrollRuns = runs.filter(r => r.status === 'APPROVED' || r.status === 'CALCULATED');
         this.loading = false;
       },
       error: (err) => {

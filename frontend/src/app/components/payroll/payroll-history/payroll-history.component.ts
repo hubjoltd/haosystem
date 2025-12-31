@@ -97,7 +97,7 @@ export class PayrollHistoryComponent implements OnInit {
   loadPayrollRuns(): void {
     this.payrollService.getPayrollRuns().subscribe({
       next: (runs) => {
-        this.payrollRuns = runs;
+        this.payrollRuns = runs.filter(r => r.status === 'PROCESSED' || r.status === 'COMPLETED');
         this.loadPayrollRecords();
       },
       error: (err) => {
