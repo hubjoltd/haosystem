@@ -235,6 +235,7 @@ export class SidebarComponent implements OnInit {
       permissionKey: 'Attendance',
       children: [
         { icon: 'fas fa-user-clock', label: 'Daily Attendance', route: '/app/attendance/management' },
+        { icon: 'fas fa-calendar-week', label: 'Weekly Timesheet', route: '/app/attendance/weekly-timesheet' },
         { icon: 'fas fa-sign-in-alt', label: 'Clock In / Out', route: '/app/attendance/clock-in-out' }
       ]
     },

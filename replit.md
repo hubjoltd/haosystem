@@ -28,7 +28,9 @@ Preferred communication style: Simple, everyday language.
 8.  **Audit Trails & Logging**: Comprehensive tracking for system, inventory, and purchase actions.
 9.  **Reports**: Detailed reports across Inventory (e.g., Stock Summary, Valuation) and Purchase (e.g., PR List, PO List).
 10. **HR Management**: Comprehensive module including Organization Structure, Employee Master, Document Management, Recruitment, Training & Development, and Onboarding.
-11. **Time, Attendance & Leave Management**: Web-based clock in/out, multi-method attendance tracking, overtime calculation, leave types, requests with approval workflows, and holiday calendars.
+11. **Time, Attendance & Leave Management**: Web-based clock in/out, multi-method attendance tracking, overtime calculation, leave types, requests with approval workflows, and holiday calendars. Includes:
+    - **Daily Attendance**: Daily attendance tracking with manual entry and upload capabilities
+    - **Weekly Timesheet - Project Wise**: Project-based weekly timesheet view with auto-generate functionality (generates 7 days, auto-marks weekends), employee/project breakdown, day-by-day hours tracking, variance calculation from 40-hour week, and summary cards (Total Employees, Projects, Hours, Average)
 12. **Integration Capabilities**: Settings for external systems like QuickBooks, SAP, ADP, Jira, SMTP, and SMS (Twilio/Vonage/AWS SNS).
 13. **Expense & Reimbursement Management**: Expense categories, request workflow (DRAFT to APPROVED/REJECTED), manager approval, reimbursement processing with payroll integration.
 14. **Loans & Advances Management**: Loan applications, approval workflow, EMI configuration, auto-deduction, ledger, repayment history.
