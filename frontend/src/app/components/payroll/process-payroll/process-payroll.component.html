@@ -1,24 +1,75 @@
-<div class="process-payroll-container" >
-  <div class="page-header">
-    <div class="header-left">
-      <button class="btn btn-back" (click)="goBack()">
-        <i class="fas fa-arrow-left"></i>
-      </button>
-      <div>
-        <h2>Process Payroll</h2>
-        <span class="run-info" *ngIf="payrollRun">{{ payrollRun.payrollRunNumber }}</span>
+<div class="process-payroll-container">
+  <div *ngIf="viewMode === 'list'">
+    <div class="page-header">
+      <div class="header-left">
+        <h2><i class="fas fa-play-circle"></i> Process Payroll</h2>
       </div>
     </div>
-    <button class="btn btn-success" (click)="processPayroll()" 
-            [disabled]="processing || !canProcess()"
-            *ngIf="payrollRun?.status !== 'PROCESSED'">
-      <i class="fas fa-check-circle"></i> 
-      {{ processing ? 'Processing...' : (selectedRecordIds.size > 0 ? 'Process Selected (' + selectedRecordIds.size + ')' : 'Process All') }}
-    </button>
-    <span class="processed-badge" *ngIf="payrollRun?.status === 'PROCESSED'">
-      <i class="fas fa-check-circle"></i> Fully Processed
-    </span>
+
+    <div class="loading-state" *ngIf="loading">
+      <i class="fas fa-spinner fa-spin"></i> Loading payroll runs...
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && payrollRuns.length === 0">
+      <i class="fas fa-inbox"></i>
+      <h3>No Payroll Runs Ready</h3>
+      <p>Approve timesheets first to create payroll runs for processing.</p>
+    </div>
+
+    <div class="runs-grid" *ngIf="!loading && payrollRuns.length > 0">
+      <div class="run-card" *ngFor="let run of payrollRuns" (click)="selectRun(run)">
+        <div class="run-header">
+          <span class="run-number">{{ run.payrollRunNumber }}</span>
+          <span class="run-status" [ngClass]="getStatusClass(run.status)">{{ run.status }}</span>
+        </div>
+        <div class="run-details">
+          <div class="detail-row">
+            <span class="label">Pay Period:</span>
+            <span class="value">{{ run.periodStartDate }} - {{ run.periodEndDate }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Pay Date:</span>
+            <span class="value">{{ run.payDate }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Employees:</span>
+            <span class="value">{{ run.totalEmployees || 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Total Net Pay:</span>
+            <span class="value amount">${{ (run.totalNetPay || 0).toFixed(2) }}</span>
+          </div>
+        </div>
+        <div class="run-actions">
+          <button class="btn btn-primary btn-sm">
+            <i class="fas fa-eye"></i> View & Process
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <div *ngIf="viewMode === 'detail'">
+    <div class="page-header">
+      <div class="header-left">
+        <button class="btn btn-back" (click)="goBack()">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <div>
+          <h2>Process Payroll</h2>
+          <span class="run-info" *ngIf="payrollRun">{{ payrollRun.payrollRunNumber }}</span>
+        </div>
+      </div>
+      <button class="btn btn-success" (click)="processPayroll()" 
+              [disabled]="processing || !canProcess()"
+              *ngIf="payrollRun?.status !== 'PROCESSED'">
+        <i class="fas fa-check-circle"></i> 
+        {{ processing ? 'Processing...' : (selectedRecordIds.size > 0 ? 'Process Selected (' + selectedRecordIds.size + ')' : 'Process All') }}
+      </button>
+      <span class="processed-badge" *ngIf="payrollRun?.status === 'PROCESSED'">
+        <i class="fas fa-check-circle"></i> Fully Processed
+      </span>
+    </div>
 
   <div class="summary-section" *ngIf="payrollRun">
     <div class="summary-card">
@@ -151,9 +202,12 @@
               {{ record.status || 'CALCULATED' }}
             </span>
           </td>
-          <td>
+          <td class="actions-col">
             <button class="btn-icon" (click)="viewRecordDetails(record)" title="View Pay Stub">
               <i class="fas fa-eye"></i>
+            </button>
+            <button class="btn-icon download" *ngIf="record.status === 'PROCESSED'" (click)="downloadPayslip(record)" title="Download Payslip">
+              <i class="fas fa-download"></i>
             </button>
           </td>
         </tr>
@@ -175,6 +229,7 @@
         </tr>
       </tfoot>
     </table>
+  </div>
   </div>
 </div>
 

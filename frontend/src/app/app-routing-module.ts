@@ -222,7 +222,7 @@ const routes: Routes = [
       { path: 'payroll/rules/tax-rules', component: TaxRulesComponent },
       { path: 'payroll/rules/statutory-rules', component: StatutoryRulesComponent },
       { path: 'payroll/timesheets', component: TimesheetApprovalComponent },
-      { path: 'payroll/calculation', component: PayrollCalculationComponent },
+      { path: 'payroll/process', component: ProcessPayrollComponent },
       { path: 'payroll/process/:id', component: ProcessPayrollComponent },
       { path: 'payroll/history', component: PayrollHistoryComponent },
       { path: 'payroll/self-service', component: EmployeeSelfServiceComponent },

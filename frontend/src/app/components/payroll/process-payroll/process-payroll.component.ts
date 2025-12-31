@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { PayrollService, PayrollRun, PayrollRecord } from '../../../services/payroll.service';
+import { Subscription } from 'rxjs';
+import jsPDF from 'jspdf';
 
 @Component({
   selector: 'app-process-payroll',
@@ -11,7 +13,8 @@ import { PayrollService, PayrollRun, PayrollRecord } from '../../../services/pay
   templateUrl: './process-payroll.component.html',
   styleUrls: ['./process-payroll.component.scss']
 })
-export class ProcessPayrollComponent implements OnInit {
+export class ProcessPayrollComponent implements OnInit, OnDestroy {
+  payrollRuns: PayrollRun[] = [];
   payrollRun: PayrollRun | null = null;
   payrollRecords: PayrollRecord[] = [];
   selectedRecordIds: Set<number> = new Set();
@@ -20,6 +23,8 @@ export class ProcessPayrollComponent implements OnInit {
   selectedRecord: PayrollRecord | null = null;
   showDetailModal = false;
   accountPostings: any = null;
+  viewMode: 'list' | 'detail' = 'list';
+  private routeSub: Subscription | null = null;
 
   summary = {
     totalGrossPay: 0,
@@ -39,9 +44,43 @@ export class ProcessPayrollComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.loadPayrollRun(parseInt(id));
+    this.routeSub = this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.viewMode = 'detail';
+        this.loadPayrollRun(parseInt(id));
+      } else {
+        this.viewMode = 'list';
+        this.payrollRun = null;
+        this.payrollRecords = [];
+        this.loadPayrollRuns();
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.routeSub) {
+      this.routeSub.unsubscribe();
+    }
+  }
+
+  loadPayrollRuns(): void {
+    this.loading = true;
+    this.payrollService.getPayrollRuns().subscribe({
+      next: (runs) => {
+        this.payrollRuns = runs.filter(r => r.status === 'APPROVED' || r.status === 'CALCULATED' || r.status === 'PROCESSED');
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading payroll runs:', err);
+        this.loading = false;
+      }
+    });
+  }
+
+  selectRun(run: PayrollRun): void {
+    if (run.id) {
+      this.router.navigate(['/app/payroll/process', run.id]);
     }
   }
 
@@ -200,6 +239,122 @@ export class ProcessPayrollComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/app/payroll/calculation']);
+    if (this.viewMode === 'detail') {
+      this.router.navigate(['/app/payroll/process']);
+    } else {
+      this.router.navigate(['/app/payroll/timesheets']);
+    }
+  }
+
+  downloadPayslip(record: PayrollRecord): void {
+    const doc = new jsPDF();
+    const employeeName = this.getEmployeeName(record);
+    const employeeCode = this.getEmployeeCode(record);
+    
+    doc.setFontSize(20);
+    doc.setTextColor(0, 121, 107);
+    doc.text('PAYSLIP', 105, 20, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Pay Period: ${this.payrollRun?.periodStartDate || ''} to ${this.payrollRun?.periodEndDate || ''}`, 105, 30, { align: 'center' });
+    
+    doc.setLineWidth(0.5);
+    doc.line(20, 35, 190, 35);
+    
+    doc.setFontSize(11);
+    doc.text('Employee Details', 20, 45);
+    doc.setFontSize(10);
+    doc.text(`Name: ${employeeName}`, 20, 55);
+    doc.text(`Employee ID: ${employeeCode}`, 20, 62);
+    doc.text(`Pay Date: ${this.payrollRun?.payDate || 'N/A'}`, 120, 55);
+    doc.text(`Status: ${record.status}`, 120, 62);
+    
+    doc.line(20, 70, 190, 70);
+    
+    let y = 80;
+    doc.setFontSize(11);
+    doc.setTextColor(0, 121, 107);
+    doc.text('EARNINGS', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    
+    y += 10;
+    doc.text('Base Pay:', 25, y);
+    doc.text(`$${(record.basePay || 0).toFixed(2)}`, 170, y, { align: 'right' });
+    
+    y += 7;
+    doc.text('Overtime Pay:', 25, y);
+    doc.text(`$${(record.overtimePay || 0).toFixed(2)}`, 170, y, { align: 'right' });
+    
+    y += 7;
+    doc.text('Bonuses:', 25, y);
+    doc.text(`$${(record.bonuses || 0).toFixed(2)}`, 170, y, { align: 'right' });
+    
+    y += 7;
+    doc.text('Reimbursements:', 25, y);
+    doc.text(`$${(record.reimbursements || 0).toFixed(2)}`, 170, y, { align: 'right' });
+    
+    y += 10;
+    doc.setFontSize(11);
+    doc.text('Gross Pay:', 25, y);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`$${(record.grossPay || 0).toFixed(2)}`, 170, y, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    
+    y += 15;
+    doc.setFontSize(11);
+    doc.setTextColor(0, 121, 107);
+    doc.text('DEDUCTIONS', 20, y);
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    
+    y += 10;
+    doc.text('Federal Tax:', 25, y);
+    doc.text(`-$${(record.federalTax || 0).toFixed(2)}`, 170, y, { align: 'right' });
+    
+    y += 7;
+    doc.text('State Tax:', 25, y);
+    doc.text(`-$${(record.stateTax || 0).toFixed(2)}`, 170, y, { align: 'right' });
+    
+    y += 7;
+    doc.text('Social Security:', 25, y);
+    doc.text(`-$${(record.socialSecurityTax || 0).toFixed(2)}`, 170, y, { align: 'right' });
+    
+    y += 7;
+    doc.text('Medicare:', 25, y);
+    doc.text(`-$${(record.medicareTax || 0).toFixed(2)}`, 170, y, { align: 'right' });
+    
+    y += 7;
+    doc.text('Health Insurance:', 25, y);
+    doc.text(`-$${(record.healthInsurance || 0).toFixed(2)}`, 170, y, { align: 'right' });
+    
+    y += 7;
+    doc.text('401(k) Contribution:', 25, y);
+    doc.text(`-$${(record.retirement401k || 0).toFixed(2)}`, 170, y, { align: 'right' });
+    
+    y += 10;
+    doc.setFontSize(11);
+    doc.text('Total Deductions:', 25, y);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`-$${(record.totalDeductions || 0).toFixed(2)}`, 170, y, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    
+    y += 20;
+    doc.setLineWidth(1);
+    doc.line(20, y - 5, 190, y - 5);
+    
+    doc.setFontSize(14);
+    doc.setTextColor(0, 121, 107);
+    doc.text('NET PAY:', 25, y + 5);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`$${(record.netPay || 0).toFixed(2)}`, 170, y + 5, { align: 'right' });
+    
+    doc.setFontSize(8);
+    doc.setTextColor(128, 128, 128);
+    doc.setFont('helvetica', 'normal');
+    doc.text('This is a computer-generated document. No signature is required.', 105, 280, { align: 'center' });
+    
+    doc.save(`payslip_${employeeCode}_${this.payrollRun?.periodEndDate || 'unknown'}.pdf`);
   }
 }

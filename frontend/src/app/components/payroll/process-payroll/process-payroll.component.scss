@@ -2,6 +2,135 @@
   padding: 20px;
 }
 
+.loading-state {
+  text-align: center;
+  padding: 60px;
+  color: #666;
+  font-size: 16px;
+  
+  i {
+    margin-right: 10px;
+    color: #008080;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 40px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  
+  i {
+    font-size: 4rem;
+    color: #ddd;
+    margin-bottom: 20px;
+  }
+  
+  h3 {
+    color: #333;
+    margin: 0 0 10px;
+  }
+  
+  p {
+    color: #666;
+    margin: 0;
+  }
+}
+
+.runs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.run-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    border-color: #008080;
+  }
+  
+  .run-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    
+    .run-number {
+      font-weight: 600;
+      font-size: 16px;
+      color: #008080;
+    }
+    
+    .run-status {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      
+      &.status-approved { background: #e3f2fd; color: #1565c0; }
+      &.status-calculated { background: #fff3e0; color: #ef6c00; }
+      &.status-processed { background: #e8f5e9; color: #2e7d32; }
+    }
+  }
+  
+  .run-details {
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      
+      &:last-child { border-bottom: none; }
+      
+      .label {
+        color: #666;
+        font-size: 13px;
+      }
+      
+      .value {
+        font-weight: 500;
+        color: #333;
+        
+        &.amount { color: #2e7d32; }
+      }
+    }
+  }
+  
+  .run-actions {
+    margin-top: 16px;
+    text-align: center;
+    
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
+.btn-icon.download {
+  color: #1976d2;
+  
+  &:hover {
+    color: #0d47a1;
+    background: #e3f2fd;
+  }
+}
+
+.actions-col {
+  display: flex;
+  gap: 4px;
+}
+
 .page-header {
   display: flex;
   justify-content: space-between;
