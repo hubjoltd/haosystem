@@ -69,6 +69,7 @@
               <th>#</th>
               <th>EMP ID</th>
               <th>NAME</th>
+              <th>PROJECT</th>
               <th>CLOCK IN</th>
               <th>CLOCK OUT</th>
               <th>HOURS</th>
@@ -80,6 +81,7 @@
               <td>{{ i + 1 }}</td>
               <td class="emp-id">{{ record.employee?.employeeCode || 'EMP' + (i + 1) }}</td>
               <td class="emp-name">{{ record.employee?.firstName }} {{ record.employee?.lastName }}</td>
+              <td>{{ record.employee?.department?.name || 'General' }}</td>
               <td>{{ record.clockIn || '-' }}</td>
               <td>{{ record.clockOut || '-' }}</td>
               <td class="hours">{{ ((record.regularHours || 0) + (record.overtimeHours || 0)).toFixed(1) }}</td>
@@ -90,7 +92,7 @@
               </td>
             </tr>
             <tr *ngIf="attendanceRecords.length === 0 && !loading">
-              <td colspan="7" class="no-data">
+              <td colspan="8" class="no-data">
                 <i class="fas fa-calendar-times"></i>
                 No attendance records found for this date
               </td>

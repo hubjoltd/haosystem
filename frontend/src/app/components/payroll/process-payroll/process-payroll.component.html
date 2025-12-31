@@ -160,6 +160,7 @@
           </th>
           <th>Employee Code</th>
           <th>Employee Name</th>
+          <th>Project</th>
           <th>Type</th>
           <th class="number-col">Regular Hrs</th>
           <th class="number-col">OT Hrs</th>
@@ -187,6 +188,7 @@
           </td>
           <td>{{ getEmployeeCode(record) }}</td>
           <td class="employee-name">{{ getEmployeeName(record) }}</td>
+          <td>{{ record.projectCode || record.employee?.department?.name || 'General' }}</td>
           <td><span class="badge type">{{ record.employeeType || 'SALARIED' }}</span></td>
           <td class="number-col">{{ record.regularHours?.toFixed(2) || '0.00' }}</td>
           <td class="number-col">{{ record.overtimeHours?.toFixed(2) || '0.00' }}</td>
@@ -212,12 +214,12 @@
           </td>
         </tr>
         <tr *ngIf="payrollRecords.length === 0">
-          <td colspan="15" class="no-data">No payroll records found. Calculate payroll first.</td>
+          <td colspan="16" class="no-data">No payroll records found. Calculate payroll first.</td>
         </tr>
       </tbody>
       <tfoot *ngIf="payrollRecords.length > 0">
         <tr class="totals-row">
-          <td colspan="6"><strong>Totals {{ selectedRecordIds.size > 0 ? '(Selected)' : '(All)' }}</strong></td>
+          <td colspan="7"><strong>Totals {{ selectedRecordIds.size > 0 ? '(Selected)' : '(All)' }}</strong></td>
           <td class="number-col"><strong>${{ summary.totalBasePay.toFixed(2) }}</strong></td>
           <td class="number-col"><strong>${{ summary.totalOvertimePay.toFixed(2) }}</strong></td>
           <td class="number-col"><strong>${{ summary.totalReimbursements.toFixed(2) }}</strong></td>
