@@ -20,6 +20,16 @@ Preferred communication style: Simple, everyday language.
 ### Key Feature Modules
 1.  **Dashboard**: Overview statistics and charts.
 2.  **Settings**: General, Finance (tax, currency), Customer, Contract, Roles, Staff, and Prefix Settings for auto-generating IDs across modules.
+19. **Multi-Branch Management**: Complete multi-branch architecture with:
+    - Branch CRUD operations (create, edit, delete branches)
+    - Branch-specific user management with role-based access
+    - **Branch Settings** with 5 configuration tabs:
+      - **General**: Company legal name, display name, tax registration, business registration
+      - **Localization**: Currency symbol, position, time format, number format, fiscal year start
+      - **Tax & Finance**: Default tax rate, tax label, payment terms, invoice due days, footer/terms
+      - **Document Prefixes**: Auto-generated numbering for invoices, POs, quotations, receipts, payroll, employee IDs
+      - **Branding**: Logo upload, signature upload, primary/secondary colors, visibility toggles
+    - Data isolation per branch with independent settings
 3.  **Inventory**: Group Master, Item Master, Units, Warehouse/Bin, Suppliers, Valuation, Ledger.
 4.  **Stock Movement**: Goods Receipt (GRN), Goods Issue, Stock Transfer, Stock Adjustments with approval workflows.
 5.  **Customer & Contract Management**: CRUD operations with search and filtering.
