@@ -1,98 +1,232 @@
-<div class="timesheet-container">
+<div class="attendance-payroll-approval">
   <div class="page-header">
-    <h2>Attendance Approval & Timesheets</h2>
-    <button class="btn btn-primary" (click)="openGenerateModal()">
-      <i class="fas fa-sync"></i> Generate Timesheets
+    <div class="header-left">
+      <h1><i class="fas fa-clipboard-check"></i> Attendance & Payroll Approval</h1>
+      <p class="subtitle">Daily attendance approval and payroll processing</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="openGenerateModal()">
+        <i class="fas fa-sync"></i> Generate Timesheets
+      </button>
+    </div>
+  </div>
+
+  <div class="message-bar" *ngIf="message" [ngClass]="messageType">
+    {{ message }}
+  </div>
+
+  <div class="tabs">
+    <button [class.active]="activeTab === 'attendance'" (click)="switchTab('attendance')">
+      <i class="fas fa-calendar-check"></i> Daily Attendance Review
+    </button>
+    <button [class.active]="activeTab === 'timesheet'" (click)="switchTab('timesheet')">
+      <i class="fas fa-file-alt"></i> Timesheet Summary
     </button>
   </div>
 
-  <div class="filters-section">
-    <div class="filter-group">
-      <label>Status</label>
-      <select [(ngModel)]="filterStatus" (change)="filterTimesheets()">
-        <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label>Period Start</label>
-      <input type="date" [(ngModel)]="startDate">
-    </div>
-    <div class="filter-group">
-      <label>Period End</label>
-      <input type="date" [(ngModel)]="endDate">
+  <div class="tab-content" *ngIf="activeTab === 'attendance'">
+    <div class="section-box">
+      <h3><i class="fas fa-calendar-day"></i> Daily Attendance Review</h3>
+      
+      <div class="date-selector">
+        <label>Date:</label>
+        <input type="date" [(ngModel)]="selectedDate" (change)="onDateChange()" />
+        <span class="date-display">{{ formatDateDisplay(selectedDate) }}</span>
+      </div>
+
+      <div class="summary-cards">
+        <div class="summary-card employees">
+          <div class="card-icon"><i class="fas fa-users"></i></div>
+          <div class="card-content">
+            <span class="card-value">{{ totalEmployees }}</span>
+            <span class="card-label">Total Employees</span>
+          </div>
+        </div>
+        <div class="summary-card hours">
+          <div class="card-icon"><i class="fas fa-clock"></i></div>
+          <div class="card-content">
+            <span class="card-value">{{ totalHours.toFixed(1) }}<small>h</small></span>
+            <span class="card-label">Total Hours</span>
+          </div>
+        </div>
+        <div class="summary-card overtime">
+          <div class="card-icon"><i class="fas fa-business-time"></i></div>
+          <div class="card-content">
+            <span class="card-value">{{ totalOvertime.toFixed(1) }}<small>h</small></span>
+            <span class="card-label">Overtime</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>EMP ID</th>
+              <th>NAME</th>
+              <th>CLOCK IN</th>
+              <th>CLOCK OUT</th>
+              <th>HOURS</th>
+              <th>STATUS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let record of attendanceRecords; let i = index">
+              <td class="emp-id">{{ record.employee?.employeeCode || 'EMP' + (i + 1) }}</td>
+              <td class="emp-name">{{ record.employee?.firstName }} {{ record.employee?.lastName }}</td>
+              <td>{{ record.clockIn || '-' }}</td>
+              <td>{{ record.clockOut || '-' }}</td>
+              <td class="hours">{{ ((record.regularHours || 0) + (record.overtimeHours || 0)).toFixed(1) }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="getStatusClass(record.status || 'PRESENT')">
+                  {{ record.status || 'PRESENT' }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="attendanceRecords.length === 0 && !loading">
+              <td colspan="6" class="no-data">
+                <i class="fas fa-calendar-times"></i>
+                No attendance records found for this date
+              </td>
+            </tr>
+            <tr *ngIf="loading">
+              <td colspan="6" class="loading-row">
+                <i class="fas fa-spinner fa-spin"></i> Loading attendance records...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
-  <div class="summary-cards">
-    <div class="summary-card">
-      <span class="count">{{ getCountByStatus('DRAFT') }}</span>
-      <span class="label">Draft</span>
-    </div>
-    <div class="summary-card pending">
-      <span class="count">{{ getCountByStatus('PENDING_APPROVAL') }}</span>
-      <span class="label">Pending Approval</span>
-    </div>
-    <div class="summary-card approved">
-      <span class="count">{{ getCountByStatus('APPROVED') }}</span>
-      <span class="label">Approved</span>
-    </div>
-    <div class="summary-card rejected">
-      <span class="count">{{ getCountByStatus('REJECTED') }}</span>
-      <span class="label">Rejected</span>
-    </div>
-  </div>
+  <div class="tab-content" *ngIf="activeTab === 'timesheet'">
+    <div class="section-box">
+      <h3><i class="fas fa-file-invoice"></i> Last Pending for Timesheets</h3>
+      
+      <div class="timesheet-filters">
+        <div class="filter-group">
+          <label>Pay Date</label>
+          <input type="date" [(ngModel)]="payDate" />
+        </div>
+        <div class="filter-group">
+          <label>Approved By</label>
+          <input type="text" [(ngModel)]="approvedBy" />
+        </div>
+        <div class="filter-group">
+          <label>Week Ending</label>
+          <input type="date" [(ngModel)]="weekEndingDate" />
+        </div>
+      </div>
 
-  <div class="table-container">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Timesheet #</th>
-          <th>Employee</th>
-          <th>Period</th>
-          <th>Regular Hours</th>
-          <th>OT Hours</th>
-          <th>Total Hours</th>
-          <th>Present Days</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let ts of filteredTimesheets">
-          <td>{{ ts.timesheetNumber }}</td>
-          <td>{{ getEmployeeName(ts) }}</td>
-          <td>{{ ts.periodStartDate | date:'MMM d' }} - {{ ts.periodEndDate | date:'MMM d, yyyy' }}</td>
-          <td>{{ ts.totalRegularHours | number:'1.1-1' }}</td>
-          <td>{{ ts.totalOvertimeHours | number:'1.1-1' }}</td>
-          <td class="total">{{ ts.totalHours | number:'1.1-1' }}</td>
-          <td>{{ ts.presentDays }}</td>
-          <td>
-            <span class="status-badge" [ngClass]="getStatusClass(ts.status)">{{ ts.status }}</span>
-          </td>
-          <td class="actions">
-            <ng-container *ngIf="ts.status === 'PENDING_APPROVAL'">
-              <button class="btn btn-sm btn-success" (click)="approveTimesheet(ts.id!)" title="Approve">
-                <i class="fas fa-check"></i>
-              </button>
-              <button class="btn btn-sm btn-danger" (click)="rejectTimesheet(ts.id!)" title="Reject">
-                <i class="fas fa-times"></i>
-              </button>
-            </ng-container>
-            <span *ngIf="ts.status !== 'PENDING_APPROVAL'" class="no-action">-</span>
-          </td>
-        </tr>
-        <tr *ngIf="filteredTimesheets.length === 0">
-          <td colspan="9" class="no-data">No timesheets found</td>
-        </tr>
-      </tbody>
-    </table>
+      <div class="generate-btn-container">
+        <button class="btn btn-purple" (click)="openGenerateModal()">
+          <i class="fas fa-cogs"></i> Generate Attendance to Payroll
+        </button>
+      </div>
+
+      <div class="timesheet-summary-section">
+        <div class="section-header">
+          <h4>Timesheet Summary</h4>
+          <div class="header-actions">
+            <button class="btn btn-sm btn-outline" (click)="selectAllTimesheets()">
+              {{ areAllPendingSelected() ? 'Deselect All' : 'Select All Pending' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table timesheet-table">
+            <thead>
+              <tr>
+                <th class="checkbox-col">
+                  <input type="checkbox" 
+                         [checked]="areAllPendingSelected()"
+                         [indeterminate]="selectedTimesheetIds.length > 0 && !areAllPendingSelected()"
+                         (change)="selectAllTimesheets()" />
+                </th>
+                <th>EMP ID</th>
+                <th>NAME</th>
+                <th>Approved Hours</th>
+                <th>Days</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let ts of filteredTimesheets; let i = index" 
+                  (click)="selectEmployee(ts)"
+                  [class.selected]="selectedEmployee?.empId === (ts.employee?.employeeCode || 'EMP' + ts.employeeId)">
+                <td class="checkbox-col">
+                  <input type="checkbox" 
+                         *ngIf="ts.status === 'PENDING_APPROVAL'"
+                         [checked]="isTimesheetSelected(ts.id!)"
+                         (click)="$event.stopPropagation()"
+                         (change)="toggleTimesheetSelection(ts.id!)" />
+                  <span *ngIf="ts.status !== 'PENDING_APPROVAL'" class="checkbox-placeholder">-</span>
+                </td>
+                <td class="emp-id">{{ ts.employee?.employeeCode || 'EMP00' + (i + 1) }}</td>
+                <td class="emp-name">{{ getEmployeeName(ts) }}</td>
+                <td class="hours">{{ ts.totalHours?.toFixed(1) || '0.0' }}</td>
+                <td>{{ ts.presentDays || 0 }}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="getStatusClass(ts.status)">
+                    {{ ts.status }}
+                  </span>
+                </td>
+                <td class="actions">
+                  <ng-container *ngIf="ts.status === 'PENDING_APPROVAL'">
+                    <button class="btn btn-sm btn-success" (click)="approveTimesheet(ts.id!); $event.stopPropagation()" title="Approve">
+                      <i class="fas fa-check"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" (click)="rejectTimesheet(ts.id!); $event.stopPropagation()" title="Reject">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </ng-container>
+                  <span *ngIf="ts.status !== 'PENDING_APPROVAL'" class="no-action">-</span>
+                </td>
+              </tr>
+              <tr *ngIf="filteredTimesheets.length === 0 && !loading">
+                <td colspan="7" class="no-data">
+                  <i class="fas fa-file-alt"></i>
+                  No timesheets found. Generate timesheets to begin.
+                </td>
+              </tr>
+              <tr *ngIf="loading">
+                <td colspan="7" class="loading-row">
+                  <i class="fas fa-spinner fa-spin"></i> Loading timesheets...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bulk-actions" *ngIf="selectedTimesheetIds.length > 0">
+          <button class="btn btn-success" (click)="approveSelectedTimesheets()">
+            <i class="fas fa-check-double"></i> Approve Selected Timesheets ({{ selectedTimesheetIds.length }})
+          </button>
+        </div>
+      </div>
+
+      <div class="selected-employee-info" *ngIf="selectedEmployee">
+        <div class="employee-card">
+          <span class="label">EMP ID:</span>
+          <span class="value emp-id-value">{{ selectedEmployee.empId }}</span>
+          <span class="label">Name:</span>
+          <span class="value">{{ selectedEmployee.name }}</span>
+          <span class="status-badge" [ngClass]="getStatusClass(selectedEmployee.status)">
+            {{ selectedEmployee.status }}
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <div class="modal-overlay" *ngIf="showGenerateModal" (click)="closeGenerateModal()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>Generate Timesheets from Attendance</h3>
+      <h3><i class="fas fa-sync"></i> Generate Timesheets from Attendance</h3>
       <button class="close-btn" (click)="closeGenerateModal()">&times;</button>
     </div>
     <div class="modal-body">

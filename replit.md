@@ -36,7 +36,9 @@ Preferred communication style: Simple, everyday language.
 14. **Loans & Advances Management**: Loan applications, approval workflow, EMI configuration, auto-deduction, ledger, repayment history.
 15. **Compensation & Benefits**: Salary bands, revisions, bonus setup, health insurance, allowances.
 16. **F&F Settlement**: Final and Full Settlement processing for employee separations, automatic calculations, and workflow.
-17. **Payroll Management**: A 5-phase workflow covering Payroll Rules Configuration, Attendance Approval & Timesheets, Payroll Calculation (with exact formulas for salaried/hourly employees), Process Payroll (with selective employee checkbox processing and automated account postings), and Employee Self-Service (ESS).
+17. **Payroll Management**: A 5-phase workflow covering Payroll Rules Configuration, Attendance Approval & Timesheets, Payroll Calculation (with exact formulas for salaried/hourly employees), Process Payroll (with selective employee checkbox processing and automated account postings), and Employee Self-Service (ESS). Phase 2 (Attendance & Payroll Approval) includes:
+    - **Daily Attendance Review tab**: Date selector, summary cards (Total Employees, Total Hours, Overtime), attendance table with EMP ID, NAME, CLOCK IN/OUT, HOURS, STATUS
+    - **Timesheet Summary tab**: Period selection (Pay Date, Approved By, Week Ending), Generate Attendance to Payroll button, Timesheet Summary table with bulk selection and approval actions
 18. **Employee Self-Service (ESS) Portal**: Complete Phase 5 implementation with:
     - Pay Stubs viewing with detailed breakdown (earnings, deductions, taxes, net pay)
     - Salary slip download/print functionality (PDF generation via jsPDF)
