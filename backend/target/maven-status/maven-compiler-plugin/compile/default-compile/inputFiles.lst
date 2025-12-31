@@ -1,5 +1,6 @@
 /home/runner/workspace/backend/src/main/java/com/erp/controller/PurchaseRequisitionController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/ContractStatus.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/BranchSettings.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/AuditLogRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PurchaseInvoice.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/GoodsReceiptService.java
@@ -84,6 +85,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/service/PrefixSettingsService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/PRFulfillmentItem.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/LoanApplication.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/BranchSettingsRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/SupplierRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GoodsIssueRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/TrainingService.java
@@ -128,6 +130,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/InventoryLedgerRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/CandidateRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/ExpenseService.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/BranchSettingsController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Interview.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/StockTransferService.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/PayrollCalculationService.java

@@ -1,12 +1,14 @@
 <div class="branch-management">
   <div class="page-header">
     <div class="header-left">
-      <button *ngIf="activeTab === 'users'" class="btn-back" (click)="backToBranches()">
+      <button *ngIf="activeTab === 'users' || activeTab === 'settings'" class="btn-back" (click)="backToBranches()">
         <i class="fas fa-arrow-left"></i> Back to Branches
       </button>
       <h1>
         <i class="fas fa-building"></i>
-        {{ activeTab === 'branches' ? 'Branch Management' : 'Branch Users - ' + selectedBranch?.name }}
+        <ng-container *ngIf="activeTab === 'branches'">Branch Management</ng-container>
+        <ng-container *ngIf="activeTab === 'users'">Branch Users - {{ selectedBranch?.name }}</ng-container>
+        <ng-container *ngIf="activeTab === 'settings'">Branch Settings - {{ selectedBranch?.name }}</ng-container>
       </h1>
     </div>
     <div class="header-actions">
@@ -54,6 +56,9 @@
           </div>
         </div>
         <div class="branch-actions">
+          <button class="btn btn-sm btn-primary" (click)="openSettings(branch)" title="Branch Settings">
+            <i class="fas fa-cog"></i> Settings
+          </button>
           <button class="btn btn-sm btn-secondary" (click)="selectBranch(branch)" title="Manage Users">
             <i class="fas fa-users"></i> Users
           </button>
@@ -62,6 +67,279 @@
           </button>
           <button class="btn btn-sm btn-danger" (click)="deleteBranch(branch)" title="Delete Branch">
             <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-area" *ngIf="activeTab === 'settings'">
+    <div class="loading" *ngIf="isLoading">
+      <i class="fas fa-spinner fa-spin"></i> Loading settings...
+    </div>
+
+    <div class="settings-container" *ngIf="!isLoading && branchSettings">
+      <div class="settings-tabs">
+        <button [class.active]="settingsTab === 'general'" (click)="settingsTab = 'general'">
+          <i class="fas fa-info-circle"></i> General
+        </button>
+        <button [class.active]="settingsTab === 'localization'" (click)="settingsTab = 'localization'">
+          <i class="fas fa-globe"></i> Localization
+        </button>
+        <button [class.active]="settingsTab === 'tax'" (click)="settingsTab = 'tax'">
+          <i class="fas fa-percent"></i> Tax & Finance
+        </button>
+        <button [class.active]="settingsTab === 'documents'" (click)="settingsTab = 'documents'">
+          <i class="fas fa-file-alt"></i> Document Prefixes
+        </button>
+        <button [class.active]="settingsTab === 'branding'" (click)="settingsTab = 'branding'">
+          <i class="fas fa-palette"></i> Branding
+        </button>
+      </div>
+
+      <div class="settings-content">
+        <div class="settings-panel" *ngIf="settingsTab === 'general'">
+          <h3><i class="fas fa-building"></i> Company Information</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Company Legal Name</label>
+              <input type="text" [(ngModel)]="branchSettings.companyLegalName" placeholder="Legal company name for invoices" />
+            </div>
+            <div class="form-group">
+              <label>Display Name</label>
+              <input type="text" [(ngModel)]="branchSettings.displayName" placeholder="Display name" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tax Registration Number</label>
+              <input type="text" [(ngModel)]="branchSettings.taxRegistrationNumber" placeholder="e.g., EIN, VAT Number" />
+            </div>
+            <div class="form-group">
+              <label>Business Registration Number</label>
+              <input type="text" [(ngModel)]="branchSettings.businessRegistrationNumber" placeholder="Business license number" />
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-panel" *ngIf="settingsTab === 'localization'">
+          <h3><i class="fas fa-globe"></i> Regional Settings</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Currency Symbol</label>
+              <input type="text" [(ngModel)]="branchSettings.currencySymbol" placeholder="$" />
+            </div>
+            <div class="form-group">
+              <label>Currency Position</label>
+              <select [(ngModel)]="branchSettings.currencyPosition">
+                <option value="before">Before amount ($100)</option>
+                <option value="after">After amount (100$)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Time Format</label>
+              <select [(ngModel)]="branchSettings.timeFormat">
+                <option value="HH:mm">24-hour (14:30)</option>
+                <option value="hh:mm a">12-hour (2:30 PM)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Number Format</label>
+              <select [(ngModel)]="branchSettings.numberFormat">
+                <option value="#,##0.00">1,234.56</option>
+                <option value="#.##0,00">1.234,56</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Fiscal Year Start Month</label>
+            <select [(ngModel)]="branchSettings.fiscalYearStartMonth">
+              <option [value]="1">January</option>
+              <option [value]="2">February</option>
+              <option [value]="3">March</option>
+              <option [value]="4">April</option>
+              <option [value]="5">May</option>
+              <option [value]="6">June</option>
+              <option [value]="7">July</option>
+              <option [value]="8">August</option>
+              <option [value]="9">September</option>
+              <option [value]="10">October</option>
+              <option [value]="11">November</option>
+              <option [value]="12">December</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-panel" *ngIf="settingsTab === 'tax'">
+          <h3><i class="fas fa-percent"></i> Tax & Finance Settings</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Default Tax Rate (%)</label>
+              <input type="number" [(ngModel)]="branchSettings.defaultTaxRate" min="0" max="100" step="0.01" />
+            </div>
+            <div class="form-group">
+              <label>Tax Label</label>
+              <input type="text" [(ngModel)]="branchSettings.taxLabel" placeholder="e.g., Tax, VAT, GST" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Default Payment Terms</label>
+              <select [(ngModel)]="branchSettings.defaultPaymentTerms">
+                <option value="Net 15">Net 15</option>
+                <option value="Net 30">Net 30</option>
+                <option value="Net 45">Net 45</option>
+                <option value="Net 60">Net 60</option>
+                <option value="Due on Receipt">Due on Receipt</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Invoice Due Days</label>
+              <input type="number" [(ngModel)]="branchSettings.invoiceDueDays" min="0" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Invoice Footer Text</label>
+            <textarea [(ngModel)]="branchSettings.invoiceFooter" rows="3" placeholder="Thank you for your business!"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Invoice Terms & Conditions</label>
+            <textarea [(ngModel)]="branchSettings.invoiceTerms" rows="4" placeholder="Payment terms and conditions..."></textarea>
+          </div>
+        </div>
+
+        <div class="settings-panel" *ngIf="settingsTab === 'documents'">
+          <h3><i class="fas fa-file-alt"></i> Document Numbering</h3>
+          <p class="settings-hint">Configure prefixes and starting numbers for auto-generated document IDs.</p>
+          
+          <div class="prefix-grid">
+            <div class="prefix-item">
+              <label>Invoice Prefix</label>
+              <div class="prefix-input">
+                <input type="text" [(ngModel)]="branchSettings.invoicePrefix" />
+                <span class="next-number">Next: {{ branchSettings.invoicePrefix }}-{{ branchSettings.invoiceNextNumber }}</span>
+              </div>
+            </div>
+            <div class="prefix-item">
+              <label>Purchase Order Prefix</label>
+              <div class="prefix-input">
+                <input type="text" [(ngModel)]="branchSettings.purchaseOrderPrefix" />
+                <span class="next-number">Next: {{ branchSettings.purchaseOrderPrefix }}-{{ branchSettings.purchaseOrderNextNumber }}</span>
+              </div>
+            </div>
+            <div class="prefix-item">
+              <label>Quotation Prefix</label>
+              <div class="prefix-input">
+                <input type="text" [(ngModel)]="branchSettings.quotationPrefix" />
+                <span class="next-number">Next: {{ branchSettings.quotationPrefix }}-{{ branchSettings.quotationNextNumber }}</span>
+              </div>
+            </div>
+            <div class="prefix-item">
+              <label>Receipt Prefix</label>
+              <div class="prefix-input">
+                <input type="text" [(ngModel)]="branchSettings.receiptPrefix" />
+                <span class="next-number">Next: {{ branchSettings.receiptPrefix }}-{{ branchSettings.receiptNextNumber }}</span>
+              </div>
+            </div>
+            <div class="prefix-item">
+              <label>Payroll Prefix</label>
+              <div class="prefix-input">
+                <input type="text" [(ngModel)]="branchSettings.payrollPrefix" />
+                <span class="next-number">Next: {{ branchSettings.payrollPrefix }}-{{ branchSettings.payrollNextNumber }}</span>
+              </div>
+            </div>
+            <div class="prefix-item">
+              <label>Employee ID Prefix</label>
+              <div class="prefix-input">
+                <input type="text" [(ngModel)]="branchSettings.employeeIdPrefix" />
+                <span class="next-number">Next: {{ branchSettings.employeeIdPrefix }}-{{ branchSettings.employeeIdNextNumber }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group mt-20">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="branchSettings.autoGenerateEmployeeId" />
+              <span>Auto-generate Employee IDs</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-panel" *ngIf="settingsTab === 'branding'">
+          <h3><i class="fas fa-palette"></i> Branding & Appearance</h3>
+          
+          <div class="branding-section">
+            <div class="logo-upload">
+              <label>Company Logo</label>
+              <div class="logo-preview">
+                <img *ngIf="selectedBranch?.logoPath" [src]="selectedBranch?.logoPath" alt="Company Logo" />
+                <div class="logo-placeholder" *ngIf="!selectedBranch?.logoPath">
+                  <i class="fas fa-building"></i>
+                  <span>No logo uploaded</span>
+                </div>
+              </div>
+              <input type="file" accept="image/*" (change)="onLogoChange($event)" id="logoInput" class="file-input" />
+              <label for="logoInput" class="btn btn-secondary">
+                <i class="fas fa-upload"></i> Upload Logo
+              </label>
+            </div>
+
+            <div class="logo-upload">
+              <label>Authorized Signature</label>
+              <div class="logo-preview signature">
+                <img *ngIf="branchSettings.signaturePath" [src]="branchSettings.signaturePath" alt="Signature" />
+                <div class="logo-placeholder" *ngIf="!branchSettings.signaturePath">
+                  <i class="fas fa-signature"></i>
+                  <span>No signature uploaded</span>
+                </div>
+              </div>
+              <input type="file" accept="image/*" (change)="onSignatureChange($event)" id="signatureInput" class="file-input" />
+              <label for="signatureInput" class="btn btn-secondary">
+                <i class="fas fa-upload"></i> Upload Signature
+              </label>
+            </div>
+          </div>
+
+          <div class="form-row mt-20">
+            <div class="form-group">
+              <label>Primary Color</label>
+              <div class="color-input">
+                <input type="color" [(ngModel)]="branchSettings.primaryColor" />
+                <input type="text" [(ngModel)]="branchSettings.primaryColor" class="color-text" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Secondary Color</label>
+              <div class="color-input">
+                <input type="color" [(ngModel)]="branchSettings.secondaryColor" />
+                <input type="text" [(ngModel)]="branchSettings.secondaryColor" class="color-text" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="branchSettings.showLogoOnInvoices" />
+                <span>Show logo on invoices</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" [(ngModel)]="branchSettings.showLogoOnReports" />
+                <span>Show logo on reports</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-actions">
+          <button class="btn btn-primary" (click)="saveBranchSettings()" [disabled]="isSavingSettings">
+            <i *ngIf="isSavingSettings" class="fas fa-spinner fa-spin"></i>
+            <i *ngIf="!isSavingSettings" class="fas fa-save"></i>
+            Save Settings
           </button>
         </div>
       </div>

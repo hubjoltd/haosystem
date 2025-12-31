@@ -81,4 +81,65 @@ export class BranchService {
   resetBranchUserPassword(branchId: number, userId: number, password: string): Observable<{ message: string }> {
     return this.http.put<{ message: string }>(`${this.baseUrl}/${branchId}/users/${userId}/password`, { password });
   }
+
+  getBranchSettings(branchId: number): Observable<BranchSettings> {
+    return this.http.get<BranchSettings>(`${this.baseUrl}/${branchId}/settings`);
+  }
+
+  updateBranchSettings(branchId: number, settings: Partial<BranchSettings>): Observable<BranchSettings> {
+    return this.http.put<BranchSettings>(`${this.baseUrl}/${branchId}/settings`, settings);
+  }
+
+  uploadBranchLogo(branchId: number, file: File): Observable<{ message: string; logoPath: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ message: string; logoPath: string }>(`${this.baseUrl}/${branchId}/settings/logo`, formData);
+  }
+
+  uploadBranchSignature(branchId: number, file: File): Observable<{ message: string; signaturePath: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ message: string; signaturePath: string }>(`${this.baseUrl}/${branchId}/settings/signature`, formData);
+  }
+}
+
+export interface BranchSettings {
+  id?: number;
+  branch?: Branch;
+  companyLegalName?: string;
+  displayName?: string;
+  taxRegistrationNumber?: string;
+  businessRegistrationNumber?: string;
+  fiscalYearStartMonth?: number;
+  timeFormat?: string;
+  numberFormat?: string;
+  currencySymbol?: string;
+  currencyPosition?: string;
+  defaultTaxRate?: number;
+  taxLabel?: string;
+  invoicePrefix?: string;
+  invoiceNextNumber?: number;
+  purchaseOrderPrefix?: string;
+  purchaseOrderNextNumber?: number;
+  quotationPrefix?: string;
+  quotationNextNumber?: number;
+  receiptPrefix?: string;
+  receiptNextNumber?: number;
+  payrollPrefix?: string;
+  payrollNextNumber?: number;
+  defaultPaymentTerms?: string;
+  invoiceDueDays?: number;
+  invoiceFooter?: string;
+  invoiceTerms?: string;
+  letterhead?: string;
+  signaturePath?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  showLogoOnInvoices?: boolean;
+  showLogoOnReports?: boolean;
+  autoGenerateEmployeeId?: boolean;
+  employeeIdPrefix?: string;
+  employeeIdNextNumber?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }

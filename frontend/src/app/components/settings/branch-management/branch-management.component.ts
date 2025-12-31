@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { BranchService, BranchUser, CreateBranchUserRequest } from '../../../services/branch.service';
+import { BranchService, BranchUser, CreateBranchUserRequest, BranchSettings } from '../../../services/branch.service';
 import { Branch, AuthService } from '../../../services/auth.service';
 import { NotificationService } from '../../../services/notification.service';
 
@@ -19,12 +19,15 @@ export class BranchManagementComponent implements OnInit {
   selectedBranch: Branch | null = null;
   branchUsers: BranchUser[] = [];
   roles: Role[] = [];
+  branchSettings: BranchSettings | null = null;
   
   isLoading = false;
+  isSavingSettings = false;
   showBranchModal = false;
   showUserModal = false;
   showPasswordModal = false;
   editMode = false;
+  settingsTab: 'general' | 'localization' | 'tax' | 'documents' | 'branding' = 'general';
   
   branchForm: Partial<Branch> = {};
   userForm: CreateBranchUserRequest = {
@@ -40,7 +43,7 @@ export class BranchManagementComponent implements OnInit {
   passwordResetUserId: number | null = null;
   newPassword = '';
   
-  activeTab: 'branches' | 'users' = 'branches';
+  activeTab: 'branches' | 'users' | 'settings' = 'branches';
 
   constructor(
     private branchService: BranchService,
@@ -331,5 +334,101 @@ export class BranchManagementComponent implements OnInit {
     this.activeTab = 'branches';
     this.selectedBranch = null;
     this.branchUsers = [];
+    this.branchSettings = null;
+  }
+
+  openSettings(branch: Branch): void {
+    this.selectedBranch = branch;
+    this.activeTab = 'settings';
+    this.settingsTab = 'general';
+    this.loadBranchSettings(branch.id);
+  }
+
+  loadBranchSettings(branchId: number): void {
+    this.isLoading = true;
+    this.branchService.getBranchSettings(branchId).subscribe({
+      next: (settings) => {
+        this.branchSettings = settings;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.notificationService.error('Failed to load branch settings');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  saveBranchSettings(): void {
+    if (!this.selectedBranch || !this.branchSettings) return;
+    
+    this.isSavingSettings = true;
+    this.branchService.updateBranchSettings(this.selectedBranch.id, this.branchSettings).subscribe({
+      next: (settings) => {
+        this.branchSettings = settings;
+        this.notificationService.success('Settings saved successfully');
+        this.isSavingSettings = false;
+      },
+      error: () => {
+        this.notificationService.error('Failed to save settings');
+        this.isSavingSettings = false;
+      }
+    });
+  }
+
+  onLogoChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length || !this.selectedBranch) return;
+    
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      this.notificationService.error('Please select an image file');
+      return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+      this.notificationService.error('File size must be less than 5MB');
+      return;
+    }
+    
+    this.isLoading = true;
+    this.branchService.uploadBranchLogo(this.selectedBranch.id, file).subscribe({
+      next: (response) => {
+        if (this.selectedBranch) {
+          this.selectedBranch.logoPath = response.logoPath;
+        }
+        this.notificationService.success('Logo uploaded successfully');
+        this.isLoading = false;
+      },
+      error: () => {
+        this.notificationService.error('Failed to upload logo');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  onSignatureChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length || !this.selectedBranch) return;
+    
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      this.notificationService.error('Please select an image file');
+      return;
+    }
+    
+    this.isLoading = true;
+    this.branchService.uploadBranchSignature(this.selectedBranch.id, file).subscribe({
+      next: (response) => {
+        if (this.branchSettings) {
+          this.branchSettings.signaturePath = response.signaturePath;
+        }
+        this.notificationService.success('Signature uploaded successfully');
+        this.isLoading = false;
+      },
+      error: () => {
+        this.notificationService.error('Failed to upload signature');
+        this.isLoading = false;
+      }
+    });
   }
 }

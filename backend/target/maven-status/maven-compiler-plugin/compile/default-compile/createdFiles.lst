@@ -25,6 +25,7 @@ com/erp/model/EmployeeEducation.class
 com/erp/service/DashboardService.class
 com/erp/model/CostCenter.class
 com/erp/repository/ExpenseItemRepository.class
+com/erp/repository/BranchSettingsRepository.class
 com/erp/repository/OfferLetterRepository.class
 com/erp/model/PRStockFulfillment.class
 com/erp/model/OnboardingTask.class
@@ -121,6 +122,7 @@ com/erp/model/Candidate.class
 com/erp/controller/PayrollRulesController.class
 com/erp/repository/SupplierRepository.class
 com/erp/model/PurchaseRequisitionItem.class
+com/erp/model/BranchSettings.class
 com/erp/ErpApplication.class
 com/erp/service/ValuationService$InsufficientInventoryException.class
 com/erp/controller/StockMovementController.class
@@ -246,6 +248,7 @@ com/erp/service/StockTransferService.class
 com/erp/repository/OnboardingPlanRepository.class
 com/erp/model/AuditLog.class
 com/erp/repository/InventoryLedgerRepository.class
+com/erp/controller/BranchSettingsController.class
 com/erp/controller/BranchController.class
 com/erp/repository/AttendanceRecordRepository.class
 com/erp/model/Location.class
