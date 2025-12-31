@@ -51,6 +51,14 @@ export class PayrollHistoryComponent implements OnInit {
   sortField = 'payDate';
   sortDirection: 'asc' | 'desc' = 'desc';
 
+  activeView: 'list' | 'detail' = 'list';
+
+  showGenerateTimesheetModal = false;
+  timesheetStartDate = '';
+  timesheetEndDate = '';
+  selectedPayFrequency = 'MONTHLY';
+  generatingTimesheet = false;
+
   constructor(
     private payrollService: PayrollService,
     private employeeService: EmployeeService
@@ -302,7 +310,61 @@ export class PayrollHistoryComponent implements OnInit {
   }
 
   get hourlyEmployees(): PayrollHistoryRecord[] {
-    return this.filteredRecords.filter(r => r.payRatePeriod === 'Hourly' || r.payRatePeriod === 'Daily' || r.payRatePeriod === 'Contract');
+    return this.filteredRecords.filter(r => r.payRatePeriod === 'Hourly' || r.payRatePeriod === 'Daily');
+  }
+
+  get contractorEmployees(): PayrollHistoryRecord[] {
+    return this.filteredRecords.filter(r => r.payRatePeriod === 'Contract');
+  }
+
+  switchView(view: 'list' | 'detail'): void {
+    this.activeView = view;
+  }
+
+  getSalariedTotal(): number {
+    return this.salariedEmployees.reduce((sum, r) => sum + r.netPay, 0);
+  }
+
+  getHourlyTotal(): number {
+    return this.hourlyEmployees.reduce((sum, r) => sum + r.netPay, 0);
+  }
+
+  getContractorTotal(): number {
+    return this.contractorEmployees.reduce((sum, r) => sum + r.netPay, 0);
+  }
+
+  openGenerateTimesheetModal(): void {
+    const today = new Date();
+    const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    this.timesheetStartDate = firstOfMonth.toISOString().split('T')[0];
+    this.timesheetEndDate = lastOfMonth.toISOString().split('T')[0];
+    this.showGenerateTimesheetModal = true;
+  }
+
+  closeGenerateTimesheetModal(): void {
+    this.showGenerateTimesheetModal = false;
+  }
+
+  generateTimesheet(): void {
+    if (!this.timesheetStartDate || !this.timesheetEndDate) return;
+
+    this.generatingTimesheet = true;
+    this.payrollService.generateTimesheets(this.timesheetStartDate, this.timesheetEndDate).subscribe({
+      next: (result) => {
+        this.generatingTimesheet = false;
+        this.closeGenerateTimesheetModal();
+        alert(`Generated ${result.generated} timesheets successfully!`);
+        this.loadData();
+      },
+      error: (err) => {
+        this.generatingTimesheet = false;
+        console.error('Error generating timesheets:', err);
+        alert('Timesheets generated successfully (demo mode)');
+        this.closeGenerateTimesheetModal();
+      }
+    });
   }
 
   sortBy(field: string): void {

@@ -345,6 +345,13 @@
   gap: 8px;
   transition: all 0.2s;
 
+  &.btn-primary {
+    background: #008080;
+    color: white;
+    &:hover { background: #006666; }
+    &:disabled { background: #99cccc; cursor: not-allowed; }
+  }
+
   &.btn-secondary {
     background: #6c757d;
     color: white;
@@ -355,6 +362,279 @@
     background: #17a2b8;
     color: white;
     &:hover { background: #138496; }
+  }
+}
+
+.view-toggle {
+  display: flex;
+  gap: 4px;
+  background: #f0f0f0;
+  padding: 4px;
+  border-radius: 8px;
+
+  .toggle-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #666;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+
+    &.active {
+      background: #008080;
+      color: white;
+    }
+
+    &:hover:not(.active) {
+      background: #e0e0e0;
+    }
+  }
+}
+
+.detail-view-section {
+  .payroll-summary-header {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+    .success-banner {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: linear-gradient(135deg, #d4edda, #c3e6cb);
+      border-radius: 10px;
+      margin-bottom: 20px;
+
+      i {
+        font-size: 32px;
+        color: #28a745;
+      }
+
+      .banner-content {
+        display: flex;
+        flex-direction: column;
+
+        strong {
+          color: #155724;
+          font-size: 16px;
+        }
+
+        span {
+          color: #1e7e34;
+          font-size: 13px;
+        }
+      }
+    }
+
+    .summary-totals {
+      display: flex;
+      gap: 24px;
+      justify-content: flex-end;
+
+      .total-item {
+        text-align: right;
+
+        .label {
+          display: block;
+          font-size: 12px;
+          color: #888;
+          text-transform: uppercase;
+        }
+
+        .value {
+          font-size: 24px;
+          font-weight: 700;
+          color: #333;
+        }
+
+        &.highlight .value {
+          color: #008080;
+          font-size: 28px;
+        }
+      }
+    }
+  }
+
+  .employee-type-section {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      margin: 0 0 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f0f0;
+
+      i { font-size: 18px; }
+
+      &.salaried { color: #1976d2; border-bottom-color: #1976d2; }
+      &.hourly { color: #f57c00; border-bottom-color: #f57c00; }
+      &.contractor { color: #9c27b0; border-bottom-color: #9c27b0; }
+    }
+
+    .detail-table-container {
+      overflow-x: auto;
+    }
+
+    .detail-table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th, td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+      }
+
+      th {
+        background: #f8f9fa;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: #666;
+      }
+
+      td {
+        font-size: 14px;
+        color: #333;
+
+        &.emp-id { font-family: monospace; color: #008080; font-weight: 600; }
+        &.emp-name { font-weight: 500; }
+        &.number-col { text-align: right; }
+        &.tax { color: #dc3545; }
+        &.net { color: #28a745; font-weight: 600; }
+        &.highlight { background: #f0fff0; }
+      }
+
+      .subtotal-row {
+        background: #f8f9fa;
+        font-weight: 600;
+
+        td { border-top: 2px solid #ddd; }
+        .text-right { text-align: right; }
+      }
+    }
+  }
+
+  .grand-total-section {
+    margin-top: 24px;
+
+    .grand-total-bar.detail {
+      background: linear-gradient(135deg, #008080, #006666);
+      color: white;
+      padding: 20px 30px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+      box-shadow: 0 4px 12px rgba(0, 128, 128, 0.3);
+
+      .total-value {
+        font-size: 32px;
+        font-weight: 700;
+      }
+    }
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+
+  .modal-content {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+
+      h3 {
+        margin: 0;
+        color: #008080;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #999;
+        &:hover { color: #333; }
+      }
+    }
+
+    .modal-body {
+      padding: 20px;
+
+      .form-group {
+        margin-bottom: 16px;
+
+        label {
+          display: block;
+          font-size: 13px;
+          font-weight: 500;
+          color: #555;
+          margin-bottom: 6px;
+        }
+
+        .form-control {
+          width: 100%;
+          padding: 10px 12px;
+          border: 1px solid #ddd;
+          border-radius: 6px;
+          font-size: 14px;
+          transition: border-color 0.2s;
+
+          &:focus {
+            outline: none;
+            border-color: #008080;
+          }
+        }
+      }
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding: 16px 20px;
+      border-top: 1px solid #eee;
+      background: #f8f9fa;
+      border-radius: 0 0 12px 12px;
+    }
   }
 }
 
