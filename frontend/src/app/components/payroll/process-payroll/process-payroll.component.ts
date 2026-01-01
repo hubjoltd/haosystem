@@ -85,7 +85,7 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
   }
 
   loadPayrollRun(id: number): void {
-    this.loading = false;
+    this.loading = true;
     this.payrollService.getPayrollRun(id).subscribe({
       next: (run) => {
         this.payrollRun = run;
