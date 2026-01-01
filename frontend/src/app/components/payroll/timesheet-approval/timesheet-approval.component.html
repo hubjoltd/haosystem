@@ -91,15 +91,10 @@
                 </span>
               </td>
             </tr>
-            <tr *ngIf="attendanceRecords.length === 0 && !loading">
+            <tr *ngIf="attendanceRecords.length === 0">
               <td colspan="8" class="no-data">
                 <i class="fas fa-calendar-times"></i>
                 No attendance records found for this date
-              </td>
-            </tr>
-            <tr *ngIf="loading">
-              <td colspan="7" class="loading-row">
-                <i class="fas fa-spinner fa-spin"></i> Loading attendance records...
               </td>
             </tr>
           </tbody>
@@ -203,15 +198,10 @@
                   <span *ngIf="ts.status !== 'PENDING_APPROVAL' && ts.status !== 'APPROVED'" class="no-action">-</span>
                 </td>
               </tr>
-              <tr *ngIf="filteredTimesheets.length === 0 && !loading">
+              <tr *ngIf="filteredTimesheets.length === 0">
                 <td colspan="7" class="no-data">
                   <i class="fas fa-file-alt"></i>
                   No timesheets found. Generate timesheets to begin.
-                </td>
-              </tr>
-              <tr *ngIf="loading">
-                <td colspan="7" class="loading-row">
-                  <i class="fas fa-spinner fa-spin"></i> Loading timesheets...
                 </td>
               </tr>
             </tbody>
@@ -327,15 +317,10 @@
                 </span>
               </td>
             </tr>
-            <tr *ngIf="payableEmployees.length === 0 && !payablesLoading">
+            <tr *ngIf="payableEmployees.length === 0">
               <td colspan="9" class="no-data">
                 <i class="fas fa-users"></i>
                 No employees available for payroll processing
-              </td>
-            </tr>
-            <tr *ngIf="payablesLoading">
-              <td colspan="9" class="loading-row">
-                <i class="fas fa-spinner fa-spin"></i> Loading employees...
               </td>
             </tr>
           </tbody>

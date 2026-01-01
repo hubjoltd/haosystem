@@ -6,17 +6,13 @@
       </div>
     </div>
 
-    <div class="loading-state" *ngIf="loading">
-      <i class="fas fa-spinner fa-spin"></i> Loading payroll runs...
-    </div>
-
-    <div class="empty-state" *ngIf="!loading && payrollRuns.length === 0">
+    <div class="empty-state" *ngIf="payrollRuns.length === 0">
       <i class="fas fa-inbox"></i>
       <h3>No Payroll Runs Ready</h3>
       <p>Approve timesheets first to create payroll runs for processing.</p>
     </div>
 
-    <div class="runs-grid" *ngIf="!loading && payrollRuns.length > 0">
+    <div class="runs-grid" *ngIf="payrollRuns.length > 0">
       <div class="run-card" *ngFor="let run of payrollRuns" (click)="selectRun(run)">
         <div class="run-header">
           <span class="run-number">{{ run.payrollRunNumber }}</span>

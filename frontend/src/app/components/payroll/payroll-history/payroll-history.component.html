@@ -135,15 +135,10 @@
               </span>
             </td>
           </tr>
-          <tr *ngIf="filteredRecords.length === 0 && !loading">
+          <tr *ngIf="filteredRecords.length === 0">
             <td colspan="17" class="no-data">
               <i class="fas fa-inbox"></i>
               No payroll history records found
-            </td>
-          </tr>
-          <tr *ngIf="loading">
-            <td colspan="17" class="loading-row">
-              <i class="fas fa-spinner fa-spin"></i> Loading payroll history...
             </td>
           </tr>
         </tbody>
