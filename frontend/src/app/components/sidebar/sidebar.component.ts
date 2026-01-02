@@ -57,6 +57,7 @@ export class SidebarComponent implements OnInit {
         { icon: 'fas fa-user-shield', label: 'Roles Settings', route: '/app/settings/roles' },
         { icon: 'fas fa-users-cog', label: 'Staff Management', route: '/app/settings/staff' },
         { icon: 'fas fa-hashtag', label: 'Prefix Settings', route: '/app/settings/prefixes' },
+        { icon: 'fas fa-tags', label: 'Expense Types', route: '/app/settings/expense-types' },
         { icon: 'fas fa-plug', label: 'Integrations', route: '/app/settings/integrations' }
       ]
     },

@@ -1,0 +1,656 @@
+<div class="projects-container">
+  <div class="page-header">
+    <h2>Project Management</h2>
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> New Project
+    </button>
+  </div>
+
+  <div class="filters-bar">
+    <div class="search-box">
+      <i class="fas fa-search"></i>
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search projects...">
+    </div>
+    <select class="filter-select" [(ngModel)]="statusFilter">
+      <option value="">All Statuses</option>
+      <option *ngFor="let status of projectStatuses" [value]="status.value">{{ status.label }}</option>
+    </select>
+  </div>
+
+  <div class="projects-grid">
+    <div class="project-card" *ngFor="let project of filteredProjects">
+      <div class="card-header">
+        <span class="project-code">{{ project.projectCode }}</span>
+        <span class="status-badge" [ngClass]="'status-' + getStatusColor(project.status)">
+          {{ getStatusLabel(project.status) }}
+        </span>
+      </div>
+      <h3 class="project-name">{{ project.name }}</h3>
+      <p class="project-client">{{ getClientName(project.customerId) }}</p>
+      
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="project.progress"></div>
+      </div>
+      <span class="progress-text">{{ project.progress }}% Complete</span>
+      
+      <div class="card-meta">
+        <span><i class="fas fa-calendar"></i> {{ formatDate(project.deadline) }}</span>
+        <span><i class="fas fa-clock"></i> {{ project.totalLoggedTime || 0 }}h</span>
+      </div>
+      
+      <div class="card-actions">
+        <button class="btn btn-sm btn-info" (click)="openModal(project, true)"><i class="fas fa-eye"></i></button>
+        <button class="btn btn-sm btn-secondary" (click)="openModal(project)"><i class="fas fa-edit"></i></button>
+        <button class="btn btn-sm btn-danger" (click)="deleteProject(project.id!)"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="filteredProjects.length === 0">
+    <i class="fas fa-project-diagram"></i>
+    <p>No projects found. Click "New Project" to create one.</p>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal modal-xl" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ viewMode ? 'View Project' : (editMode ? 'Edit Project' : 'New Project') }}</h3>
+      <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="modal-tabs">
+      <button [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">Overview</button>
+      <button [class.active]="activeTab === 'members'" (click)="activeTab = 'members'">Members</button>
+      <button [class.active]="activeTab === 'permissions'" (click)="activeTab = 'permissions'">Client Permissions</button>
+      <button [class.active]="activeTab === 'billing'" (click)="activeTab = 'billing'">Billing</button>
+      <button [class.active]="activeTab === 'tasks'" (click)="activeTab = 'tasks'" *ngIf="editMode">Tasks</button>
+      <button [class.active]="activeTab === 'milestones'" (click)="activeTab = 'milestones'" *ngIf="editMode">Milestones</button>
+      <button [class.active]="activeTab === 'timesheets'" (click)="activeTab = 'timesheets'" *ngIf="editMode">Timesheets</button>
+      <button [class.active]="activeTab === 'files'" (click)="activeTab = 'files'" *ngIf="editMode">Files</button>
+      <button [class.active]="activeTab === 'notes'" (click)="activeTab = 'notes'" *ngIf="editMode">Notes</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Overview Tab -->
+      <div class="tab-content" *ngIf="activeTab === 'overview'">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Project Name *</label>
+            <input type="text" class="form-control" [(ngModel)]="selectedProject.name" [disabled]="viewMode">
+          </div>
+          <div class="form-group">
+            <label>Project Code</label>
+            <input type="text" class="form-control" [(ngModel)]="selectedProject.projectCode" [disabled]="true">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Client</label>
+            <select class="form-control" [(ngModel)]="selectedProject.customerId" [disabled]="viewMode">
+              <option [ngValue]="undefined">Select Client</option>
+              <option *ngFor="let client of clients" [ngValue]="client.id">{{ client.name }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Billing Type</label>
+            <select class="form-control" [(ngModel)]="selectedProject.billingType" [disabled]="viewMode">
+              <option *ngFor="let type of billingTypes" [value]="type.value">{{ type.label }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Status</label>
+            <select class="form-control" [(ngModel)]="selectedProject.status" [disabled]="viewMode">
+              <option *ngFor="let status of projectStatuses" [value]="status.value">{{ status.label }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Progress (%)</label>
+            <input type="number" class="form-control" [(ngModel)]="selectedProject.progress" min="0" max="100" [disabled]="viewMode">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" class="form-control" [(ngModel)]="selectedProject.startDate" [disabled]="viewMode">
+          </div>
+          <div class="form-group">
+            <label>Deadline</label>
+            <input type="date" class="form-control" [(ngModel)]="selectedProject.deadline" [disabled]="viewMode">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Estimated Hours</label>
+          <input type="number" class="form-control" [(ngModel)]="selectedProject.estimatedHours" [disabled]="viewMode">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea class="form-control" [(ngModel)]="selectedProject.description" rows="3" [disabled]="viewMode"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Tags (comma separated)</label>
+          <input type="text" class="form-control" [(ngModel)]="tagsInput" placeholder="design, urgent, phase1" [disabled]="viewMode">
+        </div>
+      </div>
+
+      <!-- Members Tab -->
+      <div class="tab-content" *ngIf="activeTab === 'members'">
+        <div class="section-header">
+          <h4>Project Members</h4>
+          <button class="btn btn-primary btn-sm" (click)="openMemberModal()" *ngIf="!viewMode">
+            <i class="fas fa-plus"></i> Add Member
+          </button>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Project Manager</label>
+            <select class="form-control" [(ngModel)]="selectedProject.projectManagerId" [disabled]="viewMode">
+              <option [ngValue]="undefined">Select Manager</option>
+              <option *ngFor="let emp of employees" [ngValue]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-container" *ngIf="selectedProject.members && selectedProject.members.length > 0">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Hourly Rate</th>
+                <th *ngIf="!viewMode">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let member of selectedProject.members; let i = index">
+                <td>{{ getEmployeeName(member.employeeId) }}</td>
+                <td>{{ member.role }}</td>
+                <td>{{ formatCurrency(member.hourlyRate) }}</td>
+                <td *ngIf="!viewMode">
+                  <button class="btn btn-sm btn-danger" (click)="removeMember(i)"><i class="fas fa-trash"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state-box" *ngIf="!selectedProject.members || selectedProject.members.length === 0">
+          <p>No members assigned yet.</p>
+        </div>
+      </div>
+
+      <!-- Client Permissions Tab -->
+      <div class="tab-content" *ngIf="activeTab === 'permissions'">
+        <h4>Client Visibility & Permissions</h4>
+        <div class="permissions-grid">
+          <label class="checkbox-item">
+            <input type="checkbox" [(ngModel)]="selectedProject.allowCustomerViewProject" [disabled]="viewMode">
+            Allow customer to view project
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" [(ngModel)]="selectedProject.allowCustomerViewTasks" [disabled]="viewMode">
+            Allow customer to view tasks
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" [(ngModel)]="selectedProject.allowCustomerCommentTasks" [disabled]="viewMode">
+            Allow customer to comment on tasks
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" [(ngModel)]="selectedProject.allowCustomerViewTaskComments" [disabled]="viewMode">
+            Allow customer to view task comments
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" [(ngModel)]="selectedProject.allowCustomerViewTimesheets" [disabled]="viewMode">
+            Allow customer to view timesheets
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" [(ngModel)]="selectedProject.allowCustomerViewFiles" [disabled]="viewMode">
+            Allow customer to view files
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" [(ngModel)]="selectedProject.allowCustomerUploadFiles" [disabled]="viewMode">
+            Allow customer to upload files
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" [(ngModel)]="selectedProject.allowCustomerViewDiscussions" [disabled]="viewMode">
+            Allow customer to view discussions
+          </label>
+        </div>
+      </div>
+
+      <!-- Billing Tab -->
+      <div class="tab-content" *ngIf="activeTab === 'billing'">
+        <h4>Billing & Financial Settings</h4>
+        <div class="form-row">
+          <div class="form-group" *ngIf="selectedProject.billingType === 'FIXED_RATE'">
+            <label>Fixed Rate Amount</label>
+            <input type="number" class="form-control" [(ngModel)]="selectedProject.fixedRateAmount" [disabled]="viewMode">
+          </div>
+          <div class="form-group" *ngIf="selectedProject.billingType !== 'FIXED_RATE'">
+            <label>Hourly Rate</label>
+            <input type="number" class="form-control" [(ngModel)]="selectedProject.hourlyRate" [disabled]="viewMode">
+          </div>
+          <div class="form-group">
+            <label>Currency</label>
+            <select class="form-control" [(ngModel)]="selectedProject.currency" [disabled]="viewMode">
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+              <option value="INR">INR</option>
+            </select>
+          </div>
+        </div>
+        <div class="permissions-grid">
+          <label class="checkbox-item">
+            <input type="checkbox" [(ngModel)]="selectedProject.billableTasks" [disabled]="viewMode">
+            Billable Tasks
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" [(ngModel)]="selectedProject.invoiceProject" [disabled]="viewMode">
+            Invoice Project
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" [(ngModel)]="selectedProject.invoiceTasks" [disabled]="viewMode">
+            Invoice Tasks
+          </label>
+          <label class="checkbox-item">
+            <input type="checkbox" [(ngModel)]="selectedProject.invoiceTimesheets" [disabled]="viewMode">
+            Invoice Timesheets
+          </label>
+        </div>
+        <div class="stats-row" *ngIf="editMode">
+          <div class="stat-card">
+            <span class="stat-label">Total Logged Time</span>
+            <span class="stat-value">{{ selectedProject.totalLoggedTime || 0 }} hrs</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Total Billable Time</span>
+            <span class="stat-value">{{ selectedProject.totalBillableTime || 0 }} hrs</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Project Cost</span>
+            <span class="stat-value">{{ formatCurrency(selectedProject.projectCost) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tasks Tab -->
+      <div class="tab-content" *ngIf="activeTab === 'tasks'">
+        <div class="section-header">
+          <h4>Tasks ({{ selectedProject.tasks?.length || 0 }})</h4>
+          <button class="btn btn-primary btn-sm" (click)="openTaskModal()" *ngIf="!viewMode">
+            <i class="fas fa-plus"></i> Add Task
+          </button>
+        </div>
+        <div class="progress-info">
+          <span>Task Completion: {{ calculateTaskProgress() }}%</span>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="calculateTaskProgress()"></div>
+          </div>
+        </div>
+        <div class="table-container" *ngIf="selectedProject.tasks && selectedProject.tasks.length > 0">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>Assignee</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Due Date</th>
+                <th *ngIf="!viewMode">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let task of selectedProject.tasks; let i = index">
+                <td>{{ task.name }}</td>
+                <td>{{ getEmployeeName(task.assigneeId) }}</td>
+                <td><span class="badge">{{ getTaskStatusLabel(task.status) }}</span></td>
+                <td><span class="badge" [ngClass]="'badge-' + getTaskPriorityColor(task.priority)">{{ getTaskPriorityLabel(task.priority) }}</span></td>
+                <td>{{ formatDate(task.dueDate) }}</td>
+                <td *ngIf="!viewMode">
+                  <button class="btn btn-sm btn-secondary" (click)="openTaskModal(task, i)"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteTask(i)"><i class="fas fa-trash"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state-box" *ngIf="!selectedProject.tasks || selectedProject.tasks.length === 0">
+          <p>No tasks created yet.</p>
+        </div>
+      </div>
+
+      <!-- Milestones Tab -->
+      <div class="tab-content" *ngIf="activeTab === 'milestones'">
+        <div class="section-header">
+          <h4>Milestones</h4>
+          <button class="btn btn-primary btn-sm" (click)="openMilestoneModal()" *ngIf="!viewMode">
+            <i class="fas fa-plus"></i> Add Milestone
+          </button>
+        </div>
+        <div class="milestones-list" *ngIf="selectedProject.milestones && selectedProject.milestones.length > 0">
+          <div class="milestone-item" *ngFor="let milestone of selectedProject.milestones; let i = index">
+            <div class="milestone-info">
+              <h5>{{ milestone.name }}</h5>
+              <p>{{ milestone.description }}</p>
+              <span class="due-date"><i class="fas fa-calendar"></i> {{ formatDate(milestone.dueDate) }}</span>
+            </div>
+            <div class="milestone-actions" *ngIf="!viewMode">
+              <button class="btn btn-sm btn-danger" (click)="deleteMilestone(i)"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+        </div>
+        <div class="empty-state-box" *ngIf="!selectedProject.milestones || selectedProject.milestones.length === 0">
+          <p>No milestones defined yet.</p>
+        </div>
+      </div>
+
+      <!-- Timesheets Tab -->
+      <div class="tab-content" *ngIf="activeTab === 'timesheets'">
+        <div class="section-header">
+          <h4>Time Logs</h4>
+          <button class="btn btn-primary btn-sm" (click)="openTimeLogModal()" *ngIf="!viewMode">
+            <i class="fas fa-plus"></i> Log Time
+          </button>
+        </div>
+        <div class="table-container" *ngIf="selectedProject.timeLogs && selectedProject.timeLogs.length > 0">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Employee</th>
+                <th>Hours</th>
+                <th>Description</th>
+                <th>Billable</th>
+                <th *ngIf="!viewMode">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let log of selectedProject.timeLogs; let i = index">
+                <td>{{ formatDate(log.date) }}</td>
+                <td>{{ getEmployeeName(log.employeeId) }}</td>
+                <td>{{ log.hours }}h</td>
+                <td>{{ log.description || '-' }}</td>
+                <td><span class="badge" [ngClass]="log.billable ? 'badge-success' : 'badge-secondary'">{{ log.billable ? 'Yes' : 'No' }}</span></td>
+                <td *ngIf="!viewMode">
+                  <button class="btn btn-sm btn-danger" (click)="deleteTimeLog(i)"><i class="fas fa-trash"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state-box" *ngIf="!selectedProject.timeLogs || selectedProject.timeLogs.length === 0">
+          <p>No time logged yet.</p>
+        </div>
+      </div>
+
+      <!-- Files Tab -->
+      <div class="tab-content" *ngIf="activeTab === 'files'">
+        <div class="section-header">
+          <h4>Project Files</h4>
+          <button class="btn btn-primary btn-sm" (click)="openFileModal()" *ngIf="!viewMode">
+            <i class="fas fa-plus"></i> Add File
+          </button>
+        </div>
+        <div class="table-container" *ngIf="selectedProject.files && selectedProject.files.length > 0">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Visibility</th>
+                <th>Upload Date</th>
+                <th *ngIf="!viewMode">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let file of selectedProject.files; let i = index">
+                <td><i class="fas fa-file"></i> {{ file.name }}</td>
+                <td>{{ file.visibility }}</td>
+                <td>{{ formatDate(file.uploadDate) }}</td>
+                <td *ngIf="!viewMode">
+                  <button class="btn btn-sm btn-danger" (click)="deleteFile(i)"><i class="fas fa-trash"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state-box" *ngIf="!selectedProject.files || selectedProject.files.length === 0">
+          <p>No files uploaded yet.</p>
+        </div>
+      </div>
+
+      <!-- Notes Tab -->
+      <div class="tab-content" *ngIf="activeTab === 'notes'">
+        <div class="section-header">
+          <h4>Internal Notes</h4>
+          <button class="btn btn-primary btn-sm" (click)="openNoteModal()" *ngIf="!viewMode">
+            <i class="fas fa-plus"></i> Add Note
+          </button>
+        </div>
+        <div class="notes-list" *ngIf="selectedProject.notes && selectedProject.notes.length > 0">
+          <div class="note-item" *ngFor="let note of selectedProject.notes; let i = index">
+            <div class="note-content">{{ note.content }}</div>
+            <div class="note-footer">
+              <span class="note-date">{{ formatDate(note.createdAt) }}</span>
+              <button class="btn btn-sm btn-danger" (click)="deleteNote(i)" *ngIf="!viewMode"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+        </div>
+        <div class="empty-state-box" *ngIf="!selectedProject.notes || selectedProject.notes.length === 0">
+          <p>No notes added yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">{{ viewMode ? 'Close' : 'Cancel' }}</button>
+      <button class="btn btn-primary" (click)="saveProject()" *ngIf="!viewMode">{{ editMode ? 'Update' : 'Create' }} Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div class="modal-overlay sub-modal" *ngIf="showTaskModal" (click)="closeTaskModal()">
+  <div class="modal modal-medium" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ taskEditIndex >= 0 ? 'Edit' : 'Add' }} Task</h3>
+      <button class="close-btn" (click)="closeTaskModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Task Name *</label>
+        <input type="text" class="form-control" [(ngModel)]="editingTask.name">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" [(ngModel)]="editingTask.description" rows="2"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Assignee</label>
+          <select class="form-control" [(ngModel)]="editingTask.assigneeId">
+            <option [ngValue]="undefined">Unassigned</option>
+            <option *ngFor="let emp of employees" [ngValue]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select class="form-control" [(ngModel)]="editingTask.status">
+            <option *ngFor="let status of taskStatuses" [value]="status.value">{{ status.label }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Priority</label>
+          <select class="form-control" [(ngModel)]="editingTask.priority">
+            <option *ngFor="let p of taskPriorities" [value]="p.value">{{ p.label }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Due Date</label>
+          <input type="date" class="form-control" [(ngModel)]="editingTask.dueDate">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Estimated Hours</label>
+        <input type="number" class="form-control" [(ngModel)]="editingTask.estimatedHours">
+      </div>
+      <div class="checkbox-row">
+        <label><input type="checkbox" [(ngModel)]="editingTask.billable"> Billable</label>
+        <label><input type="checkbox" [(ngModel)]="editingTask.visibleToClient"> Visible to Client</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeTaskModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveTask()" [disabled]="!editingTask.name">Save Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- Milestone Modal -->
+<div class="modal-overlay sub-modal" *ngIf="showMilestoneModal" (click)="closeMilestoneModal()">
+  <div class="modal modal-medium" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add Milestone</h3>
+      <button class="close-btn" (click)="closeMilestoneModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Milestone Name *</label>
+        <input type="text" class="form-control" [(ngModel)]="editingMilestone.name">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" [(ngModel)]="editingMilestone.description" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Due Date</label>
+        <input type="date" class="form-control" [(ngModel)]="editingMilestone.dueDate">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeMilestoneModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveMilestone()" [disabled]="!editingMilestone.name">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Member Modal -->
+<div class="modal-overlay sub-modal" *ngIf="showMemberModal" (click)="closeMemberModal()">
+  <div class="modal modal-medium" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add Member</h3>
+      <button class="close-btn" (click)="closeMemberModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Employee *</label>
+        <select class="form-control" [(ngModel)]="editingMember.employeeId">
+          <option [ngValue]="undefined">Select Employee</option>
+          <option *ngFor="let emp of employees" [ngValue]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Role</label>
+        <input type="text" class="form-control" [(ngModel)]="editingMember.role" placeholder="e.g., Developer, Designer">
+      </div>
+      <div class="form-group">
+        <label>Hourly Rate</label>
+        <input type="number" class="form-control" [(ngModel)]="editingMember.hourlyRate">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeMemberModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveMember()" [disabled]="!editingMember.employeeId">Add Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- File Modal -->
+<div class="modal-overlay sub-modal" *ngIf="showFileModal" (click)="closeFileModal()">
+  <div class="modal modal-medium" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add File</h3>
+      <button class="close-btn" (click)="closeFileModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>File Name *</label>
+        <input type="text" class="form-control" [(ngModel)]="editingFile.name">
+      </div>
+      <div class="form-group">
+        <label>Visibility</label>
+        <select class="form-control" [(ngModel)]="editingFile.visibility">
+          <option value="STAFF">Staff Only</option>
+          <option value="CLIENT">Client Only</option>
+          <option value="ALL">Everyone</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeFileModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveFile()" [disabled]="!editingFile.name">Add File</button>
+    </div>
+  </div>
+</div>
+
+<!-- Note Modal -->
+<div class="modal-overlay sub-modal" *ngIf="showNoteModal" (click)="closeNoteModal()">
+  <div class="modal modal-medium" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add Note</h3>
+      <button class="close-btn" (click)="closeNoteModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Note Content *</label>
+        <textarea class="form-control" [(ngModel)]="editingNote.content" rows="4" placeholder="Enter your note..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeNoteModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveNote()" [disabled]="!editingNote.content">Add Note</button>
+    </div>
+  </div>
+</div>
+
+<!-- Time Log Modal -->
+<div class="modal-overlay sub-modal" *ngIf="showTimeLogModal" (click)="closeTimeLogModal()">
+  <div class="modal modal-medium" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Log Time</h3>
+      <button class="close-btn" (click)="closeTimeLogModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" class="form-control" [(ngModel)]="editingTimeLog.date">
+        </div>
+        <div class="form-group">
+          <label>Hours *</label>
+          <input type="number" class="form-control" [(ngModel)]="editingTimeLog.hours" step="0.25" min="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Employee</label>
+        <select class="form-control" [(ngModel)]="editingTimeLog.employeeId">
+          <option [ngValue]="undefined">Select Employee</option>
+          <option *ngFor="let emp of employees" [ngValue]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" [(ngModel)]="editingTimeLog.description" rows="2"></textarea>
+      </div>
+      <div class="checkbox-row">
+        <label><input type="checkbox" [(ngModel)]="editingTimeLog.billable"> Billable</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeTimeLogModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveTimeLog()" [disabled]="!editingTimeLog.hours">Log Time</button>
+    </div>
+  </div>
+</div>

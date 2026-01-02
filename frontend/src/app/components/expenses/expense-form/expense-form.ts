@@ -30,6 +30,8 @@ export class ExpenseFormComponent implements OnInit {
   expenseTypes = EXPENSE_TYPES;
   paymentMethods = PAYMENT_METHODS;
   
+  expenseTypesList: { id: number; name: string; active: boolean }[] = [];
+  
   isEditing = false;
   expenseId: number | null = null;
   loading = false;
@@ -47,12 +49,36 @@ export class ExpenseFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCategories();
+    this.loadExpenseTypes();
     
     const id = this.route.snapshot.paramMap.get('id');
     if (id && id !== 'new') {
       this.expenseId = parseInt(id);
       this.isEditing = true;
       this.loadExpense();
+    }
+  }
+
+  loadExpenseTypes(): void {
+    const stored = localStorage.getItem('expenseTypes');
+    if (stored) {
+      this.expenseTypesList = JSON.parse(stored).filter((t: any) => t.active);
+    } else {
+      this.expenseTypesList = [
+        { id: 1, name: 'Food Expense', active: true },
+        { id: 2, name: 'Travel Expense', active: true },
+        { id: 3, name: 'Accommodation', active: true },
+        { id: 4, name: 'Transportation', active: true },
+        { id: 5, name: 'Office Supplies', active: true },
+        { id: 6, name: 'Equipment', active: true },
+        { id: 7, name: 'Software/Subscription', active: true },
+        { id: 8, name: 'Communication', active: true },
+        { id: 9, name: 'Entertainment', active: true },
+        { id: 10, name: 'Medical', active: true },
+        { id: 11, name: 'Training/Education', active: true },
+        { id: 12, name: 'Miscellaneous', active: true }
+      ];
+      localStorage.setItem('expenseTypes', JSON.stringify(this.expenseTypesList));
     }
   }
 

@@ -68,6 +68,22 @@ Preferred communication style: Simple, everyday language.
     - HR Policies & Documents tab showing company policies with category badges
     - My Documents tab with expiry tracking and verification status
     - Assigned Assets tab showing company equipment assigned to employee
+20. **Project Management Module**: Full-featured project management with 9 tabs:
+    - **Overview**: Project name, code, client, billing type, status, progress, dates, hours, description, tags
+    - **Members**: Project team management with roles and hourly rates
+    - **Client Permissions**: Granular visibility controls (view project, tasks, comments, timesheets, files, discussions)
+    - **Billing**: Fixed rate or hourly billing, currency, billable/invoice settings, financial stats
+    - **Tasks**: Task list with assignees, status, priority, due dates, billable/visibility flags, completion progress
+    - **Milestones**: Project milestones with descriptions and due dates
+    - **Timesheets**: Time logging with employee, hours, description, billable status tracking
+    - **Files**: File management with visibility controls (staff/client/all)
+    - **Notes**: Internal project notes with timestamps
+    - Data stored in localStorage with ProjectService using RxJS BehaviorSubjects
+    - Card-based grid view with status filtering and search
+21. **Expense Types Settings**: Dynamic expense type management under Settings:
+    - Add/Edit/Delete expense types
+    - Activate/Deactivate status toggles
+    - Used in expense form dropdown for categorizing expenses
 
 ### Routing
 -   Root path redirects to login.

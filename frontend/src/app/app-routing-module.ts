@@ -128,6 +128,8 @@ import { LoanApprovalsComponent } from './components/loans/approvals/approvals.c
 import { LoanEmiComponent } from './components/loans/emi/emi.component';
 import { LoanLedgerComponent } from './components/loans/ledger/ledger.component';
 import { LoanRepaymentsComponent } from './components/loans/repayments/repayments.component';
+import { ProjectManagementComponent } from './components/projects/project-management.component';
+import { ExpenseTypesSettingsComponent } from './components/settings/expense-types/expense-types.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -255,7 +257,9 @@ const routes: Routes = [
       { path: 'loans/approvals', component: LoanApprovalsComponent },
       { path: 'loans/emi', component: LoanEmiComponent },
       { path: 'loans/ledger', component: LoanLedgerComponent },
-      { path: 'loans/repayments', component: LoanRepaymentsComponent }
+      { path: 'loans/repayments', component: LoanRepaymentsComponent },
+      { path: 'projects', component: ProjectManagementComponent },
+      { path: 'settings/expense-types', component: ExpenseTypesSettingsComponent }
     ]
   }
 ];
