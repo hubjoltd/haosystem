@@ -8,8 +8,11 @@ export interface Project {
   status: string;
   progress: number;
   startDate?: string;
+  endDate?: string;
   deadline?: string;
+  completionDate?: string;
   estimatedHours?: number;
+  estimatedCost?: number;
   description?: string;
   tags?: string[];
   

@@ -34,8 +34,12 @@
       <span class="progress-text">{{ project.progress }}% Complete</span>
       
       <div class="card-meta">
-        <span><i class="fas fa-calendar"></i> {{ formatDate(project.deadline) }}</span>
-        <span><i class="fas fa-clock"></i> {{ project.totalLoggedTime || 0 }}h</span>
+        <span><i class="fas fa-calendar"></i> {{ formatDate(project.startDate) }} - {{ formatDate(project.endDate || project.deadline) }}</span>
+        <span><i class="fas fa-dollar-sign"></i> {{ formatCurrency(project.estimatedCost) }}</span>
+      </div>
+      <div class="card-meta">
+        <span><i class="fas fa-clock"></i> {{ project.totalLoggedTime || 0 }}h logged</span>
+        <span *ngIf="project.completionDate"><i class="fas fa-check-circle"></i> Completed {{ formatDate(project.completionDate) }}</span>
       </div>
       
       <div class="card-actions">
@@ -117,13 +121,29 @@
             <input type="date" class="form-control" [(ngModel)]="selectedProject.startDate" [disabled]="viewMode">
           </div>
           <div class="form-group">
+            <label>End Date</label>
+            <input type="date" class="form-control" [(ngModel)]="selectedProject.endDate" [disabled]="viewMode">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
             <label>Deadline</label>
             <input type="date" class="form-control" [(ngModel)]="selectedProject.deadline" [disabled]="viewMode">
           </div>
+          <div class="form-group">
+            <label>Completion Date</label>
+            <input type="date" class="form-control" [(ngModel)]="selectedProject.completionDate" [disabled]="viewMode">
+          </div>
         </div>
-        <div class="form-group">
-          <label>Estimated Hours</label>
-          <input type="number" class="form-control" [(ngModel)]="selectedProject.estimatedHours" [disabled]="viewMode">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Estimated Hours</label>
+            <input type="number" class="form-control" [(ngModel)]="selectedProject.estimatedHours" [disabled]="viewMode">
+          </div>
+          <div class="form-group">
+            <label>Estimated Cost</label>
+            <input type="number" class="form-control" [(ngModel)]="selectedProject.estimatedCost" [disabled]="viewMode" placeholder="0.00">
+          </div>
         </div>
         <div class="form-group">
           <label>Description</label>
