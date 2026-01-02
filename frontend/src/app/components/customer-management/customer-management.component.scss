@@ -336,6 +336,17 @@
   color: white;
 }
 
+.btn-info {
+  background: #17a2b8;
+  border-color: #17a2b8;
+  color: white;
+
+  &:hover {
+    background: #138496;
+    border-color: #117a8b;
+  }
+}
+
 @media (max-width: 768px) {
   .filter-group {
     width: 100%;

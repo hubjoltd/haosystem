@@ -12,6 +12,7 @@ export class CustomerManagementComponent implements OnInit {
   searchQuery: string = '';
   showModal: boolean = false;
   editMode: boolean = false;
+  viewMode: boolean = false;
   selectedClient: Customer = this.getEmptyClient();
   loading = false;
   dataReady = false;
@@ -131,6 +132,7 @@ export class CustomerManagementComponent implements OnInit {
   openModal(client?: Customer) {
     if (client) {
       this.editMode = true;
+      this.viewMode = false;
       this.selectedClient = { 
         ...client,
         contacts: client.contacts || [],
@@ -145,14 +147,35 @@ export class CustomerManagementComponent implements OnInit {
       };
     } else {
       this.editMode = false;
+      this.viewMode = false;
       this.selectedClient = this.getEmptyClient();
     }
     this.activeTab = 'profile';
     this.showModal = true;
   }
 
+  viewClient(client: Customer) {
+    this.viewMode = true;
+    this.editMode = false;
+    this.selectedClient = { 
+      ...client,
+      contacts: client.contacts || [],
+      invoices: client.invoices || [],
+      payments: client.payments || [],
+      projects: client.projects || [],
+      tasks: client.tasks || [],
+      tickets: client.tickets || [],
+      notes: client.notes || [],
+      documents: client.documents || [],
+      contracts: client.contracts || []
+    };
+    this.activeTab = 'profile';
+    this.showModal = true;
+  }
+
   closeModal() {
     this.showModal = false;
+    this.viewMode = false;
     this.selectedClient = this.getEmptyClient();
     this.activeTab = 'profile';
   }
