@@ -128,12 +128,11 @@
 .nav-link .nav-text {
   flex: 1;
   font-weight: 500;
-  white-space: nowrap;
+  white-space: normal;
   display: block !important;
   color: rgba(255, 255, 255, 0.95);
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.3;
+  overflow: visible;
 }
 
 .nav-link .expand-icon {
@@ -182,7 +181,7 @@
 }
 
 .sub-menu .nav-link {
-  padding: 8px 14px 8px 44px;
+  padding: 8px 10px 8px 36px;
   font-size: 0.75rem;
   border-radius: 0;
 }
@@ -198,7 +197,7 @@
 }
 
 .sub-menu.nested .nav-link {
-  padding-left: 58px;
+  padding-left: 48px;
   font-size: 0.72rem;
   position: relative;
 }
@@ -206,10 +205,10 @@
 .sub-menu.nested .nav-link::before {
   content: '';
   position: absolute;
-  left: 56px;
+  left: 38px;
   top: 50%;
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   background: rgba(255, 255, 255, 0.4);
   border-radius: 50%;
   transform: translateY(-50%);
