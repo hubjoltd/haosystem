@@ -22,8 +22,11 @@ export class ProjectManagementComponent implements OnInit {
   selectedProject: Partial<Project> = this.getEmptyProject();
   
   activeTab = 'overview';
+  mainView: 'grid' | 'kanban' | 'list' = 'grid';
   searchQuery = '';
   statusFilter = '';
+  clientFilter = '';
+  billingFilter = '';
   
   projectStatuses = PROJECT_STATUSES;
   billingTypes = BILLING_TYPES;
@@ -50,6 +53,7 @@ export class ProjectManagementComponent implements OnInit {
   editingTimeLog: Partial<ProjectTimeLog> = {};
   
   tagsInput = '';
+  draggedProject: Project | null = null;
 
   constructor(private projectService: ProjectService) {}
 
@@ -111,8 +115,73 @@ export class ProjectManagementComponent implements OnInit {
         p.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         p.projectCode?.toLowerCase().includes(this.searchQuery.toLowerCase());
       const matchesStatus = !this.statusFilter || p.status === this.statusFilter;
-      return matchesSearch && matchesStatus && !p.deleted;
+      const matchesClient = !this.clientFilter || p.customerId?.toString() === this.clientFilter;
+      const matchesBilling = !this.billingFilter || p.billingType === this.billingFilter;
+      return matchesSearch && matchesStatus && matchesClient && matchesBilling && !p.deleted;
     });
+  }
+
+  get totalProjects(): number {
+    return this.projects.filter(p => !p.deleted).length;
+  }
+
+  get activeProjects(): number {
+    return this.projects.filter(p => p.status === 'IN_PROGRESS' && !p.deleted).length;
+  }
+
+  get completedProjects(): number {
+    return this.projects.filter(p => p.status === 'COMPLETED' && !p.deleted).length;
+  }
+
+  get onHoldProjects(): number {
+    return this.projects.filter(p => p.status === 'ON_HOLD' && !p.deleted).length;
+  }
+
+  get overdueProjects(): number {
+    const today = new Date().toISOString().split('T')[0];
+    return this.projects.filter(p => p.deadline && p.deadline < today && p.status !== 'COMPLETED' && !p.deleted).length;
+  }
+
+  get totalBudget(): number {
+    return this.projects.filter(p => !p.deleted).reduce((sum, p) => sum + (p.estimatedCost || 0), 0);
+  }
+
+  get totalLoggedHours(): number {
+    return this.projects.filter(p => !p.deleted).reduce((sum, p) => sum + (p.totalLoggedTime || 0), 0);
+  }
+
+  get totalTasks(): number {
+    return this.projects.filter(p => !p.deleted).reduce((sum, p) => sum + (p.tasks?.length || 0), 0);
+  }
+
+  getProjectsByStatus(status: string): Project[] {
+    return this.filteredProjects.filter(p => p.status === status);
+  }
+
+  onDragStart(event: DragEvent, project: Project): void {
+    this.draggedProject = project;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+    }
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+  }
+
+  onDrop(event: DragEvent, newStatus: string): void {
+    event.preventDefault();
+    if (this.draggedProject && this.draggedProject.status !== newStatus) {
+      this.projectService.update(this.draggedProject.id!, { status: newStatus }).subscribe(() => {
+        if (this.draggedProject) {
+          this.draggedProject.status = newStatus;
+        }
+      });
+    }
+    this.draggedProject = null;
   }
 
   openModal(project?: Project, view = false): void {
@@ -158,6 +227,22 @@ export class ProjectManagementComponent implements OnInit {
     }
   }
 
+  duplicateProject(project: Project): void {
+    const newProject = { ...project };
+    delete newProject.id;
+    delete newProject.projectCode;
+    newProject.name = project.name + ' (Copy)';
+    newProject.status = 'NOT_STARTED';
+    newProject.progress = 0;
+    this.projectService.create(newProject).subscribe(() => {});
+  }
+
+  archiveProject(project: Project): void {
+    this.projectService.update(project.id!, { archived: !project.archived }).subscribe(() => {
+      project.archived = !project.archived;
+    });
+  }
+
   getStatusLabel(status: string): string {
     return this.projectStatuses.find(s => s.value === status)?.label || status;
   }
@@ -171,15 +256,21 @@ export class ProjectManagementComponent implements OnInit {
   }
 
   getClientName(customerId?: number): string {
-    if (!customerId) return '-';
+    if (!customerId) return 'No Client';
     const client = this.clients.find(c => c.id === customerId);
-    return client?.name || '-';
+    return client?.name || 'Unknown';
   }
 
   getEmployeeName(employeeId?: number): string {
     if (!employeeId) return '-';
     const emp = this.employees.find(e => e.id === employeeId);
     return emp ? `${emp.firstName} ${emp.lastName}` : '-';
+  }
+
+  getEmployeeInitials(employeeId?: number): string {
+    if (!employeeId) return '?';
+    const emp = this.employees.find(e => e.id === employeeId);
+    return emp ? `${emp.firstName?.charAt(0) || ''}${emp.lastName?.charAt(0) || ''}` : '?';
   }
 
   formatDate(date?: string): string {
@@ -189,6 +280,26 @@ export class ProjectManagementComponent implements OnInit {
 
   formatCurrency(amount?: number): string {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+  }
+
+  getDaysRemaining(deadline?: string): number {
+    if (!deadline) return 0;
+    const today = new Date();
+    const deadlineDate = new Date(deadline);
+    const diff = deadlineDate.getTime() - today.getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  }
+
+  isOverdue(project: Project): boolean {
+    if (!project.deadline || project.status === 'COMPLETED') return false;
+    return new Date(project.deadline) < new Date();
+  }
+
+  clearFilters(): void {
+    this.searchQuery = '';
+    this.statusFilter = '';
+    this.clientFilter = '';
+    this.billingFilter = '';
   }
 
   openTaskModal(task?: ProjectTask, index = -1): void {

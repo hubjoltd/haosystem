@@ -1,56 +1,270 @@
 <div class="projects-container">
   <div class="page-header">
-    <h2>Project Management</h2>
-    <button class="btn btn-primary" (click)="openModal()">
-      <i class="fas fa-plus"></i> New Project
-    </button>
-  </div>
-
-  <div class="filters-bar">
-    <div class="search-box">
-      <i class="fas fa-search"></i>
-      <input type="text" [(ngModel)]="searchQuery" placeholder="Search projects...">
+    <div class="header-left">
+      <h2>Project Management</h2>
+      <span class="subtitle">Manage and track all your projects</span>
     </div>
-    <select class="filter-select" [(ngModel)]="statusFilter">
-      <option value="">All Statuses</option>
-      <option *ngFor="let status of projectStatuses" [value]="status.value">{{ status.label }}</option>
-    </select>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="openModal()">
+        <i class="fas fa-plus"></i> New Project
+      </button>
+    </div>
   </div>
 
-  <div class="projects-grid">
-    <div class="project-card" *ngFor="let project of filteredProjects">
+  <div class="dashboard-stats">
+    <div class="stat-card" (click)="statusFilter = ''">
+      <div class="stat-icon total"><i class="fas fa-folder-open"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ totalProjects }}</span>
+        <span class="stat-label">Total Projects</span>
+      </div>
+    </div>
+    <div class="stat-card" (click)="statusFilter = 'IN_PROGRESS'">
+      <div class="stat-icon active"><i class="fas fa-spinner"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ activeProjects }}</span>
+        <span class="stat-label">In Progress</span>
+      </div>
+    </div>
+    <div class="stat-card" (click)="statusFilter = 'COMPLETED'">
+      <div class="stat-icon completed"><i class="fas fa-check-circle"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ completedProjects }}</span>
+        <span class="stat-label">Completed</span>
+      </div>
+    </div>
+    <div class="stat-card" (click)="statusFilter = 'ON_HOLD'">
+      <div class="stat-icon onhold"><i class="fas fa-pause-circle"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ onHoldProjects }}</span>
+        <span class="stat-label">On Hold</span>
+      </div>
+    </div>
+    <div class="stat-card overdue">
+      <div class="stat-icon overdue"><i class="fas fa-exclamation-triangle"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ overdueProjects }}</span>
+        <span class="stat-label">Overdue</span>
+      </div>
+    </div>
+    <div class="stat-card budget">
+      <div class="stat-icon budget"><i class="fas fa-dollar-sign"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ formatCurrency(totalBudget) }}</span>
+        <span class="stat-label">Total Budget</span>
+      </div>
+    </div>
+    <div class="stat-card hours">
+      <div class="stat-icon hours"><i class="fas fa-clock"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ totalLoggedHours }}h</span>
+        <span class="stat-label">Hours Logged</span>
+      </div>
+    </div>
+    <div class="stat-card tasks">
+      <div class="stat-icon tasks"><i class="fas fa-tasks"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ totalTasks }}</span>
+        <span class="stat-label">Total Tasks</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="view-toggle">
+        <button [class.active]="mainView === 'grid'" (click)="mainView = 'grid'" title="Grid View">
+          <i class="fas fa-th-large"></i>
+        </button>
+        <button [class.active]="mainView === 'kanban'" (click)="mainView = 'kanban'" title="Kanban View">
+          <i class="fas fa-columns"></i>
+        </button>
+        <button [class.active]="mainView === 'list'" (click)="mainView = 'list'" title="List View">
+          <i class="fas fa-list"></i>
+        </button>
+      </div>
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Search projects...">
+      </div>
+    </div>
+    <div class="toolbar-right">
+      <select class="filter-select" [(ngModel)]="statusFilter">
+        <option value="">All Statuses</option>
+        <option *ngFor="let status of projectStatuses" [value]="status.value">{{ status.label }}</option>
+      </select>
+      <select class="filter-select" [(ngModel)]="clientFilter">
+        <option value="">All Clients</option>
+        <option *ngFor="let client of clients" [value]="client.id">{{ client.name }}</option>
+      </select>
+      <select class="filter-select" [(ngModel)]="billingFilter">
+        <option value="">All Billing Types</option>
+        <option *ngFor="let type of billingTypes" [value]="type.value">{{ type.label }}</option>
+      </select>
+      <button class="btn btn-sm btn-secondary" (click)="clearFilters()" *ngIf="searchQuery || statusFilter || clientFilter || billingFilter">
+        <i class="fas fa-times"></i> Clear
+      </button>
+    </div>
+  </div>
+
+  <div class="projects-grid" *ngIf="mainView === 'grid'">
+    <div class="project-card" *ngFor="let project of filteredProjects" [class.overdue]="isOverdue(project)">
       <div class="card-header">
         <span class="project-code">{{ project.projectCode }}</span>
-        <span class="status-badge" [ngClass]="'status-' + getStatusColor(project.status)">
-          {{ getStatusLabel(project.status) }}
-        </span>
+        <div class="card-actions-menu">
+          <button class="action-btn" (click)="openModal(project, true)" title="View"><i class="fas fa-eye"></i></button>
+          <button class="action-btn" (click)="openModal(project)" title="Edit"><i class="fas fa-edit"></i></button>
+          <button class="action-btn" (click)="duplicateProject(project)" title="Duplicate"><i class="fas fa-copy"></i></button>
+          <button class="action-btn danger" (click)="deleteProject(project.id!)" title="Delete"><i class="fas fa-trash"></i></button>
+        </div>
       </div>
-      <h3 class="project-name">{{ project.name }}</h3>
-      <p class="project-client">{{ getClientName(project.customerId) }}</p>
-      
-      <div class="progress-bar">
-        <div class="progress-fill" [style.width.%]="project.progress"></div>
-      </div>
-      <span class="progress-text">{{ project.progress }}% Complete</span>
-      
-      <div class="card-meta">
-        <span><i class="fas fa-calendar"></i> {{ formatDate(project.startDate) }} - {{ formatDate(project.endDate || project.deadline) }}</span>
-        <span><i class="fas fa-dollar-sign"></i> {{ formatCurrency(project.estimatedCost) }}</span>
-      </div>
-      <div class="card-meta">
-        <span><i class="fas fa-clock"></i> {{ project.totalLoggedTime || 0 }}h logged</span>
-        <span *ngIf="project.completionDate"><i class="fas fa-check-circle"></i> Completed {{ formatDate(project.completionDate) }}</span>
-      </div>
-      
-      <div class="card-actions">
-        <button class="btn btn-sm btn-info" (click)="openModal(project, true)"><i class="fas fa-eye"></i></button>
-        <button class="btn btn-sm btn-secondary" (click)="openModal(project)"><i class="fas fa-edit"></i></button>
-        <button class="btn btn-sm btn-danger" (click)="deleteProject(project.id!)"><i class="fas fa-trash"></i></button>
+      <div class="card-body">
+        <h3 class="project-name">{{ project.name }}</h3>
+        <p class="project-client"><i class="fas fa-user"></i> {{ getClientName(project.customerId) }}</p>
+        <div class="project-meta">
+          <span class="billing-type"><i class="fas fa-file-invoice-dollar"></i> {{ getBillingTypeLabel(project.billingType) }}</span>
+          <span class="budget" *ngIf="project.estimatedCost"><i class="fas fa-dollar-sign"></i> {{ formatCurrency(project.estimatedCost) }}</span>
+        </div>
+        <div class="progress-section">
+          <div class="progress-header">
+            <span>Progress</span>
+            <span>{{ project.progress }}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="project.progress" [class.complete]="project.progress === 100"></div>
+          </div>
+        </div>
+        <div class="date-section">
+          <div class="date-item">
+            <span class="date-label">Start</span>
+            <span class="date-value">{{ formatDate(project.startDate) }}</span>
+          </div>
+          <div class="date-item">
+            <span class="date-label">End</span>
+            <span class="date-value">{{ formatDate(project.endDate || project.deadline) }}</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <span class="status-badge" [ngClass]="'status-' + getStatusColor(project.status)">
+            {{ getStatusLabel(project.status) }}
+          </span>
+          <div class="stats-mini">
+            <span title="Tasks"><i class="fas fa-tasks"></i> {{ project.tasks?.length || 0 }}</span>
+            <span title="Hours"><i class="fas fa-clock"></i> {{ project.totalLoggedTime || 0 }}h</span>
+          </div>
+        </div>
+        <div class="overdue-badge" *ngIf="isOverdue(project)">
+          <i class="fas fa-exclamation-circle"></i> {{ getDaysRemaining(project.deadline) * -1 }} days overdue
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="empty-state" *ngIf="filteredProjects.length === 0">
+  <div class="kanban-board" *ngIf="mainView === 'kanban'">
+    <div class="kanban-column" *ngFor="let status of projectStatuses" 
+         (dragover)="onDragOver($event)" 
+         (drop)="onDrop($event, status.value)">
+      <div class="column-header" [ngClass]="'header-' + status.color">
+        <span class="column-title">{{ status.label }}</span>
+        <span class="column-count">{{ getProjectsByStatus(status.value).length }}</span>
+      </div>
+      <div class="column-body">
+        <div class="kanban-card" 
+             *ngFor="let project of getProjectsByStatus(status.value)"
+             draggable="true"
+             (dragstart)="onDragStart($event, project)"
+             (click)="openModal(project, true)">
+          <div class="kanban-card-header">
+            <span class="project-code">{{ project.projectCode }}</span>
+            <span class="budget" *ngIf="project.estimatedCost">{{ formatCurrency(project.estimatedCost) }}</span>
+          </div>
+          <h4 class="project-name">{{ project.name }}</h4>
+          <p class="project-client">{{ getClientName(project.customerId) }}</p>
+          <div class="progress-mini">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="project.progress"></div>
+            </div>
+            <span>{{ project.progress }}%</span>
+          </div>
+          <div class="kanban-card-footer">
+            <span class="deadline" [class.overdue]="isOverdue(project)">
+              <i class="fas fa-calendar"></i> {{ formatDate(project.deadline) }}
+            </span>
+            <div class="member-avatars" *ngIf="project.members && project.members.length > 0">
+              <span class="avatar" *ngFor="let member of project.members.slice(0, 3)">
+                {{ getEmployeeInitials(member.employeeId) }}
+              </span>
+              <span class="avatar more" *ngIf="project.members.length > 3">+{{ project.members.length - 3 }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="empty-column" *ngIf="getProjectsByStatus(status.value).length === 0">
+          <p>No projects</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="projects-list" *ngIf="mainView === 'list'">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Project</th>
+          <th>Client</th>
+          <th>Status</th>
+          <th>Progress</th>
+          <th>Budget</th>
+          <th>Start Date</th>
+          <th>Deadline</th>
+          <th>Hours</th>
+          <th>Tasks</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let project of filteredProjects" [class.overdue]="isOverdue(project)">
+          <td>
+            <div class="project-info">
+              <span class="project-code">{{ project.projectCode }}</span>
+              <span class="project-name">{{ project.name }}</span>
+            </div>
+          </td>
+          <td>{{ getClientName(project.customerId) }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="'status-' + getStatusColor(project.status)">
+              {{ getStatusLabel(project.status) }}
+            </span>
+          </td>
+          <td>
+            <div class="progress-cell">
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="project.progress"></div>
+              </div>
+              <span>{{ project.progress }}%</span>
+            </div>
+          </td>
+          <td>{{ formatCurrency(project.estimatedCost) }}</td>
+          <td>{{ formatDate(project.startDate) }}</td>
+          <td [class.overdue-text]="isOverdue(project)">{{ formatDate(project.deadline) }}</td>
+          <td>{{ project.totalLoggedTime || 0 }}h</td>
+          <td>{{ project.tasks?.length || 0 }}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn btn-sm btn-info" (click)="openModal(project, true)"><i class="fas fa-eye"></i></button>
+              <button class="btn btn-sm btn-secondary" (click)="openModal(project)"><i class="fas fa-edit"></i></button>
+              <button class="btn btn-sm btn-danger" (click)="deleteProject(project.id!)"><i class="fas fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-state" *ngIf="filteredProjects.length === 0">
+      <i class="fas fa-folder-open"></i>
+      <p>No projects found</p>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="filteredProjects.length === 0 && mainView === 'grid'">
     <i class="fas fa-project-diagram"></i>
     <p>No projects found. Click "New Project" to create one.</p>
   </div>
@@ -76,7 +290,6 @@
     </div>
 
     <div class="modal-body">
-      <!-- Overview Tab -->
       <div class="tab-content" *ngIf="activeTab === 'overview'">
         <div class="form-row">
           <div class="form-group">
@@ -155,7 +368,6 @@
         </div>
       </div>
 
-      <!-- Members Tab -->
       <div class="tab-content" *ngIf="activeTab === 'members'">
         <div class="section-header">
           <h4>Project Members</h4>
@@ -199,7 +411,6 @@
         </div>
       </div>
 
-      <!-- Client Permissions Tab -->
       <div class="tab-content" *ngIf="activeTab === 'permissions'">
         <h4>Client Visibility & Permissions</h4>
         <div class="permissions-grid">
@@ -238,7 +449,6 @@
         </div>
       </div>
 
-      <!-- Billing Tab -->
       <div class="tab-content" *ngIf="activeTab === 'billing'">
         <h4>Billing & Financial Settings</h4>
         <div class="form-row">
@@ -294,7 +504,6 @@
         </div>
       </div>
 
-      <!-- Tasks Tab -->
       <div class="tab-content" *ngIf="activeTab === 'tasks'">
         <div class="section-header">
           <h4>Tasks ({{ selectedProject.tasks?.length || 0 }})</h4>
@@ -340,7 +549,6 @@
         </div>
       </div>
 
-      <!-- Milestones Tab -->
       <div class="tab-content" *ngIf="activeTab === 'milestones'">
         <div class="section-header">
           <h4>Milestones</h4>
@@ -365,7 +573,6 @@
         </div>
       </div>
 
-      <!-- Timesheets Tab -->
       <div class="tab-content" *ngIf="activeTab === 'timesheets'">
         <div class="section-header">
           <h4>Time Logs</h4>
@@ -404,7 +611,6 @@
         </div>
       </div>
 
-      <!-- Files Tab -->
       <div class="tab-content" *ngIf="activeTab === 'files'">
         <div class="section-header">
           <h4>Project Files</h4>
@@ -439,7 +645,6 @@
         </div>
       </div>
 
-      <!-- Notes Tab -->
       <div class="tab-content" *ngIf="activeTab === 'notes'">
         <div class="section-header">
           <h4>Internal Notes</h4>
@@ -469,7 +674,6 @@
   </div>
 </div>
 
-<!-- Task Modal -->
 <div class="modal-overlay sub-modal" *ngIf="showTaskModal" (click)="closeTaskModal()">
   <div class="modal modal-medium" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -528,7 +732,6 @@
   </div>
 </div>
 
-<!-- Milestone Modal -->
 <div class="modal-overlay sub-modal" *ngIf="showMilestoneModal" (click)="closeMilestoneModal()">
   <div class="modal modal-medium" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -556,7 +759,6 @@
   </div>
 </div>
 
-<!-- Member Modal -->
 <div class="modal-overlay sub-modal" *ngIf="showMemberModal" (click)="closeMemberModal()">
   <div class="modal modal-medium" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -587,7 +789,6 @@
   </div>
 </div>
 
-<!-- File Modal -->
 <div class="modal-overlay sub-modal" *ngIf="showFileModal" (click)="closeFileModal()">
   <div class="modal modal-medium" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -615,7 +816,6 @@
   </div>
 </div>
 
-<!-- Note Modal -->
 <div class="modal-overlay sub-modal" *ngIf="showNoteModal" (click)="closeNoteModal()">
   <div class="modal modal-medium" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -635,7 +835,6 @@
   </div>
 </div>
 
-<!-- Time Log Modal -->
 <div class="modal-overlay sub-modal" *ngIf="showTimeLogModal" (click)="closeTimeLogModal()">
   <div class="modal modal-medium" (click)="$event.stopPropagation()">
     <div class="modal-header">
