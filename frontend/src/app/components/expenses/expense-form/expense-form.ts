@@ -5,6 +5,12 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { ExpenseService } from '../../../services/expense.service';
 import { ExpenseRequest, ExpenseItem, ExpenseCategory, EXPENSE_TYPES, PAYMENT_METHODS } from '../../../models/expense.model';
 
+interface ExpenseItemForm extends Partial<ExpenseItem> {
+  expenseType?: string;
+  receiptFileName?: string;
+  receiptFileData?: string;
+}
+
 @Component({
   selector: 'app-expense-form',
   standalone: true,
@@ -31,7 +37,7 @@ export class ExpenseFormComponent implements OnInit {
   
   showItemModal = false;
   editingItemIndex: number = -1;
-  itemForm: Partial<ExpenseItem> = {};
+  itemForm: ExpenseItemForm = {};
 
   constructor(
     private expenseService: ExpenseService,
@@ -76,18 +82,65 @@ export class ExpenseFormComponent implements OnInit {
   openItemModal(index: number = -1): void {
     this.editingItemIndex = index;
     if (index >= 0 && this.expenseRequest.items) {
-      this.itemForm = { ...this.expenseRequest.items[index] };
+      this.itemForm = { ...this.expenseRequest.items[index] } as ExpenseItemForm;
     } else {
       this.itemForm = {
+        expenseType: '',
         description: '',
         amount: 0,
-        currency: 'USD',
-        quantity: 1,
-        paymentMethod: 'CASH',
-        expenseDate: new Date().toISOString().split('T')[0]
+        receiptFileName: '',
+        receiptFileData: ''
       };
     }
     this.showItemModal = true;
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.processFile(input.files[0]);
+    }
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  onFileDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer?.files && event.dataTransfer.files[0]) {
+      this.processFile(event.dataTransfer.files[0]);
+    }
+  }
+
+  processFile(file: File): void {
+    const maxSize = 10 * 1024 * 1024;
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
+    
+    if (file.size > maxSize) {
+      alert('File size must be less than 10MB');
+      return;
+    }
+    
+    if (!allowedTypes.includes(file.type)) {
+      alert('Only images (JPG, PNG, GIF, WebP) and PDF files are allowed');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.itemForm.receiptFileName = file.name;
+      this.itemForm.receiptFileData = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeFile(event: Event): void {
+    event.stopPropagation();
+    this.itemForm.receiptFileName = '';
+    this.itemForm.receiptFileData = '';
   }
 
   closeItemModal(): void {

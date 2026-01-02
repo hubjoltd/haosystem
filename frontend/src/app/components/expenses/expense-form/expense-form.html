@@ -59,23 +59,25 @@
         <table>
           <thead>
             <tr>
-              <th>Category</th>
+              <th>Expense Type</th>
               <th>Description</th>
-              <th>Date</th>
-              <th>Vendor</th>
               <th>Amount</th>
-              <th>Payment Method</th>
+              <th>Receipt</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let item of expenseRequest.items; let i = index">
-              <td>{{ getCategoryName(item.categoryId || item.category?.id!) }}</td>
-              <td>{{ item.description }}</td>
-              <td>{{ item.expenseDate }}</td>
-              <td>{{ item.vendor || '-' }}</td>
+              <td>{{ item.expenseType || '-' }}</td>
+              <td>{{ item.description || '-' }}</td>
               <td>{{ formatCurrency(item.amount) }}</td>
-              <td>{{ getPaymentMethodLabel(item.paymentMethod!) }}</td>
+              <td>
+                <span class="receipt-badge" *ngIf="item.receiptFileName">
+                  <i class="fas" [ngClass]="item.receiptFileName.endsWith('.pdf') ? 'fa-file-pdf' : 'fa-file-image'"></i>
+                  {{ item.receiptFileName }}
+                </span>
+                <span class="no-receipt" *ngIf="!item.receiptFileName">No file</span>
+              </td>
               <td class="actions">
                 <button class="btn-icon" (click)="openItemModal(i)" title="Edit">
                   <i class="fas fa-edit"></i>
@@ -88,7 +90,7 @@
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="4" class="total-label">Total:</td>
+              <td colspan="2" class="total-label">Total:</td>
               <td colspan="3" class="total-amount">{{ formatCurrency(expenseRequest.totalAmount!) }}</td>
             </tr>
           </tfoot>
@@ -130,86 +132,65 @@
     
     <div class="modal-body">
       <div class="form-group">
-        <label>Category *</label>
-        <select [(ngModel)]="itemForm.categoryId">
-          <option value="">Select Category</option>
-          <option *ngFor="let category of categories" [value]="category.id">
-            {{ category.name }} ({{ category.expenseType }})
-          </option>
+        <label>Expense Type *</label>
+        <select [(ngModel)]="itemForm.expenseType">
+          <option value="">Select Expense Type</option>
+          <option value="Food Expense">Food Expense</option>
+          <option value="Travel Expense">Travel Expense</option>
+          <option value="Accommodation">Accommodation</option>
+          <option value="Transportation">Transportation</option>
+          <option value="Office Supplies">Office Supplies</option>
+          <option value="Equipment">Equipment</option>
+          <option value="Software/Subscription">Software/Subscription</option>
+          <option value="Communication">Communication</option>
+          <option value="Entertainment">Entertainment</option>
+          <option value="Medical">Medical</option>
+          <option value="Training/Education">Training/Education</option>
+          <option value="Miscellaneous">Miscellaneous</option>
         </select>
       </div>
       
       <div class="form-group">
-        <label>Description *</label>
-        <input type="text" [(ngModel)]="itemForm.description" placeholder="What was this expense for?">
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label>Date *</label>
-          <input type="date" [(ngModel)]="itemForm.expenseDate">
-        </div>
-        <div class="form-group">
-          <label>Vendor</label>
-          <input type="text" [(ngModel)]="itemForm.vendor" placeholder="Merchant/Vendor name">
-        </div>
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label>Amount *</label>
-          <input type="number" [(ngModel)]="itemForm.amount" step="0.01" min="0">
-        </div>
-        <div class="form-group">
-          <label>Currency</label>
-          <select [(ngModel)]="itemForm.currency">
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="GBP">GBP</option>
-            <option value="INR">INR</option>
-          </select>
-        </div>
-      </div>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label>Quantity</label>
-          <input type="number" [(ngModel)]="itemForm.quantity" min="1">
-        </div>
-        <div class="form-group">
-          <label>Payment Method</label>
-          <select [(ngModel)]="itemForm.paymentMethod">
-            <option *ngFor="let method of paymentMethods" [value]="method.value">{{ method.label }}</option>
-          </select>
-        </div>
+        <label>Amount *</label>
+        <input type="number" [(ngModel)]="itemForm.amount" step="0.01" min="0" placeholder="Enter amount">
       </div>
       
       <div class="form-group">
-        <label>Receipt Number</label>
-        <input type="text" [(ngModel)]="itemForm.receiptNumber" placeholder="Optional">
+        <label>Description</label>
+        <input type="text" [(ngModel)]="itemForm.description" placeholder="Brief description (optional)">
       </div>
       
       <div class="form-group">
-        <label>Notes</label>
-        <textarea [(ngModel)]="itemForm.notes" rows="2" placeholder="Additional notes"></textarea>
-      </div>
-      
-      <div class="form-group checkbox-group">
-        <label>
-          <input type="checkbox" [(ngModel)]="itemForm.billable">
-          Billable to Client
-        </label>
-      </div>
-      
-      <div class="form-group" *ngIf="itemForm.billable">
-        <label>Client Code</label>
-        <input type="text" [(ngModel)]="itemForm.clientCode" placeholder="Client code">
+        <label>Payment Proof (Image/PDF) *</label>
+        <div class="file-upload-area" 
+             [class.has-file]="itemForm.receiptFileName"
+             (click)="fileInput.click()"
+             (dragover)="onDragOver($event)"
+             (drop)="onFileDrop($event)">
+          <input type="file" 
+                 #fileInput 
+                 accept="image/*,.pdf" 
+                 (change)="onFileSelected($event)"
+                 style="display: none;">
+          <div class="upload-content" *ngIf="!itemForm.receiptFileName">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Click to upload or drag & drop</p>
+            <span>Accepts: JPG, PNG, PDF (Max 10MB)</span>
+          </div>
+          <div class="file-preview" *ngIf="itemForm.receiptFileName">
+            <i class="fas" [ngClass]="itemForm.receiptFileName.endsWith('.pdf') ? 'fa-file-pdf' : 'fa-file-image'"></i>
+            <span class="file-name">{{ itemForm.receiptFileName }}</span>
+            <button class="btn-remove" (click)="removeFile($event)">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
     
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeItemModal()">Cancel</button>
-      <button class="btn btn-primary" (click)="saveItem()">
+      <button class="btn btn-primary" (click)="saveItem()" [disabled]="!itemForm.expenseType || !itemForm.amount">
         {{ editingItemIndex >= 0 ? 'Update' : 'Add' }} Item
       </button>
     </div>

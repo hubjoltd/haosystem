@@ -20,6 +20,7 @@ export interface ExpenseItem {
   expenseRequest?: ExpenseRequest;
   category?: ExpenseCategory;
   categoryId?: number;
+  expenseType?: string;
   description: string;
   expenseDate?: string;
   vendor?: string;
@@ -32,6 +33,8 @@ export interface ExpenseItem {
   receiptNumber?: string;
   receiptUrl?: string;
   receiptAttached?: boolean;
+  receiptFileName?: string;
+  receiptFileData?: string;
   paymentMethod?: string;
   notes?: string;
   billable?: boolean;
