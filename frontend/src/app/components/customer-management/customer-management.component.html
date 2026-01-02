@@ -1,15 +1,15 @@
 <div class="management-page">
   <div class="page-header">
     <div>
-      <h1>Customer Management</h1>
+      <h1>Client Management</h1>
       <div class="breadcrumb">
         <a routerLink="/app">Home</a>
         <span>/</span>
-        <span>Customers</span>
+        <span>Clients</span>
       </div>
     </div>
     <button class="btn btn-primary" (click)="openModal()">
-      <i class="fas fa-plus"></i> Add Customer
+      <i class="fas fa-plus"></i> Add Client
     </button>
   </div>
 
@@ -17,29 +17,29 @@
     <div class="stat-card">
       <div class="icon primary"><i class="fas fa-users"></i></div>
       <div class="info">
-        <h3>{{ customers.length }}</h3>
-        <p>Total Customers</p>
+        <h3>{{ clients.length }}</h3>
+        <p>Total Clients</p>
       </div>
     </div>
     <div class="stat-card">
       <div class="icon success"><i class="fas fa-user-check"></i></div>
       <div class="info">
         <h3>{{ getActiveCount() }}</h3>
-        <p>Active Customers</p>
+        <p>Active Clients</p>
       </div>
     </div>
     <div class="stat-card">
       <div class="icon warning"><i class="fas fa-user-times"></i></div>
       <div class="info">
         <h3>{{ getInactiveCount() }}</h3>
-        <p>Inactive Customers</p>
+        <p>Inactive Clients</p>
       </div>
     </div>
     <div class="stat-card">
-      <div class="icon info"><i class="fas fa-chart-line"></i></div>
+      <div class="icon info"><i class="fas fa-dollar-sign"></i></div>
       <div class="info">
-        <h3>{{ customers.length > 0 ? '+12%' : '0%' }}</h3>
-        <p>Growth Rate</p>
+        <h3>{{ formatCurrency(getTotalOutstanding()) }}</h3>
+        <p>Total Outstanding</p>
       </div>
     </div>
   </div>
@@ -48,7 +48,7 @@
     <div class="card-header-row">
       <div class="search-box">
         <i class="fas fa-search"></i>
-        <input type="text" [(ngModel)]="searchQuery" placeholder="Search customers..." />
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Search clients..." />
       </div>
     </div>
 
@@ -56,7 +56,7 @@
       <table class="table">
         <thead>
           <tr>
-            <th>Customer</th>
+            <th>Client</th>
             <th>Email</th>
             <th>Phone</th>
             <th>Group</th>
@@ -68,32 +68,31 @@
           <tr *ngIf="loading">
             <td colspan="6" class="empty-state">
               <i class="fas fa-spinner fa-spin"></i>
-              
             </td>
           </tr>
-          <tr *ngIf="!loading && filteredCustomers.length === 0">
+          <tr *ngIf="!loading && filteredClients.length === 0">
             <td colspan="6" class="empty-state">
               <i class="fas fa-users"></i>
-              <p>No customers found. Click "Add Customer" to create one.</p>
+              <p>No clients found. Click "Add Client" to create one.</p>
             </td>
           </tr>
-          <tr *ngFor="let customer of filteredCustomers">
+          <tr *ngFor="let client of filteredClients">
             <td>
               <div class="user-cell">
-                <div class="avatar">{{ customer.name.charAt(0) }}</div>
-                <span>{{ customer.name }}</span>
+                <div class="avatar">{{ client.name.charAt(0) }}</div>
+                <span>{{ client.name }}</span>
               </div>
             </td>
-            <td>{{ customer.email }}</td>
-            <td>{{ customer.phone }}</td>
-            <td><span class="badge badge-info">{{ customer.customerGroup || '-' }}</span></td>
+            <td>{{ client.email }}</td>
+            <td>{{ client.phone }}</td>
+            <td><span class="badge badge-info">{{ client.customerGroup || '-' }}</span></td>
             <td>
-              <span class="badge" [ngClass]="getStatusClass(customer.status)">{{ customer.status }}</span>
+              <span class="badge" [ngClass]="getStatusClass(client.status)">{{ client.status }}</span>
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn btn-sm btn-secondary" title="Edit" (click)="openModal(customer)"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-sm btn-danger" title="Delete" (click)="deleteCustomer(customer.id!)"><i class="fas fa-trash"></i></button>
+                <button class="btn btn-sm btn-secondary" title="Edit" (click)="openModal(client)"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger" title="Delete" (click)="deleteClient(client.id!)"><i class="fas fa-trash"></i></button>
               </div>
             </td>
           </tr>
@@ -102,56 +101,547 @@
     </div>
 
     <div class="table-footer">
-      <span>Showing {{ filteredCustomers.length }} of {{ customers.length }} customers</span>
+      <span>Showing {{ filteredClients.length }} of {{ clients.length }} clients</span>
     </div>
   </div>
 </div>
 
-<!-- Modal -->
+<!-- Main Client Modal with Tabs -->
 <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
-  <div class="modal" (click)="$event.stopPropagation()">
+  <div class="modal modal-large" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>{{ editMode ? 'Edit Customer' : 'Add Customer' }}</h2>
+      <h2>{{ editMode ? 'Edit Client' : 'Add Client' }}</h2>
       <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
     </div>
+
+    <div class="modal-tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'profile'" (click)="setActiveTab('profile')">
+        <i class="fas fa-user"></i> Profile
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'contacts'" (click)="setActiveTab('contacts')">
+        <i class="fas fa-address-book"></i> Contacts
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'financials'" (click)="setActiveTab('financials')">
+        <i class="fas fa-dollar-sign"></i> Financials
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'projects'" (click)="setActiveTab('projects')">
+        <i class="fas fa-project-diagram"></i> Projects & Tasks
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'support'" (click)="setActiveTab('support')">
+        <i class="fas fa-headset"></i> Support
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'documents'" (click)="setActiveTab('documents')">
+        <i class="fas fa-folder-open"></i> Documents
+      </button>
+    </div>
+
     <div class="modal-body">
-      <div class="form-group">
-        <label>Customer Name</label>
-        <input type="text" class="form-control" [(ngModel)]="selectedCustomer.name" placeholder="Enter customer name" />
+      <!-- Profile / Overview Tab -->
+      <div class="tab-content" *ngIf="activeTab === 'profile'">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Company Name *</label>
+            <input type="text" class="form-control" [(ngModel)]="selectedClient.name" placeholder="Enter company name" />
+          </div>
+          <div class="form-group">
+            <label>Primary Contact</label>
+            <input type="text" class="form-control" [(ngModel)]="selectedClient.primaryContact" placeholder="Contact person name" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" class="form-control" [(ngModel)]="selectedClient.email" placeholder="company@example.com" />
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="text" class="form-control" [(ngModel)]="selectedClient.phone" placeholder="+1 234 567 890" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Billing Address</label>
+          <textarea class="form-control" [(ngModel)]="selectedClient.billingAddress" rows="2" placeholder="Full billing address"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Currency</label>
+            <select class="form-control" [(ngModel)]="selectedClient.currency">
+              <option value="USD">USD - US Dollar</option>
+              <option value="EUR">EUR - Euro</option>
+              <option value="GBP">GBP - British Pound</option>
+              <option value="CAD">CAD - Canadian Dollar</option>
+              <option value="AUD">AUD - Australian Dollar</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Language</label>
+            <select class="form-control" [(ngModel)]="selectedClient.language">
+              <option value="English">English</option>
+              <option value="Spanish">Spanish</option>
+              <option value="French">French</option>
+              <option value="German">German</option>
+              <option value="Chinese">Chinese</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Client Group</label>
+            <select class="form-control" [(ngModel)]="selectedClient.customerGroup">
+              <option value="">Select Group</option>
+              <option value="Retail">Retail</option>
+              <option value="Wholesale">Wholesale</option>
+              <option value="VIP">VIP</option>
+              <option value="Corporate">Corporate</option>
+              <option value="Enterprise">Enterprise</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select class="form-control" [(ngModel)]="selectedClient.status">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Assigned Staff</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedClient.assignedStaff" placeholder="Account manager name" />
+        </div>
+      </div>
+
+      <!-- Contacts Tab -->
+      <div class="tab-content" *ngIf="activeTab === 'contacts'">
+        <div class="section-header">
+          <h3>Client Contacts</h3>
+          <button class="btn btn-primary btn-sm" (click)="openContactModal()">
+            <i class="fas fa-plus"></i> Add Contact
+          </button>
+        </div>
+        <div class="table-container" *ngIf="selectedClient.contacts && selectedClient.contacts.length > 0">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Position</th>
+                <th>Portal Access</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let contact of selectedClient.contacts">
+                <td>{{ contact.name }}</td>
+                <td>{{ contact.email }}</td>
+                <td>{{ contact.phone }}</td>
+                <td>{{ contact.position }}</td>
+                <td>
+                  <span class="badge" [ngClass]="contact.portalAccess ? 'badge-success' : 'badge-secondary'">
+                    {{ contact.portalAccess ? 'Yes' : 'No' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="btn btn-sm btn-secondary" (click)="openContactModal(contact)"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-danger" (click)="deleteContact(contact.id!)"><i class="fas fa-trash"></i></button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state-box" *ngIf="!selectedClient.contacts || selectedClient.contacts.length === 0">
+          <i class="fas fa-address-book"></i>
+          <p>No contacts added yet. Click "Add Contact" to add one.</p>
+        </div>
+      </div>
+
+      <!-- Financials Tab -->
+      <div class="tab-content" *ngIf="activeTab === 'financials'">
+        <div class="finance-summary">
+          <div class="summary-card">
+            <div class="summary-icon primary"><i class="fas fa-file-invoice-dollar"></i></div>
+            <div class="summary-info">
+              <h4>{{ selectedClient.invoices?.length || 0 }}</h4>
+              <p>Total Invoices</p>
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-icon success"><i class="fas fa-check-circle"></i></div>
+            <div class="summary-info">
+              <h4>{{ selectedClient.payments?.length || 0 }}</h4>
+              <p>Payments Received</p>
+            </div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-icon warning"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="summary-info">
+              <h4>{{ formatCurrency(selectedClient.outstandingBalance || 0) }}</h4>
+              <p>Outstanding Balance</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Default Payment Method</label>
+            <select class="form-control" [(ngModel)]="selectedClient.defaultPaymentMethod">
+              <option value="">Select Method</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Credit Card">Credit Card</option>
+              <option value="PayPal">PayPal</option>
+              <option value="Check">Check</option>
+              <option value="Cash">Cash</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Outstanding Balance</label>
+            <input type="number" class="form-control" [(ngModel)]="selectedClient.outstandingBalance" placeholder="0.00" />
+          </div>
+        </div>
+
+        <h4 class="section-title">Recent Invoices</h4>
+        <div class="table-container" *ngIf="selectedClient.invoices && selectedClient.invoices.length > 0">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Invoice #</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let invoice of selectedClient.invoices">
+                <td>{{ invoice.invoiceNumber }}</td>
+                <td>{{ formatDate(invoice.date) }}</td>
+                <td>{{ formatCurrency(invoice.amount) }}</td>
+                <td><span class="badge" [ngClass]="getStatusClass(invoice.status)">{{ invoice.status }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state-small" *ngIf="!selectedClient.invoices || selectedClient.invoices.length === 0">
+          <p>No invoices recorded.</p>
+        </div>
+
+        <h4 class="section-title">Recent Payments</h4>
+        <div class="table-container" *ngIf="selectedClient.payments && selectedClient.payments.length > 0">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Method</th>
+                <th>Reference</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let payment of selectedClient.payments">
+                <td>{{ formatDate(payment.paymentDate) }}</td>
+                <td>{{ formatCurrency(payment.amount) }}</td>
+                <td>{{ payment.method }}</td>
+                <td>{{ payment.reference }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state-small" *ngIf="!selectedClient.payments || selectedClient.payments.length === 0">
+          <p>No payments recorded.</p>
+        </div>
+      </div>
+
+      <!-- Projects & Tasks Tab -->
+      <div class="tab-content" *ngIf="activeTab === 'projects'">
+        <h4 class="section-title">Projects</h4>
+        <div class="table-container" *ngIf="selectedClient.projects && selectedClient.projects.length > 0">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Project Name</th>
+                <th>Status</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Budget</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let project of selectedClient.projects">
+                <td>{{ project.name }}</td>
+                <td><span class="badge" [ngClass]="getStatusClass(project.status)">{{ project.status }}</span></td>
+                <td>{{ formatDate(project.startDate) }}</td>
+                <td>{{ project.endDate ? formatDate(project.endDate) : '-' }}</td>
+                <td>{{ formatCurrency(project.budget) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state-box" *ngIf="!selectedClient.projects || selectedClient.projects.length === 0">
+          <i class="fas fa-project-diagram"></i>
+          <p>No projects assigned to this client.</p>
+        </div>
+
+        <h4 class="section-title">Tasks</h4>
+        <div class="table-container" *ngIf="selectedClient.tasks && selectedClient.tasks.length > 0">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>Status</th>
+                <th>Due Date</th>
+                <th>Assignee</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let task of selectedClient.tasks">
+                <td>{{ task.title }}</td>
+                <td><span class="badge" [ngClass]="getStatusClass(task.status)">{{ task.status }}</span></td>
+                <td>{{ formatDate(task.dueDate) }}</td>
+                <td>{{ task.assignee || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state-box" *ngIf="!selectedClient.tasks || selectedClient.tasks.length === 0">
+          <i class="fas fa-tasks"></i>
+          <p>No tasks assigned for this client.</p>
+        </div>
+      </div>
+
+      <!-- Support & Communication Tab -->
+      <div class="tab-content" *ngIf="activeTab === 'support'">
+        <h4 class="section-title">Support Tickets</h4>
+        <div class="table-container" *ngIf="selectedClient.tickets && selectedClient.tickets.length > 0">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Created</th>
+                <th>Last Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let ticket of selectedClient.tickets">
+                <td>{{ ticket.subject }}</td>
+                <td><span class="badge" [ngClass]="getStatusClass(ticket.status)">{{ ticket.status }}</span></td>
+                <td><span class="badge" [ngClass]="getPriorityClass(ticket.priority)">{{ ticket.priority }}</span></td>
+                <td>{{ formatDate(ticket.createdDate) }}</td>
+                <td>{{ formatDate(ticket.lastUpdated) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state-box" *ngIf="!selectedClient.tickets || selectedClient.tickets.length === 0">
+          <i class="fas fa-ticket-alt"></i>
+          <p>No support tickets for this client.</p>
+        </div>
+
+        <div class="section-header">
+          <h4 class="section-title">Internal Notes</h4>
+          <button class="btn btn-primary btn-sm" (click)="openNoteModal()">
+            <i class="fas fa-plus"></i> Add Note
+          </button>
+        </div>
+        <div class="notes-list" *ngIf="selectedClient.notes && selectedClient.notes.length > 0">
+          <div class="note-item" *ngFor="let note of selectedClient.notes">
+            <div class="note-header">
+              <span class="note-author"><i class="fas fa-user"></i> {{ note.createdBy }}</span>
+              <span class="note-date">{{ formatDate(note.createdDate) }}</span>
+              <button class="btn btn-sm btn-danger btn-icon" (click)="deleteNote(note.id!)"><i class="fas fa-trash"></i></button>
+            </div>
+            <div class="note-content">{{ note.content }}</div>
+          </div>
+        </div>
+        <div class="empty-state-box" *ngIf="!selectedClient.notes || selectedClient.notes.length === 0">
+          <i class="fas fa-sticky-note"></i>
+          <p>No internal notes added.</p>
+        </div>
+      </div>
+
+      <!-- Documents & Contracts Tab -->
+      <div class="tab-content" *ngIf="activeTab === 'documents'">
+        <h4 class="section-title">Contracts</h4>
+        <div class="table-container" *ngIf="selectedClient.contracts && selectedClient.contracts.length > 0">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Contract #</th>
+                <th>Title</th>
+                <th>Start Date</th>
+                <th>Expiry Date</th>
+                <th>Value</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let contract of selectedClient.contracts">
+                <td>{{ contract.contractNumber }}</td>
+                <td>{{ contract.title }}</td>
+                <td>{{ formatDate(contract.startDate) }}</td>
+                <td>{{ formatDate(contract.expiryDate) }}</td>
+                <td>{{ formatCurrency(contract.value) }}</td>
+                <td><span class="badge" [ngClass]="getStatusClass(contract.status)">{{ contract.status }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state-box" *ngIf="!selectedClient.contracts || selectedClient.contracts.length === 0">
+          <i class="fas fa-file-contract"></i>
+          <p>No contracts for this client.</p>
+        </div>
+
+        <div class="section-header">
+          <h4 class="section-title">Documents & Attachments</h4>
+          <button class="btn btn-primary btn-sm" (click)="openDocumentModal()">
+            <i class="fas fa-plus"></i> Add Document
+          </button>
+        </div>
+        <div class="table-container" *ngIf="selectedClient.documents && selectedClient.documents.length > 0">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Document Name</th>
+                <th>Type</th>
+                <th>Upload Date</th>
+                <th>Expiry Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let doc of selectedClient.documents">
+                <td><i class="fas fa-file-alt"></i> {{ doc.name }}</td>
+                <td>{{ doc.type }}</td>
+                <td>{{ formatDate(doc.uploadDate) }}</td>
+                <td>{{ doc.expiryDate ? formatDate(doc.expiryDate) : '-' }}</td>
+                <td>
+                  <button class="btn btn-sm btn-danger" (click)="deleteDocument(doc.id!)"><i class="fas fa-trash"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-state-box" *ngIf="!selectedClient.documents || selectedClient.documents.length === 0">
+          <i class="fas fa-folder-open"></i>
+          <p>No documents uploaded.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveClient()">{{ editMode ? 'Update Client' : 'Save Client' }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Contact Sub-Modal -->
+<div class="modal-overlay sub-modal" *ngIf="showContactModal" (click)="closeContactModal()">
+  <div class="modal modal-medium" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editContactMode ? 'Edit Contact' : 'Add Contact' }}</h3>
+      <button class="close-btn" (click)="closeContactModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Contact Name *</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedContact.name" placeholder="Full name" />
+        </div>
+        <div class="form-group">
+          <label>Position</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedContact.position" placeholder="Job title" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" class="form-control" [(ngModel)]="selectedContact.email" placeholder="email@example.com" />
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" class="form-control" [(ngModel)]="selectedContact.phone" placeholder="+1 234 567 890" />
+        </div>
       </div>
       <div class="form-group">
-        <label>Email</label>
-        <input type="email" class="form-control" [(ngModel)]="selectedCustomer.email" placeholder="Enter email address" />
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="selectedContact.portalAccess" />
+          <span>Portal Access</span>
+        </label>
       </div>
-      <div class="form-group">
-        <label>Phone</label>
-        <input type="text" class="form-control" [(ngModel)]="selectedCustomer.phone" placeholder="Enter phone number" />
-      </div>
-      <div class="form-group">
-        <label>Address</label>
-        <input type="text" class="form-control" [(ngModel)]="selectedCustomer.address" placeholder="Enter address" />
-      </div>
-      <div class="form-group">
-        <label>Customer Group</label>
-        <select class="form-control" [(ngModel)]="selectedCustomer.customerGroup">
-          <option value="">Select Group</option>
-          <option value="Retail">Retail</option>
-          <option value="Wholesale">Wholesale</option>
-          <option value="VIP">VIP</option>
-          <option value="Corporate">Corporate</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Status</label>
-        <select class="form-control" [(ngModel)]="selectedCustomer.status">
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
+      <div class="form-group" *ngIf="selectedContact.portalAccess">
+        <label>Permissions</label>
+        <div class="permissions-grid">
+          <label class="checkbox-label" *ngFor="let perm of permissionOptions">
+            <input type="checkbox" [checked]="hasPermission(perm.value)" (change)="togglePermission(perm.value)" />
+            <span>{{ perm.label }}</span>
+          </label>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-      <button class="btn btn-primary" (click)="saveCustomer()">{{ editMode ? 'Update' : 'Save' }}</button>
+      <button class="btn btn-secondary" (click)="closeContactModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveContact()">{{ editContactMode ? 'Update' : 'Add' }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Note Sub-Modal -->
+<div class="modal-overlay sub-modal" *ngIf="showNoteModal" (click)="closeNoteModal()">
+  <div class="modal modal-medium" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add Internal Note</h3>
+      <button class="close-btn" (click)="closeNoteModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Note Content</label>
+        <textarea class="form-control" [(ngModel)]="newNote" rows="4" placeholder="Enter note..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeNoteModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveNote()" [disabled]="!newNote.trim()">Add Note</button>
+    </div>
+  </div>
+</div>
+
+<!-- Document Sub-Modal -->
+<div class="modal-overlay sub-modal" *ngIf="showDocumentModal" (click)="closeDocumentModal()">
+  <div class="modal modal-medium" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add Document</h3>
+      <button class="close-btn" (click)="closeDocumentModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Document Name *</label>
+        <input type="text" class="form-control" [(ngModel)]="selectedDocument.name" placeholder="Document title" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Document Type</label>
+          <select class="form-control" [(ngModel)]="selectedDocument.type">
+            <option value="">Select Type</option>
+            <option value="Contract">Contract</option>
+            <option value="Proposal">Proposal</option>
+            <option value="Agreement">Agreement</option>
+            <option value="Invoice">Invoice</option>
+            <option value="Report">Report</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Expiry Date</label>
+          <input type="date" class="form-control" [(ngModel)]="selectedDocument.expiryDate" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeDocumentModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveDocument()" [disabled]="!selectedDocument.name">Add Document</button>
     </div>
   </div>
 </div>

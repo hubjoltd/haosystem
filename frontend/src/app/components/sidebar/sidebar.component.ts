@@ -52,7 +52,7 @@ export class SidebarComponent implements OnInit {
             { icon: 'fas fa-receipt', label: 'Expense Categories', route: '/app/settings/finance/expense-categories' }
           ]
         },
-        { icon: 'fas fa-user-cog', label: 'Customer Settings', route: '/app/settings/customer' },
+        { icon: 'fas fa-user-cog', label: 'Client Settings', route: '/app/settings/customer' },
         { icon: 'fas fa-file-contract', label: 'Contract Settings', route: '/app/settings/contract' },
         { icon: 'fas fa-user-shield', label: 'Roles Settings', route: '/app/settings/roles' },
         { icon: 'fas fa-users-cog', label: 'Staff Management', route: '/app/settings/staff' },
@@ -66,7 +66,7 @@ export class SidebarComponent implements OnInit {
       expanded: false,
       permissionKey: 'Customer Management',
       children: [
-        { icon: 'fas fa-user-friends', label: 'Client Management', route: '/app/customers' },
+        { icon: 'fas fa-user-friends', label: 'Clients', route: '/app/customers' },
         { icon: 'fas fa-file-signature', label: 'Contract Management', route: '/app/contracts' }
       ]
     },
