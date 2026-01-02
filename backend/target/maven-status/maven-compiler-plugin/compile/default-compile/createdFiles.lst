@@ -28,6 +28,7 @@ com/erp/repository/ExpenseItemRepository.class
 com/erp/repository/BranchSettingsRepository.class
 com/erp/repository/OfferLetterRepository.class
 com/erp/model/PRStockFulfillment.class
+com/erp/repository/ProjectRepository.class
 com/erp/model/OnboardingTask.class
 com/erp/model/LeaveType.class
 com/erp/model/Bin.class
@@ -35,6 +36,7 @@ com/erp/service/ExpenseService.class
 com/erp/model/JobPosting.class
 com/erp/repository/SalaryBandRepository.class
 com/erp/dto/LoginRequest.class
+com/erp/model/ProjectMember.class
 com/erp/model/DocumentType.class
 com/erp/repository/ItemGroupRepository.class
 com/erp/model/OvertimeRule.class
@@ -57,6 +59,7 @@ com/erp/model/JobRequisition.class
 com/erp/service/FinalSettlementService.class
 com/erp/model/IntegrationSyncLog.class
 com/erp/model/InventoryLedger.class
+com/erp/repository/ProjectTaskRepository.class
 com/erp/repository/ContractStatusRepository.class
 com/erp/model/TrainingSession.class
 com/erp/service/BinService.class
@@ -78,6 +81,7 @@ com/erp/model/GoodsReceipt.class
 com/erp/controller/CustomerSettingsController.class
 com/erp/model/ProjectTimesheet.class
 com/erp/repository/BranchRepository.class
+com/erp/controller/ProjectController.class
 com/erp/model/EmployeeBankDetail.class
 com/erp/model/CustomerGroup.class
 com/erp/repository/PayrollRunRepository.class
@@ -102,6 +106,7 @@ com/erp/model/LoanRepayment.class
 com/erp/service/PrefixSettingsService.class
 com/erp/controller/EmployeeController.class
 com/erp/controller/AttendanceController.class
+com/erp/repository/ProjectMemberRepository.class
 com/erp/repository/EmployeeSalaryRepository.class
 com/erp/controller/ContractSettingsController.class
 com/erp/repository/BinRepository.class
@@ -117,12 +122,14 @@ com/erp/controller/DocumentController.class
 com/erp/model/SalaryBand.class
 com/erp/repository/ContractRepository.class
 com/erp/service/RoleService.class
+com/erp/model/ProjectMilestone.class
 com/erp/model/UnitOfMeasure.class
 com/erp/model/Candidate.class
 com/erp/controller/PayrollRulesController.class
 com/erp/repository/SupplierRepository.class
 com/erp/model/PurchaseRequisitionItem.class
 com/erp/model/BranchSettings.class
+com/erp/model/Project.class
 com/erp/ErpApplication.class
 com/erp/service/ValuationService$InsufficientInventoryException.class
 com/erp/controller/StockMovementController.class
@@ -177,6 +184,7 @@ com/erp/config/WebConfig.class
 com/erp/repository/OvertimeRuleRepository.class
 com/erp/service/DocumentExpiryScheduler.class
 com/erp/repository/StockTransferLineRepository.class
+com/erp/model/ProjectTask.class
 com/erp/controller/PRFulfillmentController.class
 com/erp/model/GoodsReceiptLine.class
 com/erp/service/UserNotificationService$NotificationForbiddenException.class
@@ -254,6 +262,7 @@ com/erp/repository/AttendanceRecordRepository.class
 com/erp/model/Location.class
 com/erp/model/Interview.class
 com/erp/repository/PRFulfillmentItemRepository.class
+com/erp/repository/ProjectMilestoneRepository.class
 com/erp/repository/GoodsReceiptRepository.class
 com/erp/model/GoodsIssue.class
 com/erp/repository/PurchaseRequisitionRepository.class

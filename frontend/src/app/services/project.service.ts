@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, BehaviorSubject } from 'rxjs';
-import { Project, ProjectTask, ProjectMilestone, ProjectFile, ProjectDiscussion, ProjectNote, ProjectTimeLog, ProjectMember } from '../models/project.model';
+import { Observable, BehaviorSubject, tap, catchError, of } from 'rxjs';
+import { Project, ProjectTask, ProjectMilestone, ProjectFile, ProjectNote, ProjectTimeLog, ProjectMember } from '../models/project.model';
 
 @Injectable({
   providedIn: 'root'
@@ -12,19 +12,40 @@ export class ProjectService {
   projects$ = this.projectsSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    this.loadFromStorage();
+    this.loadProjects();
   }
 
-  private loadFromStorage(): void {
-    const stored = localStorage.getItem('projects');
-    if (stored) {
-      this.projectsSubject.next(JSON.parse(stored));
-    }
+  private loadProjects(): void {
+    this.http.get<Project[]>(this.apiUrl).pipe(
+      tap(projects => {
+        const mapped = projects.map(p => this.mapProjectFromApi(p));
+        this.projectsSubject.next(mapped);
+      }),
+      catchError(err => {
+        console.error('Error loading projects from API:', err);
+        const stored = localStorage.getItem('projects');
+        if (stored) {
+          this.projectsSubject.next(JSON.parse(stored));
+        }
+        return of([]);
+      })
+    ).subscribe();
   }
 
-  private saveToStorage(projects: Project[]): void {
-    localStorage.setItem('projects', JSON.stringify(projects));
-    this.projectsSubject.next(projects);
+  private mapProjectFromApi(p: any): Project {
+    return {
+      ...p,
+      customerId: p.customer?.id,
+      projectManagerId: p.projectManager?.id,
+      tasks: (p.tasks || []).map((t: any) => ({
+        ...t,
+        assigneeId: t.assignee?.id
+      })),
+      members: (p.members || []).map((m: any) => ({
+        ...m,
+        employeeId: m.employee?.id
+      }))
+    };
   }
 
   getAll(): Observable<Project[]> {
@@ -32,51 +53,91 @@ export class ProjectService {
   }
 
   getById(id: number): Observable<Project | undefined> {
-    const projects = this.projectsSubject.getValue();
-    return of(projects.find(p => p.id === id));
+    return new Observable(observer => {
+      this.http.get<Project>(`${this.apiUrl}/${id}`).subscribe({
+        next: p => observer.next(this.mapProjectFromApi(p)),
+        error: () => {
+          const projects = this.projectsSubject.getValue();
+          observer.next(projects.find(p => p.id === id));
+        }
+      });
+    });
   }
 
   create(project: Partial<Project>): Observable<Project> {
-    const projects = this.projectsSubject.getValue();
-    const maxId = Math.max(...projects.map(p => p.id || 0), 0);
-    const newProject: Project = {
-      ...project as Project,
-      id: maxId + 1,
-      projectCode: this.generateProjectCode(),
-      dateCreated: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      progress: project.progress || 0,
-      status: project.status || 'NOT_STARTED',
-      tasks: [],
-      milestones: [],
-      files: [],
-      discussions: [],
-      notes: [],
-      timeLogs: [],
-      activities: [],
-      members: []
-    };
-    projects.push(newProject);
-    this.saveToStorage(projects);
-    return of(newProject);
+    return this.http.post<Project>(this.apiUrl, project).pipe(
+      tap(newProject => {
+        const projects = [...this.projectsSubject.getValue(), this.mapProjectFromApi(newProject)];
+        this.projectsSubject.next(projects);
+      }),
+      catchError(() => {
+        const projects = this.projectsSubject.getValue();
+        const maxId = Math.max(...projects.map(p => p.id || 0), 0);
+        const newProject: Project = {
+          ...project as Project,
+          id: maxId + 1,
+          projectCode: this.generateProjectCode(),
+          dateCreated: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          progress: project.progress || 0,
+          status: project.status || 'NOT_STARTED',
+          tasks: [],
+          milestones: [],
+          files: [],
+          discussions: [],
+          notes: [],
+          timeLogs: [],
+          activities: [],
+          members: []
+        };
+        projects.push(newProject);
+        this.saveToStorage(projects);
+        return of(newProject);
+      })
+    );
   }
 
   update(id: number, project: Partial<Project>): Observable<Project> {
-    const projects = this.projectsSubject.getValue();
-    const index = projects.findIndex(p => p.id === id);
-    if (index !== -1) {
-      projects[index] = { ...projects[index], ...project, updatedAt: new Date().toISOString() };
-      this.saveToStorage(projects);
-      return of(projects[index]);
-    }
-    throw new Error('Project not found');
+    return this.http.put<Project>(`${this.apiUrl}/${id}`, project).pipe(
+      tap(updated => {
+        const projects = this.projectsSubject.getValue();
+        const index = projects.findIndex(p => p.id === id);
+        if (index !== -1) {
+          projects[index] = { ...projects[index], ...this.mapProjectFromApi(updated) };
+          this.projectsSubject.next([...projects]);
+        }
+      }),
+      catchError(() => {
+        const projects = this.projectsSubject.getValue();
+        const index = projects.findIndex(p => p.id === id);
+        if (index !== -1) {
+          projects[index] = { ...projects[index], ...project, updatedAt: new Date().toISOString() };
+          this.saveToStorage(projects);
+        }
+        return of(projects[index]);
+      })
+    );
   }
 
   delete(id: number): Observable<void> {
-    let projects = this.projectsSubject.getValue();
-    projects = projects.filter(p => p.id !== id);
-    this.saveToStorage(projects);
-    return of(void 0);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+      tap(() => {
+        let projects = this.projectsSubject.getValue();
+        projects = projects.filter(p => p.id !== id);
+        this.projectsSubject.next(projects);
+      }),
+      catchError(() => {
+        let projects = this.projectsSubject.getValue();
+        projects = projects.filter(p => p.id !== id);
+        this.saveToStorage(projects);
+        return of(void 0);
+      })
+    );
+  }
+
+  private saveToStorage(projects: Project[]): void {
+    localStorage.setItem('projects', JSON.stringify(projects));
+    this.projectsSubject.next(projects);
   }
 
   private generateProjectCode(): string {
@@ -86,89 +147,179 @@ export class ProjectService {
   }
 
   addMember(projectId: number, member: Partial<ProjectMember>): Observable<ProjectMember> {
-    const projects = this.projectsSubject.getValue();
-    const project = projects.find(p => p.id === projectId);
-    if (project) {
-      if (!project.members) project.members = [];
-      const maxId = Math.max(...project.members.map(m => m.id || 0), 0);
-      const newMember: ProjectMember = { ...member as ProjectMember, id: maxId + 1, addedAt: new Date().toISOString() };
-      project.members.push(newMember);
-      this.saveToStorage(projects);
-      return of(newMember);
-    }
-    throw new Error('Project not found');
+    return this.http.post<ProjectMember>(`${this.apiUrl}/${projectId}/members`, member).pipe(
+      tap(newMember => {
+        const projects = this.projectsSubject.getValue();
+        const project = projects.find(p => p.id === projectId);
+        if (project) {
+          if (!project.members) project.members = [];
+          project.members.push({ ...newMember, employeeId: (newMember as any).employee?.id || member.employeeId });
+          this.projectsSubject.next([...projects]);
+        }
+      }),
+      catchError(() => {
+        const projects = this.projectsSubject.getValue();
+        const project = projects.find(p => p.id === projectId);
+        if (project) {
+          if (!project.members) project.members = [];
+          const maxId = Math.max(...project.members.map(m => m.id || 0), 0);
+          const newMember: ProjectMember = { ...member as ProjectMember, id: maxId + 1, addedAt: new Date().toISOString() };
+          project.members.push(newMember);
+          this.saveToStorage(projects);
+          return of(newMember);
+        }
+        throw new Error('Project not found');
+      })
+    );
   }
 
   removeMember(projectId: number, memberId: number): Observable<void> {
-    const projects = this.projectsSubject.getValue();
-    const project = projects.find(p => p.id === projectId);
-    if (project && project.members) {
-      project.members = project.members.filter(m => m.id !== memberId);
-      this.saveToStorage(projects);
-    }
-    return of(void 0);
+    return this.http.delete<void>(`${this.apiUrl}/${projectId}/members/${memberId}`).pipe(
+      tap(() => {
+        const projects = this.projectsSubject.getValue();
+        const project = projects.find(p => p.id === projectId);
+        if (project && project.members) {
+          project.members = project.members.filter(m => m.id !== memberId);
+          this.projectsSubject.next([...projects]);
+        }
+      }),
+      catchError(() => {
+        const projects = this.projectsSubject.getValue();
+        const project = projects.find(p => p.id === projectId);
+        if (project && project.members) {
+          project.members = project.members.filter(m => m.id !== memberId);
+          this.saveToStorage(projects);
+        }
+        return of(void 0);
+      })
+    );
   }
 
   addTask(projectId: number, task: Partial<ProjectTask>): Observable<ProjectTask> {
-    const projects = this.projectsSubject.getValue();
-    const project = projects.find(p => p.id === projectId);
-    if (project) {
-      if (!project.tasks) project.tasks = [];
-      const maxId = Math.max(...project.tasks.map(t => t.id || 0), 0);
-      const newTask: ProjectTask = { ...task as ProjectTask, id: maxId + 1, createdAt: new Date().toISOString() };
-      project.tasks.push(newTask);
-      this.saveToStorage(projects);
-      return of(newTask);
-    }
-    throw new Error('Project not found');
+    return this.http.post<ProjectTask>(`${this.apiUrl}/${projectId}/tasks`, task).pipe(
+      tap(newTask => {
+        const projects = this.projectsSubject.getValue();
+        const project = projects.find(p => p.id === projectId);
+        if (project) {
+          if (!project.tasks) project.tasks = [];
+          project.tasks.push({ ...newTask, assigneeId: (newTask as any).assignee?.id || task.assigneeId });
+          this.projectsSubject.next([...projects]);
+        }
+      }),
+      catchError(() => {
+        const projects = this.projectsSubject.getValue();
+        const project = projects.find(p => p.id === projectId);
+        if (project) {
+          if (!project.tasks) project.tasks = [];
+          const maxId = Math.max(...project.tasks.map(t => t.id || 0), 0);
+          const newTask: ProjectTask = { ...task as ProjectTask, id: maxId + 1, createdAt: new Date().toISOString() };
+          project.tasks.push(newTask);
+          this.saveToStorage(projects);
+          return of(newTask);
+        }
+        throw new Error('Project not found');
+      })
+    );
   }
 
   updateTask(projectId: number, taskId: number, task: Partial<ProjectTask>): Observable<ProjectTask> {
-    const projects = this.projectsSubject.getValue();
-    const project = projects.find(p => p.id === projectId);
-    if (project && project.tasks) {
-      const index = project.tasks.findIndex(t => t.id === taskId);
-      if (index !== -1) {
-        project.tasks[index] = { ...project.tasks[index], ...task, updatedAt: new Date().toISOString() };
-        this.saveToStorage(projects);
-        return of(project.tasks[index]);
-      }
-    }
-    throw new Error('Task not found');
+    return this.http.put<ProjectTask>(`${this.apiUrl}/${projectId}/tasks/${taskId}`, task).pipe(
+      tap(updated => {
+        const projects = this.projectsSubject.getValue();
+        const project = projects.find(p => p.id === projectId);
+        if (project && project.tasks) {
+          const index = project.tasks.findIndex(t => t.id === taskId);
+          if (index !== -1) {
+            project.tasks[index] = { ...project.tasks[index], ...updated, assigneeId: (updated as any).assignee?.id || task.assigneeId };
+            this.projectsSubject.next([...projects]);
+          }
+        }
+      }),
+      catchError(() => {
+        const projects = this.projectsSubject.getValue();
+        const project = projects.find(p => p.id === projectId);
+        if (project && project.tasks) {
+          const index = project.tasks.findIndex(t => t.id === taskId);
+          if (index !== -1) {
+            project.tasks[index] = { ...project.tasks[index], ...task, updatedAt: new Date().toISOString() };
+            this.saveToStorage(projects);
+            return of(project.tasks[index]);
+          }
+        }
+        throw new Error('Task not found');
+      })
+    );
   }
 
   deleteTask(projectId: number, taskId: number): Observable<void> {
-    const projects = this.projectsSubject.getValue();
-    const project = projects.find(p => p.id === projectId);
-    if (project && project.tasks) {
-      project.tasks = project.tasks.filter(t => t.id !== taskId);
-      this.saveToStorage(projects);
-    }
-    return of(void 0);
+    return this.http.delete<void>(`${this.apiUrl}/${projectId}/tasks/${taskId}`).pipe(
+      tap(() => {
+        const projects = this.projectsSubject.getValue();
+        const project = projects.find(p => p.id === projectId);
+        if (project && project.tasks) {
+          project.tasks = project.tasks.filter(t => t.id !== taskId);
+          this.projectsSubject.next([...projects]);
+        }
+      }),
+      catchError(() => {
+        const projects = this.projectsSubject.getValue();
+        const project = projects.find(p => p.id === projectId);
+        if (project && project.tasks) {
+          project.tasks = project.tasks.filter(t => t.id !== taskId);
+          this.saveToStorage(projects);
+        }
+        return of(void 0);
+      })
+    );
   }
 
   addMilestone(projectId: number, milestone: Partial<ProjectMilestone>): Observable<ProjectMilestone> {
-    const projects = this.projectsSubject.getValue();
-    const project = projects.find(p => p.id === projectId);
-    if (project) {
-      if (!project.milestones) project.milestones = [];
-      const maxId = Math.max(...project.milestones.map(m => m.id || 0), 0);
-      const newMilestone: ProjectMilestone = { ...milestone as ProjectMilestone, id: maxId + 1, createdAt: new Date().toISOString() };
-      project.milestones.push(newMilestone);
-      this.saveToStorage(projects);
-      return of(newMilestone);
-    }
-    throw new Error('Project not found');
+    return this.http.post<ProjectMilestone>(`${this.apiUrl}/${projectId}/milestones`, milestone).pipe(
+      tap(newMilestone => {
+        const projects = this.projectsSubject.getValue();
+        const project = projects.find(p => p.id === projectId);
+        if (project) {
+          if (!project.milestones) project.milestones = [];
+          project.milestones.push(newMilestone);
+          this.projectsSubject.next([...projects]);
+        }
+      }),
+      catchError(() => {
+        const projects = this.projectsSubject.getValue();
+        const project = projects.find(p => p.id === projectId);
+        if (project) {
+          if (!project.milestones) project.milestones = [];
+          const maxId = Math.max(...project.milestones.map(m => m.id || 0), 0);
+          const newMilestone: ProjectMilestone = { ...milestone as ProjectMilestone, id: maxId + 1, createdAt: new Date().toISOString() };
+          project.milestones.push(newMilestone);
+          this.saveToStorage(projects);
+          return of(newMilestone);
+        }
+        throw new Error('Project not found');
+      })
+    );
   }
 
   deleteMilestone(projectId: number, milestoneId: number): Observable<void> {
-    const projects = this.projectsSubject.getValue();
-    const project = projects.find(p => p.id === projectId);
-    if (project && project.milestones) {
-      project.milestones = project.milestones.filter(m => m.id !== milestoneId);
-      this.saveToStorage(projects);
-    }
-    return of(void 0);
+    return this.http.delete<void>(`${this.apiUrl}/${projectId}/milestones/${milestoneId}`).pipe(
+      tap(() => {
+        const projects = this.projectsSubject.getValue();
+        const project = projects.find(p => p.id === projectId);
+        if (project && project.milestones) {
+          project.milestones = project.milestones.filter(m => m.id !== milestoneId);
+          this.projectsSubject.next([...projects]);
+        }
+      }),
+      catchError(() => {
+        const projects = this.projectsSubject.getValue();
+        const project = projects.find(p => p.id === projectId);
+        if (project && project.milestones) {
+          project.milestones = project.milestones.filter(m => m.id !== milestoneId);
+          this.saveToStorage(projects);
+        }
+        return of(void 0);
+      })
+    );
   }
 
   addFile(projectId: number, file: Partial<ProjectFile>): Observable<ProjectFile> {
