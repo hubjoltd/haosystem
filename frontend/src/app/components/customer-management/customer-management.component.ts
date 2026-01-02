@@ -49,8 +49,8 @@ export class CustomerManagementComponent implements OnInit {
   }
 
   loadClients(): void {
-    this.loading = false;
-    this.dataReady = true;
+    this.loading = true;
+    this.dataReady = false;
     this.customerService.getAll().subscribe({
       next: (data) => {
         this.clients = data.map(c => ({
