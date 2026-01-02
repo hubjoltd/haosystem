@@ -81,8 +81,8 @@
 }
 
 .nav-item {
-  margin: 4px 12px;
-  border-radius: 8px;
+  margin: 2px 10px;
+  border-radius: 6px;
 }
 
 .nav-item.active > .nav-link {
@@ -106,21 +106,21 @@
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 10px 14px;
   color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
   cursor: pointer;
   transition: all 0.2s ease;
   border-radius: 8px;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
 }
 
 .nav-link i:first-child {
-  width: 22px;
-  min-width: 22px;
+  width: 18px;
+  min-width: 18px;
   text-align: center;
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.8);
   flex-shrink: 0;
 }
@@ -128,13 +128,12 @@
 .nav-link .nav-text {
   flex: 1;
   font-weight: 500;
-  white-space: normal;
+  white-space: nowrap;
   display: block !important;
   color: rgba(255, 255, 255, 0.95);
-  line-height: 1.4;
-  word-break: break-word;
-  overflow: visible;
-  text-overflow: clip;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .nav-link .expand-icon {
@@ -183,13 +182,13 @@
 }
 
 .sub-menu .nav-link {
-  padding: 10px 16px 10px 52px;
-  font-size: 0.9rem;
+  padding: 8px 14px 8px 44px;
+  font-size: 0.75rem;
   border-radius: 0;
 }
 
 .sub-menu .nav-link i:first-child {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 .sub-menu.nested {
@@ -199,8 +198,8 @@
 }
 
 .sub-menu.nested .nav-link {
-  padding-left: 68px;
-  font-size: 0.85rem;
+  padding-left: 58px;
+  font-size: 0.72rem;
   position: relative;
 }
 

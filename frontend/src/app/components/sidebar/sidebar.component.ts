@@ -23,6 +23,17 @@ export class SidebarComponent implements OnInit {
 
   allMenuItems: MenuItem[] = [
     { icon: 'fas fa-home', label: 'Dashboard', route: '/app/dashboard', permissionKey: 'Dashboard' },
+    { icon: 'fas fa-building', label: 'Companies', route: '/app/settings/branches', permissionKey: 'Settings' },
+    {
+      icon: 'fas fa-project-diagram',
+      label: 'Project Management',
+      expanded: false,
+      permissionKey: 'Projects',
+      children: [
+        { icon: 'fas fa-tasks', label: 'Projects', route: '/app/projects' },
+        { icon: 'fas fa-calculator', label: 'Estimation', route: '/app/projects/estimation' }
+      ]
+    },
     {
       icon: 'fas fa-cog',
       label: 'Settings',
@@ -45,7 +56,6 @@ export class SidebarComponent implements OnInit {
         { icon: 'fas fa-file-contract', label: 'Contract Settings', route: '/app/settings/contract' },
         { icon: 'fas fa-user-shield', label: 'Roles Settings', route: '/app/settings/roles' },
         { icon: 'fas fa-users-cog', label: 'Staff Management', route: '/app/settings/staff' },
-        { icon: 'fas fa-building', label: 'Branch Management', route: '/app/settings/branches' },
         { icon: 'fas fa-hashtag', label: 'Prefix Settings', route: '/app/settings/prefixes' },
         { icon: 'fas fa-plug', label: 'Integrations', route: '/app/settings/integrations' }
       ]
