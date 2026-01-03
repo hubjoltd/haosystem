@@ -30,8 +30,7 @@ export class SidebarComponent implements OnInit {
       expanded: false,
       permissionKey: 'Projects',
       children: [
-        { icon: 'fas fa-tasks', label: 'Projects', route: '/app/projects' },
-        { icon: 'fas fa-calculator', label: 'Estimation', route: '/app/projects/estimation' }
+        { icon: 'fas fa-tasks', label: 'Projects', route: '/app/projects' }
       ]
     },
     {
@@ -83,7 +82,7 @@ export class SidebarComponent implements OnInit {
           expanded: false,
           children: [
             { icon: 'fas fa-file-alt', label: 'Purchase Requisition', route: '/app/purchase/requisition', permissionKey: 'Purchase - Requisition' },
-            { icon: 'fas fa-file-invoice', label: 'Purchase Order', route: '/app/purchase/orders', permissionKey: 'Purchase - Orders' },
+            { icon: 'fas fa-file-invoice', label: 'Direct Purchase', route: '/app/purchase/direct', permissionKey: 'Purchase - Orders' },
             { icon: 'fas fa-file-invoice-dollar', label: 'Purchase Invoice', route: '/app/purchase/invoices', permissionKey: 'Purchase - Invoices' }
           ]
         },
@@ -110,8 +109,7 @@ export class SidebarComponent implements OnInit {
           label: 'Employee Master',
           expanded: false,
           children: [
-            { icon: 'fas fa-id-card', label: 'Employee List', route: '/app/hr/employees' },
-            { icon: 'fas fa-user-plus', label: 'Add Employee', route: '/app/hr/employees/new' }
+            { icon: 'fas fa-id-card', label: 'Employee List', route: '/app/hr/employees' }
           ]
         },
         {
@@ -134,7 +132,6 @@ export class SidebarComponent implements OnInit {
           expanded: false,
           children: [
             { icon: 'fas fa-file-alt', label: 'Document Types', route: '/app/hr/documents/types' },
-            { icon: 'fas fa-folder', label: 'Employee Documents', route: '/app/hr/documents/employee' },
             { icon: 'fas fa-bell', label: 'Expiry Reminders', route: '/app/hr/documents/reminders' }
           ]
         },
@@ -161,7 +158,6 @@ export class SidebarComponent implements OnInit {
           children: [
             { icon: 'fas fa-list-alt', label: 'Leave Types', route: '/app/leave/types' },
             { icon: 'fas fa-calendar-check', label: 'Leave Requests', route: '/app/leave/requests' },
-            { icon: 'fas fa-balance-scale', label: 'Leave Balances', route: '/app/leave/balances' },
             { icon: 'fas fa-calendar', label: 'Holiday Calendar', route: '/app/leave/holidays' },
             {
               icon: 'fas fa-clock',
