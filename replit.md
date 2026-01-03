@@ -1,5 +1,13 @@
 # Hao System - Angular Frontend
 
+## Recent Changes (January 2026)
+- **Leave Balance Display**: Added employee selection dropdown in leave request form that loads and displays leave balances (Available/Used/Pending days) when creating leave requests
+- **Duplicate Prevention**: Added `saving` state and button disable logic across leave-requests, loans, training, and designations components to prevent double submissions
+- **Edit Functionality**: Fixed loans component to properly load existing data when editing; training and designations already had proper edit loading
+- **Error Handling**: Improved error message extraction and user feedback across all save operations
+- **Form Validation**: Added frontend validation for required fields before submission
+- **Select Bindings**: Changed from [value] to [ngValue] in leave request form for proper null handling and numeric ID submission
+
 ## Overview
 The Hao System is an enterprise resource planning (ERP) web application built with Angular 21 for the frontend and Spring Boot (Java) for the backend. It offers comprehensive business management capabilities, including inventory, customer, contract, HR, payroll, and administrative settings. The application features a professional dark teal and white UI, responsive design, and robust functionalities like automatic ID generation, approval workflows, and extensive reporting. Its purpose is to streamline business operations and provide a unified platform for managing various enterprise resources.
 
