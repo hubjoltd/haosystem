@@ -18,6 +18,7 @@ export class LoansComponent implements OnInit {
   employees: any[] = [];
   dashboard: any = {};
   loading = false;
+  saving = false;
   showForm = false;
   showEmiPreview = false;
   showLedger = false;
@@ -25,6 +26,8 @@ export class LoansComponent implements OnInit {
   selectedLoan: any = null;
   ledgerLoan: any = null;
   formData: any = {};
+  editMode = false;
+  editId: number | null = null;
   emiSchedule: any[] = [];
   currentUserId: number = 0;
   activeTab = 'applications';
@@ -100,6 +103,8 @@ export class LoansComponent implements OnInit {
   }
 
   openForm(): void {
+    this.editMode = false;
+    this.editId = null;
     this.formData = {
       loanType: 'PERSONAL',
       requestedTenureMonths: 12,
@@ -118,6 +123,8 @@ export class LoansComponent implements OnInit {
   closeForm(): void {
     this.showForm = false;
     this.formData = {};
+    this.editMode = false;
+    this.editId = null;
     this.eligibilityMessage = '';
     this.eligibilityStatus = '';
   }
@@ -235,22 +242,51 @@ export class LoansComponent implements OnInit {
   }
 
   saveLoan(): void {
+    if (this.saving) return;
+    
     if (!this.formData.employeeId || !this.formData.requestedAmount) {
       alert('Please fill in all required fields');
       return;
     }
 
-    this.loanService.applyForLoan(this.formData).subscribe({
+    this.saving = true;
+    
+    const request = this.editMode && this.editId 
+      ? this.loanService.updateLoan(this.editId, this.formData)
+      : this.loanService.applyForLoan(this.formData);
+    
+    request.subscribe({
       next: () => {
         this.closeForm();
         this.loadLoans();
         this.loadDashboard();
+        this.saving = false;
       },
       error: (err) => {
         console.error(err);
-        alert('Error creating loan application');
+        this.saving = false;
+        const errorMsg = err.error?.message || err.error?.error || 'Error saving loan application';
+        alert(errorMsg);
       }
     });
+  }
+
+  openEditForm(loan: any): void {
+    this.editMode = true;
+    this.editId = loan.id;
+    this.formData = {
+      loanType: loan.loanType,
+      requestedTenureMonths: loan.requestedTenureMonths,
+      interestRate: loan.interestRate,
+      interestType: loan.interestType || 'REDUCING',
+      requestedAmount: loan.requestedAmount,
+      employeeId: loan.employee?.id,
+      purpose: loan.purpose || '',
+      requestedDisbursementDate: loan.requestedDisbursementDate || ''
+    };
+    this.eligibilityMessage = '';
+    this.eligibilityStatus = '';
+    this.showForm = true;
   }
 
   submitLoan(id: number): void {

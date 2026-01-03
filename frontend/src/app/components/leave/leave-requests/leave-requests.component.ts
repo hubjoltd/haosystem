@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LeaveService, LeaveRequest, LeaveType } from '../../../services/leave.service';
+import { LeaveService, LeaveRequest, LeaveType, LeaveBalance } from '../../../services/leave.service';
+import { EmployeeService } from '../../../services/employee.service';
 
 @Component({
   selector: 'app-leave-requests',
@@ -14,7 +15,10 @@ export class LeaveRequestsComponent implements OnInit {
   requests: LeaveRequest[] = [];
   filteredRequests: LeaveRequest[] = [];
   leaveTypes: LeaveType[] = [];
+  employees: any[] = [];
+  employeeBalances: LeaveBalance[] = [];
   loading = false;
+  saving = false;
   showModal = false;
   statusFilter = 'ALL';
   searchTerm = '';
@@ -33,15 +37,19 @@ export class LeaveRequestsComponent implements OnInit {
   selectedRequest: LeaveRequest | null = null;
   approverRemarks = '';
 
-  constructor(private leaveService: LeaveService) {}
+  constructor(
+    private leaveService: LeaveService,
+    private employeeService: EmployeeService
+  ) {}
 
   ngOnInit(): void {
     this.loadRequests();
     this.loadLeaveTypes();
+    this.loadEmployees();
   }
 
   loadRequests(): void {
-    this.loading = false;
+    this.loading = true;
     this.leaveService.getAllRequests().subscribe({
       next: (data) => {
         this.requests = data;
@@ -60,6 +68,35 @@ export class LeaveRequestsComponent implements OnInit {
         this.leaveTypes = data;
       }
     });
+  }
+
+  loadEmployees(): void {
+    this.employeeService.getActive().subscribe({
+      next: (data) => {
+        this.employees = data;
+      },
+      error: (err) => console.error('Error loading employees:', err)
+    });
+  }
+
+  onEmployeeChange(): void {
+    if (this.formData.employeeId) {
+      this.leaveService.getEmployeeBalancesByYear(this.formData.employeeId, new Date().getFullYear()).subscribe({
+        next: (balances) => {
+          this.employeeBalances = balances;
+        },
+        error: () => {
+          this.employeeBalances = [];
+        }
+      });
+    } else {
+      this.employeeBalances = [];
+    }
+  }
+
+  getBalanceForLeaveType(leaveTypeId: number | null): LeaveBalance | null {
+    if (!leaveTypeId) return null;
+    return this.employeeBalances.find(b => b.leaveTypeId === leaveTypeId || b.leaveType?.id === leaveTypeId) || null;
   }
 
   filterRequests(): void {
@@ -83,18 +120,34 @@ export class LeaveRequestsComponent implements OnInit {
       reason: '',
       emergencyContact: ''
     };
+    this.employeeBalances = [];
     this.showModal = true;
   }
 
   closeModal(): void {
     this.showModal = false;
+    this.employeeBalances = [];
   }
 
   submitRequest(): void {
+    if (this.saving) return;
+    
+    if (!this.formData.employeeId || !this.formData.leaveTypeId || !this.formData.startDate || !this.formData.endDate) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    this.saving = true;
     this.leaveService.createRequest(this.formData).subscribe({
       next: () => {
         this.loadRequests();
         this.closeModal();
+        this.saving = false;
+      },
+      error: (err) => {
+        this.saving = false;
+        const errorMsg = err.error?.error || 'Error submitting leave request';
+        alert(errorMsg);
       }
     });
   }
@@ -116,6 +169,9 @@ export class LeaveRequestsComponent implements OnInit {
         next: () => {
           this.loadRequests();
           this.closeApprovalModal();
+        },
+        error: (err) => {
+          alert('Error approving request: ' + (err.error?.error || 'Unknown error'));
         }
       });
     }
@@ -127,6 +183,9 @@ export class LeaveRequestsComponent implements OnInit {
         next: () => {
           this.loadRequests();
           this.closeApprovalModal();
+        },
+        error: (err) => {
+          alert('Error rejecting request: ' + (err.error?.error || 'Unknown error'));
         }
       });
     }
@@ -135,7 +194,10 @@ export class LeaveRequestsComponent implements OnInit {
   cancelRequest(id: number): void {
     if (confirm('Are you sure you want to cancel this leave request?')) {
       this.leaveService.cancelRequest(id).subscribe({
-        next: () => this.loadRequests()
+        next: () => this.loadRequests(),
+        error: (err) => {
+          alert('Error cancelling request: ' + (err.error?.error || 'Unknown error'));
+        }
       });
     }
   }

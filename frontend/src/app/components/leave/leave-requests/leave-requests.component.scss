@@ -292,6 +292,82 @@
         color: white;
         &:hover { background: #c82333; }
       }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+
+    .balance-info {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+
+      .balance-card {
+        flex: 1;
+        min-width: 100px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        background: #e8f5f5;
+        border-radius: 8px;
+        border-left: 3px solid #008080;
+
+        i {
+          font-size: 18px;
+          color: #008080;
+        }
+
+        .balance-details {
+          display: flex;
+          flex-direction: column;
+
+          .balance-label {
+            font-size: 11px;
+            color: #666;
+          }
+
+          .balance-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #008080;
+          }
+        }
+
+        &.used {
+          background: #fff3cd;
+          border-left-color: #856404;
+          i { color: #856404; }
+          .balance-value { color: #856404; }
+        }
+
+        &.pending {
+          background: #cce5ff;
+          border-left-color: #004085;
+          i { color: #004085; }
+          .balance-value { color: #004085; }
+        }
+      }
+    }
+
+    .no-balance-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #666;
+
+      i {
+        color: #17a2b8;
+        font-size: 16px;
+      }
     }
   }
 }

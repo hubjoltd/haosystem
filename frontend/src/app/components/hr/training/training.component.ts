@@ -19,6 +19,7 @@ export class TrainingComponent implements OnInit {
   enrollments: any[] = [];
   dashboard: any = {};
   loading = false;
+  saving = false;
   
   showForm = false;
   showSessionForm = false;
@@ -104,12 +105,30 @@ export class TrainingComponent implements OnInit {
   }
 
   saveProgram(): void {
+    if (this.saving) return;
+    
+    if (!this.formData.name) {
+      alert('Please enter a program name');
+      return;
+    }
+    
+    this.saving = true;
     const obs = this.editingItem
       ? this.trainingService.updateProgram(this.editingItem.id, this.formData)
       : this.trainingService.createProgram(this.formData);
     obs.subscribe({
-      next: () => { this.closeForm(); this.loadPrograms(); this.loadDashboard(); },
-      error: (err) => { console.error(err); alert('Error saving program'); }
+      next: () => { 
+        this.closeForm(); 
+        this.loadPrograms(); 
+        this.loadDashboard(); 
+        this.saving = false;
+      },
+      error: (err) => { 
+        console.error(err); 
+        this.saving = false;
+        const errorMsg = err.error?.message || err.error?.error || 'Error saving program';
+        alert(errorMsg); 
+      }
     });
   }
 
@@ -143,6 +162,14 @@ export class TrainingComponent implements OnInit {
   }
 
   saveSession(): void {
+    if (this.saving) return;
+    
+    if (!this.sessionFormData.programId || !this.sessionFormData.sessionDate) {
+      alert('Please select a program and session date');
+      return;
+    }
+    
+    this.saving = true;
     const payload = {
       ...this.sessionFormData,
       program: this.sessionFormData.programId ? { id: this.sessionFormData.programId } : null
@@ -153,8 +180,18 @@ export class TrainingComponent implements OnInit {
       : this.trainingService.createSession(payload);
 
     obs.subscribe({
-      next: () => { this.closeSessionForm(); this.loadSessions(); this.loadDashboard(); },
-      error: (err) => { console.error(err); alert('Error saving session'); }
+      next: () => { 
+        this.closeSessionForm(); 
+        this.loadSessions(); 
+        this.loadDashboard(); 
+        this.saving = false;
+      },
+      error: (err) => { 
+        console.error(err); 
+        this.saving = false;
+        const errorMsg = err.error?.message || err.error?.error || 'Error saving session';
+        alert(errorMsg); 
+      }
     });
   }
 

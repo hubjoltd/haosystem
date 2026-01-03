@@ -12,6 +12,7 @@ export class DesignationsComponent implements OnInit {
   grades: Grade[] = [];
   
   loading = false;
+  saving = false;
   dataReady = false;
   
   showModal = false;
@@ -65,15 +66,31 @@ export class DesignationsComponent implements OnInit {
   }
 
   save() {
+    if (this.saving) return;
+    
+    if (!this.editing.code || !this.editing.title) {
+      alert('Please fill in code and title');
+      return;
+    }
+    
+    this.saving = true;
     if (this.isEditMode && this.editing.id) {
       this.orgService.updateDesignation(this.editing.id, this.editing).subscribe({
-        next: () => { this.loadData(); this.closeModal(); },
-        error: (err) => console.error('Error updating:', err)
+        next: () => { this.loadData(); this.closeModal(); this.saving = false; },
+        error: (err) => { 
+          console.error('Error updating:', err); 
+          this.saving = false;
+          alert('Error updating designation');
+        }
       });
     } else {
       this.orgService.createDesignation(this.editing).subscribe({
-        next: () => { this.loadData(); this.closeModal(); },
-        error: (err) => console.error('Error creating:', err)
+        next: () => { this.loadData(); this.closeModal(); this.saving = false; },
+        error: (err) => { 
+          console.error('Error creating:', err); 
+          this.saving = false;
+          alert('Error creating designation');
+        }
       });
     }
   }
