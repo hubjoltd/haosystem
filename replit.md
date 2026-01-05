@@ -1,6 +1,16 @@
 # Hao System - Angular Frontend
 
 ## Recent Changes (January 2026)
+- **Development Database Sample Data**: Seeded comprehensive sample data for testing:
+  - 5 departments (IT, HR, Finance, Sales, Operations)
+  - 5 grades (Junior, Mid-Level, Senior, Lead, Executive) with salary ranges
+  - 5 locations (Headquarters, West Coast, South, Midwest, Remote)
+  - 5 designations (Software Engineer, HR Executive, Financial Analyst, Sales Rep, Ops Manager)
+  - 5 pay frequencies (Monthly, Bi-Weekly, Weekly, Semi-Monthly, Annual)
+  - 5 employees with complete profiles
+  - 5 projects (Website Redesign, Mobile App, ERP Implementation, Marketing Campaign, Infrastructure)
+  - 2 payroll runs with 10 payroll records including detailed tax breakdowns
+  - 10 attendance records for today and yesterday
 - **Payroll Workflow Step Wizard**: Implemented 5-step wizard navigation for payroll processing:
   - Step 0: Daily Attendance Approval (with date navigation, attendance selection, bulk approval)
   - Step 1: Generate Timesheets (with pay period type dropdown: Monthly, Weekly, Bi-Weekly, Semi-Monthly)
