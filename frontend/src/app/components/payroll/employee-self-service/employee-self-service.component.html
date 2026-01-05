@@ -278,6 +278,8 @@
           <tr>
             <th>Date</th>
             <th>Category</th>
+            <th>Receipt #</th>
+            <th>Attachment</th>
             <th>Amount</th>
             <th>Status</th>
             <th>Approved Amount</th>
@@ -288,6 +290,25 @@
           <tr *ngFor="let expense of expenses">
             <td>{{ expense.createdAt | date:'MMM d, yyyy' }}</td>
             <td>{{ expense.category?.name || 'N/A' }}</td>
+            <td>{{ expense.receiptNumber || '-' }}</td>
+            <td>
+              <div class="attachment-cell" *ngIf="expense.receiptUrl">
+                <img *ngIf="expense.receiptUrl?.startsWith('data:image')" 
+                     [src]="expense.receiptUrl" 
+                     class="receipt-thumbnail" 
+                     alt="Receipt"
+                     (click)="openReceiptPreview(expense.receiptUrl)"
+                     title="Click to preview">
+                <a *ngIf="expense.receiptUrl?.startsWith('data:application/pdf')" 
+                   [href]="expense.receiptUrl" 
+                   target="_blank"
+                   class="pdf-link"
+                   title="Click to open PDF">
+                  <i class="fas fa-file-pdf"></i>
+                </a>
+              </div>
+              <span *ngIf="!expense.receiptUrl" class="no-attachment">-</span>
+            </td>
             <td>${{ expense.totalAmount | number:'1.2-2' }}</td>
             <td>
               <span class="status-badge" [ngClass]="getExpenseStatusClass(expense.status)">
@@ -298,7 +319,7 @@
             <td>{{ expense.remarks || '-' }}</td>
           </tr>
           <tr *ngIf="expenses.length === 0">
-            <td colspan="6" class="no-data-row">No expense requests found</td>
+            <td colspan="8" class="no-data-row">No expense requests found</td>
           </tr>
         </tbody>
       </table>
@@ -577,6 +598,35 @@
         <input type="text" [(ngModel)]="newExpenseRequest.receiptNumber" placeholder="Optional">
       </div>
       <div class="form-group">
+        <label>Attach Receipt</label>
+        <div class="file-upload-container">
+          <input type="file" 
+                 id="receiptFile" 
+                 (change)="onReceiptFileSelected($event)" 
+                 accept="image/*,.pdf"
+                 style="display: none;">
+          <label for="receiptFile" class="file-upload-btn" *ngIf="!newExpenseRequest.receiptFile">
+            <i class="fas fa-cloud-upload-alt"></i> Choose File
+          </label>
+          <div class="file-selected" *ngIf="newExpenseRequest.receiptFile">
+            <span class="file-name">{{ newExpenseRequest.receiptFile.name }}</span>
+            <button type="button" class="remove-file-btn" (click)="removeReceiptFile()">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div class="receipt-preview" *ngIf="newExpenseRequest.receiptPreview">
+          <img *ngIf="newExpenseRequest.receiptPreview.startsWith('data:image')" 
+               [src]="newExpenseRequest.receiptPreview" 
+               alt="Receipt preview">
+          <div *ngIf="newExpenseRequest.receiptPreview.startsWith('data:application/pdf')" class="pdf-preview">
+            <i class="fas fa-file-pdf"></i>
+            <span>PDF Ready</span>
+          </div>
+        </div>
+        <small class="help-text">Max 500KB. Supported: JPEG, PNG, GIF, PDF</small>
+      </div>
+      <div class="form-group">
         <label>Description *</label>
         <textarea [(ngModel)]="newExpenseRequest.description" rows="3" placeholder="Describe the expense..."></textarea>
       </div>
@@ -587,6 +637,18 @@
         <span *ngIf="!submittingExpense">Submit Expense</span>
         <span *ngIf="submittingExpense">Submitting...</span>
       </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showReceiptPreviewModal" (click)="closeReceiptPreview()">
+  <div class="modal receipt-preview-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Receipt Preview</h3>
+      <button class="close-btn" (click)="closeReceiptPreview()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <img [src]="selectedReceiptUrl" alt="Receipt" class="full-receipt-image">
     </div>
   </div>
 </div>

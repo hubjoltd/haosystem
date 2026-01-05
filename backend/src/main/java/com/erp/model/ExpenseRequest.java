@@ -82,6 +82,12 @@ public class ExpenseRequest {
     @Column(length = 100)
     private String accountingReference;
     
+    @Column(length = 100)
+    private String receiptNumber;
+    
+    @Column(columnDefinition = "TEXT")
+    private String receiptUrl;
+    
     @OneToMany(mappedBy = "expenseRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ExpenseItem> items = new ArrayList<>();
     
@@ -177,6 +183,10 @@ public class ExpenseRequest {
     public void setPostedAt(LocalDateTime postedAt) { this.postedAt = postedAt; }
     public String getAccountingReference() { return accountingReference; }
     public void setAccountingReference(String accountingReference) { this.accountingReference = accountingReference; }
+    public String getReceiptNumber() { return receiptNumber; }
+    public void setReceiptNumber(String receiptNumber) { this.receiptNumber = receiptNumber; }
+    public String getReceiptUrl() { return receiptUrl; }
+    public void setReceiptUrl(String receiptUrl) { this.receiptUrl = receiptUrl; }
     public List<ExpenseItem> getItems() { return items; }
     public void setItems(List<ExpenseItem> items) { this.items = items; }
     public LocalDateTime getCreatedAt() { return createdAt; }

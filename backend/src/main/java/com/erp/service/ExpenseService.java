@@ -145,7 +145,13 @@ public class ExpenseService {
         }
         
         updateRequestFromMap(request, data);
-        request.setStatus("DRAFT");
+        if (request.getStatus() == null) {
+            request.setStatus("DRAFT");
+        }
+        
+        if (request.getTitle() == null || request.getTitle().isEmpty()) {
+            request.setTitle("Expense Request " + requestNumber);
+        }
         
         ExpenseRequest saved = expenseRequestRepository.save(request);
         
@@ -201,6 +207,14 @@ public class ExpenseService {
         }
         if (data.containsKey("createdBy")) request.setCreatedBy((String) data.get("createdBy"));
         if (data.containsKey("updatedBy")) request.setUpdatedBy((String) data.get("updatedBy"));
+        if (data.containsKey("receiptNumber")) request.setReceiptNumber((String) data.get("receiptNumber"));
+        if (data.containsKey("receiptUrl")) request.setReceiptUrl((String) data.get("receiptUrl"));
+        if (data.containsKey("totalAmount") && data.get("totalAmount") != null) {
+            request.setTotalAmount(new BigDecimal(data.get("totalAmount").toString()));
+        }
+        if (data.containsKey("status") && data.get("status") != null) {
+            request.setStatus((String) data.get("status"));
+        }
     }
 
     @Transactional

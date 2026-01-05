@@ -48,13 +48,25 @@ export class EmployeeSelfServiceComponent implements OnInit {
 
   // Expense Request Modal
   showExpenseRequestModal = false;
-  newExpenseRequest = {
+  newExpenseRequest: {
+    categoryId: number;
+    amount: number;
+    description: string;
+    expenseDate: string;
+    receiptNumber: string;
+    receiptFile: File | null;
+    receiptPreview: string;
+  } = {
     categoryId: 0,
     amount: 0,
     description: '',
     expenseDate: '',
-    receiptNumber: ''
+    receiptNumber: '',
+    receiptFile: null,
+    receiptPreview: ''
   };
+  showReceiptPreviewModal = false;
+  selectedReceiptUrl = '';
 
   // Loan Request Modal
   showLoanRequestModal = false;
@@ -302,13 +314,54 @@ export class EmployeeSelfServiceComponent implements OnInit {
       amount: 0,
       description: '',
       expenseDate: new Date().toISOString().split('T')[0],
-      receiptNumber: ''
+      receiptNumber: '',
+      receiptFile: null,
+      receiptPreview: ''
     };
     this.showExpenseRequestModal = true;
   }
 
   closeExpenseRequestModal(): void {
     this.showExpenseRequestModal = false;
+  }
+
+  onReceiptFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (file.size > 500 * 1024) {
+        alert('File size must be less than 500KB');
+        input.value = '';
+        return;
+      }
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+      if (!validTypes.includes(file.type)) {
+        alert('Please upload an image (JPEG, PNG, GIF) or PDF file');
+        input.value = '';
+        return;
+      }
+      this.newExpenseRequest.receiptFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.newExpenseRequest.receiptPreview = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeReceiptFile(): void {
+    this.newExpenseRequest.receiptFile = null;
+    this.newExpenseRequest.receiptPreview = '';
+  }
+
+  openReceiptPreview(receiptUrl: string): void {
+    this.selectedReceiptUrl = receiptUrl;
+    this.showReceiptPreviewModal = true;
+  }
+
+  closeReceiptPreview(): void {
+    this.showReceiptPreviewModal = false;
+    this.selectedReceiptUrl = '';
   }
 
   submitExpenseRequest(): void {
@@ -319,6 +372,12 @@ export class EmployeeSelfServiceComponent implements OnInit {
     }
 
     this.submittingExpense = true;
+    
+    let receiptUrl = '';
+    if (this.newExpenseRequest.receiptPreview) {
+      receiptUrl = this.newExpenseRequest.receiptPreview;
+    }
+    
     const request = {
       employeeId: this.currentEmployeeId,
       categoryId: this.newExpenseRequest.categoryId,
@@ -326,6 +385,7 @@ export class EmployeeSelfServiceComponent implements OnInit {
       description: this.newExpenseRequest.description,
       expenseDate: this.newExpenseRequest.expenseDate,
       receiptNumber: this.newExpenseRequest.receiptNumber,
+      receiptUrl: receiptUrl,
       status: 'PENDING_APPROVAL'
     };
 
