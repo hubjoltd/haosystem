@@ -610,3 +610,75 @@ tr.expired {
   background: #d1ecf1;
   color: #0c5460;
 }
+
+.leave-assignment-table {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+
+  .balance-input {
+    width: 80px;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+
+    &:disabled {
+      background: #f8f9fa;
+      border-color: transparent;
+    }
+
+    &:not(:disabled) {
+      background: #fff;
+      border-color: #008080;
+    }
+  }
+
+  .totals-row {
+    background: #f8f9fa;
+
+    td {
+      border-top: 2px solid #dee2e6;
+    }
+  }
+}
+
+.year-select {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: #008080;
+  }
+}
+
+.text-success {
+  color: #28a745 !important;
+}
+
+.text-warning {
+  color: #ffc107 !important;
+}
+
+.text-muted {
+  display: block;
+  color: #6c757d;
+  font-size: 11px;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+
+  i {
+    margin-right: 8px;
+  }
+}

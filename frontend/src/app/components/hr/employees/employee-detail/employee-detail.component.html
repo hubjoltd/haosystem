@@ -33,6 +33,7 @@
     <button [class.active]="activeTab === 'ctcHistory'" (click)="setTab('ctcHistory')" [class.disabled]="isNewEmployee">CTC History</button>
     <button [class.active]="activeTab === 'assets'" (click)="setTab('assets')" [class.disabled]="isNewEmployee">Assets</button>
     <button [class.active]="activeTab === 'documents'" (click)="setTab('documents')" [class.disabled]="isNewEmployee">Documents</button>
+    <button [class.active]="activeTab === 'leave'" (click)="setTab('leave')" [class.disabled]="isNewEmployee">Leave</button>
     <button [class.active]="activeTab === 'recruitment'" (click)="setTab('recruitment')" [class.disabled]="isNewEmployee">Recruitment History</button>
   </div>
 
@@ -671,6 +672,100 @@
       </tbody>
     </table>
     <p class="no-data" *ngIf="documents.length === 0">No documents uploaded</p>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'leave'">
+    <div class="section-header">
+      <h3>Leave Balances</h3>
+      <div class="header-actions">
+        <select [(ngModel)]="leaveYear" (change)="loadLeaveBalances()" class="year-select">
+          <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+        </select>
+        <button class="btn-primary" (click)="initializeLeaveBalances()" [disabled]="initializingLeave">
+          <i class="fas fa-sync-alt" [class.fa-spin]="initializingLeave"></i> 
+          {{ initializingLeave ? 'Initializing...' : 'Initialize Balances' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="leave-assignment-table" *ngIf="leaveBalances.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Leave Type</th>
+            <th class="text-center">Opening Balance</th>
+            <th class="text-center">Credited</th>
+            <th class="text-center">Carry Forward</th>
+            <th class="text-center">Used</th>
+            <th class="text-center">Pending</th>
+            <th class="text-center">Available</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let balance of leaveBalances">
+            <td>
+              <strong>{{ balance.leaveType?.name }}</strong>
+              <small class="text-muted" *ngIf="balance.leaveType?.description">{{ balance.leaveType?.description }}</small>
+            </td>
+            <td class="text-center">
+              <input type="number" [(ngModel)]="balance.openingBalance" 
+                     class="balance-input" [disabled]="!editingLeaveBalanceId || editingLeaveBalanceId !== balance.id" 
+                     min="0" step="0.5" />
+            </td>
+            <td class="text-center">
+              <input type="number" [(ngModel)]="balance.credited" 
+                     class="balance-input" [disabled]="!editingLeaveBalanceId || editingLeaveBalanceId !== balance.id" 
+                     min="0" step="0.5" />
+            </td>
+            <td class="text-center">
+              <input type="number" [(ngModel)]="balance.carryForward" 
+                     class="balance-input" [disabled]="!editingLeaveBalanceId || editingLeaveBalanceId !== balance.id" 
+                     min="0" step="0.5" />
+            </td>
+            <td class="text-center">{{ balance.used || 0 }}</td>
+            <td class="text-center text-warning">{{ balance.pending || 0 }}</td>
+            <td class="text-center text-success">
+              <strong>{{ getLeaveAvailable(balance) }}</strong>
+            </td>
+            <td>
+              <button class="btn-icon" *ngIf="editingLeaveBalanceId !== balance.id" (click)="editLeaveBalance(balance)" title="Edit">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn-icon btn-success" *ngIf="editingLeaveBalanceId === balance.id" (click)="saveLeaveBalance(balance)" 
+                      [disabled]="savingLeaveBalance" title="Save">
+                <i class="fas" [class.fa-save]="!savingLeaveBalance" [class.fa-spinner]="savingLeaveBalance" [class.fa-spin]="savingLeaveBalance"></i>
+              </button>
+              <button class="btn-icon" *ngIf="editingLeaveBalanceId === balance.id" (click)="cancelLeaveBalanceEdit()" title="Cancel">
+                <i class="fas fa-times"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="totals-row">
+            <td><strong>Total</strong></td>
+            <td class="text-center"><strong>{{ getTotalOpening() }}</strong></td>
+            <td class="text-center"><strong>{{ getTotalCredited() }}</strong></td>
+            <td class="text-center"><strong>{{ getTotalCarryForward() }}</strong></td>
+            <td class="text-center"><strong>{{ getTotalUsed() }}</strong></td>
+            <td class="text-center"><strong>{{ getTotalPending() }}</strong></td>
+            <td class="text-center text-success"><strong>{{ getTotalAvailable() }}</strong></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="no-data" *ngIf="leaveBalances.length === 0 && !loadingLeaveBalances">
+      <i class="fas fa-calendar-times"></i>
+      <p>No leave balances found for {{ leaveYear }}</p>
+      <p class="small">Click "Initialize Balances" to set up leave entitlements for this employee based on active leave types.</p>
+    </div>
+
+    <div class="loading-spinner" *ngIf="loadingLeaveBalances">
+      <i class="fas fa-spinner fa-spin"></i> Loading leave balances...
+    </div>
   </div>
 
   <div class="tab-content" *ngIf="activeTab === 'recruitment'">

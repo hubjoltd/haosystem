@@ -4,6 +4,7 @@ import { EmployeeService, Employee, EmployeeBankDetail, EmployeeSalary, Employee
 import { OrganizationService, Department, Designation, Grade, JobRole, Location, CostCenter, ExpenseCenter } from '../../../../services/organization.service';
 import { DocumentService, DocumentCategory, DocumentType, EmployeeDocument } from '../../../../services/document.service';
 import { RecruitmentService } from '../../../../services/recruitment.service';
+import { LeaveService, LeaveBalance } from '../../../../services/leave.service';
 
 export interface RecruitmentHistory {
   requisition?: any;
@@ -38,6 +39,15 @@ export class EmployeeDetailComponent implements OnInit {
   recruitmentHistory: RecruitmentHistory | null = null;
   loadingRecruitmentHistory = false;
   
+  leaveBalances: LeaveBalance[] = [];
+  leaveYear: number = new Date().getFullYear();
+  availableYears: number[] = [];
+  loadingLeaveBalances = false;
+  initializingLeave = false;
+  editingLeaveBalanceId: number | null = null;
+  savingLeaveBalance = false;
+  originalLeaveBalance: LeaveBalance | null = null;
+  
   departments: Department[] = [];
   designations: Designation[] = [];
   grades: Grade[] = [];
@@ -70,8 +80,12 @@ export class EmployeeDetailComponent implements OnInit {
     private employeeService: EmployeeService,
     private orgService: OrganizationService,
     private documentService: DocumentService,
-    private recruitmentService: RecruitmentService
-  ) {}
+    private recruitmentService: RecruitmentService,
+    private leaveService: LeaveService
+  ) {
+    const currentYear = new Date().getFullYear();
+    this.availableYears = [currentYear - 1, currentYear, currentYear + 1];
+  }
 
   ngOnInit() {
     this.loadDropdownData();
@@ -167,12 +181,15 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   setTab(tab: string) {
-    if (this.isNewEmployee && ['bank', 'salary', 'ctcHistory', 'assets', 'documents', 'recruitment'].includes(tab)) {
+    if (this.isNewEmployee && ['bank', 'salary', 'ctcHistory', 'assets', 'documents', 'leave', 'recruitment'].includes(tab)) {
       return;
     }
     this.activeTab = tab;
     if (tab === 'recruitment' && !this.recruitmentHistory) {
       this.loadRecruitmentHistory();
+    }
+    if (tab === 'leave' && this.leaveBalances.length === 0) {
+      this.loadLeaveBalances();
     }
   }
 
@@ -536,5 +553,109 @@ export class EmployeeDetailComponent implements OnInit {
   isDocumentExpired(doc: EmployeeDocument): boolean {
     if (!doc.expiryDate) return false;
     return new Date(doc.expiryDate) < new Date();
+  }
+
+  loadLeaveBalances(): void {
+    if (!this.employeeId) return;
+    
+    this.loadingLeaveBalances = true;
+    this.leaveService.getEmployeeBalancesByYear(this.employeeId, this.leaveYear).subscribe({
+      next: (data) => {
+        this.leaveBalances = data;
+        this.loadingLeaveBalances = false;
+      },
+      error: (err) => {
+        console.error('Error loading leave balances:', err);
+        this.loadingLeaveBalances = false;
+      }
+    });
+  }
+
+  initializeLeaveBalances(): void {
+    if (!this.employeeId) return;
+    
+    this.initializingLeave = true;
+    this.leaveService.initializeBalances(this.employeeId).subscribe({
+      next: (response) => {
+        this.leaveService.getEmployeeBalancesByYear(this.employeeId!, this.leaveYear).subscribe({
+          next: (data) => {
+            this.leaveBalances = data;
+            this.initializingLeave = false;
+          },
+          error: () => {
+            this.initializingLeave = false;
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error initializing leave balances:', err);
+        this.initializingLeave = false;
+        alert('Error initializing leave balances. Please try again.');
+      }
+    });
+  }
+
+  editLeaveBalance(balance: LeaveBalance): void {
+    this.editingLeaveBalanceId = balance.id || null;
+    this.originalLeaveBalance = { ...balance };
+  }
+
+  cancelLeaveBalanceEdit(): void {
+    if (this.originalLeaveBalance && this.editingLeaveBalanceId) {
+      const index = this.leaveBalances.findIndex(b => b.id === this.editingLeaveBalanceId);
+      if (index !== -1) {
+        this.leaveBalances[index] = { ...this.originalLeaveBalance };
+      }
+    }
+    this.editingLeaveBalanceId = null;
+    this.originalLeaveBalance = null;
+  }
+
+  saveLeaveBalance(balance: LeaveBalance): void {
+    if (!balance.id) return;
+    
+    this.savingLeaveBalance = true;
+    this.leaveService.updateBalance(balance.id, balance).subscribe({
+      next: () => {
+        this.editingLeaveBalanceId = null;
+        this.originalLeaveBalance = null;
+        this.savingLeaveBalance = false;
+        this.loadLeaveBalances();
+      },
+      error: (err) => {
+        console.error('Error saving leave balance:', err);
+        this.savingLeaveBalance = false;
+        alert('Error saving leave balance. Please try again.');
+      }
+    });
+  }
+
+  getLeaveAvailable(balance: LeaveBalance): number {
+    const total = (balance.openingBalance || 0) + (balance.credited || 0) + (balance.carryForward || 0);
+    return total - (balance.used || 0) - (balance.pending || 0) - (balance.lapsed || 0) - (balance.encashed || 0);
+  }
+
+  getTotalOpening(): number {
+    return this.leaveBalances.reduce((sum, b) => sum + (b.openingBalance || 0), 0);
+  }
+
+  getTotalCredited(): number {
+    return this.leaveBalances.reduce((sum, b) => sum + (b.credited || 0), 0);
+  }
+
+  getTotalCarryForward(): number {
+    return this.leaveBalances.reduce((sum, b) => sum + (b.carryForward || 0), 0);
+  }
+
+  getTotalUsed(): number {
+    return this.leaveBalances.reduce((sum, b) => sum + (b.used || 0), 0);
+  }
+
+  getTotalPending(): number {
+    return this.leaveBalances.reduce((sum, b) => sum + (b.pending || 0), 0);
+  }
+
+  getTotalAvailable(): number {
+    return this.leaveBalances.reduce((sum, b) => sum + this.getLeaveAvailable(b), 0);
   }
 }
