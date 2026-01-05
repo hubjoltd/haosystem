@@ -71,33 +71,41 @@
     <div class="section-header">
       <h3>Leave Balance</h3>
     </div>
-    <div class="table-container" *ngIf="leaveBalances.length > 0">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Leave Type</th>
-            <th class="text-center">Total Days</th>
-            <th class="text-center">Available</th>
-            <th class="text-center">Used</th>
-            <th class="text-center">Pending</th>
-            <th>Balance</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let balance of leaveBalances">
-            <td><strong>{{ balance.leaveType?.name || 'Leave' }}</strong></td>
-            <td class="text-center">{{ getTotalEntitlement(balance) }}</td>
-            <td class="text-center text-success">{{ getAvailableBalance(balance) }}</td>
-            <td class="text-center">{{ balance.used || 0 }}</td>
-            <td class="text-center text-warning">{{ balance.pending || 0 }}</td>
-            <td>
-              <div class="balance-bar inline">
-                <div class="bar-fill" [style.width.%]="getBalancePercentage(balance)"></div>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="leave-balance-grid" *ngIf="leaveBalances.length > 0">
+      <div class="leave-card" *ngFor="let balance of leaveBalances" [ngClass]="getLeaveTypeClass(balance.leaveType?.name)">
+        <div class="leave-card-header">
+          <div class="leave-icon">
+            <i [class]="getLeaveTypeIcon(balance.leaveType?.name)"></i>
+          </div>
+          <div class="leave-type-name">{{ balance.leaveType?.name || 'Leave' }}</div>
+        </div>
+        <div class="leave-card-body">
+          <div class="available-days">
+            <span class="days-number">{{ getAvailableBalance(balance) }}</span>
+            <span class="days-label">Available</span>
+          </div>
+          <div class="balance-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="getBalancePercentage(balance)"></div>
+            </div>
+            <div class="progress-text">{{ getAvailableBalance(balance) }} of {{ getTotalEntitlement(balance) }} days</div>
+          </div>
+          <div class="leave-stats">
+            <div class="stat">
+              <span class="stat-value">{{ balance.used || 0 }}</span>
+              <span class="stat-label">Used</span>
+            </div>
+            <div class="stat pending">
+              <span class="stat-value">{{ balance.pending || 0 }}</span>
+              <span class="stat-label">Pending</span>
+            </div>
+            <div class="stat total">
+              <span class="stat-value">{{ getTotalEntitlement(balance) }}</span>
+              <span class="stat-label">Total</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="no-data small" *ngIf="leaveBalances.length === 0">
       <p>No leave balances available. Please contact HR to set up your leave entitlements.</p>

@@ -459,6 +459,30 @@ export class EmployeeSelfServiceComponent implements OnInit {
     return (this.getAvailableBalance(balance) / total) * 100;
   }
 
+  getLeaveTypeClass(typeName: string | undefined): string {
+    if (!typeName) return 'leave-default';
+    const name = typeName.toLowerCase();
+    if (name.includes('annual') || name.includes('vacation')) return 'leave-annual';
+    if (name.includes('sick') || name.includes('medical')) return 'leave-sick';
+    if (name.includes('casual')) return 'leave-casual';
+    if (name.includes('maternity')) return 'leave-maternity';
+    if (name.includes('paternity')) return 'leave-paternity';
+    if (name.includes('unpaid')) return 'leave-unpaid';
+    return 'leave-default';
+  }
+
+  getLeaveTypeIcon(typeName: string | undefined): string {
+    if (!typeName) return 'fas fa-calendar-alt';
+    const name = typeName.toLowerCase();
+    if (name.includes('annual') || name.includes('vacation')) return 'fas fa-umbrella-beach';
+    if (name.includes('sick') || name.includes('medical')) return 'fas fa-heartbeat';
+    if (name.includes('casual')) return 'fas fa-coffee';
+    if (name.includes('maternity')) return 'fas fa-baby';
+    if (name.includes('paternity')) return 'fas fa-baby-carriage';
+    if (name.includes('unpaid')) return 'fas fa-calendar-times';
+    return 'fas fa-calendar-alt';
+  }
+
   getLeaveDays(request: LeaveRequest): number {
     if (request.totalDays !== undefined && request.totalDays !== null) {
       return request.totalDays;
