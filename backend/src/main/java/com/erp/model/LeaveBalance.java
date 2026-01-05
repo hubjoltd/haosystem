@@ -55,13 +55,19 @@ public class LeaveBalance {
     }
 
     public BigDecimal getAvailableBalance() {
-        return openingBalance
-            .add(credited)
-            .add(carryForward)
-            .subtract(used)
-            .subtract(pending)
-            .subtract(lapsed)
-            .subtract(encashed);
+        BigDecimal open = openingBalance != null ? openingBalance : BigDecimal.ZERO;
+        BigDecimal credit = credited != null ? credited : BigDecimal.ZERO;
+        BigDecimal carry = carryForward != null ? carryForward : BigDecimal.ZERO;
+        BigDecimal usedAmt = used != null ? used : BigDecimal.ZERO;
+        BigDecimal pendingAmt = pending != null ? pending : BigDecimal.ZERO;
+        BigDecimal lapsedAmt = lapsed != null ? lapsed : BigDecimal.ZERO;
+        BigDecimal encashedAmt = encashed != null ? encashed : BigDecimal.ZERO;
+        
+        return open.add(credit).add(carry)
+            .subtract(usedAmt)
+            .subtract(pendingAmt)
+            .subtract(lapsedAmt)
+            .subtract(encashedAmt);
     }
 
     public Long getId() { return id; }

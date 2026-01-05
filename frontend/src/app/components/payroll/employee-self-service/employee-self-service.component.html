@@ -71,20 +71,36 @@
     <div class="section-header">
       <h3>Leave Balance</h3>
     </div>
-    <div class="balance-cards">
-      <div class="balance-card" *ngFor="let balance of leaveBalances">
-        <div class="balance-type">{{ balance.leaveType?.name || 'Leave' }}</div>
-        <div class="balance-value">
-          <span class="available">{{ balance.availableBalance || 0 }}</span>
-          <span class="total">/ {{ getTotalEntitlement(balance) }} days</span>
-        </div>
-        <div class="balance-bar">
-          <div class="bar-fill" [style.width.%]="getBalancePercentage(balance)"></div>
-        </div>
-      </div>
-      <div class="no-data small" *ngIf="leaveBalances.length === 0">
-        <p>No leave balances available</p>
-      </div>
+    <div class="table-container" *ngIf="leaveBalances.length > 0">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Leave Type</th>
+            <th class="text-center">Total Days</th>
+            <th class="text-center">Available</th>
+            <th class="text-center">Used</th>
+            <th class="text-center">Pending</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let balance of leaveBalances">
+            <td><strong>{{ balance.leaveType?.name || 'Leave' }}</strong></td>
+            <td class="text-center">{{ getTotalEntitlement(balance) }}</td>
+            <td class="text-center text-success">{{ getAvailableBalance(balance) }}</td>
+            <td class="text-center">{{ balance.used || 0 }}</td>
+            <td class="text-center text-warning">{{ balance.pending || 0 }}</td>
+            <td>
+              <div class="balance-bar inline">
+                <div class="bar-fill" [style.width.%]="getBalancePercentage(balance)"></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="no-data small" *ngIf="leaveBalances.length === 0">
+      <p>No leave balances available. Please contact HR to set up your leave entitlements.</p>
     </div>
 
     <div class="section-header">
@@ -516,8 +532,11 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeLeaveRequestModal()">Cancel</button>
-      <button class="btn btn-primary" (click)="submitLeaveRequest()">Submit Request</button>
+      <button class="btn btn-secondary" (click)="closeLeaveRequestModal()" [disabled]="submittingLeave">Cancel</button>
+      <button class="btn btn-primary" (click)="submitLeaveRequest()" [disabled]="submittingLeave">
+        <span *ngIf="!submittingLeave">Submit Request</span>
+        <span *ngIf="submittingLeave">Submitting...</span>
+      </button>
     </div>
   </div>
 </div>
@@ -555,8 +574,11 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeExpenseRequestModal()">Cancel</button>
-      <button class="btn btn-primary" (click)="submitExpenseRequest()">Submit Expense</button>
+      <button class="btn btn-secondary" (click)="closeExpenseRequestModal()" [disabled]="submittingExpense">Cancel</button>
+      <button class="btn btn-primary" (click)="submitExpenseRequest()" [disabled]="submittingExpense">
+        <span *ngIf="!submittingExpense">Submit Expense</span>
+        <span *ngIf="submittingExpense">Submitting...</span>
+      </button>
     </div>
   </div>
 </div>
@@ -600,8 +622,11 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeLoanRequestModal()">Cancel</button>
-      <button class="btn btn-primary" (click)="submitLoanRequest()">Submit Application</button>
+      <button class="btn btn-secondary" (click)="closeLoanRequestModal()" [disabled]="submittingLoan">Cancel</button>
+      <button class="btn btn-primary" (click)="submitLoanRequest()" [disabled]="submittingLoan">
+        <span *ngIf="!submittingLoan">Submit Application</span>
+        <span *ngIf="submittingLoan">Submitting...</span>
+      </button>
     </div>
   </div>
 </div>

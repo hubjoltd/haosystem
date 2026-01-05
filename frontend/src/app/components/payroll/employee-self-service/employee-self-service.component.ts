@@ -79,6 +79,10 @@ export class EmployeeSelfServiceComponent implements OnInit {
   companyName = 'Hao System Corporation';
   companyAddress = '123 Business Park, Suite 500, New York, NY 10001';
 
+  submittingLeave = false;
+  submittingExpense = false;
+  submittingLoan = false;
+
   constructor(
     private payrollService: PayrollService,
     private leaveService: LeaveService,
@@ -168,6 +172,13 @@ export class EmployeeSelfServiceComponent implements OnInit {
   }
 
   submitLeaveRequest(): void {
+    if (this.submittingLeave) return;
+    if (!this.newLeaveRequest.startDate || !this.newLeaveRequest.endDate) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    this.submittingLeave = true;
     const request = {
       employeeId: this.currentEmployeeId,
       leaveTypeId: this.newLeaveRequest.leaveTypeId,
@@ -178,14 +189,17 @@ export class EmployeeSelfServiceComponent implements OnInit {
 
     this.leaveService.createRequest(request).subscribe({
       next: () => {
+        this.submittingLeave = false;
         this.closeLeaveRequestModal();
         this.loadLeaveRequests();
         this.loadLeaveBalances();
         alert('Leave request submitted successfully!');
       },
-      error: (err: Error) => {
+      error: (err: any) => {
+        this.submittingLeave = false;
         console.error('Error submitting leave request:', err);
-        alert('Error submitting leave request');
+        const message = err.error?.message || err.message || 'Error submitting leave request';
+        alert(message);
       }
     });
   }
@@ -298,6 +312,13 @@ export class EmployeeSelfServiceComponent implements OnInit {
   }
 
   submitExpenseRequest(): void {
+    if (this.submittingExpense) return;
+    if (!this.newExpenseRequest.amount || !this.newExpenseRequest.description) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    this.submittingExpense = true;
     const request = {
       employeeId: this.currentEmployeeId,
       categoryId: this.newExpenseRequest.categoryId,
@@ -310,13 +331,16 @@ export class EmployeeSelfServiceComponent implements OnInit {
 
     this.expenseService.createRequest(request).subscribe({
       next: () => {
+        this.submittingExpense = false;
         this.closeExpenseRequestModal();
         this.loadExpenses();
         alert('Expense request submitted successfully!');
       },
-      error: (err: Error) => {
+      error: (err: any) => {
+        this.submittingExpense = false;
         console.error('Error submitting expense request:', err);
-        alert('Error submitting expense request');
+        const message = err.error?.message || err.message || 'Error submitting expense request';
+        alert(message);
       }
     });
   }
@@ -337,24 +361,34 @@ export class EmployeeSelfServiceComponent implements OnInit {
   }
 
   submitLoanRequest(): void {
+    if (this.submittingLoan) return;
+    if (!this.newLoanRequest.amount || !this.newLoanRequest.reason) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    this.submittingLoan = true;
     const request = {
       employeeId: this.currentEmployeeId,
       loanType: this.newLoanRequest.loanType,
-      loanAmount: this.newLoanRequest.amount,
-      numberOfEmi: this.newLoanRequest.numberOfEmi,
-      reason: this.newLoanRequest.reason,
+      requestedAmount: this.newLoanRequest.amount,
+      requestedTenureMonths: this.newLoanRequest.numberOfEmi,
+      purpose: this.newLoanRequest.reason,
       status: 'PENDING'
     };
 
     this.loanService.createApplication(request).subscribe({
       next: () => {
+        this.submittingLoan = false;
         this.closeLoanRequestModal();
         this.loadLoans();
         alert('Loan application submitted successfully!');
       },
-      error: (err: Error) => {
+      error: (err: any) => {
+        this.submittingLoan = false;
         console.error('Error submitting loan application:', err);
-        alert('Error submitting loan application');
+        const message = err.error?.message || err.message || 'Error submitting loan application';
+        alert(message);
       }
     });
   }
@@ -407,10 +441,22 @@ export class EmployeeSelfServiceComponent implements OnInit {
     return (balance.openingBalance || 0) + (balance.credited || 0) + (balance.carryForward || 0);
   }
 
+  getAvailableBalance(balance: LeaveBalance): number {
+    if (balance.availableBalance !== undefined && balance.availableBalance !== null) {
+      return balance.availableBalance;
+    }
+    const total = this.getTotalEntitlement(balance);
+    const usedAmt = balance.used || 0;
+    const pendingAmt = balance.pending || 0;
+    const lapsedAmt = balance.lapsed || 0;
+    const encashedAmt = balance.encashed || 0;
+    return total - usedAmt - pendingAmt - lapsedAmt - encashedAmt;
+  }
+
   getBalancePercentage(balance: LeaveBalance): number {
     const total = this.getTotalEntitlement(balance);
     if (total === 0) return 0;
-    return ((balance.availableBalance || 0) / total) * 100;
+    return (this.getAvailableBalance(balance) / total) * 100;
   }
 
   getLeaveDays(request: LeaveRequest): number {
