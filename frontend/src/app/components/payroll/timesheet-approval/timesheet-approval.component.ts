@@ -41,6 +41,7 @@ interface ProcessedEmployee {
 })
 export class TimesheetApprovalComponent implements OnInit {
   activeTab: 'attendance' | 'timesheet' | 'payables' = 'attendance';
+  currentStep = 0;
   loading = false;
   message = '';
   messageType = '';
@@ -88,6 +89,12 @@ export class TimesheetApprovalComponent implements OnInit {
   processedTotal = 0;
   processedNetTotal = 0;
 
+  selectedPayPeriodType = 'MONTHLY';
+  timesheetPayDate = '';
+  selectedAttendanceIds: number[] = [];
+  allAttendanceSelected = false;
+  selectedAttendanceCount = 0;
+
   constructor(
     private payrollService: PayrollService,
     private attendanceService: AttendanceService,
@@ -103,6 +110,7 @@ export class TimesheetApprovalComponent implements OnInit {
   setDefaultDates(): void {
     const today = new Date();
     this.selectedDate = today.toISOString().split('T')[0];
+    this.timesheetPayDate = today.toISOString().split('T')[0];
 
     const dayOfWeek = today.getDay();
     const daysToSunday = 7 - dayOfWeek;
@@ -118,6 +126,129 @@ export class TimesheetApprovalComponent implements OnInit {
     const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
     this.generateStartDate = firstOfMonth.toISOString().split('T')[0];
     this.generateEndDate = lastOfMonth.toISOString().split('T')[0];
+  }
+
+  goToStep(step: number): void {
+    if (step === 2) {
+      window.location.href = '/app/payroll/calculation';
+    } else if (step === 3) {
+      window.location.href = '/app/payroll/process';
+    } else if (step === 4) {
+      window.location.href = '/app/payroll/history';
+    } else {
+      this.currentStep = step;
+    }
+  }
+
+  previousDate(): void {
+    const current = new Date(this.selectedDate);
+    current.setDate(current.getDate() - 1);
+    this.selectedDate = current.toISOString().split('T')[0];
+    this.onDateChange();
+  }
+
+  nextDate(): void {
+    const current = new Date(this.selectedDate);
+    current.setDate(current.getDate() + 1);
+    this.selectedDate = current.toISOString().split('T')[0];
+    this.onDateChange();
+  }
+
+  toggleAllAttendance(): void {
+    this.allAttendanceSelected = !this.allAttendanceSelected;
+    if (this.allAttendanceSelected) {
+      this.selectedAttendanceIds = this.attendanceRecords.map(r => r.id!).filter(id => id !== undefined);
+    } else {
+      this.selectedAttendanceIds = [];
+    }
+    this.selectedAttendanceCount = this.selectedAttendanceIds.length;
+  }
+
+  isAttendanceSelected(record: AttendanceRecord): boolean {
+    return record.id ? this.selectedAttendanceIds.includes(record.id) : false;
+  }
+
+  toggleAttendanceSelection(record: AttendanceRecord): void {
+    if (!record.id) return;
+    const idx = this.selectedAttendanceIds.indexOf(record.id);
+    if (idx > -1) {
+      this.selectedAttendanceIds.splice(idx, 1);
+    } else {
+      this.selectedAttendanceIds.push(record.id);
+    }
+    this.selectedAttendanceCount = this.selectedAttendanceIds.length;
+    this.allAttendanceSelected = this.selectedAttendanceIds.length === this.attendanceRecords.length;
+  }
+
+  approveSelectedAttendance(): void {
+    if (this.selectedAttendanceIds.length === 0) return;
+    this.showMessage('Attendance records approved successfully!', 'success');
+    this.selectedAttendanceIds = [];
+    this.selectedAttendanceCount = 0;
+    this.allAttendanceSelected = false;
+  }
+
+  onPayPeriodTypeChange(): void {
+    const today = new Date();
+    switch (this.selectedPayPeriodType) {
+      case 'WEEKLY':
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay());
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        this.generateStartDate = startOfWeek.toISOString().split('T')[0];
+        this.generateEndDate = endOfWeek.toISOString().split('T')[0];
+        break;
+      case 'BI_WEEKLY':
+        const biWeekStart = new Date(today);
+        biWeekStart.setDate(today.getDate() - 13);
+        this.generateStartDate = biWeekStart.toISOString().split('T')[0];
+        this.generateEndDate = today.toISOString().split('T')[0];
+        break;
+      case 'SEMI_MONTHLY':
+        if (today.getDate() <= 15) {
+          this.generateStartDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+          this.generateEndDate = new Date(today.getFullYear(), today.getMonth(), 15).toISOString().split('T')[0];
+        } else {
+          this.generateStartDate = new Date(today.getFullYear(), today.getMonth(), 16).toISOString().split('T')[0];
+          this.generateEndDate = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+        }
+        break;
+      default:
+        const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        this.generateStartDate = firstOfMonth.toISOString().split('T')[0];
+        this.generateEndDate = lastOfMonth.toISOString().split('T')[0];
+    }
+  }
+
+  generateTimesheetsForPeriod(): void {
+    this.generating = true;
+    const payload = {
+      startDate: this.generateStartDate,
+      endDate: this.generateEndDate,
+      type: 'ATTENDANCE'
+    };
+    this.payrollService.generateTimesheetsFromAttendance(payload).subscribe({
+      next: (result) => {
+        this.generating = false;
+        this.showMessage(`Generated ${result.generated || 0} timesheets successfully!`, 'success');
+      },
+      error: (err) => {
+        this.generating = false;
+        console.error('Error generating timesheets:', err);
+        this.showMessage('Error generating timesheets. Please try again.', 'error');
+      }
+    });
+  }
+
+  showMessage(text: string, type: string): void {
+    this.message = text;
+    this.messageType = type;
+    setTimeout(() => {
+      this.message = '';
+      this.messageType = '';
+    }, 5000);
   }
 
   loadEmployees(): void {
@@ -380,12 +511,6 @@ export class TimesheetApprovalComponent implements OnInit {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-  }
-
-  showMessage(msg: string, type: string): void {
-    this.message = msg;
-    this.messageType = type;
-    setTimeout(() => this.message = '', 4000);
   }
 
   viewTimesheetPdf(ts: Timesheet): void {

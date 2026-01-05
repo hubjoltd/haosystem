@@ -1,6 +1,17 @@
 # Hao System - Angular Frontend
 
 ## Recent Changes (January 2026)
+- **Payroll Workflow Step Wizard**: Implemented 5-step wizard navigation for payroll processing:
+  - Step 0: Daily Attendance Approval (with date navigation, attendance selection, bulk approval)
+  - Step 1: Generate Timesheets (with pay period type dropdown: Monthly, Weekly, Bi-Weekly, Semi-Monthly)
+  - Step 2: Calculate Payroll (redirects to /app/payroll/calculation)
+  - Step 3: Process Payroll (redirects to /app/payroll/process)
+  - Step 4: Payroll History (redirects to /app/payroll/history)
+- **Payroll History Column Structure**: Updated table with comprehensive tax breakdown columns:
+  - S.NO, EMP ID, NAME, TYPE, PROJECT, PAY PERIOD, PERIOD FROM, PERIOD TO, HOURS
+  - GROSS, FEDERAL, STATE, SOC.SEC, MEDICARE, TOTAL TAX, NET PAY, PAYM DATE
+  - "All Payroll Records" header bar with record count, total hours, and total paid summary
+  - Export buttons for Excel and PDF
 - **Sidebar Navigation Improvements**: Enhanced CSS for better clickability with user-select, tap-highlight suppression, and active state feedback
 - **Database Seeding**: Added data.sql for automatic seeding of default leave types (Annual, Sick, Casual, Maternity, Paternity, Unpaid) on fresh deployments
 - **Application Initialization**: Configured deferred datasource initialization with SQL init mode for proper schema-then-data execution order

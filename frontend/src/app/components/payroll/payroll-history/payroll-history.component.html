@@ -82,58 +82,64 @@
 
   <!-- LIST VIEW -->
   <div class="table-section" *ngIf="activeView === 'list'">
+    <div class="all-records-header">
+      <h3>All Payroll Records</h3>
+      <span class="record-count">{{ filteredRecords.length }} Payroll Records - {{ totalHoursFiltered.toFixed(2) }} Total Hours - {{ formatCurrency(totalNetFiltered) }} Total Paid</span>
+      <div class="export-buttons">
+        <button class="btn btn-success btn-sm" (click)="exportToCSV()">
+          <i class="fas fa-file-excel"></i> Export Excel
+        </button>
+        <button class="btn btn-danger btn-sm" (click)="exportToPDF()">
+          <i class="fas fa-file-pdf"></i>
+        </button>
+      </div>
+    </div>
     <div class="table-container">
       <table class="data-table history-table">
         <thead>
           <tr>
+            <th>S.NO</th>
             <th (click)="sortBy('empId')" class="sortable">
-              EMPID <i class="fas" [ngClass]="getSortIcon('empId')"></i>
+              EMP ID <i class="fas" [ngClass]="getSortIcon('empId')"></i>
             </th>
             <th (click)="sortBy('name')" class="sortable">
               NAME <i class="fas" [ngClass]="getSortIcon('name')"></i>
             </th>
+            <th>TYPE</th>
             <th>PROJECT</th>
-            <th>PAY RATE/PERIOD</th>
-            <th (click)="sortBy('payDate')" class="sortable">
-              PAY DATE <i class="fas" [ngClass]="getSortIcon('payDate')"></i>
-            </th>
+            <th>PAY PERIOD</th>
+            <th>PERIOD FROM</th>
             <th>PERIOD TO</th>
-            <th class="number-col">REGULAR</th>
-            <th class="number-col">BONUS</th>
-            <th class="number-col">ALLOWANCES</th>
-            <th class="number-col">DEDUCTIONS</th>
+            <th class="number-col">HOURS</th>
             <th class="number-col gross-col">GROSS</th>
-            <th class="number-col">YTD GROSS</th>
-            <th class="number-col tax-col">FED TAX</th>
-            <th class="number-col tax-col">STATE TAX</th>
+            <th class="number-col tax-col">FEDERAL</th>
+            <th class="number-col tax-col">STATE</th>
+            <th class="number-col tax-col">SOC.SEC</th>
+            <th class="number-col tax-col">MEDICARE</th>
+            <th class="number-col tax-col">TOTAL TAX</th>
             <th class="number-col net-col">NET PAY</th>
-            <th>PAYMENT DATE</th>
-            <th>PAY STATUS</th>
+            <th>PAYM DATE</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let record of filteredRecords; let i = index" [class.alt-row]="i % 2 === 1">
+            <td>{{ i + 1 }}</td>
             <td class="emp-id">{{ record.empId }}</td>
             <td class="emp-name">{{ record.name }}</td>
-            <td>{{ record.project }}</td>
-            <td>{{ record.payRatePeriod }}</td>
-            <td>{{ formatDate(record.payDate) }}</td>
-            <td>{{ formatDate(record.periodTo) }}</td>
-            <td class="number-col">{{ formatCurrency(record.regular) }}</td>
-            <td class="number-col">{{ formatCurrency(record.bonus) }}</td>
-            <td class="number-col">{{ formatCurrency(record.allowances) }}</td>
-            <td class="number-col deduction">{{ formatCurrency(record.deductions) }}</td>
-            <td class="number-col gross-col">{{ formatCurrency(record.gross) }}</td>
-            <td class="number-col">{{ formatCurrency(record.ytdGross) }}</td>
-            <td class="number-col tax-col">{{ formatCurrency(record.fedTax) }}</td>
-            <td class="number-col tax-col">{{ formatCurrency(record.stateTax) }}</td>
-            <td class="number-col net-col">{{ formatCurrency(record.netPay) }}</td>
-            <td>{{ formatDate(record.paymentDate) }}</td>
-            <td>
-              <span class="status-badge" [ngClass]="getStatusClass(record.payStatus)">
-                {{ record.payStatus }}
-              </span>
-            </td>
+            <td>{{ record.employeeType || 'Salaried' }}</td>
+            <td>{{ record.project || '-' }}</td>
+            <td>{{ record.payRatePeriod || '-' }}</td>
+            <td>{{ record.periodFrom ? formatDate(record.periodFrom) : '-' }}</td>
+            <td>{{ record.periodTo ? formatDate(record.periodTo) : '-' }}</td>
+            <td class="number-col">{{ ((record.hours || 0)).toFixed(2) }}h</td>
+            <td class="number-col gross-col">{{ formatCurrency(record.gross || 0) }}</td>
+            <td class="number-col tax-col">{{ formatCurrency(record.fedTax || 0) }}</td>
+            <td class="number-col tax-col">{{ formatCurrency(record.stateTax || 0) }}</td>
+            <td class="number-col tax-col">{{ formatCurrency(record.socSecTax || 0) }}</td>
+            <td class="number-col tax-col">{{ formatCurrency(record.medicareTax || 0) }}</td>
+            <td class="number-col tax-col">{{ formatCurrency(record.totalTax || 0) }}</td>
+            <td class="number-col net-col">{{ formatCurrency(record.netPay || 0) }}</td>
+            <td>{{ record.paymentDate ? formatDate(record.paymentDate) : '-' }}</td>
           </tr>
           <tr *ngIf="filteredRecords.length === 0">
             <td colspan="17" class="no-data">
@@ -144,17 +150,16 @@
         </tbody>
         <tfoot *ngIf="filteredRecords.length > 0">
           <tr class="totals-row">
-            <td colspan="6"><strong>TOTALS ({{ filteredRecords.length }} records)</strong></td>
-            <td class="number-col"><strong>{{ formatCurrency(totalRegular) }}</strong></td>
-            <td class="number-col"><strong>{{ formatCurrency(totalBonus) }}</strong></td>
-            <td class="number-col"><strong>{{ formatCurrency(totalAllowances) }}</strong></td>
-            <td class="number-col"><strong>{{ formatCurrency(totalDeductions) }}</strong></td>
+            <td colspan="8" class="total-label">TOTAL</td>
+            <td class="number-col">{{ totalHoursFiltered.toFixed(2) }}h</td>
             <td class="number-col gross-col"><strong>{{ formatCurrency(totalGrossFiltered) }}</strong></td>
-            <td class="number-col"></td>
-            <td class="number-col tax-col"><strong>{{ formatCurrency(totalFedTax) }}</strong></td>
-            <td class="number-col tax-col"><strong>{{ formatCurrency(totalStateTax) }}</strong></td>
+            <td class="number-col tax-col">{{ formatCurrency(totalFedTax) }}</td>
+            <td class="number-col tax-col">{{ formatCurrency(totalStateTax) }}</td>
+            <td class="number-col tax-col">{{ formatCurrency(totalSocSecTax) }}</td>
+            <td class="number-col tax-col">{{ formatCurrency(totalMedicareTax) }}</td>
+            <td class="number-col tax-col">{{ formatCurrency(totalTaxFiltered) }}</td>
             <td class="number-col net-col"><strong>{{ formatCurrency(totalNetFiltered) }}</strong></td>
-            <td colspan="2"></td>
+            <td></td>
           </tr>
         </tfoot>
       </table>
