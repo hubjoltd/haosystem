@@ -7,7 +7,7 @@ import { LoanService } from '../../../services/loan.service';
 import { ExpenseService } from '../../../services/expense.service';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
 import { AuthService } from '../../../services/auth.service';
-import { DocumentService, EmployeeDocument, DocumentType } from '../../../services/document.service';
+import { DocumentService, EmployeeDocument, DocumentType, ChecklistCategory, ChecklistDocumentType } from '../../../services/document.service';
 import { EmployeeService, EmployeeAsset, Employee } from '../../../services/employee.service';
 import { SalarySlipService, SalarySlipData, EmployeeSlipInfo } from '../../../services/salary-slip.service';
 
@@ -28,6 +28,7 @@ export class EmployeeSelfServiceComponent implements OnInit {
   attendanceRecords: AttendanceRecord[] = [];
   documents: EmployeeDocument[] = [];
   documentTypes: DocumentType[] = [];
+  documentChecklist: ChecklistCategory[] = [];
   assets: EmployeeAsset[] = [];
   policies: any[] = [];
   expenseCategories: any[] = [];
@@ -589,6 +590,43 @@ export class EmployeeSelfServiceComponent implements OnInit {
       next: (data) => this.documentTypes = data,
       error: (err) => console.error('Error loading document types:', err)
     });
+    this.documentService.getEmployeeDocumentChecklist(this.currentEmployeeId).subscribe({
+      next: (data) => this.documentChecklist = data,
+      error: (err) => console.error('Error loading document checklist:', err)
+    });
+  }
+
+  getCategoryColorClass(code: string): string {
+    switch (code) {
+      case 'ID_WORK_AUTH': return 'category-blue';
+      case 'TAX_PAYROLL': return 'category-yellow';
+      case 'EMPLOYMENT_HR': return 'category-green';
+      case 'FEDERAL_COMPLIANCE': return 'category-orange';
+      case 'CERTIFICATIONS': return 'category-red';
+      case 'OTHER_DOCS': return 'category-purple';
+      default: return 'category-default';
+    }
+  }
+
+  getTotalDocuments(): number {
+    return this.documentChecklist.reduce((sum, cat) => sum + cat.totalDocuments, 0);
+  }
+
+  getTotalUploaded(): number {
+    return this.documentChecklist.reduce((sum, cat) => sum + cat.uploadedDocuments, 0);
+  }
+
+  downloadDocument(doc: ChecklistDocumentType): void {
+    if (doc.fileUrl) {
+      if (doc.fileUrl.startsWith('data:')) {
+        const link = document.createElement('a');
+        link.href = doc.fileUrl;
+        link.download = doc.fileName || 'document';
+        link.click();
+      } else {
+        window.open(doc.fileUrl, '_blank');
+      }
+    }
   }
 
   loadAssets(): void {

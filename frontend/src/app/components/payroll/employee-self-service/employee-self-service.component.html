@@ -328,48 +328,103 @@
 
   <div class="tab-content" *ngIf="activeTab === 'documents'">
     <div class="section-header">
-      <h3>My Documents</h3>
+      <h3>Document Checklist</h3>
     </div>
+    
+    <div class="summary-cards" style="margin-bottom: 24px;">
+      <div class="summary-card">
+        <div class="card-icon" style="background: #008080;"><i class="fas fa-file-alt"></i></div>
+        <div class="card-info">
+          <span class="label">Total Required</span>
+          <span class="value">{{ getTotalDocuments() }}</span>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon" style="background: #28a745;"><i class="fas fa-check-circle"></i></div>
+        <div class="card-info">
+          <span class="label">Uploaded</span>
+          <span class="value">{{ getTotalUploaded() }}</span>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon" style="background: #ffc107;"><i class="fas fa-clock"></i></div>
+        <div class="card-info">
+          <span class="label">Pending</span>
+          <span class="value">{{ getTotalDocuments() - getTotalUploaded() }}</span>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon" style="background: #17a2b8;"><i class="fas fa-percentage"></i></div>
+        <div class="card-info">
+          <span class="label">Completion</span>
+          <span class="value">{{ getTotalDocuments() > 0 ? ((getTotalUploaded() / getTotalDocuments()) * 100 | number:'1.0-0') : 0 }}%</span>
+        </div>
+      </div>
+    </div>
+
     <div class="info-card" style="margin-bottom: 20px;">
       <i class="fas fa-info-circle"></i>
-      <p>View your uploaded documents and their verification status. Contact HR to upload new documents or request updates.</p>
+      <p>Upload your required documents. Documents marked with * are mandatory. Contact HR if you need assistance.</p>
     </div>
-    <div class="table-container">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Document Type</th>
-            <th>Document Number</th>
-            <th>Issue Date</th>
-            <th>Expiry Date</th>
-            <th>Status</th>
-            <th>Uploaded</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let doc of documents" [class.expiring]="isDocumentExpiring(doc)" [class.expired]="isDocumentExpired(doc)">
-            <td>{{ doc.documentType?.name || 'N/A' }}</td>
-            <td>{{ doc.documentNumber || '-' }}</td>
-            <td>{{ doc.issueDate | date:'MMM d, yyyy' }}</td>
-            <td>
-              <span [class.text-warning]="isDocumentExpiring(doc)" [class.text-danger]="isDocumentExpired(doc)">
-                {{ doc.expiryDate ? (doc.expiryDate | date:'MMM d, yyyy') : 'No Expiry' }}
+
+    <div class="document-checklist">
+      <div class="category-section" *ngFor="let category of documentChecklist" [ngClass]="getCategoryColorClass(category.code)">
+        <div class="category-header">
+          <div class="category-title">
+            <span class="category-icon" [ngSwitch]="category.code">
+              <i *ngSwitchCase="'ID_WORK_AUTH'" class="fas fa-id-card"></i>
+              <i *ngSwitchCase="'TAX_PAYROLL'" class="fas fa-file-invoice-dollar"></i>
+              <i *ngSwitchCase="'EMPLOYMENT_HR'" class="fas fa-file-contract"></i>
+              <i *ngSwitchCase="'FEDERAL_COMPLIANCE'" class="fas fa-flag-usa"></i>
+              <i *ngSwitchCase="'CERTIFICATIONS'" class="fas fa-certificate"></i>
+              <i *ngSwitchCase="'OTHER_DOCS'" class="fas fa-folder"></i>
+              <i *ngSwitchDefault class="fas fa-file"></i>
+            </span>
+            <h4>{{ category.name }}</h4>
+          </div>
+          <div class="category-progress">
+            <span class="progress-text">{{ category.uploadedDocuments }}/{{ category.totalDocuments }}</span>
+            <div class="progress-bar-small">
+              <div class="progress-fill" [style.width.%]="category.totalDocuments > 0 ? (category.uploadedDocuments / category.totalDocuments) * 100 : 0"></div>
+            </div>
+          </div>
+        </div>
+        <div class="category-documents">
+          <div class="document-item" *ngFor="let doc of category.documentTypes" [class.uploaded]="doc.status === 'UPLOADED'" [class.pending]="doc.status === 'PENDING'">
+            <div class="document-checkbox">
+              <i *ngIf="doc.status === 'UPLOADED'" class="fas fa-check-circle text-success"></i>
+              <i *ngIf="doc.status === 'PENDING'" class="far fa-circle text-muted"></i>
+            </div>
+            <div class="document-info">
+              <span class="document-name">
+                {{ doc.name }}
+                <span class="mandatory-mark" *ngIf="doc.isMandatory">*</span>
               </span>
-              <i *ngIf="isDocumentExpiring(doc)" class="fas fa-exclamation-triangle text-warning" title="Expiring soon"></i>
-              <i *ngIf="isDocumentExpired(doc)" class="fas fa-times-circle text-danger" title="Expired"></i>
-            </td>
-            <td>
-              <span class="status-badge" [ngClass]="getDocumentStatusClass(doc.verificationStatus)">
-                {{ doc.verificationStatus }}
+              <span class="document-description" *ngIf="doc.description">{{ doc.description }}</span>
+              <span class="document-meta" *ngIf="doc.status === 'UPLOADED'">
+                <span *ngIf="doc.uploadedAt">Uploaded: {{ doc.uploadedAt | date:'MMM d, yyyy' }}</span>
+                <span *ngIf="doc.expiryDate"> | Expires: {{ doc.expiryDate | date:'MMM d, yyyy' }}</span>
+                <span class="verification-status" [ngClass]="getDocumentStatusClass(doc.verificationStatus || 'PENDING')">
+                  {{ doc.verificationStatus || 'PENDING' }}
+                </span>
               </span>
-            </td>
-            <td>{{ doc.uploadedAt | date:'MMM d, yyyy' }}</td>
-          </tr>
-          <tr *ngIf="documents.length === 0">
-            <td colspan="6" class="no-data-row">No documents uploaded yet</td>
-          </tr>
-        </tbody>
-      </table>
+            </div>
+            <div class="document-action">
+              <button *ngIf="doc.status === 'UPLOADED' && doc.fileUrl" class="btn btn-sm btn-success" (click)="downloadDocument(doc)">
+                <i class="fas fa-download"></i> Download
+              </button>
+              <span *ngIf="doc.status === 'PENDING'" class="status-badge pending">
+                <i class="fas fa-clock"></i> Pending
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="no-data" *ngIf="documentChecklist.length === 0">
+        <i class="fas fa-file-alt"></i>
+        <p>No document types configured. Please contact HR to set up the document requirements.</p>
+      </div>
     </div>
   </div>
 

@@ -270,4 +270,99 @@ public class DocumentController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/checklist")
+    public List<Map<String, Object>> getDocumentChecklist() {
+        List<DocumentCategory> categories = categoryRepository.findByActiveTrueOrderBySortOrderAsc();
+        List<Map<String, Object>> checklist = new java.util.ArrayList<>();
+        
+        for (DocumentCategory category : categories) {
+            Map<String, Object> categoryMap = new HashMap<>();
+            categoryMap.put("id", category.getId());
+            categoryMap.put("code", category.getCode());
+            categoryMap.put("name", category.getName());
+            categoryMap.put("description", category.getDescription());
+            categoryMap.put("sortOrder", category.getSortOrder());
+            
+            List<DocumentType> types = typeRepository.findByCategoryIdAndActiveTrueOrderBySortOrderAsc(category.getId());
+            List<Map<String, Object>> typesList = new java.util.ArrayList<>();
+            
+            for (DocumentType type : types) {
+                Map<String, Object> typeMap = new HashMap<>();
+                typeMap.put("id", type.getId());
+                typeMap.put("code", type.getCode());
+                typeMap.put("name", type.getName());
+                typeMap.put("description", type.getDescription());
+                typeMap.put("isMandatory", type.getIsMandatory());
+                typeMap.put("hasExpiry", type.getHasExpiry());
+                typesList.add(typeMap);
+            }
+            
+            categoryMap.put("documentTypes", typesList);
+            checklist.add(categoryMap);
+        }
+        
+        return checklist;
+    }
+
+    @GetMapping("/employee/{employeeId}/checklist")
+    public List<Map<String, Object>> getEmployeeDocumentChecklist(@PathVariable Long employeeId) {
+        List<DocumentCategory> categories = categoryRepository.findByActiveTrueOrderBySortOrderAsc();
+        List<EmployeeDocument> employeeDocs = documentRepository.findByEmployeeId(employeeId);
+        
+        Map<Long, EmployeeDocument> docsByType = new HashMap<>();
+        for (EmployeeDocument doc : employeeDocs) {
+            if (doc.getDocumentType() != null) {
+                docsByType.put(doc.getDocumentType().getId(), doc);
+            }
+        }
+        
+        List<Map<String, Object>> checklist = new java.util.ArrayList<>();
+        
+        for (DocumentCategory category : categories) {
+            Map<String, Object> categoryMap = new HashMap<>();
+            categoryMap.put("id", category.getId());
+            categoryMap.put("code", category.getCode());
+            categoryMap.put("name", category.getName());
+            categoryMap.put("description", category.getDescription());
+            categoryMap.put("sortOrder", category.getSortOrder());
+            
+            List<DocumentType> types = typeRepository.findByCategoryIdAndActiveTrueOrderBySortOrderAsc(category.getId());
+            List<Map<String, Object>> typesList = new java.util.ArrayList<>();
+            int uploadedCount = 0;
+            
+            for (DocumentType type : types) {
+                Map<String, Object> typeMap = new HashMap<>();
+                typeMap.put("id", type.getId());
+                typeMap.put("code", type.getCode());
+                typeMap.put("name", type.getName());
+                typeMap.put("description", type.getDescription());
+                typeMap.put("isMandatory", type.getIsMandatory());
+                typeMap.put("hasExpiry", type.getHasExpiry());
+                
+                EmployeeDocument empDoc = docsByType.get(type.getId());
+                if (empDoc != null) {
+                    typeMap.put("status", "UPLOADED");
+                    typeMap.put("documentId", empDoc.getId());
+                    typeMap.put("fileName", empDoc.getFileName());
+                    typeMap.put("fileUrl", empDoc.getFileUrl());
+                    typeMap.put("verificationStatus", empDoc.getVerificationStatus());
+                    typeMap.put("uploadedAt", empDoc.getUploadedAt());
+                    typeMap.put("expiryDate", empDoc.getExpiryDate());
+                    uploadedCount++;
+                } else {
+                    typeMap.put("status", "PENDING");
+                }
+                
+                typesList.add(typeMap);
+            }
+            
+            categoryMap.put("documentTypes", typesList);
+            categoryMap.put("totalDocuments", types.size());
+            categoryMap.put("uploadedDocuments", uploadedCount);
+            checklist.add(categoryMap);
+        }
+        
+        return checklist;
+    }
 }

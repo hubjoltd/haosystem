@@ -59,6 +59,33 @@ export interface DocumentStats {
   total: number;
 }
 
+export interface ChecklistDocumentType {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+  isMandatory: boolean;
+  hasExpiry: boolean;
+  status: 'PENDING' | 'UPLOADED';
+  documentId?: number;
+  fileName?: string;
+  fileUrl?: string;
+  verificationStatus?: string;
+  uploadedAt?: string;
+  expiryDate?: string;
+}
+
+export interface ChecklistCategory {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+  sortOrder: number;
+  documentTypes: ChecklistDocumentType[];
+  totalDocuments: number;
+  uploadedDocuments: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -181,5 +208,13 @@ export class DocumentService {
 
   resetReminder(id: number): Observable<EmployeeDocument> {
     return this.http.put<EmployeeDocument>(`${this.baseUrl}/${id}/reset-reminder`, null);
+  }
+
+  getDocumentChecklist(): Observable<ChecklistCategory[]> {
+    return this.http.get<ChecklistCategory[]>(`${this.baseUrl}/checklist`);
+  }
+
+  getEmployeeDocumentChecklist(employeeId: number): Observable<ChecklistCategory[]> {
+    return this.http.get<ChecklistCategory[]>(`${this.baseUrl}/employee/${employeeId}/checklist`);
   }
 }
