@@ -114,6 +114,13 @@
   transition: all 0.2s ease;
   border-radius: 8px;
   font-size: 0.8rem;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-link:active {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .nav-link i:first-child {
@@ -184,6 +191,11 @@
   padding: 8px 10px 8px 36px;
   font-size: 0.75rem;
   border-radius: 0;
+  cursor: pointer;
+}
+
+.sub-menu .nav-link:active {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .sub-menu .nav-link i:first-child {
