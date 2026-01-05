@@ -1,6 +1,9 @@
 # Hao System - Angular Frontend
 
 ## Recent Changes (January 2026)
+- **Sidebar Navigation Improvements**: Enhanced CSS for better clickability with user-select, tap-highlight suppression, and active state feedback
+- **Database Seeding**: Added data.sql for automatic seeding of default leave types (Annual, Sick, Casual, Maternity, Paternity, Unpaid) on fresh deployments
+- **Application Initialization**: Configured deferred datasource initialization with SQL init mode for proper schema-then-data execution order
 - **Leave Balance Display**: Added employee selection dropdown in leave request form that loads and displays leave balances (Available/Used/Pending days) when creating leave requests
 - **Duplicate Prevention**: Added `saving` state and button disable logic across leave-requests, loans, training, and designations components to prevent double submissions
 - **Edit Functionality**: Fixed loans component to properly load existing data when editing; training and designations already had proper edit loading
