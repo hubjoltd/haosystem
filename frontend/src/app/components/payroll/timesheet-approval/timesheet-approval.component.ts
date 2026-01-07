@@ -96,6 +96,11 @@ export class TimesheetApprovalComponent implements OnInit {
   allAttendanceSelected = false;
   selectedAttendanceCount = 0;
 
+  // Employee selection for Step 1: Generate Timesheet
+  selectAllForTimesheet = true;
+  selectedTimesheetEmployeeIds: number[] = [];
+  timesheetEmployees: Employee[] = [];
+
   constructor(
     private payrollService: PayrollService,
     private attendanceService: AttendanceService,
@@ -275,15 +280,22 @@ export class TimesheetApprovalComponent implements OnInit {
 
   generateTimesheetsForPeriod(): void {
     this.generating = true;
-    const payload = {
+    const payload: any = {
       startDate: this.generateStartDate,
       endDate: this.generateEndDate,
       type: 'ATTENDANCE'
     };
+    
+    // Add selected employee IDs if not selecting all
+    if (!this.selectAllForTimesheet && this.selectedTimesheetEmployeeIds.length > 0) {
+      payload.employeeIds = this.selectedTimesheetEmployeeIds;
+    }
+    
     this.payrollService.generateTimesheetsFromAttendance(payload).subscribe({
       next: (result) => {
         this.generating = false;
         this.showMessage(`Generated ${result.generated || 0} timesheets successfully!`, 'success');
+        this.loadTimesheets();
       },
       error: (err) => {
         this.generating = false;
@@ -306,10 +318,35 @@ export class TimesheetApprovalComponent implements OnInit {
     this.employeeService.getAll().subscribe({
       next: (data) => {
         this.employees = data.filter(e => e.active);
+        this.timesheetEmployees = [...this.employees];
         this.loadDailyAttendance();
       },
       error: (err) => console.error('Error loading employees:', err)
     });
+  }
+
+  // Employee selection methods for Step 1: Generate Timesheet
+  toggleSelectAllForTimesheet(): void {
+    this.selectAllForTimesheet = !this.selectAllForTimesheet;
+    if (this.selectAllForTimesheet) {
+      this.selectedTimesheetEmployeeIds = [];
+    } else {
+      this.selectedTimesheetEmployeeIds = this.timesheetEmployees.map(e => e.id!);
+    }
+  }
+
+  toggleTimesheetEmployeeSelection(empId: number): void {
+    const idx = this.selectedTimesheetEmployeeIds.indexOf(empId);
+    if (idx > -1) {
+      this.selectedTimesheetEmployeeIds.splice(idx, 1);
+    } else {
+      this.selectedTimesheetEmployeeIds.push(empId);
+    }
+    this.selectAllForTimesheet = this.selectedTimesheetEmployeeIds.length === 0;
+  }
+
+  isTimesheetEmployeeSelected(empId: number): boolean {
+    return this.selectAllForTimesheet || this.selectedTimesheetEmployeeIds.includes(empId);
   }
 
   loadDailyAttendance(): void {

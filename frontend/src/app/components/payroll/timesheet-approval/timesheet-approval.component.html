@@ -203,6 +203,35 @@
         </div>
       </div>
 
+      <!-- Employee Selection Section -->
+      <div class="employee-selection-section">
+        <div class="section-header">
+          <h4><i class="fas fa-users"></i> Employee Selection</h4>
+          <span class="selection-info">
+            {{ selectAllForTimesheet ? 'All ' + timesheetEmployees.length + ' employees' : selectedTimesheetEmployeeIds.length + ' of ' + timesheetEmployees.length + ' selected' }}
+          </span>
+        </div>
+        
+        <div class="checkbox-group">
+          <label class="checkbox-label select-all">
+            <input type="checkbox" [checked]="selectAllForTimesheet" (change)="toggleSelectAllForTimesheet()">
+            <span>All Active Employees</span>
+          </label>
+        </div>
+        
+        <div class="employee-list-grid" *ngIf="!selectAllForTimesheet">
+          <label class="checkbox-label employee-item" *ngFor="let emp of timesheetEmployees">
+            <input type="checkbox" 
+                   [checked]="isTimesheetEmployeeSelected(emp.id!)" 
+                   (change)="toggleTimesheetEmployeeSelection(emp.id!)">
+            <span class="emp-info">
+              <span class="emp-name">{{ emp.firstName }} {{ emp.lastName }}</span>
+              <span class="emp-code">{{ emp.employeeCode }}</span>
+            </span>
+          </label>
+        </div>
+      </div>
+
       <div class="table-container">
         <table class="data-table timesheet-summary-table">
           <thead>
