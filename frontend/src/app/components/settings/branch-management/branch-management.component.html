@@ -56,16 +56,16 @@
           </div>
         </div>
         <div class="branch-actions">
-          <button class="btn btn-sm btn-primary" (click)="openSettings(branch)" title="Branch Settings">
+          <button class="btn btn-sm btn-primary" (click)="openSettings(branch)" title="Company Settings">
             <i class="fas fa-cog"></i> Settings
           </button>
           <button class="btn btn-sm btn-secondary" (click)="selectBranch(branch)" title="Manage Users">
             <i class="fas fa-users"></i> Users
           </button>
-          <button class="btn btn-sm btn-secondary" (click)="openEditBranchModal(branch)" title="Edit Branch">
+          <button class="btn btn-sm btn-secondary" (click)="openEditBranchModal(branch)" title="Edit Company">
             <i class="fas fa-edit"></i>
           </button>
-          <button class="btn btn-sm btn-danger" (click)="deleteBranch(branch)" title="Delete Branch">
+          <button class="btn btn-sm btn-danger" (click)="deleteBranch(branch)" title="Delete Company">
             <i class="fas fa-trash"></i>
           </button>
         </div>
@@ -353,8 +353,8 @@
 
     <div class="empty-state" *ngIf="!isLoading && branchUsers.length === 0">
       <i class="fas fa-users"></i>
-      <h3>No Users in This Branch</h3>
-      <p>Add users to allow them to access this branch's data.</p>
+      <h3>No Users in This Company</h3>
+      <p>Add users to allow them to access this company's data.</p>
       <button class="btn btn-primary" (click)="openAddUserModal()">
         <i class="fas fa-user-plus"></i> Add User
       </button>
@@ -409,18 +409,18 @@
 <div class="modal-overlay" *ngIf="showBranchModal" (click)="closeBranchModal()">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>{{ editMode ? 'Edit Branch' : 'Add New Branch' }}</h2>
+      <h2>{{ editMode ? 'Edit Company' : 'Add New Company' }}</h2>
       <button class="close-btn" (click)="closeBranchModal()"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-row">
         <div class="form-group">
-          <label>Branch Code *</label>
-          <input type="text" [(ngModel)]="branchForm.code" placeholder="e.g., BR001" [disabled]="editMode" />
+          <label>Company Code *</label>
+          <input type="text" [(ngModel)]="branchForm.code" placeholder="e.g., CO001" [disabled]="editMode" />
         </div>
         <div class="form-group">
-          <label>Branch Name *</label>
-          <input type="text" [(ngModel)]="branchForm.name" placeholder="Branch name" />
+          <label>Company Name *</label>
+          <input type="text" [(ngModel)]="branchForm.name" placeholder="Company name" />
         </div>
       </div>
       <div class="form-group">
@@ -493,7 +493,7 @@
       <button class="btn btn-secondary" (click)="closeBranchModal()">Cancel</button>
       <button class="btn btn-primary" (click)="saveBranch()" [disabled]="isLoading">
         <i *ngIf="isLoading" class="fas fa-spinner fa-spin"></i>
-        {{ editMode ? 'Update Branch' : 'Create Branch' }}
+        {{ editMode ? 'Update Company' : 'Create Company' }}
       </button>
     </div>
   </div>
