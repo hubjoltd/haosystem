@@ -459,27 +459,27 @@ SELECT 'EMP005', 'David', 'Wilson', 'david.wilson@haoerp.com', '713-555-1005', '
 WHERE NOT EXISTS (SELECT 1 FROM employees WHERE employee_code = 'EMP005');
 
 -- Seed Employee Salaries
-INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, pay_frequency, effective_date, is_current, created_at, updated_at)
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, pay_frequency, effective_from, is_current, created_at, updated_at)
 SELECT id, 85000, 40.87, 'MONTHLY', '2020-01-15', true, NOW(), NOW()
 FROM employees WHERE employee_code = 'EMP001'
 AND NOT EXISTS (SELECT 1 FROM employee_salaries WHERE employee_id = (SELECT id FROM employees WHERE employee_code = 'EMP001') AND is_current = true);
 
-INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, pay_frequency, effective_date, is_current, created_at, updated_at)
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, pay_frequency, effective_from, is_current, created_at, updated_at)
 SELECT id, 95000, 45.67, 'MONTHLY', '2019-06-01', true, NOW(), NOW()
 FROM employees WHERE employee_code = 'EMP002'
 AND NOT EXISTS (SELECT 1 FROM employee_salaries WHERE employee_id = (SELECT id FROM employees WHERE employee_code = 'EMP002') AND is_current = true);
 
-INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, pay_frequency, effective_date, is_current, created_at, updated_at)
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, pay_frequency, effective_from, is_current, created_at, updated_at)
 SELECT id, 110000, 52.88, 'MONTHLY', '2021-03-10', true, NOW(), NOW()
 FROM employees WHERE employee_code = 'EMP003'
 AND NOT EXISTS (SELECT 1 FROM employee_salaries WHERE employee_id = (SELECT id FROM employees WHERE employee_code = 'EMP003') AND is_current = true);
 
-INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, pay_frequency, effective_date, is_current, created_at, updated_at)
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, pay_frequency, effective_from, is_current, created_at, updated_at)
 SELECT id, 55000, 26.44, 'MONTHLY', '2022-08-20', true, NOW(), NOW()
 FROM employees WHERE employee_code = 'EMP004'
 AND NOT EXISTS (SELECT 1 FROM employee_salaries WHERE employee_id = (SELECT id FROM employees WHERE employee_code = 'EMP004') AND is_current = true);
 
-INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, pay_frequency, effective_date, is_current, created_at, updated_at)
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, pay_frequency, effective_from, is_current, created_at, updated_at)
 SELECT id, 105000, 50.48, 'MONTHLY', '2018-11-05', true, NOW(), NOW()
 FROM employees WHERE employee_code = 'EMP005'
 AND NOT EXISTS (SELECT 1 FROM employee_salaries WHERE employee_id = (SELECT id FROM employees WHERE employee_code = 'EMP005') AND is_current = true);
