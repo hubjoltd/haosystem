@@ -1,5 +1,13 @@
 # Hao System - Angular Frontend
 
+## Recent Changes (January 2026)
+- **Attendance Bulk Approval**: Added PUT `/api/attendance/bulk-approve` endpoint with proper validation (rejects already approved/rejected records), approverId tracking, and detailed response
+- **Daily Attendance Table Enhancements**: Added PROJECT column, ACTIONS column with individual Approve/Reject buttons, and proper status indicators
+- **Hourly Rate Auto-Calculation**: Basic Salary input auto-calculates hourly rate using formula: (basicSalary * 12) / 2080 hours
+- **Document Types Drill-Down**: Click on category cards to filter document types list with type count per category
+- **Terminology Update**: Changed "Branch" to "Company" across login page and branch-management component
+- **Employee Lifecycle Flow**: Complete Requisition → Retirement flow verified: MRF → Job Postings → Candidates → Interviews → Offers → Convert to Employee → Onboarding → Settlement (with RETIREMENT separation type)
+
 ## Overview
 The Hao System is an enterprise resource planning (ERP) web application built with Angular for the frontend and Spring Boot (Java) for the backend. Its core purpose is to provide comprehensive business management capabilities, including inventory, customer, contract, HR, payroll, and administrative settings. The application features a professional dark teal and white UI, responsive design, and robust functionalities like automatic ID generation, approval workflows, and extensive reporting. The system aims to streamline business operations and offer a unified platform for managing various enterprise resources.
 

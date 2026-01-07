@@ -75,11 +75,13 @@
               <th>S.NO</th>
               <th>EMP ID</th>
               <th>NAME</th>
+              <th>PROJECT</th>
               <th>CLOCK IN</th>
               <th>CLOCK OUT</th>
               <th>HOURS</th>
               <th>OT</th>
               <th>STATUS</th>
+              <th>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
@@ -88,6 +90,7 @@
               <td>{{ i + 1 }}</td>
               <td class="emp-id">{{ record.employee?.employeeCode || 'EMP' + (i + 1) }}</td>
               <td class="emp-name">{{ record.employee?.firstName }} {{ record.employee?.lastName }}</td>
+              <td>{{ record.project?.name || record.projectName || '-' }}</td>
               <td>{{ record.clockIn || '-' }}</td>
               <td>{{ record.clockOut || '-' }}</td>
               <td class="hours">{{ (record.regularHours || 0).toFixed(1) }}</td>
@@ -97,9 +100,21 @@
                   {{ record.status || 'PRESENT' }}
                 </span>
               </td>
+              <td class="actions">
+                <ng-container *ngIf="record.approvalStatus !== 'APPROVED' && record.approvalStatus !== 'REJECTED'">
+                  <button class="btn btn-sm btn-success" (click)="approveSingleAttendance(record)" title="Approve">
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger" (click)="rejectSingleAttendance(record)" title="Reject">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </ng-container>
+                <span *ngIf="record.approvalStatus === 'APPROVED'" class="status-text approved">Approved</span>
+                <span *ngIf="record.approvalStatus === 'REJECTED'" class="status-text rejected">Rejected</span>
+              </td>
             </tr>
             <tr *ngIf="attendanceRecords.length === 0">
-              <td colspan="9" class="no-data">
+              <td colspan="11" class="no-data">
                 <i class="fas fa-calendar-times"></i>
                 No attendance records found for this date
               </td>

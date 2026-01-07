@@ -515,9 +515,50 @@
 
     .actions {
       display: flex;
-      gap: 8px;
+      gap: 6px;
+      align-items: center;
 
       .no-action { color: #ccc; }
+      
+      .btn-sm {
+        padding: 4px 8px;
+        font-size: 12px;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        
+        &.btn-success {
+          background: #28a745;
+          color: white;
+          &:hover { background: #218838; }
+        }
+        
+        &.btn-danger {
+          background: #dc3545;
+          color: white;
+          &:hover { background: #c82333; }
+        }
+      }
+      
+      .status-text {
+        font-size: 11px;
+        font-weight: 500;
+        padding: 2px 8px;
+        border-radius: 10px;
+        
+        &.approved {
+          background: #d4edda;
+          color: #155724;
+        }
+        
+        &.rejected {
+          background: #f8d7da;
+          color: #721c24;
+        }
+      }
     }
 
     .no-data, .loading-row {

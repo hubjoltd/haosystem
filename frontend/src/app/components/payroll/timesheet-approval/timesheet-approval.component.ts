@@ -202,6 +202,37 @@ export class TimesheetApprovalComponent implements OnInit {
     });
   }
 
+  approveSingleAttendance(record: AttendanceRecord): void {
+    if (!record.id) return;
+    this.attendanceService.approve(record.id).subscribe({
+      next: () => {
+        this.showMessage('Attendance approved successfully!', 'success');
+        this.loadDailyAttendance();
+      },
+      error: (err) => {
+        console.error('Error approving attendance:', err);
+        this.showMessage('Error approving attendance. Please try again.', 'error');
+      }
+    });
+  }
+
+  rejectSingleAttendance(record: AttendanceRecord): void {
+    if (!record.id) return;
+    const reason = prompt('Please enter rejection reason:');
+    if (reason === null) return;
+    
+    this.attendanceService.reject(record.id, reason).subscribe({
+      next: () => {
+        this.showMessage('Attendance rejected.', 'success');
+        this.loadDailyAttendance();
+      },
+      error: (err) => {
+        console.error('Error rejecting attendance:', err);
+        this.showMessage('Error rejecting attendance. Please try again.', 'error');
+      }
+    });
+  }
+
   onPayPeriodTypeChange(): void {
     const today = new Date();
     switch (this.selectedPayPeriodType) {
