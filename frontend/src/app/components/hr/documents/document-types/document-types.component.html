@@ -28,15 +28,16 @@
   <div class="card categories-section">
     <h3>Document Categories</h3>
     <div class="categories-grid">
-      <div class="category-card" *ngFor="let cat of categories" [class.inactive]="!cat.active">
-        <div class="category-info">
+      <div class="category-card" *ngFor="let cat of categories" [class.inactive]="!cat.active" [class.selected]="selectedCategoryId === cat.id">
+        <div class="category-info" (click)="selectCategory(cat)" style="cursor: pointer;">
           <div class="category-code">{{ cat.code }}</div>
           <div class="category-name">{{ cat.name }}</div>
           <div class="category-desc" *ngIf="cat.description">{{ cat.description }}</div>
+          <div class="category-count">{{ getTypesCountForCategory(cat.id) }} document types</div>
         </div>
         <div class="category-actions">
-          <button class="btn btn-sm btn-secondary" (click)="openEditCategoryModal(cat)"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-sm btn-danger" (click)="deleteCategory(cat)"><i class="fas fa-trash"></i></button>
+          <button class="btn btn-sm btn-secondary" (click)="openEditCategoryModal(cat); $event.stopPropagation()"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-sm btn-danger" (click)="deleteCategory(cat); $event.stopPropagation()"><i class="fas fa-trash"></i></button>
         </div>
       </div>
       <div class="category-card empty" *ngIf="categories.length === 0">

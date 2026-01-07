@@ -379,6 +379,14 @@ export class EmployeeDetailComponent implements OnInit {
     this.showSalaryModal = true;
   }
 
+  onBasicSalaryChange(): void {
+    if (this.editingSalary.basicSalary && this.editingSalary.basicSalary > 0) {
+      const annualSalary = this.editingSalary.basicSalary * 12;
+      const hoursPerYear = 2080;
+      this.editingSalary.hourlyRate = Math.round((annualSalary / hoursPerYear) * 100) / 100;
+    }
+  }
+
   saveSalary() {
     if (!this.employeeId) return;
     

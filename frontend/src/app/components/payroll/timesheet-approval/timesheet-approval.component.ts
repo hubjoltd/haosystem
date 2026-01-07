@@ -182,10 +182,24 @@ export class TimesheetApprovalComponent implements OnInit {
 
   approveSelectedAttendance(): void {
     if (this.selectedAttendanceIds.length === 0) return;
-    this.showMessage('Attendance records approved successfully!', 'success');
-    this.selectedAttendanceIds = [];
-    this.selectedAttendanceCount = 0;
-    this.allAttendanceSelected = false;
+    
+    this.attendanceService.bulkApprove(this.selectedAttendanceIds).subscribe({
+      next: (result) => {
+        let message = `${result.approved || 0} attendance records approved`;
+        if (result.skipped > 0) {
+          message += `, ${result.skipped} skipped (already processed)`;
+        }
+        this.showMessage(message, 'success');
+        this.selectedAttendanceIds = [];
+        this.selectedAttendanceCount = 0;
+        this.allAttendanceSelected = false;
+        this.loadDailyAttendance();
+      },
+      error: (err) => {
+        console.error('Error approving attendance:', err);
+        this.showMessage('Error approving attendance records. Please try again.', 'error');
+      }
+    });
   }
 
   onPayPeriodTypeChange(): void {

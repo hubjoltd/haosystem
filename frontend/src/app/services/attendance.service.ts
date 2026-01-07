@@ -121,6 +121,10 @@ export class AttendanceService {
     return this.http.put<AttendanceRecord>(`${this.baseUrl}/${id}/approve`, { approverId });
   }
 
+  bulkApprove(ids: number[]): Observable<any> {
+    return this.http.put(`${this.baseUrl}/bulk-approve`, { ids });
+  }
+
   reject(id: number, remarks?: string): Observable<AttendanceRecord> {
     return this.http.put<AttendanceRecord>(`${this.baseUrl}/${id}/reject`, { remarks });
   }

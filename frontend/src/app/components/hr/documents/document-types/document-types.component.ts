@@ -69,6 +69,20 @@ export class DocumentTypesComponent implements OnInit {
     this.filterTypes();
   }
 
+  selectCategory(cat: DocumentCategory): void {
+    if (this.selectedCategoryId === cat.id) {
+      this.selectedCategoryId = null;
+    } else {
+      this.selectedCategoryId = cat.id || null;
+    }
+    this.filterTypes();
+  }
+
+  getTypesCountForCategory(categoryId: number | undefined): number {
+    if (!categoryId) return 0;
+    return this.documentTypes.filter(t => t.category?.id === categoryId).length;
+  }
+
   getEmptyType(): DocumentType {
     return { 
       code: '', 

@@ -343,6 +343,61 @@ public class AttendanceController {
             .orElse(ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/bulk-approve")
+    public ResponseEntity<?> bulkApprove(@RequestBody Map<String, Object> request) {
+        @SuppressWarnings("unchecked")
+        List<Number> ids = (List<Number>) request.get("ids");
+        if (ids == null || ids.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "No IDs provided"));
+        }
+
+        Long approverId = null;
+        if (request.containsKey("approverId")) {
+            approverId = Long.valueOf(request.get("approverId").toString());
+        }
+        Employee approver = approverId != null ? employeeRepository.findById(approverId).orElse(null) : null;
+
+        List<AttendanceRecord> approved = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+        List<String> skipped = new ArrayList<>();
+
+        for (Number idNum : ids) {
+            Long id = idNum.longValue();
+            Optional<AttendanceRecord> optRecord = attendanceRecordRepository.findById(id);
+            
+            if (optRecord.isEmpty()) {
+                errors.add("Record not found: " + id);
+                continue;
+            }
+            
+            AttendanceRecord record = optRecord.get();
+            
+            if ("APPROVED".equals(record.getApprovalStatus())) {
+                skipped.add("Already approved: " + id);
+                continue;
+            }
+            
+            if ("REJECTED".equals(record.getApprovalStatus())) {
+                skipped.add("Already rejected, cannot approve: " + id);
+                continue;
+            }
+            
+            record.setApprovalStatus("APPROVED");
+            record.setApprovedAt(LocalDateTime.now());
+            if (approver != null) {
+                record.setApprovedBy(approver);
+            }
+            approved.add(attendanceRecordRepository.save(record));
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("approved", approved.size());
+        response.put("skipped", skipped.size());
+        response.put("errors", errors);
+        response.put("skippedDetails", skipped);
+        return ResponseEntity.ok(response);
+    }
+
     @PutMapping("/{id}/reject")
     public ResponseEntity<?> reject(@PathVariable Long id, @RequestBody Map<String, Object> request) {
         return attendanceRecordRepository.findById(id)

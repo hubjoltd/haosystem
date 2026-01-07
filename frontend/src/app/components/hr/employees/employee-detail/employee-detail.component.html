@@ -954,7 +954,7 @@
         </div>
         <div class="form-group">
           <label>Basic Salary *</label>
-          <input type="number" [(ngModel)]="editingSalary.basicSalary" />
+          <input type="number" [(ngModel)]="editingSalary.basicSalary" (ngModelChange)="onBasicSalaryChange()" />
         </div>
         <div class="form-group">
           <label>HRA (House Rent Allowance)</label>

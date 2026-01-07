@@ -2,18 +2,18 @@
   <div class="page-header">
     <div class="header-left">
       <button *ngIf="activeTab === 'users' || activeTab === 'settings'" class="btn-back" (click)="backToBranches()">
-        <i class="fas fa-arrow-left"></i> Back to Branches
+        <i class="fas fa-arrow-left"></i> Back to Companies
       </button>
       <h1>
         <i class="fas fa-building"></i>
-        <ng-container *ngIf="activeTab === 'branches'">Branch Management</ng-container>
-        <ng-container *ngIf="activeTab === 'users'">Branch Users - {{ selectedBranch?.name }}</ng-container>
-        <ng-container *ngIf="activeTab === 'settings'">Branch Settings - {{ selectedBranch?.name }}</ng-container>
+        <ng-container *ngIf="activeTab === 'branches'">Company Management</ng-container>
+        <ng-container *ngIf="activeTab === 'users'">Company Users - {{ selectedBranch?.name }}</ng-container>
+        <ng-container *ngIf="activeTab === 'settings'">Company Settings - {{ selectedBranch?.name }}</ng-container>
       </h1>
     </div>
     <div class="header-actions">
       <button *ngIf="activeTab === 'branches'" class="btn btn-primary" (click)="openAddBranchModal()">
-        <i class="fas fa-plus"></i> Add Branch
+        <i class="fas fa-plus"></i> Add Company
       </button>
       <button *ngIf="activeTab === 'users'" class="btn btn-primary" (click)="openAddUserModal()">
         <i class="fas fa-user-plus"></i> Add User
@@ -23,15 +23,15 @@
 
   <div class="content-area" *ngIf="activeTab === 'branches'">
     <div class="loading" *ngIf="isLoading">
-      <i class="fas fa-spinner fa-spin"></i> Loading branches...
+      <i class="fas fa-spinner fa-spin"></i> Loading companies...
     </div>
 
     <div class="empty-state" *ngIf="!isLoading && branches.length === 0">
       <i class="fas fa-building"></i>
-      <h3>No Branches Found</h3>
-      <p>Create your first branch to get started with multi-branch management.</p>
+      <h3>No Companies Found</h3>
+      <p>Create your first company to get started with multi-company management.</p>
       <button class="btn btn-primary" (click)="openAddBranchModal()">
-        <i class="fas fa-plus"></i> Create Branch
+        <i class="fas fa-plus"></i> Create Company
       </button>
     </div>
 

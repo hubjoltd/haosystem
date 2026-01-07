@@ -11,7 +11,7 @@
     </div>
     
     <div class="branch-list" *ngIf="branches.length > 0">
-      <h3><i class="fas fa-building"></i> Our Branches</h3>
+      <h3><i class="fas fa-building"></i> Our Companies</h3>
       <div class="branch-cards">
         <div class="branch-card" *ngFor="let branch of branches" (click)="selectBranch(branch)" [class.selected]="selectedBranch?.id === branch.id">
           <div class="branch-logo">
