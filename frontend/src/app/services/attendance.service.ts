@@ -22,6 +22,8 @@ export interface AttendanceRecord {
   approvalStatus?: string;
   approvedBy?: any;
   approvedAt?: string;
+  project?: { id?: number; name?: string };
+  projectName?: string;
 }
 
 export interface AttendanceRule {
