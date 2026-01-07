@@ -1,3 +1,96 @@
+-- =====================================================
+-- CLEANUP DUPLICATES BEFORE SEEDING
+-- =====================================================
+
+-- Remove duplicate employees (keep lowest ID)
+DELETE FROM employees WHERE id NOT IN (
+    SELECT MIN(id) FROM employees GROUP BY employee_code
+);
+
+-- Remove duplicate departments (keep lowest ID)
+DELETE FROM departments WHERE id NOT IN (
+    SELECT MIN(id) FROM departments GROUP BY code
+);
+
+-- Remove duplicate designations (keep lowest ID)
+DELETE FROM designations WHERE id NOT IN (
+    SELECT MIN(id) FROM designations GROUP BY code
+);
+
+-- Remove duplicate locations (keep lowest ID)
+DELETE FROM locations WHERE id NOT IN (
+    SELECT MIN(id) FROM locations GROUP BY code
+);
+
+-- Remove duplicate grades (keep lowest ID)
+DELETE FROM grades WHERE id NOT IN (
+    SELECT MIN(id) FROM grades GROUP BY code
+);
+
+-- Remove duplicate job_roles (keep lowest ID)
+DELETE FROM job_roles WHERE id NOT IN (
+    SELECT MIN(id) FROM job_roles GROUP BY code
+);
+
+-- Remove duplicate branches (keep lowest ID)
+DELETE FROM branches WHERE id NOT IN (
+    SELECT MIN(id) FROM branches GROUP BY code
+);
+
+-- Remove duplicate roles (keep lowest ID)
+DELETE FROM roles WHERE id NOT IN (
+    SELECT MIN(id) FROM roles GROUP BY name
+);
+
+-- Remove duplicate users (keep lowest ID)
+DELETE FROM users WHERE id NOT IN (
+    SELECT MIN(id) FROM users GROUP BY username
+);
+
+-- Remove duplicate leave_types (keep lowest ID)
+DELETE FROM leave_types WHERE id NOT IN (
+    SELECT MIN(id) FROM leave_types GROUP BY code
+);
+
+-- Remove duplicate document_categories (keep lowest ID)
+DELETE FROM document_categories WHERE id NOT IN (
+    SELECT MIN(id) FROM document_categories GROUP BY code
+);
+
+-- Remove duplicate document_types (keep lowest ID)
+DELETE FROM document_types WHERE id NOT IN (
+    SELECT MIN(id) FROM document_types GROUP BY code
+);
+
+-- Remove duplicate training_programs (keep lowest ID)
+DELETE FROM training_programs WHERE id NOT IN (
+    SELECT MIN(id) FROM training_programs GROUP BY program_code
+);
+
+-- Remove duplicate job_requisitions (keep lowest ID)
+DELETE FROM job_requisitions WHERE id NOT IN (
+    SELECT MIN(id) FROM job_requisitions GROUP BY requisition_number
+);
+
+-- Remove duplicate onboarding_plans (keep lowest ID)
+DELETE FROM onboarding_plans WHERE id NOT IN (
+    SELECT MIN(id) FROM onboarding_plans GROUP BY plan_number
+);
+
+-- Remove duplicate candidates (keep lowest ID based on email)
+DELETE FROM candidates WHERE id NOT IN (
+    SELECT MIN(id) FROM candidates GROUP BY email
+);
+
+-- Remove duplicate employee_salaries (keep one current per employee)
+DELETE FROM employee_salaries WHERE id NOT IN (
+    SELECT MIN(id) FROM employee_salaries GROUP BY employee_id, is_current
+);
+
+-- =====================================================
+-- END CLEANUP
+-- =====================================================
+
 -- Seed default leave types using ON CONFLICT to be idempotent
 INSERT INTO leave_types (name, code, description, annual_entitlement, accrual_type, carry_forward_allowed, max_carry_forward, is_paid, is_active, applicable_gender, requires_approval, created_at, updated_at)
 VALUES ('Annual Leave', 'ANNUAL', 'Yearly vacation leave entitlement', 20, 'ANNUALLY', true, 5, true, true, 'ALL', true, NOW(), NOW())
