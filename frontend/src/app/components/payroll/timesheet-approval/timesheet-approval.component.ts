@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PayrollService, Timesheet, PayFrequency } from '../../../services/payroll.service';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
-import { EmployeeService, Employee } from '../../../services/employee.service';
+import { EmployeeService, Employee, EmployeeSalary } from '../../../services/employee.service';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -82,6 +82,7 @@ export class TimesheetApprovalComponent implements OnInit {
   employeesToProcess = 0;
   totalGrossPay = 0;
   totalNetPay = 0;
+  employeeSalaryMap: Map<number, EmployeeSalary> = new Map();
 
   showPayrollSummary = false;
   processedSalariedEmployees: ProcessedEmployee[] = [];
@@ -685,18 +686,64 @@ export class TimesheetApprovalComponent implements OnInit {
   loadPayableEmployees(): void {
     this.payablesLoading = true;
     this.showPayrollSummary = false;
+    this.employeeSalaryMap.clear();
     
+    if (this.employees.length === 0) {
+      this.payablesLoading = false;
+      return;
+    }
+
+    let completed = 0;
+    const total = this.employees.length;
+
+    this.employees.forEach(emp => {
+      if (emp.id) {
+        this.employeeService.getCurrentSalary(emp.id).subscribe({
+          next: (salary) => {
+            this.employeeSalaryMap.set(emp.id!, salary);
+            completed++;
+            if (completed === total) {
+              this.buildPayableEmployeesList();
+            }
+          },
+          error: () => {
+            completed++;
+            if (completed === total) {
+              this.buildPayableEmployeesList();
+            }
+          }
+        });
+      } else {
+        completed++;
+        if (completed === total) {
+          this.buildPayableEmployeesList();
+        }
+      }
+    });
+  }
+
+  buildPayableEmployeesList(): void {
     const approvedTimesheets = this.timesheets.filter(t => t.status === 'APPROVED');
     
     this.payableEmployees = this.employees.map((emp, idx) => {
       const ts = approvedTimesheets.find(t => t.employeeId === emp.id);
-      const baseRate = (emp as any).basicSalary || 5000;
-      const hourlyRate = baseRate / 160;
+      const salary = emp.id ? this.employeeSalaryMap.get(emp.id) : null;
+      
+      const baseRate = salary?.basicSalary || 0;
+      const hourlyRate = salary?.hourlyRate || (baseRate > 0 ? baseRate / 160 : 0);
       const hours = ts?.totalHours || 0;
-      const payType = (emp as any).payType || 'SALARIED';
+      const payFrequency = salary?.payFrequency || 'MONTHLY';
+      const payType = payFrequency === 'HOURLY' || hourlyRate > 0 && baseRate === 0 ? 'HOURLY' : 'SALARIED';
       const gross = payType === 'HOURLY' ? hours * hourlyRate : baseRate;
-      const taxes = gross * 0.22;
+      const taxRate = 0.22;
+      const taxes = gross * taxRate;
       const netAmount = gross - taxes;
+      
+      const hasSalaryData = salary && (baseRate > 0 || hourlyRate > 0);
+      let status = 'No Salary Data';
+      if (hasSalaryData) {
+        status = ts ? 'Ready' : 'Pending Timesheet';
+      }
       
       return {
         selected: false,
@@ -708,7 +755,7 @@ export class TimesheetApprovalComponent implements OnInit {
         hours: hours,
         taxes: taxes,
         netAmount: netAmount,
-        status: ts ? 'Ready' : 'Pending',
+        status: status,
         employeeId: emp.id!,
         payType: payType
       };
