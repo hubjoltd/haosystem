@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
@@ -11,7 +11,7 @@ import { Employee } from '../../../services/employee.service';
   templateUrl: './clock-in-out.component.html',
   styleUrls: ['./clock-in-out.component.scss']
 })
-export class ClockInOutComponent implements OnInit {
+export class ClockInOutComponent implements OnInit, OnDestroy {
   currentTime: Date = new Date();
   todayRecord: AttendanceRecord | null = null;
   employees: Employee[] = [];
@@ -22,18 +22,37 @@ export class ClockInOutComponent implements OnInit {
   messageType = '';
   
   todayActivities: AttendanceRecord[] = [];
+  
+  elapsedTime: string = '00:00:00';
+  elapsedSeconds: number = 0;
+  currentEarnings: number = 0;
+  timerInterval: any = null;
+  clockInterval: any = null;
+  
+  lastSessionHours: number = 0;
+  lastSessionEarnings: number = 0;
+  showSessionSummary: boolean = false;
 
   constructor(
     private attendanceService: AttendanceService
   ) {}
 
   ngOnInit(): void {
-    setInterval(() => {
+    this.clockInterval = setInterval(() => {
       this.currentTime = new Date();
     }, 1000);
     
     this.loadEmployees();
     this.loadTodayActivities();
+  }
+  
+  ngOnDestroy(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
+    if (this.clockInterval) {
+      clearInterval(this.clockInterval);
+    }
   }
 
   loadEmployees(): void {
@@ -56,6 +75,9 @@ export class ClockInOutComponent implements OnInit {
   }
 
   onEmployeeChange(): void {
+    this.stopTimer();
+    this.showSessionSummary = false;
+    
     if (this.selectedEmployeeId) {
       this.selectedEmployee = this.employees.find(e => e.id === this.selectedEmployeeId) || null;
       this.loadEmployeeTodayRecord();
@@ -72,11 +94,70 @@ export class ClockInOutComponent implements OnInit {
     this.attendanceService.getByEmployeeAndDateRange(this.selectedEmployeeId, today, today).subscribe({
       next: (records: AttendanceRecord[]) => {
         this.todayRecord = records.length > 0 ? records[0] : null;
+        if (this.todayRecord && this.todayRecord.clockIn && !this.todayRecord.clockOut) {
+          this.startTimerFromClockIn(this.todayRecord.clockIn);
+        }
       },
       error: () => {
         this.todayRecord = null;
       }
     });
+  }
+
+  startTimerFromClockIn(clockInTime: string): void {
+    const today = new Date().toISOString().split('T')[0];
+    const clockInDate = new Date(`${today}T${clockInTime}`);
+    const now = new Date();
+    
+    this.elapsedSeconds = Math.floor((now.getTime() - clockInDate.getTime()) / 1000);
+    this.updateElapsedDisplay();
+    this.startTimer();
+  }
+
+  startTimer(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
+    
+    this.timerInterval = setInterval(() => {
+      this.elapsedSeconds++;
+      this.updateElapsedDisplay();
+      this.calculateCurrentEarnings();
+    }, 1000);
+  }
+
+  stopTimer(): void {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+    this.elapsedTime = '00:00:00';
+    this.elapsedSeconds = 0;
+    this.currentEarnings = 0;
+  }
+
+  updateElapsedDisplay(): void {
+    const hours = Math.floor(this.elapsedSeconds / 3600);
+    const minutes = Math.floor((this.elapsedSeconds % 3600) / 60);
+    const seconds = this.elapsedSeconds % 60;
+    
+    this.elapsedTime = `${this.pad(hours)}:${this.pad(minutes)}:${this.pad(seconds)}`;
+  }
+
+  pad(num: number): string {
+    return num.toString().padStart(2, '0');
+  }
+
+  calculateCurrentEarnings(): void {
+    if (this.selectedEmployee) {
+      const hourlyRate = this.selectedEmployee.hourlyRate || 0;
+      const hoursWorked = this.elapsedSeconds / 3600;
+      this.currentEarnings = hoursWorked * hourlyRate;
+    }
+  }
+
+  getHourlyRate(): number {
+    return this.selectedEmployee?.hourlyRate || 0;
   }
 
   clockIn(): void {
@@ -85,12 +166,18 @@ export class ClockInOutComponent implements OnInit {
       return;
     }
     this.loading = true;
+    this.showSessionSummary = false;
+    
     this.attendanceService.clockIn(this.selectedEmployeeId, 'WEB').subscribe({
       next: (record) => {
         this.todayRecord = record;
-        this.showMessage('Clocked in successfully!', 'success');
+        this.showMessage('Clocked in successfully! Timer started.', 'success');
         this.loading = false;
         this.loadTodayActivities();
+        
+        this.elapsedSeconds = 0;
+        this.currentEarnings = 0;
+        this.startTimer();
       },
       error: (err) => {
         this.showMessage(err.error?.error || 'Failed to clock in', 'error');
@@ -105,10 +192,20 @@ export class ClockInOutComponent implements OnInit {
       return;
     }
     this.loading = true;
+    
+    const hoursWorked = this.elapsedSeconds / 3600;
+    const earnings = hoursWorked * this.getHourlyRate();
+    
     this.attendanceService.clockOut(this.selectedEmployeeId).subscribe({
       next: (record) => {
         this.todayRecord = record;
-        this.showMessage('Clocked out successfully!', 'success');
+        this.stopTimer();
+        
+        this.lastSessionHours = hoursWorked;
+        this.lastSessionEarnings = earnings;
+        this.showSessionSummary = true;
+        
+        this.showMessage(`Clocked out! Worked ${this.formatHoursMinutes(hoursWorked)} | Earned $${earnings.toFixed(2)}`, 'success');
         this.loading = false;
         this.loadTodayActivities();
       },
@@ -119,12 +216,18 @@ export class ClockInOutComponent implements OnInit {
     });
   }
 
+  formatHoursMinutes(hours: number): string {
+    const h = Math.floor(hours);
+    const m = Math.round((hours % 1) * 60);
+    return `${h}h ${m}m`;
+  }
+
   showMessage(msg: string, type: string): void {
     this.message = msg;
     this.messageType = type;
     setTimeout(() => {
       this.message = '';
-    }, 3000);
+    }, 5000);
   }
 
   formatTime(date: Date): string {
@@ -164,5 +267,21 @@ export class ClockInOutComponent implements OnInit {
     const hours = (record.regularHours || 0) + (record.overtimeHours || 0);
     if (hours > 0) return `${Math.floor(hours)}h ${Math.round((hours % 1) * 60)}min`;
     return '-';
+  }
+  
+  calculateEarnings(record: AttendanceRecord): number {
+    if (!record.clockIn || !record.clockOut) return 0;
+    const hours = (record.regularHours || 0) + (record.overtimeHours || 0);
+    const emp = this.employees.find(e => e.id === record.employeeId);
+    const hourlyRate = emp?.hourlyRate || 0;
+    return hours * hourlyRate;
+  }
+
+  isClockedIn(): boolean {
+    return !!(this.todayRecord && this.todayRecord.clockIn && !this.todayRecord.clockOut);
+  }
+
+  isClockedOut(): boolean {
+    return !!(this.todayRecord && this.todayRecord.clockOut);
   }
 }

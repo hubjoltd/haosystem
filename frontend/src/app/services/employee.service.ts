@@ -60,6 +60,8 @@ export interface Employee {
   employmentType?: string;
   noticePeriodDays?: number;
   probationMonths?: number;
+  salary?: number;
+  hourlyRate?: number;
   active: boolean;
   createdAt?: string;
   updatedAt?: string;

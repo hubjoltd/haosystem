@@ -156,6 +156,164 @@
           color: #666;
           font-size: 13px;
         }
+
+        .hourly-rate {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          color: #008080;
+          font-weight: 600;
+          font-size: 14px;
+          margin-top: 4px;
+
+          i {
+            font-size: 12px;
+          }
+        }
+      }
+    }
+
+    .timer-section {
+      margin-bottom: 20px;
+
+      .timer-card {
+        background: #f0f7f7;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+
+        &.active {
+          background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+          border-color: #008080;
+          box-shadow: 0 4px 16px rgba(0, 128, 128, 0.2);
+        }
+
+        .timer-header {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          color: #666;
+          font-size: 14px;
+          margin-bottom: 12px;
+
+          i {
+            color: #008080;
+          }
+        }
+
+        .timer-display {
+          font-size: 48px;
+          font-weight: 700;
+          font-family: 'Courier New', monospace;
+          color: #333;
+          letter-spacing: 3px;
+          transition: all 0.3s ease;
+
+          &.running {
+            color: #008080;
+            animation: pulse 2s infinite;
+          }
+        }
+
+        .earnings-display {
+          margin-top: 16px;
+          padding-top: 16px;
+          border-top: 1px solid rgba(0, 128, 128, 0.2);
+
+          .earnings-label {
+            display: block;
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 4px;
+          }
+
+          .earnings-amount {
+            display: block;
+            font-size: 28px;
+            font-weight: 700;
+            color: #22C55E;
+          }
+        }
+      }
+
+      .session-summary {
+        margin-top: 16px;
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        border: 2px solid #4caf50;
+        border-radius: 12px;
+        padding: 20px;
+        animation: slideIn 0.3s ease;
+
+        .summary-header {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          color: #2e7d32;
+          font-weight: 600;
+          font-size: 16px;
+          margin-bottom: 16px;
+
+          i {
+            font-size: 20px;
+          }
+        }
+
+        .summary-details {
+          .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(46, 125, 50, 0.2);
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            &.total {
+              margin-top: 8px;
+              padding-top: 12px;
+              border-top: 2px solid rgba(46, 125, 50, 0.3);
+              border-bottom: none;
+
+              .label, .value {
+                font-size: 18px;
+                font-weight: 700;
+                color: #1b5e20;
+              }
+            }
+
+            .label {
+              color: #555;
+              font-size: 14px;
+            }
+
+            .value {
+              color: #333;
+              font-weight: 600;
+              font-size: 14px;
+            }
+          }
+        }
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
 
@@ -299,6 +457,18 @@
               i {
                 font-size: 10px;
               }
+            }
+          }
+
+          .activity-earnings {
+            margin-top: 6px;
+            font-size: 13px;
+            color: #22C55E;
+            font-weight: 600;
+
+            i {
+              font-size: 11px;
+              margin-right: 2px;
             }
           }
         }

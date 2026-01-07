@@ -1,6 +1,8 @@
 # Hao System - Angular Frontend
 
 ## Recent Changes (January 2026)
+- **Time Clock Running Timer**: Enhanced clock-in-out component with real-time running timer that starts on Clock In and stops on Clock Out, showing elapsed time (HH:MM:SS format)
+- **Time Clock Hourly Pay Calculation**: Displays employee hourly rate, calculates real-time earnings during shift, and shows session summary (hours worked, hourly rate, total earned) after clocking out
 - **Payroll Workflow Sidebar Menu**: Added clean submenu with Attendance Approval, Generate Timesheet, Payroll Calculate, Process Payroll, Payroll History
 - **Payroll History Redesign**: Enhanced with teal theme, CSS animations (fadeInUp, slideInRight), interactive hover effects, staggered card animations, and responsive design
 - **Payslip Component**: Created reusable standalone payslip component with professional print-ready design, company header, earnings/deductions breakdown, expenses tracking, and YTD summary
