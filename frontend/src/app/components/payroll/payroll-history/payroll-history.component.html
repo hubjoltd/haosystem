@@ -1,426 +1,242 @@
 <div class="payroll-history">
   <div class="page-header">
     <div class="header-left">
-      <h1><i class="fas fa-history"></i> Complete Payroll History</h1>
-      <p class="subtitle">View and export detailed payroll history for all employees</p>
+      <button class="back-btn" routerLink="/app/payroll/timesheets">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div class="title-section">
+        <h1>Complete Payroll History</h1>
+        <p class="subtitle">Track all payroll transactions and payments</p>
+      </div>
     </div>
     <div class="header-actions">
-      <button class="btn btn-primary" (click)="openGenerateTimesheetModal()">
-        <i class="fas fa-clock"></i> Generate Timesheet
-      </button>
-      <button class="btn btn-secondary" (click)="exportToCSV()">
-        <i class="fas fa-file-csv"></i> Export to CSV/PDF/Excel
-      </button>
-      <button class="btn btn-info">
-        <i class="fas fa-chart-bar"></i> Run a Difference
-      </button>
       <div class="view-toggle">
-        <button class="toggle-btn" [class.active]="activeView === 'list'" (click)="switchView('list')">
-          <i class="fas fa-list"></i> List View
+        <button class="toggle-btn" [class.active]="activeView === 'runs'" (click)="switchView('runs')">
+          Payroll Runs
         </button>
         <button class="toggle-btn" [class.active]="activeView === 'detail'" (click)="switchView('detail')">
-          <i class="fas fa-th-large"></i> Detail View
+          Detailed View
         </button>
       </div>
     </div>
   </div>
 
-  <div class="summary-section">
-    <h3><i class="fas fa-chart-line"></i> Payroll Runs Summary</h3>
-    <div class="summary-cards">
-      <div class="summary-card runs">
-        <div class="card-icon"><i class="fas fa-check-circle"></i></div>
-        <div class="card-content">
-          <span class="card-value">{{ completedRuns }}</span>
-          <span class="card-label">Completed Runs</span>
+  <!-- PAYROLL RUNS VIEW -->
+  <div class="runs-view" *ngIf="activeView === 'runs'">
+    <h3 class="section-title">Payroll Runs Summary</h3>
+    
+    <div class="period-type-cards">
+      <div class="period-card weekly">
+        <span class="period-count">{{ weeklyRunsCount }}</span>
+        <span class="period-label">Weekly</span>
+      </div>
+      <div class="period-card biweekly">
+        <span class="period-count">{{ biWeeklyRunsCount }}</span>
+        <span class="period-label">Bi-Weekly</span>
+      </div>
+      <div class="period-card semimonthly">
+        <span class="period-count">{{ semiMonthlyRunsCount }}</span>
+        <span class="period-label">Semi-Monthly</span>
+      </div>
+      <div class="period-card monthly">
+        <span class="period-count">{{ monthlyRunsCount }}</span>
+        <span class="period-label">Monthly</span>
+      </div>
+    </div>
+
+    <div class="summary-stats-row">
+      <div class="stat-box">
+        <span class="stat-label">Total Runs</span>
+        <span class="stat-value">{{ completedRuns }}</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">Total Employees</span>
+        <span class="stat-value">{{ totalEmployeesCount }}</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">Total Gross</span>
+        <span class="stat-value blue">{{ formatCurrency(totalGross) }}</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">Total Taxes</span>
+        <span class="stat-value red">{{ formatCurrency(totalTaxes) }}</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">Total Net Pay</span>
+        <span class="stat-value green">{{ formatCurrency(totalNet) }}</span>
+      </div>
+    </div>
+
+    <div class="runs-list">
+      <div class="run-item" *ngFor="let run of payrollRunsList">
+        <div class="run-field">
+          <span class="field-label">Pay Period Type</span>
+          <span class="field-value">{{ run.periodType }}</span>
+        </div>
+        <div class="run-field">
+          <span class="field-label">Pay Period</span>
+          <span class="field-value">{{ run.periodRange }}</span>
+        </div>
+        <div class="run-field">
+          <span class="field-label">Pay Date</span>
+          <span class="field-value">{{ run.payDate }}</span>
+        </div>
+        <div class="run-field">
+          <span class="field-label">Gross</span>
+          <span class="field-value green">{{ formatCurrency(run.gross) }}</span>
+        </div>
+        <div class="run-field">
+          <span class="field-label">Net Pay</span>
+          <span class="field-value green">{{ formatCurrency(run.netPay) }}</span>
+        </div>
+        <div class="run-field">
+          <span class="field-label">Status</span>
+          <span class="status-badge paid">{{ run.status }}</span>
         </div>
       </div>
-      <div class="summary-card gross">
-        <div class="card-content">
-          <span class="card-value">{{ formatCurrency(totalGross) }}</span>
-          <span class="card-label">Total Gross</span>
-        </div>
-      </div>
-      <div class="summary-card net">
-        <div class="card-content">
-          <span class="card-value">{{ formatCurrency(totalNet) }}</span>
-          <span class="card-label">Total Net</span>
-        </div>
-      </div>
-      <div class="summary-card avg">
-        <div class="card-content">
-          <span class="card-value">{{ formatCurrency(avgNetPerRun) }}</span>
-          <span class="card-label">Avg Net Pay/Run</span>
-        </div>
+      <div class="no-runs" *ngIf="payrollRunsList.length === 0">
+        <i class="fas fa-inbox"></i>
+        <p>No payroll runs found</p>
       </div>
     </div>
   </div>
 
-  <div class="filters-section">
-    <div class="filter-group">
-      <label>Search</label>
-      <input type="text" [(ngModel)]="searchTerm" placeholder="Search by name or ID..." class="search-input">
-    </div>
-    <div class="filter-group">
-      <label>Status</label>
-      <select [(ngModel)]="selectedStatus">
-        <option value="ALL">All Status</option>
-        <option value="Paid">Paid</option>
-        <option value="Pending">Pending</option>
-        <option value="Processing">Processing</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label>From</label>
-      <input type="date" [(ngModel)]="dateFrom">
-    </div>
-    <div class="filter-group">
-      <label>To</label>
-      <input type="date" [(ngModel)]="dateTo">
-    </div>
-  </div>
-
-  <!-- LIST VIEW - Summary view -->
-  <div class="table-section" *ngIf="activeView === 'detail'">
-    <div class="all-records-header">
-      <h3>All Payroll Records</h3>
-      <span class="record-count">{{ filteredRecords.length }} Payroll Records - {{ totalHoursFiltered.toFixed(2) }} Total Hours - {{ formatCurrency(totalNetFiltered) }} Total Paid</span>
-      <div class="export-buttons">
-        <button class="btn btn-success btn-sm" (click)="exportToCSV()">
-          <i class="fas fa-file-excel"></i> Export Excel
-        </button>
-        <button class="btn btn-danger btn-sm" (click)="exportToPDF()">
-          <i class="fas fa-file-pdf"></i>
-        </button>
-      </div>
-    </div>
-    <div class="table-container">
-      <table class="data-table history-table">
-        <thead>
-          <tr>
-            <th>S.NO</th>
-            <th (click)="sortBy('empId')" class="sortable">
-              EMP ID <i class="fas" [ngClass]="getSortIcon('empId')"></i>
-            </th>
-            <th (click)="sortBy('name')" class="sortable">
-              NAME <i class="fas" [ngClass]="getSortIcon('name')"></i>
-            </th>
-            <th>TYPE</th>
-            <th>PROJECT</th>
-            <th>PAY PERIOD</th>
-            <th>PERIOD FROM</th>
-            <th>PERIOD TO</th>
-            <th class="number-col">HOURS</th>
-            <th class="number-col gross-col">GROSS</th>
-            <th class="number-col tax-col">FEDERAL</th>
-            <th class="number-col tax-col">STATE</th>
-            <th class="number-col tax-col">SOC.SEC</th>
-            <th class="number-col tax-col">MEDICARE</th>
-            <th class="number-col tax-col">TOTAL TAX</th>
-            <th class="number-col net-col">NET PAY</th>
-            <th>PAYM DATE</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let record of filteredRecords; let i = index" [class.alt-row]="i % 2 === 1">
-            <td>{{ i + 1 }}</td>
-            <td class="emp-id">{{ record.empId }}</td>
-            <td class="emp-name">{{ record.name }}</td>
-            <td>{{ record.employeeType || 'Salaried' }}</td>
-            <td>{{ record.project || '-' }}</td>
-            <td>{{ record.payRatePeriod || '-' }}</td>
-            <td>{{ record.periodFrom ? formatDate(record.periodFrom) : '-' }}</td>
-            <td>{{ record.periodTo ? formatDate(record.periodTo) : '-' }}</td>
-            <td class="number-col">{{ ((record.hours || 0)).toFixed(2) }}h</td>
-            <td class="number-col gross-col">{{ formatCurrency(record.gross || 0) }}</td>
-            <td class="number-col tax-col">{{ formatCurrency(record.fedTax || 0) }}</td>
-            <td class="number-col tax-col">{{ formatCurrency(record.stateTax || 0) }}</td>
-            <td class="number-col tax-col">{{ formatCurrency(record.socSecTax || 0) }}</td>
-            <td class="number-col tax-col">{{ formatCurrency(record.medicareTax || 0) }}</td>
-            <td class="number-col tax-col">{{ formatCurrency(record.totalTax || 0) }}</td>
-            <td class="number-col net-col">{{ formatCurrency(record.netPay || 0) }}</td>
-            <td>{{ record.paymentDate ? formatDate(record.paymentDate) : '-' }}</td>
-          </tr>
-          <tr *ngIf="filteredRecords.length === 0">
-            <td colspan="17" class="no-data">
-              <i class="fas fa-inbox"></i>
-              No payroll history records found
-            </td>
-          </tr>
-        </tbody>
-        <tfoot *ngIf="filteredRecords.length > 0">
-          <tr class="totals-row">
-            <td colspan="8" class="total-label">TOTAL</td>
-            <td class="number-col">{{ totalHoursFiltered.toFixed(2) }}h</td>
-            <td class="number-col gross-col"><strong>{{ formatCurrency(totalGrossFiltered) }}</strong></td>
-            <td class="number-col tax-col">{{ formatCurrency(totalFedTax) }}</td>
-            <td class="number-col tax-col">{{ formatCurrency(totalStateTax) }}</td>
-            <td class="number-col tax-col">{{ formatCurrency(totalSocSecTax) }}</td>
-            <td class="number-col tax-col">{{ formatCurrency(totalMedicareTax) }}</td>
-            <td class="number-col tax-col">{{ formatCurrency(totalTaxFiltered) }}</td>
-            <td class="number-col net-col"><strong>{{ formatCurrency(totalNetFiltered) }}</strong></td>
-            <td></td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  </div>
-
-  <!-- DETAIL VIEW - Comprehensive table -->
-  <div class="detail-view-section" *ngIf="activeView === 'list'">
-    <div class="payroll-summary-header">
-      <div class="success-banner">
-        <i class="fas fa-check-circle"></i>
-        <div class="banner-content">
-          <strong>Payroll Processed Successfully</strong>
-          <span>{{ completedRuns }} payroll run(s) in the selected period</span>
+  <!-- DETAILED VIEW -->
+  <div class="detail-view" *ngIf="activeView === 'detail'">
+    <div class="filter-section">
+      <h4>Filter Payroll History</h4>
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Project</label>
+          <select [(ngModel)]="selectedProject">
+            <option value="">All Projects</option>
+            <option *ngFor="let p of projects" [value]="p">{{ p }}</option>
+          </select>
         </div>
-      </div>
-      <div class="summary-totals">
-        <div class="total-item">
-          <span class="label">Total Gross</span>
-          <span class="value">{{ formatCurrency(totalGross) }}</span>
+        <div class="filter-group">
+          <label>From Date</label>
+          <input type="date" [(ngModel)]="dateFrom" placeholder="mm/dd/yyyy">
         </div>
-        <div class="total-item">
-          <span class="label">Total Employees</span>
-          <span class="value">{{ filteredRecords.length }}</span>
+        <div class="filter-group">
+          <label>To Date</label>
+          <input type="date" [(ngModel)]="dateTo" placeholder="mm/dd/yyyy">
         </div>
-        <div class="total-item highlight">
-          <span class="label">Total Net</span>
-          <span class="value">{{ formatCurrency(totalNet) }}</span>
+        <div class="filter-group btn-group">
+          <button class="btn btn-clear" (click)="clearFilters()">Clear</button>
         </div>
       </div>
     </div>
 
-    <!-- Salaried Employees Section -->
-    <div class="employee-type-section">
-      <h4 class="section-title salaried"><i class="fas fa-user-tie"></i> Salaried Employees ({{ salariedEmployees.length }})</h4>
-      <div class="detail-table-container">
-        <table class="detail-table">
+    <div class="detail-summary-cards">
+      <div class="summary-card total-records">
+        <span class="card-label">Total Records</span>
+        <span class="card-value">{{ filteredRecords.length }}</span>
+      </div>
+      <div class="summary-card total-paid">
+        <span class="card-label">Total Paid</span>
+        <span class="card-value">{{ formatCurrency(totalNetFiltered) }}</span>
+      </div>
+      <div class="summary-card pending">
+        <span class="card-label">Pending Payment</span>
+        <span class="card-value">{{ formatCurrency(pendingAmount) }}</span>
+      </div>
+      <div class="summary-card on-hold">
+        <span class="card-label">On Hold</span>
+        <span class="card-value">{{ formatCurrency(onHoldAmount) }}</span>
+      </div>
+    </div>
+
+    <div class="records-section">
+      <div class="records-header">
+        <div class="header-info">
+          <h4>All Payroll Records</h4>
+          <span class="record-summary">{{ filteredRecords.length }} Payroll Records - {{ totalHoursFiltered.toFixed(2) }} Total Hours - {{ formatCurrency(totalNetFiltered) }} Total Paid</span>
+        </div>
+        <div class="export-buttons">
+          <button class="btn btn-export-excel" (click)="exportToCSV()">
+            <i class="fas fa-file-excel"></i> Export Excel
+          </button>
+          <button class="btn btn-export-pdf" (click)="exportToPDF()">
+            <i class="fas fa-file-pdf"></i> Export PDF
+          </button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table detail-table">
           <thead>
             <tr>
+              <th>S.NO</th>
               <th>EMP ID</th>
               <th>NAME</th>
-              <th>PERIOD</th>
-              <th class="number-col">SALARY</th>
-              <th class="number-col">GROSS</th>
-              <th class="number-col">TAXES</th>
-              <th class="number-col highlight">NET AMOUNT</th>
+              <th>TYPE</th>
+              <th>PROJECT</th>
+              <th>SUBCONTRACTOR</th>
+              <th>PAY PERIOD</th>
+              <th>PERIOD FROM</th>
+              <th>PERIOD TO</th>
+              <th>HOURS</th>
+              <th>GROSS</th>
+              <th>FEDERAL</th>
+              <th>STATE</th>
+              <th>SOC.SEC</th>
+              <th>MEDICARE</th>
+              <th>EXPENSES</th>
+              <th>TOTAL TAX</th>
+              <th>NET PAY</th>
+              <th>PAYMENT DATE</th>
+              <th>STATUS</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let record of salariedEmployees">
+            <tr *ngFor="let record of filteredRecords; let i = index">
+              <td>{{ i + 1 }}</td>
               <td class="emp-id">{{ record.empId }}</td>
               <td class="emp-name">{{ record.name }}</td>
+              <td>{{ record.employeeType }}</td>
+              <td>{{ record.project || '-' }}</td>
+              <td>{{ record.subcontractor || '-' }}</td>
               <td>{{ record.payRatePeriod }}</td>
-              <td class="number-col">{{ formatCurrency(record.regular) }}</td>
-              <td class="number-col">{{ formatCurrency(record.gross) }}</td>
-              <td class="number-col tax">{{ formatCurrency(record.fedTax + record.stateTax) }}</td>
-              <td class="number-col net highlight">{{ formatCurrency(record.netPay) }}</td>
-            </tr>
-            <tr *ngIf="salariedEmployees.length === 0">
-              <td colspan="7" class="no-data">No salaried employees</td>
-            </tr>
-          </tbody>
-          <tfoot *ngIf="salariedEmployees.length > 0">
-            <tr class="subtotal-row">
-              <td colspan="6" class="text-right"><strong>Subtotal:</strong></td>
-              <td class="number-col net"><strong>{{ formatCurrency(getSalariedTotal()) }}</strong></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-    </div>
-
-    <!-- Hourly Employees Section -->
-    <div class="employee-type-section">
-      <h4 class="section-title hourly"><i class="fas fa-clock"></i> Hourly Employees ({{ hourlyEmployees.length }})</h4>
-      <div class="detail-table-container">
-        <table class="detail-table">
-          <thead>
-            <tr>
-              <th>EMP ID</th>
-              <th>NAME</th>
-              <th>PERIOD</th>
-              <th class="number-col">RATE</th>
-              <th class="number-col">HOURS</th>
-              <th class="number-col">GROSS</th>
-              <th class="number-col">TAXES</th>
-              <th class="number-col highlight">NET AMOUNT</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let record of hourlyEmployees">
-              <td class="emp-id">{{ record.empId }}</td>
-              <td class="emp-name">{{ record.name }}</td>
-              <td>{{ record.payRatePeriod }}</td>
-              <td class="number-col">{{ formatCurrency(record.regular / 160) }}/hr</td>
-              <td class="number-col">160</td>
-              <td class="number-col">{{ formatCurrency(record.gross) }}</td>
-              <td class="number-col tax">{{ formatCurrency(record.fedTax + record.stateTax) }}</td>
-              <td class="number-col net highlight">{{ formatCurrency(record.netPay) }}</td>
-            </tr>
-            <tr *ngIf="hourlyEmployees.length === 0">
-              <td colspan="8" class="no-data">No hourly employees</td>
-            </tr>
-          </tbody>
-          <tfoot *ngIf="hourlyEmployees.length > 0">
-            <tr class="subtotal-row">
-              <td colspan="7" class="text-right"><strong>Subtotal:</strong></td>
-              <td class="number-col net"><strong>{{ formatCurrency(getHourlyTotal()) }}</strong></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-    </div>
-
-    <!-- Contractors Section -->
-    <div class="employee-type-section" *ngIf="contractorEmployees.length > 0">
-      <h4 class="section-title contractor"><i class="fas fa-file-contract"></i> Contractors ({{ contractorEmployees.length }})</h4>
-      <div class="detail-table-container">
-        <table class="detail-table">
-          <thead>
-            <tr>
-              <th>EMP ID</th>
-              <th>NAME</th>
-              <th>PERIOD</th>
-              <th class="number-col">RATE</th>
-              <th class="number-col">GROSS</th>
-              <th class="number-col">TAXES</th>
-              <th class="number-col highlight">NET AMOUNT</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let record of contractorEmployees">
-              <td class="emp-id">{{ record.empId }}</td>
-              <td class="emp-name">{{ record.name }}</td>
-              <td>{{ record.payRatePeriod }}</td>
-              <td class="number-col">{{ formatCurrency(record.regular) }}</td>
-              <td class="number-col">{{ formatCurrency(record.gross) }}</td>
-              <td class="number-col tax">{{ formatCurrency(record.fedTax + record.stateTax) }}</td>
-              <td class="number-col net highlight">{{ formatCurrency(record.netPay) }}</td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr class="subtotal-row">
-              <td colspan="6" class="text-right"><strong>Subtotal:</strong></td>
-              <td class="number-col net"><strong>{{ formatCurrency(getContractorTotal()) }}</strong></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-    </div>
-
-    <div class="grand-total-section">
-      <div class="grand-total-bar detail">
-        <span>Grand Total Net Amount:</span>
-        <span class="total-value">{{ formatCurrency(totalNet) }}</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- LIST VIEW breakdown sections -->
-  <div class="breakdown-sections" *ngIf="activeView === 'detail'">
-    <div class="section-box breakdown-box">
-      <h4><i class="fas fa-users"></i> Salaried Employees</h4>
-      <div class="mini-table-container">
-        <table class="mini-table">
-          <thead>
-            <tr>
-              <th>EMP ID</th>
-              <th>NAME</th>
-              <th>Basic</th>
-              <th>Gross</th>
-              <th>Taxes</th>
-              <th>Net Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let record of salariedEmployees.slice(0, 5)">
-              <td class="emp-id">{{ record.empId }}</td>
-              <td class="emp-name">{{ record.name }}</td>
-              <td>{{ formatCurrency(record.regular) }}</td>
-              <td>{{ formatCurrency(record.gross) }}</td>
-              <td class="tax">{{ formatCurrency(record.fedTax + record.stateTax) }}</td>
+              <td>{{ formatDate(record.periodFrom) }}</td>
+              <td>{{ formatDate(record.periodTo) }}</td>
+              <td class="hours">{{ record.hours }}h</td>
+              <td class="gross">{{ formatCurrency(record.gross) }}</td>
+              <td class="tax">{{ formatCurrency(record.fedTax) }}</td>
+              <td class="tax">{{ formatCurrency(record.stateTax) }}</td>
+              <td class="tax">{{ formatCurrency(record.socSecTax) }}</td>
+              <td class="tax">{{ formatCurrency(record.medicareTax) }}</td>
+              <td class="expense">{{ formatCurrency(record.expenses || 0) }}</td>
+              <td class="total-tax">{{ formatCurrency(record.totalTax) }}</td>
               <td class="net">{{ formatCurrency(record.netPay) }}</td>
+              <td>{{ formatDate(record.paymentDate) }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="getStatusClass(record.payStatus)">{{ record.payStatus }}</span>
+              </td>
             </tr>
-            <tr *ngIf="salariedEmployees.length === 0">
-              <td colspan="6" class="no-data">No salaried employees in this period</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="section-box breakdown-box">
-      <h4><i class="fas fa-clock"></i> Hourly / Contract Employees</h4>
-      <div class="mini-table-container">
-        <table class="mini-table">
-          <thead>
-            <tr>
-              <th>EMP ID</th>
-              <th>NAME</th>
-              <th>Hours</th>
-              <th>Gross</th>
-              <th>Taxes</th>
-              <th>Net Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let record of hourlyEmployees.slice(0, 5)">
-              <td class="emp-id">{{ record.empId }}</td>
-              <td class="emp-name">{{ record.name }}</td>
-              <td>160h</td>
-              <td>{{ formatCurrency(record.gross) }}</td>
-              <td class="tax">{{ formatCurrency(record.fedTax + record.stateTax) }}</td>
-              <td class="net">{{ formatCurrency(record.netPay) }}</td>
-            </tr>
-            <tr *ngIf="hourlyEmployees.length === 0">
-              <td colspan="6" class="no-data">No hourly employees in this period</td>
+            <tr *ngIf="filteredRecords.length === 0">
+              <td colspan="20" class="no-data">
+                <i class="fas fa-inbox"></i>
+                No payroll records found
+              </td>
             </tr>
           </tbody>
+          <tfoot *ngIf="filteredRecords.length > 0">
+            <tr class="totals-row">
+              <td colspan="9"><strong>TOTAL</strong></td>
+              <td class="hours"><strong>{{ totalHoursFiltered.toFixed(2) }}h</strong></td>
+              <td class="gross"><strong>{{ formatCurrency(totalGrossFiltered) }}</strong></td>
+              <td class="tax"><strong>{{ formatCurrency(totalFedTax) }}</strong></td>
+              <td class="tax"><strong>{{ formatCurrency(totalStateTax) }}</strong></td>
+              <td class="tax"><strong>{{ formatCurrency(totalSocSecTax) }}</strong></td>
+              <td class="tax"><strong>{{ formatCurrency(totalMedicareTax) }}</strong></td>
+              <td class="expense"><strong>{{ formatCurrency(totalExpenses) }}</strong></td>
+              <td class="total-tax"><strong>{{ formatCurrency(totalTaxFiltered) }}</strong></td>
+              <td class="net"><strong>{{ formatCurrency(totalNetFiltered) }}</strong></td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
         </table>
       </div>
-    </div>
-  </div>
-
-  <div class="grand-total-bar" *ngIf="activeView === 'detail'">
-    <span>Grand Total Net Amount:</span>
-    <span class="total-value">{{ formatCurrency(totalNet) }}</span>
-  </div>
-</div>
-
-<!-- Generate Timesheet Modal -->
-<div class="modal-overlay" *ngIf="showGenerateTimesheetModal" (click)="closeGenerateTimesheetModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3><i class="fas fa-clock"></i> Generate Timesheet</h3>
-      <button class="close-btn" (click)="closeGenerateTimesheetModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Start Date</label>
-        <input type="date" [(ngModel)]="timesheetStartDate" class="form-control">
-      </div>
-      <div class="form-group">
-        <label>End Date</label>
-        <input type="date" [(ngModel)]="timesheetEndDate" class="form-control">
-      </div>
-      <div class="form-group">
-        <label>Pay Frequency</label>
-        <select [(ngModel)]="selectedPayFrequency" class="form-control">
-          <option value="MONTHLY">Monthly</option>
-          <option value="BIWEEKLY">Bi-Weekly</option>
-          <option value="WEEKLY">Weekly</option>
-        </select>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeGenerateTimesheetModal()">Cancel</button>
-      <button class="btn btn-primary" (click)="generateTimesheet()" [disabled]="generatingTimesheet">
-        <i class="fas fa-spinner fa-spin" *ngIf="generatingTimesheet"></i>
-        {{ generatingTimesheet ? 'Generating...' : 'Generate Timesheet' }}
-      </button>
     </div>
   </div>
 </div>
