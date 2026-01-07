@@ -277,3 +277,323 @@ INSERT INTO expense_centers (code, name, description, active, cost_center_id)
 SELECT 'EXP-MKT-ADV', 'Advertising', 'Advertising and promotional expenses', true, id
 FROM cost_centers WHERE code = 'CC003-MKT'
 ON CONFLICT (code) DO NOTHING;
+
+-- =====================================================
+-- HR Management Sample Data (5 records per module)
+-- =====================================================
+
+-- Seed Locations
+INSERT INTO locations (code, name, address, city, state, country, zip_code, phone, email, location_type, active)
+VALUES ('LOC001', 'Headquarters', '123 Corporate Drive', 'Atlanta', 'Georgia', 'United States', '30301', '404-555-1000', 'hq@haoerp.com', 'OFFICE', true)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO locations (code, name, address, city, state, country, zip_code, phone, email, location_type, active)
+VALUES ('LOC002', 'West Coast Office', '456 Pacific Blvd', 'San Francisco', 'California', 'United States', '94102', '415-555-2000', 'westcoast@haoerp.com', 'OFFICE', true)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO locations (code, name, address, city, state, country, zip_code, phone, email, location_type, active)
+VALUES ('LOC003', 'Manufacturing Plant', '789 Industrial Way', 'Houston', 'Texas', 'United States', '77001', '713-555-3000', 'plant@haoerp.com', 'PLANT', true)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO locations (code, name, address, city, state, country, zip_code, phone, email, location_type, active)
+VALUES ('LOC004', 'Distribution Center', '321 Logistics Ave', 'Chicago', 'Illinois', 'United States', '60601', '312-555-4000', 'dc@haoerp.com', 'WAREHOUSE', true)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO locations (code, name, address, city, state, country, zip_code, phone, email, location_type, active)
+VALUES ('LOC005', 'Regional Office', '555 Business Park', 'New York', 'New York', 'United States', '10001', '212-555-5000', 'nyoffice@haoerp.com', 'OFFICE', true)
+ON CONFLICT (code) DO NOTHING;
+
+-- Seed Grades
+INSERT INTO grades (code, name, description, level, min_salary, max_salary, active)
+VALUES ('G1', 'Entry Level', 'Entry level positions for fresh graduates', 1, 35000, 50000, true)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO grades (code, name, description, level, min_salary, max_salary, active)
+VALUES ('G2', 'Associate', 'Associate level with 1-3 years experience', 2, 45000, 70000, true)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO grades (code, name, description, level, min_salary, max_salary, active)
+VALUES ('G3', 'Senior', 'Senior level with 3-6 years experience', 3, 65000, 95000, true)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO grades (code, name, description, level, min_salary, max_salary, active)
+VALUES ('G4', 'Manager', 'Management level positions', 4, 85000, 130000, true)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO grades (code, name, description, level, min_salary, max_salary, active)
+VALUES ('G5', 'Director', 'Director and senior leadership', 5, 120000, 200000, true)
+ON CONFLICT (code) DO NOTHING;
+
+-- Seed Departments
+INSERT INTO departments (code, name, description, active, location_id, cost_center_id)
+SELECT 'DEPT-IT', 'Information Technology', 'IT and software development department', true, 
+       (SELECT id FROM locations WHERE code = 'LOC001' LIMIT 1),
+       (SELECT id FROM cost_centers WHERE code = 'CC001-IT' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM departments WHERE code = 'DEPT-IT');
+
+INSERT INTO departments (code, name, description, active, location_id, cost_center_id)
+SELECT 'DEPT-HR', 'Human Resources', 'Human resources and talent management', true, 
+       (SELECT id FROM locations WHERE code = 'LOC001' LIMIT 1),
+       (SELECT id FROM cost_centers WHERE code = 'CC001-HR' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM departments WHERE code = 'DEPT-HR');
+
+INSERT INTO departments (code, name, description, active, location_id, cost_center_id)
+SELECT 'DEPT-FIN', 'Finance', 'Finance and accounting department', true, 
+       (SELECT id FROM locations WHERE code = 'LOC001' LIMIT 1),
+       (SELECT id FROM cost_centers WHERE code = 'CC001-FIN' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM departments WHERE code = 'DEPT-FIN');
+
+INSERT INTO departments (code, name, description, active, location_id, cost_center_id)
+SELECT 'DEPT-SALES', 'Sales', 'Sales and business development', true, 
+       (SELECT id FROM locations WHERE code = 'LOC002' LIMIT 1),
+       (SELECT id FROM cost_centers WHERE code = 'CC003-SALES' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM departments WHERE code = 'DEPT-SALES');
+
+INSERT INTO departments (code, name, description, active, location_id, cost_center_id)
+SELECT 'DEPT-OPS', 'Operations', 'Operations and manufacturing', true, 
+       (SELECT id FROM locations WHERE code = 'LOC003' LIMIT 1),
+       (SELECT id FROM cost_centers WHERE code = 'CC002' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM departments WHERE code = 'DEPT-OPS');
+
+-- Seed Designations
+INSERT INTO designations (code, title, description, active, grade_id)
+SELECT 'DES-SE', 'Software Engineer', 'Entry level software engineer', true, id
+FROM grades WHERE code = 'G1'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO designations (code, title, description, active, grade_id)
+SELECT 'DES-SSE', 'Senior Software Engineer', 'Senior software engineer with 3+ years experience', true, id
+FROM grades WHERE code = 'G3'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO designations (code, title, description, active, grade_id)
+SELECT 'DES-HRM', 'HR Manager', 'Human resources manager', true, id
+FROM grades WHERE code = 'G4'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO designations (code, title, description, active, grade_id)
+SELECT 'DES-ACCT', 'Accountant', 'Finance and accounting professional', true, id
+FROM grades WHERE code = 'G2'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO designations (code, title, description, active, grade_id)
+SELECT 'DES-SM', 'Sales Manager', 'Sales team manager', true, id
+FROM grades WHERE code = 'G4'
+ON CONFLICT (code) DO NOTHING;
+
+-- Seed Job Roles
+INSERT INTO job_roles (code, title, description, active, department_id, grade_id)
+SELECT 'JR-DEV', 'Software Developer', 'Develops and maintains software applications', true, 
+       (SELECT id FROM departments WHERE code = 'DEPT-IT' LIMIT 1),
+       (SELECT id FROM grades WHERE code = 'G2' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM job_roles WHERE code = 'JR-DEV');
+
+INSERT INTO job_roles (code, title, description, active, department_id, grade_id)
+SELECT 'JR-HRG', 'HR Generalist', 'General HR responsibilities including recruitment and employee relations', true, 
+       (SELECT id FROM departments WHERE code = 'DEPT-HR' LIMIT 1),
+       (SELECT id FROM grades WHERE code = 'G2' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM job_roles WHERE code = 'JR-HRG');
+
+INSERT INTO job_roles (code, title, description, active, department_id, grade_id)
+SELECT 'JR-FA', 'Financial Analyst', 'Analyzes financial data and prepares reports', true, 
+       (SELECT id FROM departments WHERE code = 'DEPT-FIN' LIMIT 1),
+       (SELECT id FROM grades WHERE code = 'G3' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM job_roles WHERE code = 'JR-FA');
+
+INSERT INTO job_roles (code, title, description, active, department_id, grade_id)
+SELECT 'JR-SR', 'Sales Representative', 'Handles sales and client relationships', true, 
+       (SELECT id FROM departments WHERE code = 'DEPT-SALES' LIMIT 1),
+       (SELECT id FROM grades WHERE code = 'G2' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM job_roles WHERE code = 'JR-SR');
+
+INSERT INTO job_roles (code, title, description, active, department_id, grade_id)
+SELECT 'JR-OM', 'Operations Manager', 'Manages daily operations and production', true, 
+       (SELECT id FROM departments WHERE code = 'DEPT-OPS' LIMIT 1),
+       (SELECT id FROM grades WHERE code = 'G4' LIMIT 1)
+WHERE NOT EXISTS (SELECT 1 FROM job_roles WHERE code = 'JR-OM');
+
+-- Seed Employees
+INSERT INTO employees (employee_code, first_name, last_name, email, phone, date_of_birth, gender, joining_date, employment_type, employment_status, department_id, designation_id, location_id, grade_id, created_at, updated_at)
+SELECT 'EMP001', 'John', 'Smith', 'john.smith@haoerp.com', '404-555-1001', '1985-03-15', 'Male', '2020-01-15', 'FULL_TIME', 'ACTIVE',
+       (SELECT id FROM departments WHERE code = 'DEPT-IT' LIMIT 1),
+       (SELECT id FROM designations WHERE code = 'DES-SSE' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC001' LIMIT 1),
+       (SELECT id FROM grades WHERE code = 'G3' LIMIT 1),
+       NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM employees WHERE employee_code = 'EMP001');
+
+INSERT INTO employees (employee_code, first_name, last_name, email, phone, date_of_birth, gender, joining_date, employment_type, employment_status, department_id, designation_id, location_id, grade_id, created_at, updated_at)
+SELECT 'EMP002', 'Sarah', 'Johnson', 'sarah.johnson@haoerp.com', '404-555-1002', '1988-07-22', 'Female', '2019-06-01', 'FULL_TIME', 'ACTIVE',
+       (SELECT id FROM departments WHERE code = 'DEPT-HR' LIMIT 1),
+       (SELECT id FROM designations WHERE code = 'DES-HRM' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC001' LIMIT 1),
+       (SELECT id FROM grades WHERE code = 'G4' LIMIT 1),
+       NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM employees WHERE employee_code = 'EMP002');
+
+INSERT INTO employees (employee_code, first_name, last_name, email, phone, date_of_birth, gender, joining_date, employment_type, employment_status, department_id, designation_id, location_id, grade_id, created_at, updated_at)
+SELECT 'EMP003', 'Michael', 'Brown', 'michael.brown@haoerp.com', '415-555-1003', '1990-11-08', 'Male', '2021-03-10', 'FULL_TIME', 'ACTIVE',
+       (SELECT id FROM departments WHERE code = 'DEPT-SALES' LIMIT 1),
+       (SELECT id FROM designations WHERE code = 'DES-SM' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC002' LIMIT 1),
+       (SELECT id FROM grades WHERE code = 'G4' LIMIT 1),
+       NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM employees WHERE employee_code = 'EMP003');
+
+INSERT INTO employees (employee_code, first_name, last_name, email, phone, date_of_birth, gender, joining_date, employment_type, employment_status, department_id, designation_id, location_id, grade_id, created_at, updated_at)
+SELECT 'EMP004', 'Emily', 'Davis', 'emily.davis@haoerp.com', '404-555-1004', '1992-04-18', 'Female', '2022-08-20', 'FULL_TIME', 'ACTIVE',
+       (SELECT id FROM departments WHERE code = 'DEPT-FIN' LIMIT 1),
+       (SELECT id FROM designations WHERE code = 'DES-ACCT' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC001' LIMIT 1),
+       (SELECT id FROM grades WHERE code = 'G2' LIMIT 1),
+       NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM employees WHERE employee_code = 'EMP004');
+
+INSERT INTO employees (employee_code, first_name, last_name, email, phone, date_of_birth, gender, joining_date, employment_type, employment_status, department_id, designation_id, location_id, grade_id, created_at, updated_at)
+SELECT 'EMP005', 'David', 'Wilson', 'david.wilson@haoerp.com', '713-555-1005', '1987-09-30', 'Male', '2018-11-05', 'FULL_TIME', 'ACTIVE',
+       (SELECT id FROM departments WHERE code = 'DEPT-OPS' LIMIT 1),
+       (SELECT id FROM designations WHERE code = 'DES-SM' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC003' LIMIT 1),
+       (SELECT id FROM grades WHERE code = 'G4' LIMIT 1),
+       NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM employees WHERE employee_code = 'EMP005');
+
+-- Seed Employee Salaries
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, pay_frequency, effective_from, is_current, created_at, updated_at)
+SELECT id, 85000, 40.87, 'MONTHLY', '2020-01-15', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'EMP001'
+AND NOT EXISTS (SELECT 1 FROM employee_salaries WHERE employee_id = (SELECT id FROM employees WHERE employee_code = 'EMP001') AND is_current = true);
+
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, pay_frequency, effective_from, is_current, created_at, updated_at)
+SELECT id, 95000, 45.67, 'MONTHLY', '2019-06-01', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'EMP002'
+AND NOT EXISTS (SELECT 1 FROM employee_salaries WHERE employee_id = (SELECT id FROM employees WHERE employee_code = 'EMP002') AND is_current = true);
+
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, pay_frequency, effective_from, is_current, created_at, updated_at)
+SELECT id, 110000, 52.88, 'MONTHLY', '2021-03-10', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'EMP003'
+AND NOT EXISTS (SELECT 1 FROM employee_salaries WHERE employee_id = (SELECT id FROM employees WHERE employee_code = 'EMP003') AND is_current = true);
+
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, pay_frequency, effective_from, is_current, created_at, updated_at)
+SELECT id, 55000, 26.44, 'MONTHLY', '2022-08-20', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'EMP004'
+AND NOT EXISTS (SELECT 1 FROM employee_salaries WHERE employee_id = (SELECT id FROM employees WHERE employee_code = 'EMP004') AND is_current = true);
+
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, pay_frequency, effective_from, is_current, created_at, updated_at)
+SELECT id, 105000, 50.48, 'MONTHLY', '2018-11-05', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'EMP005'
+AND NOT EXISTS (SELECT 1 FROM employee_salaries WHERE employee_id = (SELECT id FROM employees WHERE employee_code = 'EMP005') AND is_current = true);
+
+-- Seed Candidates
+INSERT INTO candidates (candidate_number, first_name, last_name, email, phone, gender, city, state, country, current_employer, current_designation, current_salary, expected_salary, total_experience, skills, source, status, created_at, updated_at)
+VALUES ('CND-2026-00001', 'Alex', 'Thompson', 'alex.thompson@email.com', '555-100-1001', 'Male', 'Atlanta', 'Georgia', 'United States', 'TechCorp Inc', 'Software Developer', 75000, 90000, 4, 'Java, Spring Boot, Angular, SQL', 'LinkedIn', 'NEW', NOW(), NOW())
+ON CONFLICT (candidate_number) DO NOTHING;
+
+INSERT INTO candidates (candidate_number, first_name, last_name, email, phone, gender, city, state, country, current_employer, current_designation, current_salary, expected_salary, total_experience, skills, source, status, created_at, updated_at)
+VALUES ('CND-2026-00002', 'Jennifer', 'Martinez', 'jennifer.martinez@email.com', '555-100-1002', 'Female', 'San Francisco', 'California', 'United States', 'DataSystems LLC', 'Data Analyst', 68000, 80000, 3, 'Python, SQL, Tableau, Power BI', 'Indeed', 'SCREENING', NOW(), NOW())
+ON CONFLICT (candidate_number) DO NOTHING;
+
+INSERT INTO candidates (candidate_number, first_name, last_name, email, phone, gender, city, state, country, current_employer, current_designation, current_salary, expected_salary, total_experience, skills, source, status, created_at, updated_at)
+VALUES ('CND-2026-00003', 'Robert', 'Lee', 'robert.lee@email.com', '555-100-1003', 'Male', 'Houston', 'Texas', 'United States', 'Manufacturing Co', 'Operations Supervisor', 65000, 75000, 6, 'Operations Management, Lean Six Sigma, ERP Systems', 'Referral', 'INTERVIEW', NOW(), NOW())
+ON CONFLICT (candidate_number) DO NOTHING;
+
+INSERT INTO candidates (candidate_number, first_name, last_name, email, phone, gender, city, state, country, current_employer, current_designation, current_salary, expected_salary, total_experience, skills, source, status, created_at, updated_at)
+VALUES ('CND-2026-00004', 'Amanda', 'Garcia', 'amanda.garcia@email.com', '555-100-1004', 'Female', 'Chicago', 'Illinois', 'United States', 'HR Solutions', 'HR Coordinator', 52000, 62000, 2, 'Recruiting, Onboarding, HRIS, Employee Relations', 'Company Website', 'NEW', NOW(), NOW())
+ON CONFLICT (candidate_number) DO NOTHING;
+
+INSERT INTO candidates (candidate_number, first_name, last_name, email, phone, gender, city, state, country, current_employer, current_designation, current_salary, expected_salary, total_experience, skills, source, status, created_at, updated_at)
+VALUES ('CND-2026-00005', 'Chris', 'Anderson', 'chris.anderson@email.com', '555-100-1005', 'Male', 'New York', 'New York', 'United States', 'Sales Force Pro', 'Account Executive', 85000, 100000, 5, 'B2B Sales, CRM, Negotiation, Client Relations', 'LinkedIn', 'OFFER', NOW(), NOW())
+ON CONFLICT (candidate_number) DO NOTHING;
+
+-- Seed Job Requisitions
+INSERT INTO job_requisitions (requisition_number, position_title, number_of_positions, employment_type, requisition_type, justification, job_description, requirements, skills, min_experience, max_experience, priority, status, department_id, job_role_id, grade_id, location_id, created_at, updated_at)
+SELECT 'MRF-2026-00001', 'Senior Software Engineer', 2, 'FULL_TIME', 'NEW', 'Expanding IT team for new project', 'Develop and maintain enterprise applications', 'BS in Computer Science or related field', 'Java, Spring Boot, Angular, PostgreSQL', 3, 6, 'HIGH', 'APPROVED',
+       (SELECT id FROM departments WHERE code = 'DEPT-IT' LIMIT 1),
+       (SELECT id FROM job_roles WHERE code = 'JR-DEV' LIMIT 1),
+       (SELECT id FROM grades WHERE code = 'G3' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC001' LIMIT 1),
+       NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM job_requisitions WHERE requisition_number = 'MRF-2026-00001');
+
+INSERT INTO job_requisitions (requisition_number, position_title, number_of_positions, employment_type, requisition_type, justification, job_description, requirements, skills, min_experience, max_experience, priority, status, department_id, job_role_id, grade_id, location_id, created_at, updated_at)
+SELECT 'MRF-2026-00002', 'HR Coordinator', 1, 'FULL_TIME', 'REPLACEMENT', 'Replacing departing employee', 'Support HR operations and employee services', 'BS in Human Resources or Business', 'HRIS, Recruiting, Employee Relations', 1, 3, 'MEDIUM', 'OPEN',
+       (SELECT id FROM departments WHERE code = 'DEPT-HR' LIMIT 1),
+       (SELECT id FROM job_roles WHERE code = 'JR-HRG' LIMIT 1),
+       (SELECT id FROM grades WHERE code = 'G2' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC001' LIMIT 1),
+       NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM job_requisitions WHERE requisition_number = 'MRF-2026-00002');
+
+INSERT INTO job_requisitions (requisition_number, position_title, number_of_positions, employment_type, requisition_type, justification, job_description, requirements, skills, min_experience, max_experience, priority, status, department_id, job_role_id, grade_id, location_id, created_at, updated_at)
+SELECT 'MRF-2026-00003', 'Financial Analyst', 1, 'FULL_TIME', 'NEW', 'Budget analysis support for Q2', 'Analyze financial data and prepare reports', 'BS in Finance or Accounting, CPA preferred', 'Financial Modeling, Excel, SAP', 2, 5, 'HIGH', 'PENDING',
+       (SELECT id FROM departments WHERE code = 'DEPT-FIN' LIMIT 1),
+       (SELECT id FROM job_roles WHERE code = 'JR-FA' LIMIT 1),
+       (SELECT id FROM grades WHERE code = 'G3' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC001' LIMIT 1),
+       NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM job_requisitions WHERE requisition_number = 'MRF-2026-00003');
+
+INSERT INTO job_requisitions (requisition_number, position_title, number_of_positions, employment_type, requisition_type, justification, job_description, requirements, skills, min_experience, max_experience, priority, status, department_id, job_role_id, grade_id, location_id, created_at, updated_at)
+SELECT 'MRF-2026-00004', 'Sales Representative', 3, 'FULL_TIME', 'NEW', 'Expanding West Coast sales team', 'Drive sales growth in assigned territory', 'BS in Business or related field', 'B2B Sales, CRM, Negotiation', 1, 4, 'HIGH', 'APPROVED',
+       (SELECT id FROM departments WHERE code = 'DEPT-SALES' LIMIT 1),
+       (SELECT id FROM job_roles WHERE code = 'JR-SR' LIMIT 1),
+       (SELECT id FROM grades WHERE code = 'G2' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC002' LIMIT 1),
+       NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM job_requisitions WHERE requisition_number = 'MRF-2026-00004');
+
+INSERT INTO job_requisitions (requisition_number, position_title, number_of_positions, employment_type, requisition_type, justification, job_description, requirements, skills, min_experience, max_experience, priority, status, department_id, job_role_id, grade_id, location_id, created_at, updated_at)
+SELECT 'MRF-2026-00005', 'Operations Supervisor', 1, 'FULL_TIME', 'REPLACEMENT', 'Retirement replacement', 'Oversee daily manufacturing operations', 'BS in Operations or Engineering', 'Operations Management, Lean, ERP', 5, 10, 'MEDIUM', 'OPEN',
+       (SELECT id FROM departments WHERE code = 'DEPT-OPS' LIMIT 1),
+       (SELECT id FROM job_roles WHERE code = 'JR-OM' LIMIT 1),
+       (SELECT id FROM grades WHERE code = 'G4' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC003' LIMIT 1),
+       NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM job_requisitions WHERE requisition_number = 'MRF-2026-00005');
+
+-- Seed Training Programs
+INSERT INTO training_programs (program_code, name, description, category, training_type, delivery_mode, duration_hours, duration_days, objectives, max_participants, min_participants, is_mandatory, is_active, has_certification, created_at, updated_at)
+VALUES ('TRN-001', 'New Employee Orientation', 'Introduction to company culture, policies, and procedures', 'ONBOARDING', 'INTERNAL', 'IN_PERSON', 8, 1, 'Familiarize new hires with company culture and expectations', 30, 5, true, true, false, NOW(), NOW())
+ON CONFLICT (program_code) DO NOTHING;
+
+INSERT INTO training_programs (program_code, name, description, category, training_type, delivery_mode, duration_hours, duration_days, objectives, max_participants, min_participants, is_mandatory, is_active, has_certification, certification_name, validity_months, created_at, updated_at)
+VALUES ('TRN-002', 'Leadership Development Program', 'Comprehensive leadership skills training for managers', 'LEADERSHIP', 'INTERNAL', 'HYBRID', 40, 5, 'Develop leadership competencies and management skills', 20, 8, false, true, true, 'Leadership Excellence Certificate', 24, NOW(), NOW())
+ON CONFLICT (program_code) DO NOTHING;
+
+INSERT INTO training_programs (program_code, name, description, category, training_type, delivery_mode, duration_hours, duration_days, objectives, max_participants, min_participants, is_mandatory, is_active, has_certification, certification_name, validity_months, created_at, updated_at)
+VALUES ('TRN-003', 'Workplace Safety Training', 'OSHA compliance and workplace safety protocols', 'COMPLIANCE', 'EXTERNAL', 'ONLINE', 4, 1, 'Ensure all employees understand safety protocols', 50, 10, true, true, true, 'OSHA Safety Certification', 12, NOW(), NOW())
+ON CONFLICT (program_code) DO NOTHING;
+
+INSERT INTO training_programs (program_code, name, description, category, training_type, delivery_mode, duration_hours, duration_days, objectives, max_participants, min_participants, is_mandatory, is_active, has_certification, created_at, updated_at)
+VALUES ('TRN-004', 'Advanced Excel for Business', 'Advanced Excel techniques for business analysis', 'TECHNICAL', 'INTERNAL', 'ONLINE', 16, 2, 'Master advanced Excel functions and data analysis', 25, 5, false, true, false, NOW(), NOW())
+ON CONFLICT (program_code) DO NOTHING;
+
+INSERT INTO training_programs (program_code, name, description, category, training_type, delivery_mode, duration_hours, duration_days, objectives, max_participants, min_participants, is_mandatory, is_active, has_certification, certification_name, validity_months, created_at, updated_at)
+VALUES ('TRN-005', 'Customer Service Excellence', 'Best practices in customer service and communication', 'SOFT_SKILLS', 'INTERNAL', 'IN_PERSON', 8, 1, 'Improve customer interaction and satisfaction skills', 30, 10, false, true, true, 'Customer Service Professional', 18, NOW(), NOW())
+ON CONFLICT (program_code) DO NOTHING;
+
+-- Seed Onboarding Plans (linked to employees)
+INSERT INTO onboarding_plans (plan_number, employee_id, start_date, target_completion_date, status, total_tasks, completed_tasks, progress_percentage, welcome_message, welcome_email_sent, created_at, updated_at)
+SELECT 'ONB-2026-00001', id, '2020-01-15', '2020-02-15', 'COMPLETED', 10, 10, 100, 'Welcome to the IT team!', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'EMP001'
+AND NOT EXISTS (SELECT 1 FROM onboarding_plans WHERE plan_number = 'ONB-2026-00001');
+
+INSERT INTO onboarding_plans (plan_number, employee_id, start_date, target_completion_date, status, total_tasks, completed_tasks, progress_percentage, welcome_message, welcome_email_sent, created_at, updated_at)
+SELECT 'ONB-2026-00002', id, '2019-06-01', '2019-07-01', 'COMPLETED', 12, 12, 100, 'Welcome to the HR family!', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'EMP002'
+AND NOT EXISTS (SELECT 1 FROM onboarding_plans WHERE plan_number = 'ONB-2026-00002');
+
+INSERT INTO onboarding_plans (plan_number, employee_id, start_date, target_completion_date, status, total_tasks, completed_tasks, progress_percentage, welcome_message, welcome_email_sent, created_at, updated_at)
+SELECT 'ONB-2026-00003', id, '2021-03-10', '2021-04-10', 'COMPLETED', 8, 8, 100, 'Welcome to the Sales team!', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'EMP003'
+AND NOT EXISTS (SELECT 1 FROM onboarding_plans WHERE plan_number = 'ONB-2026-00003');
+
+INSERT INTO onboarding_plans (plan_number, employee_id, start_date, target_completion_date, status, total_tasks, completed_tasks, progress_percentage, welcome_message, welcome_email_sent, created_at, updated_at)
+SELECT 'ONB-2026-00004', id, '2022-08-20', '2022-09-20', 'COMPLETED', 10, 10, 100, 'Welcome to the Finance department!', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'EMP004'
+AND NOT EXISTS (SELECT 1 FROM onboarding_plans WHERE plan_number = 'ONB-2026-00004');
+
+INSERT INTO onboarding_plans (plan_number, employee_id, start_date, target_completion_date, status, total_tasks, completed_tasks, progress_percentage, welcome_message, welcome_email_sent, created_at, updated_at)
+SELECT 'ONB-2026-00005', id, '2018-11-05', '2018-12-05', 'COMPLETED', 9, 9, 100, 'Welcome to Operations!', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'EMP005'
+AND NOT EXISTS (SELECT 1 FROM onboarding_plans WHERE plan_number = 'ONB-2026-00005');
