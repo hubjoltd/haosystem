@@ -146,10 +146,14 @@ export interface EmployeeAsset {
   employee?: Employee;
   assetType: string;
   assetName: string;
-  assetTag?: string;
+  assetCode?: string;
   serialNumber?: string;
-  issuedDate?: string;
+  manufacturer?: string;
+  model?: string;
+  description?: string;
+  issueDate?: string;
   returnDate?: string;
+  status?: string;
   condition?: string;
   approvalStatus: string;
   approvedBy?: string;

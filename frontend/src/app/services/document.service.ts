@@ -68,11 +68,15 @@ export interface ChecklistDocumentType {
   hasExpiry: boolean;
   status: 'PENDING' | 'UPLOADED';
   documentId?: number;
+  documentNumber?: string;
+  issueDate?: string;
   fileName?: string;
   fileUrl?: string;
+  mimeType?: string;
   verificationStatus?: string;
   uploadedAt?: string;
   expiryDate?: string;
+  active?: boolean;
 }
 
 export interface ChecklistCategory {

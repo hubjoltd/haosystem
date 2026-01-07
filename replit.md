@@ -1,6 +1,11 @@
 # Hao System - Angular Frontend
 
 ## Recent Changes (January 2026)
+- **Document Checklist Enhancement**: Added comprehensive document checklist in employee Documents tab showing ALL document types organized by category with upload status indicators (Not Uploaded, Uploaded, Approved, Rejected, Expired)
+- **File Upload in Document Modal**: Added PDF and image file upload capability with drag-and-drop style UI (supports PDF, JPEG, PNG, GIF; max 10MB)
+- **Document Status Visualization**: Color-coded mandatory document rows (light orange) and expired document rows (light red) for better visibility
+- **Asset Field Alignment**: Fixed Assets tab to properly display Asset Code and Issue Date (aligned frontend with backend field names: assetCode/issueDate)
+- **Employee Self-Service Assets Fix**: Updated ESS portal to use correct asset field names (assetCode instead of assetTag, issueDate instead of issuedDate)
 - **Attendance Bulk Approval**: Added PUT `/api/attendance/bulk-approve` endpoint with proper validation (rejects already approved/rejected records), approverId tracking, and detailed response
 - **Daily Attendance Table Enhancements**: Added PROJECT column, ACTIONS column with individual Approve/Reject buttons, and proper status indicators
 - **Hourly Rate Auto-Calculation**: Basic Salary input auto-calculates hourly rate using formula: (basicSalary * 12) / 2080 hours

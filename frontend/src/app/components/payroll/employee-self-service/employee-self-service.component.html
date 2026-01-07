@@ -442,17 +442,17 @@
         </div>
         <div class="card-body">
           <h4 class="asset-name">{{ asset.assetName }}</h4>
-          <div class="detail-row" *ngIf="asset.assetTag">
-            <span>Asset Tag</span>
-            <span>{{ asset.assetTag }}</span>
+          <div class="detail-row" *ngIf="asset.assetCode">
+            <span>Asset Code</span>
+            <span>{{ asset.assetCode }}</span>
           </div>
           <div class="detail-row" *ngIf="asset.serialNumber">
             <span>Serial Number</span>
             <span>{{ asset.serialNumber }}</span>
           </div>
-          <div class="detail-row" *ngIf="asset.issuedDate">
-            <span>Issued Date</span>
-            <span>{{ asset.issuedDate | date:'MMM d, yyyy' }}</span>
+          <div class="detail-row" *ngIf="asset.issueDate">
+            <span>Issue Date</span>
+            <span>{{ asset.issueDate | date:'MMM d, yyyy' }}</span>
           </div>
           <div class="detail-row" *ngIf="asset.condition">
             <span>Condition</span>

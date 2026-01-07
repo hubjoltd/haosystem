@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmployeeService, Employee, EmployeeBankDetail, EmployeeSalary, EmployeeEducation, EmployeeExperience, EmployeeAsset } from '../../../../services/employee.service';
 import { OrganizationService, Department, Designation, Grade, JobRole, Location, CostCenter, ExpenseCenter } from '../../../../services/organization.service';
-import { DocumentService, DocumentCategory, DocumentType, EmployeeDocument } from '../../../../services/document.service';
+import { DocumentService, DocumentCategory, DocumentType, EmployeeDocument, ChecklistCategory, ChecklistDocumentType } from '../../../../services/document.service';
 import { RecruitmentService } from '../../../../services/recruitment.service';
 import { LeaveService, LeaveBalance } from '../../../../services/leave.service';
 
@@ -36,6 +36,10 @@ export class EmployeeDetailComponent implements OnInit {
   documents: EmployeeDocument[] = [];
   documentTypes: DocumentType[] = [];
   documentCategories: DocumentCategory[] = [];
+  documentChecklist: ChecklistCategory[] = [];
+  loadingDocumentChecklist = false;
+  selectedFile: File | null = null;
+  uploadingDocument = false;
   recruitmentHistory: RecruitmentHistory | null = null;
   loadingRecruitmentHistory = false;
   
@@ -173,7 +177,7 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   getEmptyAsset(): EmployeeAsset {
-    return { assetType: '', assetName: '', approvalStatus: 'PENDING' };
+    return { assetType: '', assetName: '', assetCode: '', serialNumber: '', issueDate: '', approvalStatus: 'PENDING' };
   }
 
   getEmptyDocument(): EmployeeDocument {
@@ -191,6 +195,85 @@ export class EmployeeDetailComponent implements OnInit {
     if (tab === 'leave' && this.leaveBalances.length === 0) {
       this.loadLeaveBalances();
     }
+    if (tab === 'documents' && this.documentChecklist.length === 0) {
+      this.loadDocumentChecklist();
+    }
+  }
+
+  loadDocumentChecklist() {
+    if (!this.employeeId) return;
+    
+    this.loadingDocumentChecklist = true;
+    this.documentService.getEmployeeDocumentChecklist(this.employeeId).subscribe({
+      next: (data) => {
+        this.documentChecklist = data;
+        this.loadingDocumentChecklist = false;
+      },
+      error: (err) => {
+        console.error('Error loading document checklist:', err);
+        this.loadingDocumentChecklist = false;
+      }
+    });
+  }
+
+  getDocumentUploadStatus(doc: any): string {
+    if (doc.status === 'PENDING') {
+      return 'NOT_UPLOADED';
+    }
+    if (doc.verificationStatus === 'VERIFIED') {
+      return 'APPROVED';
+    }
+    if (doc.verificationStatus === 'REJECTED') {
+      return 'REJECTED';
+    }
+    if (doc.expiryDate) {
+      const expiry = new Date(doc.expiryDate);
+      if (expiry < new Date()) {
+        return 'EXPIRED';
+      }
+    }
+    return 'UPLOADED';
+  }
+
+  getDocumentStatusBadgeClass(status: string): string {
+    switch (status) {
+      case 'NOT_UPLOADED': return 'badge-secondary';
+      case 'UPLOADED': return 'badge-info';
+      case 'APPROVED': return 'badge-success';
+      case 'REJECTED': return 'badge-danger';
+      case 'EXPIRED': return 'badge-warning';
+      default: return 'badge-secondary';
+    }
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Only PDF and image files (JPEG, PNG, GIF) are allowed.');
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File size must be less than 10MB.');
+        return;
+      }
+      this.selectedFile = file;
+      this.editingDocument.fileName = file.name;
+      this.editingDocument.mimeType = file.type;
+      this.editingDocument.fileSize = file.size;
+    }
+  }
+
+  openDocumentModalForType(docType: any) {
+    this.isEditingSubItem = false;
+    this.editingDocument = {
+      documentType: { id: docType.id, code: docType.code, name: docType.name, isMandatory: docType.isMandatory, hasExpiry: docType.hasExpiry, active: true },
+      verificationStatus: 'PENDING',
+      reminderDays: 30
+    };
+    this.selectedFile = null;
+    this.showDocumentModal = true;
   }
 
   loadRecruitmentHistory() {
@@ -505,6 +588,7 @@ export class EmployeeDetailComponent implements OnInit {
   openDocumentModal(item?: EmployeeDocument) {
     this.isEditingSubItem = !!item;
     this.editingDocument = item ? { ...item } : this.getEmptyDocument();
+    this.selectedFile = null;
     this.showDocumentModal = true;
   }
 
@@ -513,31 +597,101 @@ export class EmployeeDetailComponent implements OnInit {
     
     if (this.isEditingSubItem && this.editingDocument.id) {
       this.documentService.updateDocument(this.editingDocument.id, this.editingDocument).subscribe({
-        next: () => { this.showDocumentModal = false; this.loadSubData(); },
+        next: () => { 
+          this.showDocumentModal = false; 
+          this.selectedFile = null;
+          this.loadSubData(); 
+          this.loadDocumentChecklist();
+        },
         error: (err) => console.error('Error updating document:', err)
       });
     } else {
       this.documentService.createDocument(this.employeeId, this.editingDocument).subscribe({
-        next: () => { this.showDocumentModal = false; this.loadSubData(); },
+        next: () => { 
+          this.showDocumentModal = false; 
+          this.selectedFile = null;
+          this.loadSubData(); 
+          this.loadDocumentChecklist();
+        },
         error: (err) => console.error('Error creating document:', err)
       });
     }
   }
 
-  verifyDocument(item: EmployeeDocument, status: string) {
+  verifyDocument(item: EmployeeDocument | { id: number | undefined }, status: string) {
     if (item.id) {
       this.documentService.verifyDocument(item.id, status).subscribe({
-        next: () => this.loadSubData(),
+        next: () => {
+          this.loadSubData();
+          this.loadDocumentChecklist();
+        },
         error: (err) => console.error('Error verifying document:', err)
       });
     }
   }
 
-  deleteDocument(item: EmployeeDocument) {
+  deleteDocument(item: EmployeeDocument | { id: number | undefined }) {
     if (item.id && confirm('Delete this document?')) {
       this.documentService.deleteDocument(item.id).subscribe({
-        next: () => this.loadSubData(),
+        next: () => {
+          this.loadSubData();
+          this.loadDocumentChecklist();
+        },
         error: (err) => console.error('Error deleting:', err)
+      });
+    }
+  }
+
+  verifyDocumentById(documentId: number | undefined, status: string) {
+    if (documentId) {
+      this.documentService.verifyDocument(documentId, status).subscribe({
+        next: () => {
+          this.loadSubData();
+          this.loadDocumentChecklist();
+        },
+        error: (err) => console.error('Error verifying document:', err)
+      });
+    }
+  }
+
+  deleteDocumentById(documentId: number | undefined) {
+    if (documentId && confirm('Delete this document?')) {
+      this.documentService.deleteDocument(documentId).subscribe({
+        next: () => {
+          this.loadSubData();
+          this.loadDocumentChecklist();
+        },
+        error: (err) => console.error('Error deleting:', err)
+      });
+    }
+  }
+
+  editDocumentFromChecklist(docType: ChecklistDocumentType) {
+    if (docType.documentId) {
+      this.documentService.getDocumentById(docType.documentId).subscribe({
+        next: (doc) => {
+          this.openDocumentModal(doc);
+        },
+        error: (err) => {
+          console.error('Error loading document:', err);
+          this.editingDocument = {
+            ...this.getEmptyDocument(),
+            id: docType.documentId,
+            documentType: {
+              id: docType.id,
+              code: docType.code,
+              name: docType.name,
+              description: docType.description,
+              isMandatory: docType.isMandatory,
+              hasExpiry: docType.hasExpiry,
+              active: docType.active ?? true
+            },
+            verificationStatus: docType.verificationStatus || 'PENDING'
+          };
+          this.isEditingSubItem = true;
+          this.selectedFile = null;
+          this.showDocumentModal = true;
+        }
       });
     }
   }
