@@ -1,6 +1,19 @@
 # Hao System - Angular Frontend
 
 ## Recent Changes (January 2026)
+- **Bug Fix: Training Enrollment**: Fixed frontend payload format - now sends flat `sessionId` and `employeeId` instead of nested objects (`session: {id}`, `employee: {id}`). Backend now extracts `enrolledBy` from authenticated user context via Spring Security `Authentication` parameter
+- **Cost Centers Sample Data**: Added 11 cost centers with parent-child hierarchy:
+  - Corporate (CC001) → IT, HR, Finance
+  - Operations (CC002) → Manufacturing, Warehouse, Quality Assurance
+  - Sales & Marketing (CC003) → Sales, Marketing
+- **Expense Centers Sample Data**: Added 10 expense centers linked to cost centers:
+  - IT: Software Licenses, Hardware & Equipment, Cloud Services
+  - HR: Recruitment, Training & Development
+  - Finance: Audit & Compliance
+  - Manufacturing: Raw Materials
+  - Warehouse: Logistics
+  - Sales: Sales Travel
+  - Marketing: Advertising
 - **Development Database Sample Data**: Seeded comprehensive sample data for testing:
   - 5 departments (IT, HR, Finance, Sales, Operations)
   - 5 grades (Junior, Mid-Level, Senior, Lead, Executive) with salary ranges

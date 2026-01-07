@@ -242,8 +242,8 @@ export class TrainingComponent implements OnInit {
     if (!this.enrollmentData.employeeId) return;
     
     const payload = {
-      session: { id: this.selectedSession.id },
-      employee: { id: this.enrollmentData.employeeId }
+      sessionId: this.selectedSession.id,
+      employeeId: this.enrollmentData.employeeId
     };
 
     this.trainingService.enrollEmployee(payload).subscribe({

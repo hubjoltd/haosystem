@@ -173,3 +173,107 @@ INSERT INTO document_types (code, name, description, category_id, is_mandatory, 
 SELECT 'TRAINING_RECORDS', 'Training Records / Certificates', 'Training completion records and certificates', id, false, true, 365, 3, true, NOW(), NOW()
 FROM document_categories WHERE code = 'OTHER_DOCS'
 ON CONFLICT (code) DO NOTHING;
+
+-- Seed Cost Centers with hierarchy (parent-child relationships)
+INSERT INTO cost_centers (code, name, description, active, parent_id)
+VALUES ('CC001', 'Corporate', 'Corporate headquarters and shared services', true, NULL)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO cost_centers (code, name, description, active, parent_id)
+SELECT 'CC001-IT', 'Information Technology', 'IT department and infrastructure', true, id
+FROM cost_centers WHERE code = 'CC001'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO cost_centers (code, name, description, active, parent_id)
+SELECT 'CC001-HR', 'Human Resources', 'HR and talent management', true, id
+FROM cost_centers WHERE code = 'CC001'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO cost_centers (code, name, description, active, parent_id)
+SELECT 'CC001-FIN', 'Finance', 'Finance and accounting', true, id
+FROM cost_centers WHERE code = 'CC001'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO cost_centers (code, name, description, active, parent_id)
+VALUES ('CC002', 'Operations', 'Operations and production', true, NULL)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO cost_centers (code, name, description, active, parent_id)
+SELECT 'CC002-MFG', 'Manufacturing', 'Manufacturing and production', true, id
+FROM cost_centers WHERE code = 'CC002'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO cost_centers (code, name, description, active, parent_id)
+SELECT 'CC002-WH', 'Warehouse', 'Warehouse and logistics', true, id
+FROM cost_centers WHERE code = 'CC002'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO cost_centers (code, name, description, active, parent_id)
+SELECT 'CC002-QA', 'Quality Assurance', 'Quality control and assurance', true, id
+FROM cost_centers WHERE code = 'CC002'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO cost_centers (code, name, description, active, parent_id)
+VALUES ('CC003', 'Sales & Marketing', 'Revenue generation and marketing', true, NULL)
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO cost_centers (code, name, description, active, parent_id)
+SELECT 'CC003-SALES', 'Sales', 'Direct and indirect sales', true, id
+FROM cost_centers WHERE code = 'CC003'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO cost_centers (code, name, description, active, parent_id)
+SELECT 'CC003-MKT', 'Marketing', 'Marketing and advertising', true, id
+FROM cost_centers WHERE code = 'CC003'
+ON CONFLICT (code) DO NOTHING;
+
+-- Seed Expense Centers linked to Cost Centers
+INSERT INTO expense_centers (code, name, description, active, cost_center_id)
+SELECT 'EXP-IT-SW', 'Software Licenses', 'Software licenses and subscriptions', true, id
+FROM cost_centers WHERE code = 'CC001-IT'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO expense_centers (code, name, description, active, cost_center_id)
+SELECT 'EXP-IT-HW', 'Hardware & Equipment', 'Computer hardware and IT equipment', true, id
+FROM cost_centers WHERE code = 'CC001-IT'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO expense_centers (code, name, description, active, cost_center_id)
+SELECT 'EXP-IT-CLOUD', 'Cloud Services', 'Cloud infrastructure and hosting', true, id
+FROM cost_centers WHERE code = 'CC001-IT'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO expense_centers (code, name, description, active, cost_center_id)
+SELECT 'EXP-HR-REC', 'Recruitment', 'Recruitment and hiring expenses', true, id
+FROM cost_centers WHERE code = 'CC001-HR'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO expense_centers (code, name, description, active, cost_center_id)
+SELECT 'EXP-HR-TRN', 'Training & Development', 'Employee training and development', true, id
+FROM cost_centers WHERE code = 'CC001-HR'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO expense_centers (code, name, description, active, cost_center_id)
+SELECT 'EXP-FIN-AUDIT', 'Audit & Compliance', 'Audit and compliance expenses', true, id
+FROM cost_centers WHERE code = 'CC001-FIN'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO expense_centers (code, name, description, active, cost_center_id)
+SELECT 'EXP-MFG-MAT', 'Raw Materials', 'Manufacturing raw materials', true, id
+FROM cost_centers WHERE code = 'CC002-MFG'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO expense_centers (code, name, description, active, cost_center_id)
+SELECT 'EXP-WH-LOG', 'Logistics', 'Shipping and logistics expenses', true, id
+FROM cost_centers WHERE code = 'CC002-WH'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO expense_centers (code, name, description, active, cost_center_id)
+SELECT 'EXP-SALES-TRV', 'Sales Travel', 'Sales team travel expenses', true, id
+FROM cost_centers WHERE code = 'CC003-SALES'
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO expense_centers (code, name, description, active, cost_center_id)
+SELECT 'EXP-MKT-ADV', 'Advertising', 'Advertising and promotional expenses', true, id
+FROM cost_centers WHERE code = 'CC003-MKT'
+ON CONFLICT (code) DO NOTHING;

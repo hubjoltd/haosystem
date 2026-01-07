@@ -4,6 +4,7 @@ import com.erp.model.*;
 import com.erp.service.TrainingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -149,10 +150,10 @@ public class TrainingController {
     }
 
     @PostMapping("/enrollments")
-    public ResponseEntity<TrainingEnrollment> enrollEmployee(@RequestBody Map<String, Object> data) {
+    public ResponseEntity<TrainingEnrollment> enrollEmployee(@RequestBody Map<String, Object> data, Authentication auth) {
         Long employeeId = Long.valueOf(data.get("employeeId").toString());
         Long sessionId = Long.valueOf(data.get("sessionId").toString());
-        String enrolledBy = (String) data.get("enrolledBy");
+        String enrolledBy = auth != null && auth.getName() != null ? auth.getName() : "System";
         return ResponseEntity.ok(trainingService.enrollEmployee(employeeId, sessionId, enrolledBy));
     }
 
