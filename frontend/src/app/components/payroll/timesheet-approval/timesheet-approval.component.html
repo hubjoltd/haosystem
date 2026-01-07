@@ -309,9 +309,9 @@
               <th>#</th>
               <th>EMP ID</th>
               <th>NAME</th>
-              <th>TYPE</th>
               <th>HOURS</th>
-              <th>GROSS</th>
+              <th>HOURLY RATE</th>
+              <th>GROSS PAY</th>
               <th>TOTAL TAX</th>
               <th>NET PAY</th>
               <th>STATUS</th>
@@ -325,9 +325,9 @@
               <td>{{ i + 1 }}</td>
               <td class="emp-id">{{ emp.empId }}</td>
               <td class="emp-name">{{ emp.name }}</td>
-              <td>{{ emp.payType }}</td>
-              <td>{{ emp.hours.toFixed(2) }}</td>
-              <td class="green-text">{{ formatCurrency(emp.rate) }}</td>
+              <td>{{ emp.hours.toFixed(2) }} hrs</td>
+              <td>{{ formatCurrency(emp.hourlyRate) }}/hr</td>
+              <td class="green-text">{{ formatCurrency(emp.hours * emp.hourlyRate) }}</td>
               <td class="red-text">{{ formatCurrency(emp.taxes) }}</td>
               <td class="green-text">{{ formatCurrency(emp.netAmount) }}</td>
               <td>
@@ -406,7 +406,9 @@
               <th>#</th>
               <th>EMP ID</th>
               <th>NAME</th>
-              <th>GROSS</th>
+              <th>HOURS</th>
+              <th>HOURLY RATE</th>
+              <th>GROSS PAY</th>
               <th>TAXES</th>
               <th>NET PAY</th>
               <th>STATUS</th>
@@ -420,7 +422,9 @@
               <td>{{ i + 1 }}</td>
               <td class="emp-id">{{ emp.empId }}</td>
               <td class="emp-name">{{ emp.name }}</td>
-              <td class="green-text">{{ formatCurrency(emp.rate) }}</td>
+              <td>{{ emp.hours.toFixed(2) }} hrs</td>
+              <td>{{ formatCurrency(emp.hourlyRate) }}/hr</td>
+              <td class="green-text">{{ formatCurrency(emp.hours * emp.hourlyRate) }}</td>
               <td class="red-text">{{ formatCurrency(emp.taxes) }}</td>
               <td class="green-text">{{ formatCurrency(emp.netAmount) }}</td>
               <td>
@@ -430,7 +434,7 @@
               </td>
             </tr>
             <tr *ngIf="payableEmployees.length === 0">
-              <td colspan="8" class="no-data">
+              <td colspan="10" class="no-data">
                 <i class="fas fa-users"></i>
                 No employees ready for processing
               </td>

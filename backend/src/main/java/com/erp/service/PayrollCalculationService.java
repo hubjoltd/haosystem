@@ -164,12 +164,8 @@ public class PayrollCalculationService {
         
         int periodsPerYear = getPeriodsPerYear(run.getPayFrequency());
         
-        BigDecimal basePay;
-        if ("HOURLY".equalsIgnoreCase(employeeType)) {
-            basePay = regularHours.multiply(hourlyRate);
-        } else {
-            basePay = annualSalary.divide(BigDecimal.valueOf(periodsPerYear), 2, RoundingMode.HALF_UP);
-        }
+        // Always calculate base pay based on hours worked × hourly rate
+        BigDecimal basePay = regularHours.multiply(hourlyRate).setScale(2, RoundingMode.HALF_UP);
         record.setBasePay(basePay);
         
         BigDecimal otMultiplier = getOvertimeMultiplier();
