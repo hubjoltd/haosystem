@@ -50,6 +50,7 @@ export interface Employee {
   location?: Location;
   costCenter?: CostCenter;
   expenseCenter?: ExpenseCenter;
+  project?: { id?: number; name?: string; code?: string };
   reportingManager?: Employee;
   joiningDate?: string;
   confirmationDate?: string;

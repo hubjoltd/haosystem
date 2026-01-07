@@ -93,6 +93,7 @@
         <tr>
           <th>Employee Code</th>
           <th>Name</th>
+          <th>Project</th>
           <th>Email</th>
           <th>Department</th>
           <th>Designation</th>
@@ -109,6 +110,7 @@
               <span>{{ emp.firstName }} {{ emp.lastName }}</span>
             </div>
           </td>
+          <td>{{ emp.project?.name || '-' }}</td>
           <td>{{ emp.email }}</td>
           <td>{{ emp.department?.name || '-' }}</td>
           <td>{{ emp.designation?.title || '-' }}</td>
@@ -132,7 +134,7 @@
           </td>
         </tr>
         <tr *ngIf="filteredEmployees.length === 0">
-          <td colspan="7" class="no-data">No employees found</td>
+          <td colspan="8" class="no-data">No employees found</td>
         </tr>
       </tbody>
     </table>

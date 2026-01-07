@@ -5,8 +5,8 @@ com/erp/model/LoanApplication.class
 com/erp/repository/DocumentTypeRepository.class
 com/erp/model/Holiday.class
 com/erp/repository/PayFrequencyRepository.class
-com/erp/model/OfferLetter.class
 com/erp/model/Customer.class
+com/erp/model/OfferLetter.class
 com/erp/repository/ValuationCostLayerRepository.class
 com/erp/repository/EmployeeEducationRepository.class
 com/erp/model/PayFrequency.class

@@ -80,6 +80,10 @@ public class Employee {
     @JoinColumn(name = "expense_center_id")
     private ExpenseCenter expenseCenter;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
+    
     private LocalDate joiningDate;
     private LocalDate confirmationDate;
     private LocalDate probationEndDate;
@@ -199,6 +203,8 @@ public class Employee {
     public void setCostCenter(CostCenter costCenter) { this.costCenter = costCenter; }
     public ExpenseCenter getExpenseCenter() { return expenseCenter; }
     public void setExpenseCenter(ExpenseCenter expenseCenter) { this.expenseCenter = expenseCenter; }
+    public Project getProject() { return project; }
+    public void setProject(Project project) { this.project = project; }
     public LocalDate getJoiningDate() { return joiningDate; }
     public void setJoiningDate(LocalDate joiningDate) { this.joiningDate = joiningDate; }
     public LocalDate getConfirmationDate() { return confirmationDate; }
