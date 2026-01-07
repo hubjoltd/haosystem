@@ -178,8 +178,8 @@ export class SidebarComponent implements OnInit {
               children: [
                 { icon: 'fas fa-clipboard-check', label: 'Attendance Approval', route: '/app/payroll/timesheets' },
                 { icon: 'fas fa-file-alt', label: 'Generate Timesheet', route: '/app/payroll/timesheets' },
-                { icon: 'fas fa-calculator', label: 'Payroll Calculate', route: '/app/payroll/calculate' },
-                { icon: 'fas fa-cog', label: 'Process Payroll', route: '/app/payroll/process' },
+                { icon: 'fas fa-calculator', label: 'Payroll Calculate', route: '/app/payroll/timesheets' },
+                { icon: 'fas fa-cog', label: 'Process Payroll', route: '/app/payroll/timesheets' },
                 { icon: 'fas fa-history', label: 'Payroll History', route: '/app/payroll/history' }
               ]
             }
