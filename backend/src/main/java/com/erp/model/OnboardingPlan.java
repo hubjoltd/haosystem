@@ -16,7 +16,7 @@ public class OnboardingPlan {
     @Column(unique = true, nullable = false, length = 30)
     private String planNumber;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", nullable = false)
     private Employee employee;
     
@@ -24,15 +24,15 @@ public class OnboardingPlan {
     private LocalDate targetCompletionDate;
     private LocalDate actualCompletionDate;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "buddy_id")
     private Employee buddy;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
     private Employee manager;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hr_coordinator_id")
     private Employee hrCoordinator;
     
