@@ -1,6 +1,9 @@
 # Hao System - Angular Frontend
 
 ## Recent Changes (January 2026)
+- **ESS Leave Balance Auto-Initialization**: Leave balances now auto-initialize from admin-configured LeaveType.annualEntitlement when opening ESS portal
+- **Leave Balance Carry-Forward**: Added backend logic to carry forward unused leave from previous year, respecting maxCarryForward limits (excludes pending requests from carry calculation to prevent entitlement loss)
+- **Leave Balance Calculation**: Available = Total (opening + credited + carryForward) - used - pending - lapsed - encashed
 - **Onboarding Plan Auto-Generation**: Fixed save error by auto-generating plan_number in ONB-YYYY-XXXXX format when creating new onboarding plans
 - **Manpower Requisition Field Mapping**: Added backend support for frontend field names (jobTitle, minSalary/maxSalary, requiredSkills, minimumExperience, expectedJoiningDate, justificationType)
 - **Training Session programId Fix**: Added support for both programId and trainingProgramId field names when creating training sessions
