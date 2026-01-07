@@ -1,62 +1,85 @@
-<div class="clock-in-out-container">
+<div class="time-clock-container">
   <div class="page-header">
-    <h1><i class="fas fa-clock"></i> Clock In / Out</h1>
-    <p class="subtitle">Record your daily attendance</p>
+    <h1>Time Clock</h1>
+    <p class="subtitle">Clock in and out for your shift</p>
   </div>
 
   <div *ngIf="message" class="alert" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">
     {{ message }}
   </div>
 
-  <div class="clock-widget">
-    <div class="current-time">
-      <div class="time">{{ formatTime(currentTime) }}</div>
-      <div class="date">{{ formatDate(currentTime) }}</div>
+  <div class="main-content">
+    <div class="left-panel">
+      <div class="date-time-card">
+        <div class="calendar-icon">
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+        <div class="date-display">{{ formatDate(currentTime) }}</div>
+        <div class="time-label">Current Time</div>
+        <div class="time-display">{{ formatTime(currentTime) }}</div>
+      </div>
+
+      <div class="employee-section">
+        <div class="section-header">
+          <i class="fas fa-user"></i>
+          <span>Select Employee</span>
+        </div>
+        
+        <select [(ngModel)]="selectedEmployeeId" (ngModelChange)="onEmployeeChange()" class="employee-select">
+          <option [ngValue]="null">-- Select Employee --</option>
+          <option *ngFor="let emp of employees" [ngValue]="emp.id">
+            {{ emp.firstName }} {{ emp.lastName }}
+          </option>
+        </select>
+
+        <div class="selected-employee-card" *ngIf="selectedEmployee">
+          <div class="employee-avatar">{{ getEmployeeInitials(selectedEmployee) }}</div>
+          <div class="employee-details">
+            <span class="employee-name">{{ selectedEmployee.firstName }} {{ selectedEmployee.lastName }}</span>
+            <span class="employee-role">{{ selectedEmployee.designation?.title || selectedEmployee.jobRole?.title || 'Employee' }}</span>
+          </div>
+        </div>
+
+        <div class="clock-buttons">
+          <button class="btn-clock-in" (click)="clockIn()" [disabled]="loading || !selectedEmployeeId || (todayRecord && todayRecord.clockIn && !todayRecord.clockOut)">
+            <i class="fas fa-sign-in-alt"></i>
+            Clock In
+          </button>
+          <button class="btn-clock-out" (click)="clockOut()" [disabled]="loading || !selectedEmployeeId || !todayRecord || (todayRecord && todayRecord.clockOut)">
+            <i class="fas fa-sign-out-alt"></i>
+            Clock Out
+          </button>
+        </div>
+      </div>
     </div>
 
-    <div class="employee-select" *ngIf="!todayRecord">
-      <label>Select Employee</label>
-      <select [(ngModel)]="selectedEmployeeId">
-        <option [value]="null">-- Select Employee --</option>
-        <option *ngFor="let emp of employees" [value]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
-      </select>
-    </div>
+    <div class="right-panel">
+      <div class="activity-section">
+        <div class="section-header">
+          <i class="fas fa-clock"></i>
+          <span>Today's Activity</span>
+        </div>
 
-    <div class="clock-actions">
-      <button class="btn-clock-in" (click)="clockIn()" [disabled]="loading || (todayRecord && todayRecord.clockIn)">
-        <i class="fas fa-sign-in-alt"></i> Clock In
-      </button>
-      <button class="btn-clock-out" (click)="clockOut()" [disabled]="loading || !todayRecord || (todayRecord && todayRecord.clockOut)">
-        <i class="fas fa-sign-out-alt"></i> Clock Out
-      </button>
-    </div>
+        <div class="activity-list" *ngIf="todayActivities.length > 0">
+          <div class="activity-item" *ngFor="let record of todayActivities">
+            <div class="activity-avatar">{{ getEmployeeInitials(record) }}</div>
+            <div class="activity-details">
+              <span class="activity-name">{{ getEmployeeName(record) }}</span>
+              <div class="activity-times">
+                <span class="time-badge in"><i class="fas fa-sign-in-alt"></i> {{ record.clockIn || '-' }}</span>
+                <span class="time-badge out"><i class="fas fa-sign-out-alt"></i> {{ record.clockOut || '-' }}</span>
+                <span class="duration"><i class="fas fa-hourglass-half"></i> {{ calculateDuration(record) }}</span>
+              </div>
+            </div>
+            <div class="activity-status" [ngClass]="getActivityStatus(record).toLowerCase()">
+              {{ getActivityStatus(record) }}
+            </div>
+          </div>
+        </div>
 
-    <div class="today-status" *ngIf="todayRecord">
-      <h3>Today's Record</h3>
-      <div class="status-grid">
-        <div class="status-item">
-          <span class="label">Clock In</span>
-          <span class="value">{{ todayRecord.clockIn || '-' }}</span>
-        </div>
-        <div class="status-item">
-          <span class="label">Clock Out</span>
-          <span class="value">{{ todayRecord.clockOut || '-' }}</span>
-        </div>
-        <div class="status-item">
-          <span class="label">Status</span>
-          <span class="value status-badge" [class]="todayRecord.status?.toLowerCase()">{{ todayRecord.status }}</span>
-        </div>
-        <div class="status-item">
-          <span class="label">Regular Hours</span>
-          <span class="value">{{ todayRecord.regularHours || 0 }} hrs</span>
-        </div>
-        <div class="status-item" *ngIf="todayRecord.overtimeHours">
-          <span class="label">Overtime</span>
-          <span class="value">{{ todayRecord.overtimeHours }} hrs</span>
-        </div>
-        <div class="status-item" *ngIf="todayRecord.lateArrival">
-          <span class="label">Late By</span>
-          <span class="value late">{{ todayRecord.lateMinutes }} mins</span>
+        <div class="no-activity" *ngIf="todayActivities.length === 0">
+          <i class="fas fa-calendar-times"></i>
+          <p>No activity recorded today</p>
         </div>
       </div>
     </div>

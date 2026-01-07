@@ -20,6 +20,15 @@ interface WeeklyProject {
   totalHours: number;
 }
 
+interface ProjectGroup {
+  code: string;
+  name: string;
+  employeeCount: number;
+  totalHours: number;
+  expanded: boolean;
+  employees: WeeklyEmployee[];
+}
+
 @Component({
   selector: 'app-weekly-timesheet',
   standalone: true,
@@ -34,6 +43,7 @@ export class WeeklyTimesheetComponent implements OnInit {
 
   employees: Employee[] = [];
   weeklyData: WeeklyEmployee[] = [];
+  projectGroupedData: ProjectGroup[] = [];
   attendanceRecords: AttendanceRecord[] = [];
 
   weekStartDate: string = '';
@@ -136,6 +146,7 @@ export class WeeklyTimesheetComponent implements OnInit {
 
   processWeeklyData(records: AttendanceRecord[]): void {
     const employeeMap = new Map<number, WeeklyEmployee>();
+    const projectGroups = new Map<string, { name: string; employees: Set<number>; totalHours: number }>();
 
     this.employees.forEach(emp => {
       employeeMap.set(emp.id!, {
@@ -162,11 +173,15 @@ export class WeeklyTimesheetComponent implements OnInit {
       empData.dayHours[dateIdx] += hours;
       empData.totalHours += hours;
 
-      let project = empData.projects.find(p => p.code === 'DEFAULT');
+      const emp = this.employees.find(e => e.id === empId);
+      const projectName = record.project?.name || record.projectName || emp?.project?.name || 'General Work';
+      const projectCode = record.project?.id?.toString() || emp?.project?.code || 'GENERAL';
+
+      let project = empData.projects.find(p => p.code === projectCode);
       if (!project) {
         project = {
-          code: 'DEFAULT',
-          name: 'General Work',
+          code: projectCode,
+          name: projectName,
           hours: [0, 0, 0, 0, 0, 0, 0],
           totalHours: 0
         };
@@ -174,24 +189,38 @@ export class WeeklyTimesheetComponent implements OnInit {
       }
       project.hours[dateIdx] += hours;
       project.totalHours += hours;
+
+      if (!projectGroups.has(projectCode)) {
+        projectGroups.set(projectCode, { name: projectName, employees: new Set(), totalHours: 0 });
+      }
+      const group = projectGroups.get(projectCode)!;
+      group.employees.add(empId);
+      group.totalHours += hours;
     });
 
-    this.weeklyData = Array.from(employeeMap.values());
+    this.weeklyData = Array.from(employeeMap.values()).filter(e => e.totalHours > 0 || e.projects.length > 0);
+    this.projectGroupedData = Array.from(projectGroups.entries()).map(([code, data]) => ({
+      code,
+      name: data.name,
+      employeeCount: data.employees.size,
+      totalHours: data.totalHours,
+      expanded: false,
+      employees: this.weeklyData.filter(e => data.employees.has(e.id))
+    }));
+    
     this.loading = false;
     this.calculateSummary();
   }
 
   calculateSummary(): void {
     this.totalEmployees = this.weeklyData.length;
-    
-    const projectSet = new Set<string>();
-    this.weeklyData.forEach(emp => {
-      emp.projects.forEach(p => projectSet.add(p.code));
-    });
-    this.totalProjects = projectSet.size;
-
+    this.totalProjects = this.projectGroupedData.length;
     this.totalHours = this.weeklyData.reduce((sum, emp) => sum + emp.totalHours, 0);
     this.averageHours = this.totalEmployees > 0 ? this.totalHours / this.totalEmployees : 0;
+  }
+
+  toggleProjectGroup(group: ProjectGroup): void {
+    group.expanded = !group.expanded;
   }
 
   onWeekChange(): void {

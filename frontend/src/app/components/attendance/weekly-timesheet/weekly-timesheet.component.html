@@ -4,10 +4,11 @@
       <h1><i class="fas fa-calendar-week"></i> Weekly Timesheet - Project Wise</h1>
       <p class="subtitle">{{ getWeekRangeDisplay() }}</p>
     </div>
-    <div class="header-actions">
-      <button class="btn-primary" (click)="openGenerateModal()">
-        <i class="fas fa-magic"></i> Auto Generate
-      </button>
+    <div class="header-right">
+      <div class="date-picker">
+        <i class="fas fa-calendar"></i>
+        <input type="date" [(ngModel)]="weekStartDate" (change)="onWeekChange()" />
+      </div>
     </div>
   </div>
 
@@ -15,142 +16,107 @@
     {{ message }}
   </div>
 
-  <div class="week-navigation">
-    <button class="nav-btn" (click)="previousWeek()">
-      <i class="fas fa-chevron-left"></i>
-    </button>
-    <div class="week-selector">
-      <input type="date" [(ngModel)]="weekStartDate" (change)="onWeekChange()" />
-      <span>to</span>
-      <input type="date" [(ngModel)]="weekEndDate" readonly />
-    </div>
-    <button class="nav-btn" (click)="nextWeek()">
-      <i class="fas fa-chevron-right"></i>
-    </button>
-  </div>
-
   <div class="summary-cards">
     <div class="summary-card employees">
-      <div class="card-icon">
-        <i class="fas fa-users"></i>
-      </div>
       <div class="card-content">
         <span class="card-label">Total Employees</span>
         <span class="card-value">{{ totalEmployees }}</span>
       </div>
+      <div class="card-icon">
+        <i class="fas fa-users"></i>
+      </div>
     </div>
     <div class="summary-card projects">
-      <div class="card-icon">
-        <i class="fas fa-project-diagram"></i>
-      </div>
       <div class="card-content">
         <span class="card-label">Total Projects</span>
         <span class="card-value">{{ totalProjects }}</span>
       </div>
+      <div class="card-icon">
+        <i class="fas fa-project-diagram"></i>
+      </div>
     </div>
     <div class="summary-card hours">
-      <div class="card-icon">
-        <i class="fas fa-clock"></i>
-      </div>
       <div class="card-content">
         <span class="card-label">Total Hours</span>
         <span class="card-value">{{ totalHours.toFixed(1) }}<small>h</small></span>
       </div>
+      <div class="card-icon">
+        <i class="fas fa-clock"></i>
+      </div>
     </div>
-    <div class="summary-card average">
+    <div class="summary-card overtime">
+      <div class="card-content">
+        <span class="card-label">Total OT</span>
+        <span class="card-value">{{ averageHours.toFixed(1) }}<small>h</small></span>
+      </div>
       <div class="card-icon">
         <i class="fas fa-chart-line"></i>
-      </div>
-      <div class="card-content">
-        <span class="card-label">Avg Hours</span>
-        <span class="card-value">{{ averageHours.toFixed(1) }}<small>h</small></span>
       </div>
     </div>
   </div>
 
-  <div class="timesheet-table-container" *ngIf="!loading">
-    <table class="timesheet-table">
-      <thead>
-        <tr>
-          <th class="employee-col">Employee / Project</th>
-          <th *ngFor="let day of weekDays; let i = index" class="day-col">
-            <div class="day-header">
-              <span class="day-name">{{ day }}</span>
-              <span class="day-date">{{ formatDisplayDate(weekDates[i]) }}</span>
-            </div>
-          </th>
-          <th class="total-col">Total Hours</th>
-          <th class="variance-col">Variance (40h)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <ng-container *ngFor="let emp of weeklyData">
-          <tr class="employee-row">
-            <td class="employee-cell">
-              <div class="employee-info">
-                <div class="avatar">{{ emp.name.charAt(0) }}</div>
-                <div class="emp-details">
+  <div class="project-groups" *ngIf="!loading">
+    <div class="project-group" *ngFor="let group of projectGroupedData">
+      <div class="project-header" (click)="toggleProjectGroup(group)">
+        <div class="project-info">
+          <h3 class="project-name">{{ group.name }}</h3>
+          <span class="project-stats">{{ group.employeeCount }} Employees • {{ group.totalHours.toFixed(2) }}h Total</span>
+        </div>
+        <button class="btn-expand">
+          View Employees <i class="fas" [ngClass]="group.expanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </button>
+      </div>
+      
+      <div class="project-employees" *ngIf="group.expanded">
+        <table class="employees-table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Mon</th>
+              <th>Tue</th>
+              <th>Wed</th>
+              <th>Thu</th>
+              <th>Fri</th>
+              <th>Sat</th>
+              <th>Sun</th>
+              <th>Total</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let emp of group.employees">
+              <td class="emp-cell">
+                <div class="emp-info">
                   <span class="emp-name">{{ emp.name }}</span>
                   <span class="emp-code">{{ emp.code }}</span>
                 </div>
-              </div>
-            </td>
-            <td *ngFor="let hours of emp.dayHours" class="hours-cell">
-              <span class="hours-value" [class.zero]="hours === 0">{{ hours > 0 ? hours.toFixed(1) : '-' }}</span>
-            </td>
-            <td class="total-cell">
-              <span class="total-value">{{ emp.totalHours.toFixed(1) }}h</span>
-            </td>
-            <td class="variance-cell">
-              <span class="variance-value" 
-                    [class.positive]="getHoursVariance(emp.totalHours).positive"
-                    [class.negative]="!getHoursVariance(emp.totalHours).positive">
-                {{ getHoursVariance(emp.totalHours).display }}
-              </span>
-            </td>
-          </tr>
-          <tr class="project-row" *ngFor="let project of emp.projects">
-            <td class="project-cell">
-              <div class="project-info">
-                <i class="fas fa-folder project-icon"></i>
-                <span class="project-name">{{ project.name }}</span>
-              </div>
-            </td>
-            <td *ngFor="let hours of project.hours" class="hours-cell project-hours">
-              <span class="hours-value" [class.zero]="hours === 0">{{ hours > 0 ? hours.toFixed(1) : '-' }}</span>
-            </td>
-            <td class="total-cell project-total">
-              <span>{{ project.totalHours.toFixed(1) }}h</span>
-            </td>
-            <td class="variance-cell"></td>
-          </tr>
-          <tr class="employee-total-row">
-            <td class="employee-total-label">Employee Total</td>
-            <td *ngFor="let hours of emp.dayHours" class="employee-total-hours">
-              <strong>{{ hours > 0 ? hours.toFixed(1) : '-' }}</strong>
-            </td>
-            <td class="employee-total-sum">
-              <strong>Total Hours: {{ emp.totalHours.toFixed(1) }}h</strong>
-            </td>
-            <td class="employee-total-variance">
-              <span [class.positive]="getHoursVariance(emp.totalHours).positive"
-                    [class.negative]="!getHoursVariance(emp.totalHours).positive">
-                {{ getHoursVariance(emp.totalHours).display }}
-              </span>
-            </td>
-          </tr>
-        </ng-container>
-        <tr *ngIf="weeklyData.length === 0">
-          <td colspan="10" class="no-data">
-            <i class="fas fa-calendar-times"></i>
-            <p>No attendance records found for this week</p>
-            <button class="btn-primary" (click)="openGenerateModal()">
-              <i class="fas fa-magic"></i> Generate Weekly Attendance
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+              </td>
+              <td>{{ emp.dayHours[0] > 0 ? emp.dayHours[0].toFixed(1) : '-' }}</td>
+              <td>{{ emp.dayHours[1] > 0 ? emp.dayHours[1].toFixed(1) : '-' }}</td>
+              <td>{{ emp.dayHours[2] > 0 ? emp.dayHours[2].toFixed(1) : '-' }}</td>
+              <td>{{ emp.dayHours[3] > 0 ? emp.dayHours[3].toFixed(1) : '-' }}</td>
+              <td>{{ emp.dayHours[4] > 0 ? emp.dayHours[4].toFixed(1) : '-' }}</td>
+              <td>{{ emp.dayHours[5] > 0 ? emp.dayHours[5].toFixed(1) : '-' }}</td>
+              <td>{{ emp.dayHours[6] > 0 ? emp.dayHours[6].toFixed(1) : '-' }}</td>
+              <td class="total-cell"><strong>{{ emp.totalHours.toFixed(1) }}h</strong></td>
+              <td>
+                <span class="status-badge" [ngClass]="emp.totalHours > 0 ? 'approved' : 'pending'">
+                  {{ emp.totalHours > 0 ? 'approved' : 'pending' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="no-data-message" *ngIf="projectGroupedData.length === 0 && weeklyData.length === 0">
+      <i class="fas fa-calendar-times"></i>
+      <p>No attendance records found for this week</p>
+      <button class="btn-primary" (click)="openGenerateModal()">
+        <i class="fas fa-magic"></i> Generate Weekly Attendance
+      </button>
+    </div>
   </div>
 
   <div class="loading" *ngIf="loading">

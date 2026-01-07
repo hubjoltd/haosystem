@@ -1,5 +1,5 @@
 .weekly-timesheet {
-  padding: 20px;
+  padding: 24px;
 
   .page-header {
     display: flex;
@@ -9,20 +9,38 @@
 
     .header-left {
       h1 {
-        color: #008080;
+        color: #333;
         font-size: 24px;
         margin: 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        font-weight: 600;
 
-        i { font-size: 22px; }
+        i { color: #008080; margin-right: 10px; }
       }
 
       .subtitle {
-        color: #666;
+        color: #888;
         margin-top: 4px;
         font-size: 14px;
+      }
+    }
+
+    .header-right {
+      .date-picker {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: white;
+        padding: 10px 16px;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+
+        i { color: #666; }
+
+        input {
+          border: none;
+          font-size: 14px;
+          &:focus { outline: none; }
+        }
       }
     }
   }
@@ -37,51 +55,6 @@
     &.warning { background: #fff3cd; color: #856404; }
   }
 
-  .week-navigation {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    margin-bottom: 24px;
-    padding: 16px;
-    background: #f8f9fa;
-    border-radius: 8px;
-
-    .nav-btn {
-      width: 40px;
-      height: 40px;
-      border: none;
-      background: white;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      color: #008080;
-      font-size: 16px;
-
-      &:hover { background: #008080; color: white; }
-    }
-
-    .week-selector {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-
-      input {
-        padding: 10px 14px;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        font-size: 14px;
-
-        &:focus { outline: none; border-color: #008080; }
-      }
-
-      span { color: #666; }
-    }
-  }
-
   .summary-cards {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -94,254 +67,186 @@
 
     .summary-card {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 16px;
-      padding: 20px;
-      background: white;
+      padding: 20px 24px;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-
-      .card-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-      }
+      color: white;
+      min-height: 90px;
 
       .card-content {
         display: flex;
         flex-direction: column;
+        gap: 4px;
 
         .card-label {
+          font-size: 13px;
+          opacity: 0.9;
+        }
+
+        .card-value {
+          font-size: 32px;
+          font-weight: 700;
+
+          small { font-size: 18px; opacity: 0.8; }
+        }
+      }
+
+      .card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        i { font-size: 22px; }
+      }
+
+      &.employees { background: linear-gradient(135deg, #4A90D9 0%, #357ABD 100%); }
+      &.projects { background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%); }
+      &.hours { background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); }
+      &.overtime { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
+    }
+  }
+
+  .project-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .project-group {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      cursor: pointer;
+      transition: background 0.2s;
+
+      &:hover { background: #f9fafb; }
+
+      .project-info {
+        .project-name {
+          margin: 0;
+          font-size: 18px;
+          font-weight: 600;
+          color: #333;
+        }
+
+        .project-stats {
+          font-size: 13px;
+          color: #666;
+          margin-top: 4px;
+        }
+      }
+
+      .btn-expand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #333;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          background: #f9fafb;
+          border-color: #ccc;
+        }
+
+        i { font-size: 12px; }
+      }
+    }
+
+    .project-employees {
+      border-top: 1px solid #eee;
+      padding: 0;
+
+      .employees-table {
+        width: 100%;
+        border-collapse: collapse;
+
+        th, td {
+          padding: 14px 16px;
+          text-align: left;
+          border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+          background: #f8f9fa;
+          color: #555;
+          font-weight: 600;
           font-size: 12px;
-          color: #888;
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
 
-        .card-value {
-          font-size: 28px;
-          font-weight: 700;
-
-          small { font-size: 16px; opacity: 0.7; }
+        td {
+          font-size: 14px;
+          color: #333;
         }
-      }
 
-      &.employees {
-        .card-icon { background: #e3f2fd; color: #1976d2; }
-        .card-value { color: #1976d2; }
-      }
-
-      &.projects {
-        .card-icon { background: #f3e5f5; color: #7b1fa2; }
-        .card-value { color: #7b1fa2; }
-      }
-
-      &.hours {
-        .card-icon { background: #fff3e0; color: #f57c00; }
-        .card-value { color: #f57c00; }
-      }
-
-      &.average {
-        .card-icon { background: #e8f5e9; color: #388e3c; }
-        .card-value { color: #388e3c; }
-      }
-    }
-  }
-
-  .timesheet-table-container {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    overflow-x: auto;
-  }
-
-  .timesheet-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 1000px;
-
-    th, td {
-      padding: 12px 16px;
-      text-align: center;
-      border-bottom: 1px solid #eee;
-    }
-
-    th {
-      background: #f8f9fa;
-      color: #333;
-      font-weight: 600;
-      font-size: 12px;
-      text-transform: uppercase;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    .employee-col {
-      text-align: left;
-      min-width: 200px;
-    }
-
-    .day-col {
-      min-width: 80px;
-
-      .day-header {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-
-        .day-name { font-weight: 600; }
-        .day-date { font-size: 10px; color: #888; font-weight: normal; }
-      }
-    }
-
-    .total-col { min-width: 100px; background: #f0f0f0; }
-    .variance-col { min-width: 100px; }
-
-    .employee-row {
-      background: white;
-
-      &:hover { background: #fafafa; }
-
-      .employee-cell {
-        text-align: left;
-
-        .employee-info {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-
-          .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #008080;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 16px;
-          }
-
-          .emp-details {
+        .emp-cell {
+          .emp-info {
             display: flex;
             flex-direction: column;
+            gap: 2px;
 
-            .emp-name { font-weight: 600; color: #333; }
-            .emp-code { font-size: 11px; color: #888; }
+            .emp-name {
+              font-weight: 500;
+            }
+
+            .emp-code {
+              font-size: 12px;
+              color: #888;
+            }
           }
         }
-      }
 
-      .hours-cell {
-        .hours-value {
-          display: inline-block;
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-weight: 500;
-          font-size: 13px;
-          color: #333;
-
-          &.zero { color: #ccc; }
-        }
-      }
-
-      .total-cell {
-        background: #f8f9fa;
-
-        .total-value {
-          font-weight: 700;
+        .total-cell {
           color: #008080;
         }
-      }
 
-      .variance-cell {
-        .variance-value {
+        .ot-cell {
+          color: #F59E0B;
+        }
+
+        .status-badge {
           display: inline-block;
-          padding: 4px 10px;
-          border-radius: 12px;
-          font-weight: 600;
+          padding: 4px 12px;
+          border-radius: 20px;
           font-size: 12px;
+          font-weight: 500;
 
-          &.positive { background: #d4edda; color: #155724; }
-          &.negative { background: #f8d7da; color: #721c24; }
+          &.approved { background: #FEF3C7; color: #D97706; }
+          &.pending { background: #FEF3C7; color: #D97706; }
+          &.completed { background: #D1FAE5; color: #059669; }
         }
       }
     }
+  }
 
-    .project-row {
-      background: #fafafa;
+  .no-data-message {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 12px;
+    color: #888;
 
-      .project-cell {
-        text-align: left;
-        padding-left: 68px;
-
-        .project-info {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-
-          .project-icon { color: #f57c00; font-size: 14px; }
-          .project-name { font-size: 13px; color: #666; }
-        }
-      }
-
-      .project-hours {
-        .hours-value { font-size: 12px; color: #666; }
-      }
-
-      .project-total {
-        font-size: 12px;
-        color: #666;
-      }
-    }
-
-    .employee-total-row {
-      background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%);
-      border-top: 2px solid #c8e6c9;
-
-      td {
-        padding: 10px 16px;
-      }
-
-      .employee-total-label {
-        text-align: left;
-        font-weight: 600;
-        color: #2e7d32;
-        padding-left: 68px;
-      }
-
-      .employee-total-hours {
-        font-weight: 600;
-        color: #2e7d32;
-      }
-
-      .employee-total-sum {
-        font-weight: 700;
-        color: #1b5e20;
-        background: rgba(46, 125, 50, 0.1);
-      }
-
-      .employee-total-variance {
-        .positive { color: #155724; }
-        .negative { color: #721c24; }
-      }
-    }
-
-    .no-data {
-      padding: 60px 20px;
-      text-align: center;
-      color: #888;
-
-      i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
-      p { margin: 0 0 20px; }
-    }
+    i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+    p { margin: 0 0 20px; }
   }
 
   .loading {
