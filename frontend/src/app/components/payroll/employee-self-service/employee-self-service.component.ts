@@ -10,11 +10,12 @@ import { AuthService } from '../../../services/auth.service';
 import { DocumentService, EmployeeDocument, DocumentType, ChecklistCategory, ChecklistDocumentType } from '../../../services/document.service';
 import { EmployeeService, EmployeeAsset, Employee } from '../../../services/employee.service';
 import { SalarySlipService, SalarySlipData, EmployeeSlipInfo } from '../../../services/salary-slip.service';
+import { PayslipComponent, PayslipData } from '../payslip/payslip.component';
 
 @Component({
   selector: 'app-employee-self-service',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PayslipComponent],
   templateUrl: './employee-self-service.component.html',
   styleUrls: ['./employee-self-service.component.scss']
 })
@@ -37,6 +38,7 @@ export class EmployeeSelfServiceComponent implements OnInit {
   currentEmployee: Employee | null = null;
   selectedPaystub: PayrollRecord | null = null;
   showPaystubModal = false;
+  payslipData: PayslipData | null = null;
   
   showLeaveRequestModal = false;
   newLeaveRequest = {
@@ -172,12 +174,48 @@ export class EmployeeSelfServiceComponent implements OnInit {
 
   viewPaystub(paystub: PayrollRecord): void {
     this.selectedPaystub = paystub;
+    this.payslipData = this.convertToPayslipData(paystub);
     this.showPaystubModal = true;
   }
 
   closePaystubModal(): void {
     this.showPaystubModal = false;
     this.selectedPaystub = null;
+    this.payslipData = null;
+  }
+
+  convertToPayslipData(record: PayrollRecord): PayslipData {
+    const emp = record.employee || this.currentEmployee;
+    const run = record.payrollRun;
+    return {
+      employeeId: emp?.employeeCode || `EMP${String(this.currentEmployeeId).padStart(3, '0')}`,
+      employeeName: emp ? `${emp.firstName || ''} ${emp.lastName || ''}`.trim() : 'Employee',
+      employeeDesignation: emp?.designation?.name || emp?.jobTitle || 'Employee',
+      department: emp?.department?.name || 'General',
+      payPeriod: run?.payFrequency?.name || 'Monthly',
+      payDate: run?.payDate || new Date().toISOString().split('T')[0],
+      periodFrom: run?.periodStartDate || '',
+      periodTo: run?.periodEndDate || '',
+      basePay: record.basePay || 0,
+      regularHours: record.regularHours || 0,
+      overtimeHours: record.overtimeHours || 0,
+      overtimePay: record.overtimePay || 0,
+      bonuses: record.bonuses || 0,
+      allowances: 0,
+      reimbursements: record.reimbursements || 0,
+      grossPay: record.grossPay || 0,
+      federalTax: record.federalTax || 0,
+      stateTax: record.stateTax || 0,
+      socialSecurityTax: record.socialSecurityTax || 0,
+      medicareTax: record.medicareTax || 0,
+      healthInsurance: record.healthInsurance || 0,
+      retirement401k: record.retirement401k || 0,
+      loanDeductions: record.loanDeductions || 0,
+      otherDeductions: 0,
+      totalDeductions: record.totalDeductions || 0,
+      netPay: record.netPay || 0,
+      expenses: record.reimbursements || 0
+    };
   }
 
   openLeaveRequestModal(): void {

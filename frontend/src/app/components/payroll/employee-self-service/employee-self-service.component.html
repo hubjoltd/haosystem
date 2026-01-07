@@ -529,84 +529,15 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showPaystubModal" (click)="closePaystubModal()">
-  <div class="modal paystub-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h3>Pay Stub Details</h3>
-      <button class="close-btn" (click)="closePaystubModal()">&times;</button>
-    </div>
-    <div class="modal-body" *ngIf="selectedPaystub">
-      <div class="paystub-section">
-        <h4>Pay Period</h4>
-        <p>{{ getPayPeriod(selectedPaystub) }} | Paid: {{ getPayDate(selectedPaystub) }}</p>
-      </div>
-
-      <div class="paystub-section">
-        <h4>Earnings</h4>
-        <div class="detail-row">
-          <span>Base Pay</span>
-          <span>${{ selectedPaystub.basePay | number:'1.2-2' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedPaystub.overtimePay">
-          <span>Overtime Pay</span>
-          <span>${{ selectedPaystub.overtimePay | number:'1.2-2' }}</span>
-        </div>
-        <div class="detail-row total">
-          <span>Gross Pay</span>
-          <span>${{ selectedPaystub.grossPay | number:'1.2-2' }}</span>
-        </div>
-      </div>
-
-      <div class="paystub-section">
-        <h4>Deductions</h4>
-        <div class="detail-row" *ngIf="selectedPaystub.healthInsurance">
-          <span>Health Insurance</span>
-          <span>${{ selectedPaystub.healthInsurance | number:'1.2-2' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedPaystub.retirement401k">
-          <span>401(k)</span>
-          <span>${{ selectedPaystub.retirement401k | number:'1.2-2' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedPaystub.federalTax">
-          <span>Federal Tax</span>
-          <span>${{ selectedPaystub.federalTax | number:'1.2-2' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedPaystub.stateTax">
-          <span>State Tax</span>
-          <span>${{ selectedPaystub.stateTax | number:'1.2-2' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedPaystub.socialSecurityTax">
-          <span>Social Security</span>
-          <span>${{ selectedPaystub.socialSecurityTax | number:'1.2-2' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedPaystub.medicareTax">
-          <span>Medicare</span>
-          <span>${{ selectedPaystub.medicareTax | number:'1.2-2' }}</span>
-        </div>
-        <div class="detail-row total">
-          <span>Total Deductions</span>
-          <span>${{ selectedPaystub.totalDeductions | number:'1.2-2' }}</span>
-        </div>
-      </div>
-
-      <div class="paystub-section net-section">
-        <div class="detail-row net-pay">
-          <span>Net Pay</span>
-          <span>${{ selectedPaystub.netPay | number:'1.2-2' }}</span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closePaystubModal()">Close</button>
-      <button class="btn btn-outline-primary" (click)="printPaystub(selectedPaystub!)">
-        <i class="fas fa-print"></i> Print
-      </button>
-      <button class="btn btn-primary" (click)="downloadPaystub(selectedPaystub!)">
-        <i class="fas fa-download"></i> Download
-      </button>
-    </div>
-  </div>
-</div>
+<app-payslip
+  [showModal]="showPaystubModal"
+  [payslipData]="payslipData"
+  [companyName]="companyName"
+  [companyAddress]="companyAddress"
+  (closeModal)="closePaystubModal()"
+  (downloadPayslip)="downloadPaystub(selectedPaystub!)"
+  (printPayslip)="printPaystub(selectedPaystub!)">
+</app-payslip>
 
 <div class="modal-overlay" *ngIf="showLeaveRequestModal" (click)="closeLeaveRequestModal()">
   <div class="modal" (click)="$event.stopPropagation()">

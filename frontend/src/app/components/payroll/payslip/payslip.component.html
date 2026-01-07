@@ -1,0 +1,195 @@
+<div class="modal-overlay" *ngIf="showModal" (click)="onClose()">
+  <div class="payslip-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fas fa-file-invoice-dollar"></i> Pay Slip</h3>
+      <button class="close-btn" (click)="onClose()">&times;</button>
+    </div>
+
+    <div class="payslip-document" id="payslip-print">
+      <div class="payslip-header">
+        <div class="company-info">
+          <h2 class="company-name">{{ companyName }}</h2>
+          <p class="company-address">{{ companyAddress }}</p>
+          <p class="company-contact">{{ companyPhone }} | {{ companyEmail }}</p>
+        </div>
+        <div class="payslip-title">
+          <h3>PAYSLIP</h3>
+          <p class="pay-period">{{ payslipData?.payPeriod }}</p>
+        </div>
+      </div>
+
+      <div class="payslip-body" *ngIf="payslipData">
+        <div class="employee-details">
+          <div class="detail-section">
+            <h4>Employee Information</h4>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="label">Employee ID</span>
+                <span class="value">{{ payslipData.employeeId }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Employee Name</span>
+                <span class="value">{{ payslipData.employeeName }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Designation</span>
+                <span class="value">{{ payslipData.employeeDesignation || '-' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Department</span>
+                <span class="value">{{ payslipData.department || '-' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>Pay Period Details</h4>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="label">Period From</span>
+                <span class="value">{{ formatDate(payslipData.periodFrom || '') }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Period To</span>
+                <span class="value">{{ formatDate(payslipData.periodTo || '') }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Pay Date</span>
+                <span class="value">{{ formatDate(payslipData.payDate) }}</span>
+              </div>
+              <div class="detail-item" *ngIf="payslipData.bankAccount">
+                <span class="label">Bank Account</span>
+                <span class="value">{{ payslipData.bankAccount }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="earnings-deductions-container">
+          <div class="earnings-section">
+            <h4>Earnings</h4>
+            <table class="payslip-table">
+              <tbody>
+                <tr>
+                  <td>Base Salary</td>
+                  <td class="amount">{{ formatCurrency(payslipData.basePay) }}</td>
+                </tr>
+                <tr *ngIf="payslipData.overtimePay && payslipData.overtimePay > 0">
+                  <td>Overtime Pay ({{ payslipData.overtimeHours || 0 }}h)</td>
+                  <td class="amount">{{ formatCurrency(payslipData.overtimePay) }}</td>
+                </tr>
+                <tr *ngIf="payslipData.bonuses && payslipData.bonuses > 0">
+                  <td>Bonuses</td>
+                  <td class="amount">{{ formatCurrency(payslipData.bonuses) }}</td>
+                </tr>
+                <tr *ngIf="payslipData.allowances && payslipData.allowances > 0">
+                  <td>Allowances</td>
+                  <td class="amount">{{ formatCurrency(payslipData.allowances) }}</td>
+                </tr>
+                <tr *ngIf="payslipData.reimbursements && payslipData.reimbursements > 0">
+                  <td>Reimbursements</td>
+                  <td class="amount">{{ formatCurrency(payslipData.reimbursements) }}</td>
+                </tr>
+                <tr *ngIf="payslipData.expenses && payslipData.expenses > 0">
+                  <td>Expense Claims</td>
+                  <td class="amount">{{ formatCurrency(payslipData.expenses) }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="total-row">
+                  <td><strong>Gross Pay</strong></td>
+                  <td class="amount"><strong>{{ formatCurrency(payslipData.grossPay) }}</strong></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div class="deductions-section">
+            <h4>Deductions</h4>
+            <table class="payslip-table">
+              <tbody>
+                <tr *ngIf="payslipData.federalTax && payslipData.federalTax > 0">
+                  <td>Federal Tax</td>
+                  <td class="amount deduction">{{ formatCurrency(payslipData.federalTax) }}</td>
+                </tr>
+                <tr *ngIf="payslipData.stateTax && payslipData.stateTax > 0">
+                  <td>State Tax</td>
+                  <td class="amount deduction">{{ formatCurrency(payslipData.stateTax) }}</td>
+                </tr>
+                <tr *ngIf="payslipData.socialSecurityTax && payslipData.socialSecurityTax > 0">
+                  <td>Social Security</td>
+                  <td class="amount deduction">{{ formatCurrency(payslipData.socialSecurityTax) }}</td>
+                </tr>
+                <tr *ngIf="payslipData.medicareTax && payslipData.medicareTax > 0">
+                  <td>Medicare</td>
+                  <td class="amount deduction">{{ formatCurrency(payslipData.medicareTax) }}</td>
+                </tr>
+                <tr *ngIf="payslipData.healthInsurance && payslipData.healthInsurance > 0">
+                  <td>Health Insurance</td>
+                  <td class="amount deduction">{{ formatCurrency(payslipData.healthInsurance) }}</td>
+                </tr>
+                <tr *ngIf="payslipData.retirement401k && payslipData.retirement401k > 0">
+                  <td>401(k) Contribution</td>
+                  <td class="amount deduction">{{ formatCurrency(payslipData.retirement401k) }}</td>
+                </tr>
+                <tr *ngIf="payslipData.loanDeductions && payslipData.loanDeductions > 0">
+                  <td>Loan Deductions</td>
+                  <td class="amount deduction">{{ formatCurrency(payslipData.loanDeductions) }}</td>
+                </tr>
+                <tr *ngIf="payslipData.otherDeductions && payslipData.otherDeductions > 0">
+                  <td>Other Deductions</td>
+                  <td class="amount deduction">{{ formatCurrency(payslipData.otherDeductions) }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="total-row">
+                  <td><strong>Total Deductions</strong></td>
+                  <td class="amount deduction"><strong>{{ formatCurrency(payslipData.totalDeductions) }}</strong></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <div class="net-pay-section">
+          <div class="net-pay-box">
+            <span class="label">Net Pay</span>
+            <span class="amount">{{ formatCurrency(payslipData.netPay) }}</span>
+          </div>
+        </div>
+
+        <div class="ytd-section" *ngIf="payslipData.ytdGross || payslipData.ytdTax || payslipData.ytdNet">
+          <h4>Year-to-Date Summary</h4>
+          <div class="ytd-grid">
+            <div class="ytd-item" *ngIf="payslipData.ytdGross">
+              <span class="label">YTD Gross</span>
+              <span class="value">{{ formatCurrency(payslipData.ytdGross) }}</span>
+            </div>
+            <div class="ytd-item" *ngIf="payslipData.ytdTax">
+              <span class="label">YTD Tax</span>
+              <span class="value deduction">{{ formatCurrency(payslipData.ytdTax) }}</span>
+            </div>
+            <div class="ytd-item" *ngIf="payslipData.ytdNet">
+              <span class="label">YTD Net</span>
+              <span class="value net">{{ formatCurrency(payslipData.ytdNet) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="payslip-footer">
+          <p class="disclaimer">This is a computer-generated document. No signature is required.</p>
+          <p class="generated-date">Generated on {{ currentDate | date:'MMMM d, yyyy \'at\' h:mm a' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="onClose()">Close</button>
+      <button class="btn btn-outline-primary" (click)="onPrint()">
+        <i class="fas fa-print"></i> Print
+      </button>
+      <button class="btn btn-primary" (click)="onDownload()">
+        <i class="fas fa-download"></i> Download PDF
+      </button>
+    </div>
+  </div>
+</div>
