@@ -42,6 +42,11 @@ public class AttendanceController {
     public ResponseEntity<List<AttendanceRecord>> getAllRecords() {
         return ResponseEntity.ok(attendanceRecordRepository.findAll());
     }
+    
+    @GetMapping("/employees-for-clock")
+    public ResponseEntity<List<Employee>> getEmployeesForClock() {
+        return ResponseEntity.ok(employeeRepository.findByActiveTrue());
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<AttendanceRecord> getById(@PathVariable Long id) {

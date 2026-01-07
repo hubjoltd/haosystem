@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
-import { EmployeeService, Employee } from '../../../services/employee.service';
+import { Employee } from '../../../services/employee.service';
 
 @Component({
   selector: 'app-clock-in-out',
@@ -24,8 +24,7 @@ export class ClockInOutComponent implements OnInit {
   todayActivities: AttendanceRecord[] = [];
 
   constructor(
-    private attendanceService: AttendanceService,
-    private employeeService: EmployeeService
+    private attendanceService: AttendanceService
   ) {}
 
   ngOnInit(): void {
@@ -38,9 +37,9 @@ export class ClockInOutComponent implements OnInit {
   }
 
   loadEmployees(): void {
-    this.employeeService.getAll().subscribe({
+    this.attendanceService.getEmployeesForClock().subscribe({
       next: (data: Employee[]) => {
-        this.employees = data.filter((e: Employee) => e.active);
+        this.employees = data;
       },
       error: (err: any) => console.error('Error loading employees:', err)
     });

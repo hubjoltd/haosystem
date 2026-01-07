@@ -76,6 +76,10 @@ export class AttendanceService {
   getAllRecords(): Observable<AttendanceRecord[]> {
     return this.http.get<AttendanceRecord[]>(this.baseUrl);
   }
+  
+  getEmployeesForClock(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/employees-for-clock`);
+  }
 
   getById(id: number): Observable<AttendanceRecord> {
     return this.http.get<AttendanceRecord>(`${this.baseUrl}/${id}`);
