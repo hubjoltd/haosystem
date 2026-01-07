@@ -129,14 +129,19 @@ export class TimesheetApprovalComponent implements OnInit {
   }
 
   goToStep(step: number): void {
-    if (step === 2) {
-      window.location.href = '/app/payroll/calculate';
-    } else if (step === 3) {
-      window.location.href = '/app/payroll/process';
-    } else if (step === 4) {
+    if (step === 4) {
       window.location.href = '/app/payroll/history';
-    } else {
-      this.currentStep = step;
+      return;
+    }
+    
+    this.currentStep = step;
+    
+    if (step === 0) {
+      this.loadDailyAttendance();
+    } else if (step === 1) {
+      this.loadTimesheets();
+    } else if (step === 2 || step === 3) {
+      this.loadPayableEmployees();
     }
   }
 
@@ -804,5 +809,59 @@ export class TimesheetApprovalComponent implements OnInit {
 
   formatCurrency(amount: number): string {
     return '$' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  getOnTimeRate(): string {
+    if (this.attendanceRecords.length === 0) return '0.0';
+    const onTime = this.attendanceRecords.filter(r => {
+      if (!r.clockIn) return false;
+      const clockInTime = r.clockIn.split(':');
+      const hours = parseInt(clockInTime[0], 10);
+      const minutes = parseInt(clockInTime[1], 10);
+      return hours < 9 || (hours === 9 && minutes <= 0);
+    }).length;
+    return ((onTime / this.attendanceRecords.length) * 100).toFixed(1);
+  }
+
+  getLateArrivals(): string {
+    if (this.attendanceRecords.length === 0) return '0.0';
+    const late = this.attendanceRecords.filter(r => {
+      if (!r.clockIn) return false;
+      const clockInTime = r.clockIn.split(':');
+      const hours = parseInt(clockInTime[0], 10);
+      const minutes = parseInt(clockInTime[1], 10);
+      return hours > 9 || (hours === 9 && minutes > 0);
+    }).length;
+    return ((late / this.attendanceRecords.length) * 100).toFixed(1);
+  }
+
+  getPayPeriodTypeLabel(): string {
+    switch (this.selectedPayPeriodType) {
+      case 'WEEKLY': return 'Weekly';
+      case 'BI_WEEKLY': return 'Bi-Weekly';
+      case 'SEMI_MONTHLY': return 'Semi-Monthly';
+      case 'MONTHLY': return 'Monthly';
+      default: return this.selectedPayPeriodType;
+    }
+  }
+
+  getTimesheetTotalHours(): string {
+    const total = this.filteredTimesheets.reduce((sum, ts) => sum + (ts.totalHours || 0), 0);
+    return total.toFixed(2);
+  }
+
+  getPayableTotalHours(): string {
+    const total = this.payableEmployees.reduce((sum, emp) => sum + emp.hours, 0);
+    return total.toFixed(2);
+  }
+
+  getApprovalStatusClass(status: string | undefined): string {
+    if (!status) return 'pending';
+    switch (status.toUpperCase()) {
+      case 'APPROVED': return 'approved';
+      case 'REJECTED': return 'rejected';
+      case 'PENDING': return 'pending';
+      default: return 'pending';
+    }
   }
 }
