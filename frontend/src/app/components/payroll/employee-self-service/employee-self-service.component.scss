@@ -1266,3 +1266,109 @@ tr.expired {
 .text-muted { color: #94a3b8 !important; }
 .text-warning { color: #f59e0b !important; }
 .text-danger { color: #ef4444 !important; }
+
+.subsection-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+
+  i {
+    color: #008080;
+  }
+}
+
+.expense-categories-section {
+  margin-bottom: 24px;
+}
+
+.expense-categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.expense-category-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #008080;
+  }
+
+  &.inactive {
+    opacity: 0.6;
+    background: #f9fafb;
+  }
+
+  .category-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    i {
+      color: white;
+      font-size: 20px;
+    }
+  }
+
+  .category-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    .category-name {
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .category-desc {
+      font-size: 12px;
+      color: #666;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .category-limit {
+      font-size: 11px;
+      color: #008080;
+      font-weight: 500;
+    }
+  }
+
+  .category-status {
+    flex-shrink: 0;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+
+    &.active {
+      background: #d1fae5;
+      color: #059669;
+    }
+
+    &.inactive {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+  }
+}

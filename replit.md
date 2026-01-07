@@ -1,6 +1,8 @@
 # Hao System - Angular Frontend
 
 ## Recent Changes (January 2026)
+- **ESS Expense Categories Display**: Added all expense categories grid in ESS Expenses tab showing category name, description, icon, color, max amount limit, and active/inactive status
+- **ESS Document Checklist**: Verified document checklist is properly showing in ESS Documents tab with upload status, completion percentage, and category-based organization
 - **Document Checklist Enhancement**: Added comprehensive document checklist in employee Documents tab showing ALL document types organized by category with upload status indicators (Not Uploaded, Uploaded, Approved, Rejected, Expired)
 - **File Upload in Document Modal**: Added PDF and image file upload capability with drag-and-drop style UI (supports PDF, JPEG, PNG, GIF; max 10MB)
 - **Document Status Visualization**: Color-coded mandatory document rows (light orange) and expired document rows (light red) for better visibility

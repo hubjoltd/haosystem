@@ -667,4 +667,46 @@ export class EmployeeSelfServiceComponent implements OnInit {
     const expiry = new Date(doc.expiryDate);
     return expiry < new Date();
   }
+
+  getCategoryColor(code: string): string {
+    const colors: { [key: string]: string } = {
+      'TRAVEL': '#3498db',
+      'MEALS': '#e67e22',
+      'OFFICE': '#9b59b6',
+      'COMMUNICATION': '#1abc9c',
+      'TRANSPORT': '#f39c12',
+      'EQUIPMENT': '#e74c3c',
+      'TRAINING': '#2ecc71',
+      'ENTERTAINMENT': '#e91e63',
+      'ACCOMMODATION': '#00bcd4',
+      'MEDICAL': '#ff5722',
+      'SUPPLIES': '#795548',
+      'UTILITIES': '#607d8b',
+      'MARKETING': '#673ab7',
+      'SOFTWARE': '#009688',
+      'MISC': '#9e9e9e'
+    };
+    return colors[code] || '#008080';
+  }
+
+  getCategoryIcon(code: string): string {
+    const icons: { [key: string]: string } = {
+      'TRAVEL': 'fa-plane',
+      'MEALS': 'fa-utensils',
+      'OFFICE': 'fa-building',
+      'COMMUNICATION': 'fa-phone',
+      'TRANSPORT': 'fa-car',
+      'EQUIPMENT': 'fa-laptop',
+      'TRAINING': 'fa-graduation-cap',
+      'ENTERTAINMENT': 'fa-film',
+      'ACCOMMODATION': 'fa-hotel',
+      'MEDICAL': 'fa-medkit',
+      'SUPPLIES': 'fa-box',
+      'UTILITIES': 'fa-bolt',
+      'MARKETING': 'fa-bullhorn',
+      'SOFTWARE': 'fa-code',
+      'MISC': 'fa-ellipsis-h'
+    };
+    return icons[code] || 'fa-receipt';
+  }
 }
