@@ -104,7 +104,7 @@
   <!-- DETAILED VIEW -->
   <div class="detail-view" *ngIf="activeView === 'detail'">
     <div class="filter-section">
-      <h4>Filter Payroll History</h4>
+      <h4><i class="fas fa-filter"></i> Filter Payroll History</h4>
       <div class="filter-row">
         <div class="filter-group">
           <label>Project</label>
@@ -129,18 +129,22 @@
 
     <div class="detail-summary-cards">
       <div class="summary-card total-records">
+        <i class="fas fa-file-alt card-icon"></i>
         <span class="card-label">Total Records</span>
         <span class="card-value">{{ filteredRecords.length }}</span>
       </div>
       <div class="summary-card total-paid">
+        <i class="fas fa-check-circle card-icon"></i>
         <span class="card-label">Total Paid</span>
         <span class="card-value">{{ formatCurrency(totalNetFiltered) }}</span>
       </div>
       <div class="summary-card pending">
+        <i class="fas fa-clock card-icon"></i>
         <span class="card-label">Pending Payment</span>
         <span class="card-value">{{ formatCurrency(pendingAmount) }}</span>
       </div>
       <div class="summary-card on-hold">
+        <i class="fas fa-pause-circle card-icon"></i>
         <span class="card-label">On Hold</span>
         <span class="card-value">{{ formatCurrency(onHoldAmount) }}</span>
       </div>
