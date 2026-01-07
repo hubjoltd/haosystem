@@ -130,7 +130,7 @@ export class TimesheetApprovalComponent implements OnInit {
 
   goToStep(step: number): void {
     if (step === 2) {
-      window.location.href = '/app/payroll/calculation';
+      window.location.href = '/app/payroll/calculate';
     } else if (step === 3) {
       window.location.href = '/app/payroll/process';
     } else if (step === 4) {
