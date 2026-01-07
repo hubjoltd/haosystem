@@ -110,8 +110,11 @@
           </label>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Save' }}</button>
+          <button type="button" class="btn btn-secondary" (click)="closeModal()" [disabled]="saving">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving">
+            <i class="fas fa-spinner fa-spin" *ngIf="saving"></i>
+            {{ saving ? 'Saving...' : (isEditMode ? 'Update' : 'Save') }}
+          </button>
         </div>
       </form>
     </div>

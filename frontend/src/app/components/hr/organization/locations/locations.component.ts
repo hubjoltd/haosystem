@@ -12,6 +12,7 @@ export class LocationsComponent implements OnInit {
   
   loading = false;
   dataReady = false;
+  saving = false;
   
   showModal = false;
   isEditMode = false;
@@ -59,15 +60,18 @@ export class LocationsComponent implements OnInit {
   }
 
   save() {
+    if (this.saving) return;
+    this.saving = true;
+    
     if (this.isEditMode && this.editing.id) {
       this.orgService.updateLocation(this.editing.id, this.editing).subscribe({
-        next: () => { this.loadData(); this.closeModal(); },
-        error: (err) => console.error('Error updating:', err)
+        next: () => { this.saving = false; this.loadData(); this.closeModal(); },
+        error: (err) => { this.saving = false; console.error('Error updating:', err); }
       });
     } else {
       this.orgService.createLocation(this.editing).subscribe({
-        next: () => { this.loadData(); this.closeModal(); },
-        error: (err) => console.error('Error creating:', err)
+        next: () => { this.saving = false; this.loadData(); this.closeModal(); },
+        error: (err) => { this.saving = false; console.error('Error creating:', err); }
       });
     }
   }
