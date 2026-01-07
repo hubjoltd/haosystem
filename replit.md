@@ -1,6 +1,12 @@
 # Hao System - Angular Frontend
 
 ## Recent Changes (January 2026)
+- **Onboarding Plan Auto-Generation**: Fixed save error by auto-generating plan_number in ONB-YYYY-XXXXX format when creating new onboarding plans
+- **Manpower Requisition Field Mapping**: Added backend support for frontend field names (jobTitle, minSalary/maxSalary, requiredSkills, minimumExperience, expectedJoiningDate, justificationType)
+- **Training Session programId Fix**: Added support for both programId and trainingProgramId field names when creating training sessions
+- **Payroll History View Toggle Fix**: Corrected List View to show summary cards and Detail View to show comprehensive data table
+- **Calculate Payroll Navigation**: Added Calculate Payroll page routing under `/payroll/calculate` and menu item in Payroll Processing section
+- **Candidate to Employee Conversion**: Verified proper data copying and database linking during candidate conversion
 - **ESS Expense Categories Display**: Added all expense categories grid in ESS Expenses tab showing category name, description, icon, color, max amount limit, and active/inactive status
 - **ESS Document Checklist**: Verified document checklist is properly showing in ESS Documents tab with upload status, completion percentage, and category-based organization
 - **Document Checklist Enhancement**: Added comprehensive document checklist in employee Documents tab showing ALL document types organized by category with upload status indicators (Not Uploaded, Uploaded, Approved, Rejected, Expired)
