@@ -80,8 +80,8 @@
     </div>
   </div>
 
-  <!-- LIST VIEW -->
-  <div class="table-section" *ngIf="activeView === 'list'">
+  <!-- LIST VIEW - Summary view -->
+  <div class="table-section" *ngIf="activeView === 'detail'">
     <div class="all-records-header">
       <h3>All Payroll Records</h3>
       <span class="record-count">{{ filteredRecords.length }} Payroll Records - {{ totalHoursFiltered.toFixed(2) }} Total Hours - {{ formatCurrency(totalNetFiltered) }} Total Paid</span>
@@ -166,8 +166,8 @@
     </div>
   </div>
 
-  <!-- DETAIL VIEW -->
-  <div class="detail-view-section" *ngIf="activeView === 'detail'">
+  <!-- DETAIL VIEW - Comprehensive table -->
+  <div class="detail-view-section" *ngIf="activeView === 'list'">
     <div class="payroll-summary-header">
       <div class="success-banner">
         <i class="fas fa-check-circle"></i>
@@ -320,7 +320,7 @@
   </div>
 
   <!-- LIST VIEW breakdown sections -->
-  <div class="breakdown-sections" *ngIf="activeView === 'list'">
+  <div class="breakdown-sections" *ngIf="activeView === 'detail'">
     <div class="section-box breakdown-box">
       <h4><i class="fas fa-users"></i> Salaried Employees</h4>
       <div class="mini-table-container">
@@ -384,7 +384,7 @@
     </div>
   </div>
 
-  <div class="grand-total-bar" *ngIf="activeView === 'list'">
+  <div class="grand-total-bar" *ngIf="activeView === 'detail'">
     <span>Grand Total Net Amount:</span>
     <span class="total-value">{{ formatCurrency(totalNet) }}</span>
   </div>

@@ -86,6 +86,7 @@ public class RecruitmentService {
 
     private void updateRequisitionFromMap(JobRequisition req, Map<String, Object> data) {
         if (data.containsKey("positionTitle")) req.setPositionTitle((String) data.get("positionTitle"));
+        if (data.containsKey("jobTitle")) req.setPositionTitle((String) data.get("jobTitle"));
         if (data.containsKey("departmentId") && data.get("departmentId") != null) {
             departmentRepository.findById(Long.valueOf(data.get("departmentId").toString())).ifPresent(req::setDepartment);
         }
@@ -104,22 +105,34 @@ public class RecruitmentService {
         if (data.containsKey("numberOfPositions")) req.setNumberOfPositions(Integer.valueOf(data.get("numberOfPositions").toString()));
         if (data.containsKey("employmentType")) req.setEmploymentType((String) data.get("employmentType"));
         if (data.containsKey("requisitionType")) req.setRequisitionType((String) data.get("requisitionType"));
+        if (data.containsKey("justificationType")) req.setRequisitionType((String) data.get("justificationType"));
         if (data.containsKey("justification")) req.setJustification((String) data.get("justification"));
         if (data.containsKey("jobDescription")) req.setJobDescription((String) data.get("jobDescription"));
         if (data.containsKey("requirements")) req.setRequirements((String) data.get("requirements"));
         if (data.containsKey("skills")) req.setSkills((String) data.get("skills"));
+        if (data.containsKey("requiredSkills")) req.setSkills((String) data.get("requiredSkills"));
         if (data.containsKey("minExperience")) req.setMinExperience(Integer.valueOf(data.get("minExperience").toString()));
+        if (data.containsKey("minimumExperience") && data.get("minimumExperience") != null) req.setMinExperience(Integer.valueOf(data.get("minimumExperience").toString()));
         if (data.containsKey("maxExperience")) req.setMaxExperience(Integer.valueOf(data.get("maxExperience").toString()));
         if (data.containsKey("educationRequirement")) req.setEducationRequirement((String) data.get("educationRequirement"));
         if (data.containsKey("budgetedSalaryMin") && data.get("budgetedSalaryMin") != null) {
             req.setBudgetedSalaryMin(new BigDecimal(data.get("budgetedSalaryMin").toString()));
         }
+        if (data.containsKey("minSalary") && data.get("minSalary") != null) {
+            req.setBudgetedSalaryMin(new BigDecimal(data.get("minSalary").toString()));
+        }
         if (data.containsKey("budgetedSalaryMax") && data.get("budgetedSalaryMax") != null) {
             req.setBudgetedSalaryMax(new BigDecimal(data.get("budgetedSalaryMax").toString()));
+        }
+        if (data.containsKey("maxSalary") && data.get("maxSalary") != null) {
+            req.setBudgetedSalaryMax(new BigDecimal(data.get("maxSalary").toString()));
         }
         if (data.containsKey("priority")) req.setPriority((String) data.get("priority"));
         if (data.containsKey("targetJoinDate") && data.get("targetJoinDate") != null) {
             req.setTargetJoinDate(LocalDate.parse((String) data.get("targetJoinDate")));
+        }
+        if (data.containsKey("expectedJoiningDate") && data.get("expectedJoiningDate") != null) {
+            req.setTargetJoinDate(LocalDate.parse((String) data.get("expectedJoiningDate")));
         }
         if (data.containsKey("requestedById") && data.get("requestedById") != null) {
             employeeRepository.findById(Long.valueOf(data.get("requestedById").toString())).ifPresent(req::setRequestedBy);

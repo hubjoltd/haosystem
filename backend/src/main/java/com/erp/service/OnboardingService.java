@@ -49,10 +49,18 @@ public class OnboardingService {
     @Transactional
     public OnboardingPlan createPlan(Map<String, Object> data) {
         OnboardingPlan plan = new OnboardingPlan();
+        plan.setPlanNumber(generatePlanNumber());
         updatePlanFromMap(plan, data);
         plan.setStatus("NOT_STARTED");
         plan.setProgressPercentage(0);
         return planRepository.save(plan);
+    }
+
+    private String generatePlanNumber() {
+        String prefix = "ONB";
+        String year = String.valueOf(LocalDate.now().getYear());
+        long count = planRepository.count() + 1;
+        return prefix + "-" + year + "-" + String.format("%05d", count);
     }
 
     @Transactional

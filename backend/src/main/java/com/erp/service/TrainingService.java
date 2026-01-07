@@ -136,6 +136,8 @@ public class TrainingService {
     private void updateSessionFromMap(TrainingSession session, Map<String, Object> data) {
         if (data.containsKey("trainingProgramId") && data.get("trainingProgramId") != null) {
             programRepository.findById(Long.valueOf(data.get("trainingProgramId").toString())).ifPresent(session::setProgram);
+        } else if (data.containsKey("programId") && data.get("programId") != null) {
+            programRepository.findById(Long.valueOf(data.get("programId").toString())).ifPresent(session::setProgram);
         }
         if (data.containsKey("trainerId") && data.get("trainerId") != null) {
             employeeRepository.findById(Long.valueOf(data.get("trainerId").toString())).ifPresent(session::setTrainer);
