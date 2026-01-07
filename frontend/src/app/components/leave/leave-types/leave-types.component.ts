@@ -15,6 +15,7 @@ export class LeaveTypesComponent implements OnInit {
   filteredLeaveTypes: LeaveType[] = [];
   searchTerm = '';
   loading = false;
+  saving = false;
   showModal = false;
   editMode = false;
   selectedLeaveType: LeaveType | null = null;
@@ -92,19 +93,26 @@ export class LeaveTypesComponent implements OnInit {
   }
 
   saveLeaveType(): void {
+    if (this.saving) return;
+    this.saving = true;
+    
     if (this.editMode && this.selectedLeaveType?.id) {
       this.leaveService.updateLeaveType(this.selectedLeaveType.id, this.formData).subscribe({
         next: () => {
+          this.saving = false;
           this.loadLeaveTypes();
           this.closeModal();
-        }
+        },
+        error: () => { this.saving = false; }
       });
     } else {
       this.leaveService.createLeaveType(this.formData).subscribe({
         next: () => {
+          this.saving = false;
           this.loadLeaveTypes();
           this.closeModal();
-        }
+        },
+        error: () => { this.saving = false; }
       });
     }
   }

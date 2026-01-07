@@ -17,6 +17,8 @@ export class DocumentTypesComponent implements OnInit {
   
   showModal = false;
   isEditMode = false;
+  saving = false;
+  savingCategory = false;
   editing: DocumentType = this.getEmptyType();
   
   showCategoryModal = false;
@@ -123,15 +125,18 @@ export class DocumentTypesComponent implements OnInit {
   }
 
   save() {
+    if (this.saving) return;
+    this.saving = true;
+    
     if (this.isEditMode && this.editing.id) {
       this.documentService.updateType(this.editing.id, this.editing).subscribe({
-        next: () => { this.loadData(); this.closeModal(); },
-        error: (err) => console.error('Error updating:', err)
+        next: () => { this.saving = false; this.loadData(); this.closeModal(); },
+        error: (err) => { this.saving = false; console.error('Error updating:', err); }
       });
     } else {
       this.documentService.createType(this.editing).subscribe({
-        next: () => { this.loadData(); this.closeModal(); },
-        error: (err) => console.error('Error creating:', err)
+        next: () => { this.saving = false; this.loadData(); this.closeModal(); },
+        error: (err) => { this.saving = false; console.error('Error creating:', err); }
       });
     }
   }
@@ -162,15 +167,18 @@ export class DocumentTypesComponent implements OnInit {
   }
 
   saveCategory() {
+    if (this.savingCategory) return;
+    this.savingCategory = true;
+    
     if (this.isEditCategoryMode && this.editingCategory.id) {
       this.documentService.updateCategory(this.editingCategory.id, this.editingCategory).subscribe({
-        next: () => { this.loadData(); this.closeCategoryModal(); },
-        error: (err) => console.error('Error updating category:', err)
+        next: () => { this.savingCategory = false; this.loadData(); this.closeCategoryModal(); },
+        error: (err) => { this.savingCategory = false; console.error('Error updating category:', err); }
       });
     } else {
       this.documentService.createCategory(this.editingCategory).subscribe({
-        next: () => { this.loadData(); this.closeCategoryModal(); },
-        error: (err) => console.error('Error creating category:', err)
+        next: () => { this.savingCategory = false; this.loadData(); this.closeCategoryModal(); },
+        error: (err) => { this.savingCategory = false; console.error('Error creating category:', err); }
       });
     }
   }

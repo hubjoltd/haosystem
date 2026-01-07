@@ -93,8 +93,11 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-secondary" (click)="closeModal()">Cancel</button>
-        <button class="btn-primary" (click)="saveHoliday()">{{ editMode ? 'Update' : 'Create' }}</button>
+        <button class="btn-secondary" (click)="closeModal()" [disabled]="saving">Cancel</button>
+        <button class="btn-primary" (click)="saveHoliday()" [disabled]="saving">
+          <i class="fas fa-spinner fa-spin" *ngIf="saving"></i>
+          {{ saving ? 'Saving...' : (editMode ? 'Update' : 'Create') }}
+        </button>
       </div>
     </div>
   </div>

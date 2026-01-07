@@ -14,6 +14,7 @@ export class HolidayCalendarComponent implements OnInit {
   holidays: Holiday[] = [];
   filteredHolidays: Holiday[] = [];
   loading = false;
+  saving = false;
   showModal = false;
   editMode = false;
   selectedHoliday: Holiday | null = null;
@@ -90,19 +91,26 @@ export class HolidayCalendarComponent implements OnInit {
   }
 
   saveHoliday(): void {
+    if (this.saving) return;
+    this.saving = true;
+    
     if (this.editMode && this.selectedHoliday?.id) {
       this.leaveService.updateHoliday(this.selectedHoliday.id, this.formData).subscribe({
         next: () => {
+          this.saving = false;
           this.loadHolidays();
           this.closeModal();
-        }
+        },
+        error: () => { this.saving = false; }
       });
     } else {
       this.leaveService.createHoliday(this.formData).subscribe({
         next: () => {
+          this.saving = false;
           this.loadHolidays();
           this.closeModal();
-        }
+        },
+        error: () => { this.saving = false; }
       });
     }
   }

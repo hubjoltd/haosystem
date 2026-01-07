@@ -14,6 +14,7 @@ export class UnitsOfMeasureComponent implements OnInit {
   baseUnits: UnitOfMeasure[] = [];
   showModal: boolean = false;
   editMode: boolean = false;
+  saving: boolean = false;
   selectedUnit: UnitOfMeasure = this.getEmptyUnit();
   selectedBaseUomId: number | null = null;
   loading: boolean = false;
@@ -99,11 +100,14 @@ export class UnitsOfMeasureComponent implements OnInit {
   }
 
   saveUnit(): void {
+    if (this.saving) return;
+    
     if (!this.isFormValid()) {
       this.notificationService.error('UOM Code and Name are required');
       return;
     }
 
+    this.saving = true;
     const unitToSave: UnitOfMeasure = {
       ...this.selectedUnit,
       baseUom: this.selectedBaseUomId ? this.baseUnits.find(u => u.id === this.selectedBaseUomId) : undefined
@@ -112,22 +116,26 @@ export class UnitsOfMeasureComponent implements OnInit {
     if (this.editMode && this.selectedUnit.id) {
       this.unitService.update(this.selectedUnit.id, unitToSave).subscribe({
         next: () => {
+          this.saving = false;
           this.notificationService.success('Unit of measure updated successfully');
           this.loadUnits();
           this.closeModal();
         },
         error: (err) => {
+          this.saving = false;
           this.notificationService.error(err.error?.error || 'Error updating unit');
         }
       });
     } else {
       this.unitService.create(unitToSave).subscribe({
         next: () => {
+          this.saving = false;
           this.notificationService.success('Unit of measure created successfully');
           this.loadUnits();
           this.closeModal();
         },
         error: (err) => {
+          this.saving = false;
           this.notificationService.error(err.error?.error || 'Error creating unit');
         }
       });
