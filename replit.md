@@ -1,6 +1,10 @@
 # Hao System - Angular Frontend
 
 ## Recent Changes (January 2026)
+- **Payroll Workflow Sidebar Menu**: Added clean submenu with Attendance Approval, Generate Timesheet, Payroll Calculate, Process Payroll, Payroll History
+- **Payroll History Redesign**: Enhanced with teal theme, CSS animations (fadeInUp, slideInRight), interactive hover effects, staggered card animations, and responsive design
+- **Payslip Component**: Created reusable standalone payslip component with professional print-ready design, company header, earnings/deductions breakdown, expenses tracking, and YTD summary
+- **ESS Payslip Integration**: Integrated PayslipComponent into Employee Self-Service portal for viewing pay stubs
 - **ESS Leave Balance Auto-Initialization**: Leave balances now auto-initialize from admin-configured LeaveType.annualEntitlement when opening ESS portal
 - **Leave Balance Carry-Forward**: Added backend logic to carry forward unused leave from previous year, respecting maxCarryForward limits (excludes pending requests from carry calculation to prevent entitlement loss)
 - **Leave Balance Calculation**: Available = Total (opening + credited + carryForward) - used - pending - lapsed - encashed
