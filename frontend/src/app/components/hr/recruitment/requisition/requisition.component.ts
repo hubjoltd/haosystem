@@ -113,7 +113,7 @@ export class RecruitmentRequisitionComponent implements OnInit {
       if (user) {
         this.currentUserName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username;
         this.currentUserId = user.userId;
-        this.isAdmin = user.role === 'Admin' || user.role === 'HR Manager';
+        this.isAdmin = user.role === 'Admin' || user.role === 'HR Manager' || user.role === 'Hiring Manager' || user.role === 'Department Head';
       }
     });
   }
@@ -377,6 +377,7 @@ export class RecruitmentRequisitionComponent implements OnInit {
     const classes: { [key: string]: string } = {
       'DRAFT': 'status-draft',
       'PENDING': 'status-pending',
+      'PENDING_APPROVAL': 'status-pending',
       'APPROVED': 'status-approved',
       'REJECTED': 'status-rejected',
       'ON_HOLD': 'status-hold'
@@ -405,7 +406,7 @@ export class RecruitmentRequisitionComponent implements OnInit {
   }
 
   canApprove(req: ManpowerRequisition): boolean {
-    return req.status === 'PENDING' && this.isAdmin;
+    return (req.status === 'PENDING' || req.status === 'PENDING_APPROVAL') && this.isAdmin;
   }
 
   formatDate(date: string | undefined): string {

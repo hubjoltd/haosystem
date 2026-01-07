@@ -120,6 +120,9 @@ public class JobRequisition {
     public void setRequisitionNumber(String requisitionNumber) { this.requisitionNumber = requisitionNumber; }
     public String getPositionTitle() { return positionTitle; }
     public void setPositionTitle(String positionTitle) { this.positionTitle = positionTitle; }
+    
+    public String getJobTitle() { return positionTitle; }
+    public void setJobTitle(String jobTitle) { this.positionTitle = jobTitle; }
     public Department getDepartment() { return department; }
     public void setDepartment(Department department) { this.department = department; }
     public JobRole getJobRole() { return jobRole; }
