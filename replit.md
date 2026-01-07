@@ -1,8 +1,11 @@
 # Hao System - Angular Frontend
 
 ## Recent Changes (January 2026)
-- **Step 1 Employee Selection**: Added employee selection UI in Generate Timesheet Summary (Step 1) with "All Active Employees" checkbox, individual employee checkboxes with grid layout, and selection counter
-- **Timesheet Generation Enhancement**: Updated timesheet generation to support filtering by selected employees (sends employeeIds in payload)
+- **Unified Employee Selection in Payroll Workflow**: Added consistent table-based checkbox selection across all payroll steps matching Step 0 (Daily Attendance Approval) pattern:
+  - Step 1 (Generate Timesheets): Select employees with checkbox column, "Select All" header, X employees selected counter, Generate Timesheets button
+  - Step 2 (Calculate Payroll): Select employees with checkbox column, "Select All" header, X employees selected counter, Calculate Payroll button
+  - Step 3 (Process Payroll): Select employees with checkbox column, "Select All" header, X employees selected counter, Process Payroll button
+- **Timesheet Generation Enhancement**: Updated timesheet generation to require employee selection (sends employeeIds in payload)
 - **Time Clock Running Timer**: Enhanced clock-in-out component with real-time running timer that starts on Clock In and stops on Clock Out, showing elapsed time (HH:MM:SS format)
 - **Time Clock Hourly Pay Calculation**: Displays employee hourly rate, calculates real-time earnings during shift, and shows session summary (hours worked, hourly rate, total earned) after clocking out
 - **Payroll Workflow Sidebar Menu**: Added clean submenu with Attendance Approval, Generate Timesheet, Payroll Calculate, Process Payroll, Payroll History

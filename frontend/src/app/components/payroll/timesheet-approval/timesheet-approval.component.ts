@@ -97,9 +97,13 @@ export class TimesheetApprovalComponent implements OnInit {
   selectedAttendanceCount = 0;
 
   // Employee selection for Step 1: Generate Timesheet
-  selectAllForTimesheet = true;
+  allTimesheetEmployeesSelected = false;
   selectedTimesheetEmployeeIds: number[] = [];
   timesheetEmployees: Employee[] = [];
+
+  // Employee selection for Step 2: Calculate Payroll
+  allCalcEmployeesSelected = false;
+  selectedCalcEmployeeIds: number[] = [];
 
   constructor(
     private payrollService: PayrollService,
@@ -279,22 +283,23 @@ export class TimesheetApprovalComponent implements OnInit {
   }
 
   generateTimesheetsForPeriod(): void {
+    if (this.selectedTimesheetEmployeeIds.length === 0) {
+      this.showMessage('Please select at least one employee', 'error');
+      return;
+    }
+    
     this.generating = true;
     const payload: any = {
       startDate: this.generateStartDate,
       endDate: this.generateEndDate,
-      type: 'ATTENDANCE'
+      type: 'ATTENDANCE',
+      employeeIds: this.selectedTimesheetEmployeeIds
     };
-    
-    // Add selected employee IDs if not selecting all
-    if (!this.selectAllForTimesheet && this.selectedTimesheetEmployeeIds.length > 0) {
-      payload.employeeIds = this.selectedTimesheetEmployeeIds;
-    }
     
     this.payrollService.generateTimesheetsFromAttendance(payload).subscribe({
       next: (result) => {
         this.generating = false;
-        this.showMessage(`Generated ${result.generated || 0} timesheets successfully!`, 'success');
+        this.showMessage(`Generated ${result.generated || 0} timesheets for ${this.selectedTimesheetEmployeeIds.length} employees!`, 'success');
         this.loadTimesheets();
       },
       error: (err) => {
@@ -326,12 +331,12 @@ export class TimesheetApprovalComponent implements OnInit {
   }
 
   // Employee selection methods for Step 1: Generate Timesheet
-  toggleSelectAllForTimesheet(): void {
-    this.selectAllForTimesheet = !this.selectAllForTimesheet;
-    if (this.selectAllForTimesheet) {
-      this.selectedTimesheetEmployeeIds = [];
-    } else {
+  toggleAllTimesheetEmployees(): void {
+    this.allTimesheetEmployeesSelected = !this.allTimesheetEmployeesSelected;
+    if (this.allTimesheetEmployeesSelected) {
       this.selectedTimesheetEmployeeIds = this.timesheetEmployees.map(e => e.id!);
+    } else {
+      this.selectedTimesheetEmployeeIds = [];
     }
   }
 
@@ -342,11 +347,43 @@ export class TimesheetApprovalComponent implements OnInit {
     } else {
       this.selectedTimesheetEmployeeIds.push(empId);
     }
-    this.selectAllForTimesheet = this.selectedTimesheetEmployeeIds.length === 0;
+    this.allTimesheetEmployeesSelected = this.selectedTimesheetEmployeeIds.length === this.timesheetEmployees.length;
   }
 
   isTimesheetEmployeeSelected(empId: number): boolean {
-    return this.selectAllForTimesheet || this.selectedTimesheetEmployeeIds.includes(empId);
+    return this.selectedTimesheetEmployeeIds.includes(empId);
+  }
+
+  // Employee selection methods for Step 2: Calculate Payroll
+  toggleAllCalcEmployees(): void {
+    this.allCalcEmployeesSelected = !this.allCalcEmployeesSelected;
+    if (this.allCalcEmployeesSelected) {
+      this.selectedCalcEmployeeIds = this.payableEmployees.map(e => e.employeeId);
+    } else {
+      this.selectedCalcEmployeeIds = [];
+    }
+    this.updateCalcSummary();
+  }
+
+  toggleCalcEmployeeSelection(empId: number): void {
+    const idx = this.selectedCalcEmployeeIds.indexOf(empId);
+    if (idx > -1) {
+      this.selectedCalcEmployeeIds.splice(idx, 1);
+    } else {
+      this.selectedCalcEmployeeIds.push(empId);
+    }
+    this.allCalcEmployeesSelected = this.selectedCalcEmployeeIds.length === this.payableEmployees.length;
+    this.updateCalcSummary();
+  }
+
+  isCalcEmployeeSelected(empId: number): boolean {
+    return this.selectedCalcEmployeeIds.includes(empId);
+  }
+
+  updateCalcSummary(): void {
+    const selected = this.payableEmployees.filter(e => this.selectedCalcEmployeeIds.includes(e.employeeId));
+    this.totalGrossPay = selected.reduce((sum, e) => sum + (e.payType === 'HOURLY' ? e.hours * e.hourlyRate : e.rate), 0);
+    this.totalNetPay = selected.reduce((sum, e) => sum + e.netAmount, 0);
   }
 
   loadDailyAttendance(): void {
