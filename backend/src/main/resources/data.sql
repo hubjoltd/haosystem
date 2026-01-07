@@ -597,3 +597,213 @@ INSERT INTO onboarding_plans (plan_number, employee_id, start_date, target_compl
 SELECT 'ONB-2026-00005', id, '2018-11-05', '2018-12-05', 'COMPLETED', 9, 9, 100, 'Welcome to Operations!', true, NOW(), NOW()
 FROM employees WHERE employee_code = 'EMP005'
 AND NOT EXISTS (SELECT 1 FROM onboarding_plans WHERE plan_number = 'ONB-2026-00005');
+
+-- =====================================================
+-- MULTI-COMPANY SETUP WITH EMPLOYEE SELF-SERVICE ACCESS
+-- =====================================================
+
+-- Create Employee Self-Service Role (Time Clock + ESS only)
+INSERT INTO roles (name, description, permissions)
+VALUES ('ESS_EMPLOYEE', 'Employee Self-Service - Time Clock and ESS Portal access only', 'TIME_CLOCK,ESS_PORTAL,ESS_LEAVE,ESS_ATTENDANCE,ESS_PAYSLIP,ESS_EXPENSES,ESS_DOCUMENTS')
+ON CONFLICT (name) DO NOTHING;
+
+-- Create 3 Companies (Branches)
+INSERT INTO branches (code, name, address, city, state, country, zip_code, phone, email, currency, timezone, active, created_at, updated_at)
+VALUES ('ACME-CORP', 'Acme Corporation', '100 Tech Boulevard', 'San Francisco', 'California', 'USA', '94105', '+1-415-555-0100', 'info@acmecorp.com', 'USD', 'America/Los_Angeles', true, NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO branches (code, name, address, city, state, country, zip_code, phone, email, currency, timezone, active, created_at, updated_at)
+VALUES ('GLOBAL-TECH', 'Global Tech Solutions', '250 Innovation Park', 'Austin', 'Texas', 'USA', '78701', '+1-512-555-0200', 'contact@globaltech.com', 'USD', 'America/Chicago', true, NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO branches (code, name, address, city, state, country, zip_code, phone, email, currency, timezone, active, created_at, updated_at)
+VALUES ('APEX-IND', 'Apex Industries', '500 Commerce Drive', 'Atlanta', 'Georgia', 'USA', '30301', '+1-404-555-0300', 'hr@apexind.com', 'USD', 'America/New_York', true, NOW(), NOW())
+ON CONFLICT (code) DO NOTHING;
+
+-- Create Employees for Acme Corporation
+INSERT INTO employees (employee_code, first_name, last_name, email, phone, gender, date_of_birth, joining_date, employment_type, employment_status, department_id, designation_id, location_id, active, created_at, updated_at)
+SELECT 'ACME-E001', 'John', 'Smith', 'john.smith@acmecorp.com', '+1-415-555-1001', 'MALE', '1990-05-15', '2023-01-10', 'FULL_TIME', 'ACTIVE',
+       (SELECT id FROM departments WHERE code = 'DEPT-IT' LIMIT 1),
+       (SELECT id FROM designations WHERE code = 'DES-DEV' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC001' LIMIT 1),
+       true, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM employees WHERE employee_code = 'ACME-E001');
+
+INSERT INTO employees (employee_code, first_name, last_name, email, phone, gender, date_of_birth, joining_date, employment_type, employment_status, department_id, designation_id, location_id, active, created_at, updated_at)
+SELECT 'ACME-E002', 'Sarah', 'Johnson', 'sarah.johnson@acmecorp.com', '+1-415-555-1002', 'FEMALE', '1988-08-22', '2022-06-15', 'FULL_TIME', 'ACTIVE',
+       (SELECT id FROM departments WHERE code = 'DEPT-HR' LIMIT 1),
+       (SELECT id FROM designations WHERE code = 'DES-HRM' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC001' LIMIT 1),
+       true, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM employees WHERE employee_code = 'ACME-E002');
+
+INSERT INTO employees (employee_code, first_name, last_name, email, phone, gender, date_of_birth, joining_date, employment_type, employment_status, department_id, designation_id, location_id, active, created_at, updated_at)
+SELECT 'ACME-E003', 'Michael', 'Brown', 'michael.brown@acmecorp.com', '+1-415-555-1003', 'MALE', '1992-03-10', '2023-09-01', 'FULL_TIME', 'ACTIVE',
+       (SELECT id FROM departments WHERE code = 'DEPT-SALES' LIMIT 1),
+       (SELECT id FROM designations WHERE code = 'DES-MGR' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC001' LIMIT 1),
+       true, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM employees WHERE employee_code = 'ACME-E003');
+
+-- Create Employees for Global Tech Solutions
+INSERT INTO employees (employee_code, first_name, last_name, email, phone, gender, date_of_birth, joining_date, employment_type, employment_status, department_id, designation_id, location_id, active, created_at, updated_at)
+SELECT 'GT-E001', 'Emily', 'Davis', 'emily.davis@globaltech.com', '+1-512-555-2001', 'FEMALE', '1991-11-28', '2022-03-01', 'FULL_TIME', 'ACTIVE',
+       (SELECT id FROM departments WHERE code = 'DEPT-IT' LIMIT 1),
+       (SELECT id FROM designations WHERE code = 'DES-DEV' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC002' LIMIT 1),
+       true, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM employees WHERE employee_code = 'GT-E001');
+
+INSERT INTO employees (employee_code, first_name, last_name, email, phone, gender, date_of_birth, joining_date, employment_type, employment_status, department_id, designation_id, location_id, active, created_at, updated_at)
+SELECT 'GT-E002', 'Robert', 'Wilson', 'robert.wilson@globaltech.com', '+1-512-555-2002', 'MALE', '1985-07-14', '2021-08-20', 'FULL_TIME', 'ACTIVE',
+       (SELECT id FROM departments WHERE code = 'DEPT-FIN' LIMIT 1),
+       (SELECT id FROM designations WHERE code = 'DES-MGR' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC002' LIMIT 1),
+       true, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM employees WHERE employee_code = 'GT-E002');
+
+INSERT INTO employees (employee_code, first_name, last_name, email, phone, gender, date_of_birth, joining_date, employment_type, employment_status, department_id, designation_id, location_id, active, created_at, updated_at)
+SELECT 'GT-E003', 'Jennifer', 'Martinez', 'jennifer.martinez@globaltech.com', '+1-512-555-2003', 'FEMALE', '1993-02-05', '2024-01-15', 'FULL_TIME', 'ACTIVE',
+       (SELECT id FROM departments WHERE code = 'DEPT-OPS' LIMIT 1),
+       (SELECT id FROM designations WHERE code = 'DES-EXEC' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC002' LIMIT 1),
+       true, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM employees WHERE employee_code = 'GT-E003');
+
+-- Create Employees for Apex Industries
+INSERT INTO employees (employee_code, first_name, last_name, email, phone, gender, date_of_birth, joining_date, employment_type, employment_status, department_id, designation_id, location_id, active, created_at, updated_at)
+SELECT 'APEX-E001', 'David', 'Anderson', 'david.anderson@apexind.com', '+1-404-555-3001', 'MALE', '1987-09-20', '2020-05-01', 'FULL_TIME', 'ACTIVE',
+       (SELECT id FROM departments WHERE code = 'DEPT-OPS' LIMIT 1),
+       (SELECT id FROM designations WHERE code = 'DES-MGR' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC003' LIMIT 1),
+       true, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM employees WHERE employee_code = 'APEX-E001');
+
+INSERT INTO employees (employee_code, first_name, last_name, email, phone, gender, date_of_birth, joining_date, employment_type, employment_status, department_id, designation_id, location_id, active, created_at, updated_at)
+SELECT 'APEX-E002', 'Lisa', 'Taylor', 'lisa.taylor@apexind.com', '+1-404-555-3002', 'FEMALE', '1994-12-08', '2023-04-10', 'FULL_TIME', 'ACTIVE',
+       (SELECT id FROM departments WHERE code = 'DEPT-HR' LIMIT 1),
+       (SELECT id FROM designations WHERE code = 'DES-HRM' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC003' LIMIT 1),
+       true, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM employees WHERE employee_code = 'APEX-E002');
+
+INSERT INTO employees (employee_code, first_name, last_name, email, phone, gender, date_of_birth, joining_date, employment_type, employment_status, department_id, designation_id, location_id, active, created_at, updated_at)
+SELECT 'APEX-E003', 'James', 'Thomas', 'james.thomas@apexind.com', '+1-404-555-3003', 'MALE', '1989-06-30', '2022-11-01', 'FULL_TIME', 'ACTIVE',
+       (SELECT id FROM departments WHERE code = 'DEPT-SALES' LIMIT 1),
+       (SELECT id FROM designations WHERE code = 'DES-DEV' LIMIT 1),
+       (SELECT id FROM locations WHERE code = 'LOC003' LIMIT 1),
+       true, NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM employees WHERE employee_code = 'APEX-E003');
+
+-- Create User Accounts for Acme Corporation Employees (ESS access only)
+-- Password: password123 (BCrypt hash)
+INSERT INTO users (username, email, password, first_name, last_name, phone, role_id, branch_id, is_super_admin, active, created_at)
+SELECT 'john.smith', 'john.smith@acmecorp.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.ykQRoJLJQ6VKcvZRBTxNpQWKyBqfHm', 'John', 'Smith', '+1-415-555-1001',
+       (SELECT id FROM roles WHERE name = 'ESS_EMPLOYEE' LIMIT 1),
+       (SELECT id FROM branches WHERE code = 'ACME-CORP' LIMIT 1),
+       false, true, NOW()
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'john.smith');
+
+INSERT INTO users (username, email, password, first_name, last_name, phone, role_id, branch_id, is_super_admin, active, created_at)
+SELECT 'sarah.johnson', 'sarah.johnson@acmecorp.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.ykQRoJLJQ6VKcvZRBTxNpQWKyBqfHm', 'Sarah', 'Johnson', '+1-415-555-1002',
+       (SELECT id FROM roles WHERE name = 'ESS_EMPLOYEE' LIMIT 1),
+       (SELECT id FROM branches WHERE code = 'ACME-CORP' LIMIT 1),
+       false, true, NOW()
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'sarah.johnson');
+
+INSERT INTO users (username, email, password, first_name, last_name, phone, role_id, branch_id, is_super_admin, active, created_at)
+SELECT 'michael.brown', 'michael.brown@acmecorp.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.ykQRoJLJQ6VKcvZRBTxNpQWKyBqfHm', 'Michael', 'Brown', '+1-415-555-1003',
+       (SELECT id FROM roles WHERE name = 'ESS_EMPLOYEE' LIMIT 1),
+       (SELECT id FROM branches WHERE code = 'ACME-CORP' LIMIT 1),
+       false, true, NOW()
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'michael.brown');
+
+-- Create User Accounts for Global Tech Solutions Employees (ESS access only)
+INSERT INTO users (username, email, password, first_name, last_name, phone, role_id, branch_id, is_super_admin, active, created_at)
+SELECT 'emily.davis', 'emily.davis@globaltech.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.ykQRoJLJQ6VKcvZRBTxNpQWKyBqfHm', 'Emily', 'Davis', '+1-512-555-2001',
+       (SELECT id FROM roles WHERE name = 'ESS_EMPLOYEE' LIMIT 1),
+       (SELECT id FROM branches WHERE code = 'GLOBAL-TECH' LIMIT 1),
+       false, true, NOW()
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'emily.davis');
+
+INSERT INTO users (username, email, password, first_name, last_name, phone, role_id, branch_id, is_super_admin, active, created_at)
+SELECT 'robert.wilson', 'robert.wilson@globaltech.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.ykQRoJLJQ6VKcvZRBTxNpQWKyBqfHm', 'Robert', 'Wilson', '+1-512-555-2002',
+       (SELECT id FROM roles WHERE name = 'ESS_EMPLOYEE' LIMIT 1),
+       (SELECT id FROM branches WHERE code = 'GLOBAL-TECH' LIMIT 1),
+       false, true, NOW()
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'robert.wilson');
+
+INSERT INTO users (username, email, password, first_name, last_name, phone, role_id, branch_id, is_super_admin, active, created_at)
+SELECT 'jennifer.martinez', 'jennifer.martinez@globaltech.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.ykQRoJLJQ6VKcvZRBTxNpQWKyBqfHm', 'Jennifer', 'Martinez', '+1-512-555-2003',
+       (SELECT id FROM roles WHERE name = 'ESS_EMPLOYEE' LIMIT 1),
+       (SELECT id FROM branches WHERE code = 'GLOBAL-TECH' LIMIT 1),
+       false, true, NOW()
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'jennifer.martinez');
+
+-- Create User Accounts for Apex Industries Employees (ESS access only)
+INSERT INTO users (username, email, password, first_name, last_name, phone, role_id, branch_id, is_super_admin, active, created_at)
+SELECT 'david.anderson', 'david.anderson@apexind.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.ykQRoJLJQ6VKcvZRBTxNpQWKyBqfHm', 'David', 'Anderson', '+1-404-555-3001',
+       (SELECT id FROM roles WHERE name = 'ESS_EMPLOYEE' LIMIT 1),
+       (SELECT id FROM branches WHERE code = 'APEX-IND' LIMIT 1),
+       false, true, NOW()
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'david.anderson');
+
+INSERT INTO users (username, email, password, first_name, last_name, phone, role_id, branch_id, is_super_admin, active, created_at)
+SELECT 'lisa.taylor', 'lisa.taylor@apexind.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.ykQRoJLJQ6VKcvZRBTxNpQWKyBqfHm', 'Lisa', 'Taylor', '+1-404-555-3002',
+       (SELECT id FROM roles WHERE name = 'ESS_EMPLOYEE' LIMIT 1),
+       (SELECT id FROM branches WHERE code = 'APEX-IND' LIMIT 1),
+       false, true, NOW()
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'lisa.taylor');
+
+INSERT INTO users (username, email, password, first_name, last_name, phone, role_id, branch_id, is_super_admin, active, created_at)
+SELECT 'james.thomas', 'james.thomas@apexind.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye.ykQRoJLJQ6VKcvZRBTxNpQWKyBqfHm', 'James', 'Thomas', '+1-404-555-3003',
+       (SELECT id FROM roles WHERE name = 'ESS_EMPLOYEE' LIMIT 1),
+       (SELECT id FROM branches WHERE code = 'APEX-IND' LIMIT 1),
+       false, true, NOW()
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'james.thomas');
+
+-- Add Salary Data for Company Employees
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, effective_from, is_current, created_at, updated_at)
+SELECT id, 75000.00, 36.06, '2023-01-10', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'ACME-E001'
+AND NOT EXISTS (SELECT 1 FROM employee_salaries es JOIN employees e ON es.employee_id = e.id WHERE e.employee_code = 'ACME-E001' AND es.is_current = true);
+
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, effective_from, is_current, created_at, updated_at)
+SELECT id, 68000.00, 32.69, '2022-06-15', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'ACME-E002'
+AND NOT EXISTS (SELECT 1 FROM employee_salaries es JOIN employees e ON es.employee_id = e.id WHERE e.employee_code = 'ACME-E002' AND es.is_current = true);
+
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, effective_from, is_current, created_at, updated_at)
+SELECT id, 82000.00, 39.42, '2023-09-01', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'ACME-E003'
+AND NOT EXISTS (SELECT 1 FROM employee_salaries es JOIN employees e ON es.employee_id = e.id WHERE e.employee_code = 'ACME-E003' AND es.is_current = true);
+
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, effective_from, is_current, created_at, updated_at)
+SELECT id, 85000.00, 40.87, '2022-03-01', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'GT-E001'
+AND NOT EXISTS (SELECT 1 FROM employee_salaries es JOIN employees e ON es.employee_id = e.id WHERE e.employee_code = 'GT-E001' AND es.is_current = true);
+
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, effective_from, is_current, created_at, updated_at)
+SELECT id, 95000.00, 45.67, '2021-08-20', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'GT-E002'
+AND NOT EXISTS (SELECT 1 FROM employee_salaries es JOIN employees e ON es.employee_id = e.id WHERE e.employee_code = 'GT-E002' AND es.is_current = true);
+
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, effective_from, is_current, created_at, updated_at)
+SELECT id, 62000.00, 29.81, '2024-01-15', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'GT-E003'
+AND NOT EXISTS (SELECT 1 FROM employee_salaries es JOIN employees e ON es.employee_id = e.id WHERE e.employee_code = 'GT-E003' AND es.is_current = true);
+
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, effective_from, is_current, created_at, updated_at)
+SELECT id, 88000.00, 42.31, '2020-05-01', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'APEX-E001'
+AND NOT EXISTS (SELECT 1 FROM employee_salaries es JOIN employees e ON es.employee_id = e.id WHERE e.employee_code = 'APEX-E001' AND es.is_current = true);
+
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, effective_from, is_current, created_at, updated_at)
+SELECT id, 58000.00, 27.88, '2023-04-10', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'APEX-E002'
+AND NOT EXISTS (SELECT 1 FROM employee_salaries es JOIN employees e ON es.employee_id = e.id WHERE e.employee_code = 'APEX-E002' AND es.is_current = true);
+
+INSERT INTO employee_salaries (employee_id, basic_salary, hourly_rate, effective_from, is_current, created_at, updated_at)
+SELECT id, 72000.00, 34.62, '2022-11-01', true, NOW(), NOW()
+FROM employees WHERE employee_code = 'APEX-E003'
+AND NOT EXISTS (SELECT 1 FROM employee_salaries es JOIN employees e ON es.employee_id = e.id WHERE e.employee_code = 'APEX-E003' AND es.is_current = true);
