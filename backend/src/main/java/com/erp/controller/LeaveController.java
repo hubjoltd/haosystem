@@ -287,6 +287,7 @@ public class LeaveController {
         }
 
         int currentYear = LocalDate.now().getYear();
+        int previousYear = currentYear - 1;
         List<LeaveType> leaveTypes = leaveTypeRepository.findByIsActiveTrue();
         List<LeaveBalance> balances = new ArrayList<>();
 
@@ -298,6 +299,33 @@ public class LeaveController {
                 balance.setLeaveType(leaveType);
                 balance.setYear(currentYear);
                 balance.setCredited(leaveType.getAnnualEntitlement() != null ? leaveType.getAnnualEntitlement() : BigDecimal.ZERO);
+                
+                // Handle carry-forward from previous year
+                if (Boolean.TRUE.equals(leaveType.getCarryForwardAllowed())) {
+                    Optional<LeaveBalance> prevYearBalance = leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndYear(employeeId, leaveType.getId(), previousYear);
+                    if (prevYearBalance.isPresent()) {
+                        LeaveBalance prev = prevYearBalance.get();
+                        // Calculate carry-forward without subtracting pending (pending should not reduce carry-forward)
+                        BigDecimal opening = prev.getOpeningBalance() != null ? prev.getOpeningBalance() : BigDecimal.ZERO;
+                        BigDecimal credited = prev.getCredited() != null ? prev.getCredited() : BigDecimal.ZERO;
+                        BigDecimal carry = prev.getCarryForward() != null ? prev.getCarryForward() : BigDecimal.ZERO;
+                        BigDecimal used = prev.getUsed() != null ? prev.getUsed() : BigDecimal.ZERO;
+                        BigDecimal lapsed = prev.getLapsed() != null ? prev.getLapsed() : BigDecimal.ZERO;
+                        BigDecimal encashed = prev.getEncashed() != null ? prev.getEncashed() : BigDecimal.ZERO;
+                        
+                        BigDecimal carryForwardAmount = opening.add(credited).add(carry)
+                            .subtract(used).subtract(lapsed).subtract(encashed);
+                        
+                        if (carryForwardAmount.compareTo(BigDecimal.ZERO) > 0) {
+                            // Apply max carry-forward limit if configured
+                            if (leaveType.getMaxCarryForward() != null && leaveType.getMaxCarryForward().compareTo(BigDecimal.ZERO) > 0) {
+                                carryForwardAmount = carryForwardAmount.min(leaveType.getMaxCarryForward());
+                            }
+                            balance.setCarryForward(carryForwardAmount);
+                        }
+                    }
+                }
+                
                 balances.add(leaveBalanceRepository.save(balance));
             }
         }

@@ -140,9 +140,19 @@ export class EmployeeSelfServiceComponent implements OnInit {
   }
 
   loadLeaveBalances(): void {
-    this.leaveService.getEmployeeBalances(this.currentEmployeeId).subscribe({
-      next: (data: LeaveBalance[]) => this.leaveBalances = data,
-      error: (err: Error) => console.error('Error loading leave balances:', err)
+    this.leaveService.initializeBalances(this.currentEmployeeId).subscribe({
+      next: () => {
+        this.leaveService.getEmployeeBalances(this.currentEmployeeId).subscribe({
+          next: (data: LeaveBalance[]) => this.leaveBalances = data,
+          error: (err: Error) => console.error('Error loading leave balances:', err)
+        });
+      },
+      error: () => {
+        this.leaveService.getEmployeeBalances(this.currentEmployeeId).subscribe({
+          next: (data: LeaveBalance[]) => this.leaveBalances = data,
+          error: (err: Error) => console.error('Error loading leave balances:', err)
+        });
+      }
     });
   }
 
