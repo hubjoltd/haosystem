@@ -158,18 +158,7 @@ export class SidebarComponent implements OnInit {
           children: [
             { icon: 'fas fa-list-alt', label: 'Leave Types', route: '/app/leave/types' },
             { icon: 'fas fa-calendar-check', label: 'Leave Requests', route: '/app/leave/requests' },
-            { icon: 'fas fa-calendar', label: 'Holiday Calendar', route: '/app/leave/holidays' },
-            {
-              icon: 'fas fa-clock',
-              label: 'Daily Attendance',
-              expanded: false,
-              permissionKey: 'Attendance',
-              children: [
-                { icon: 'fas fa-user-clock', label: 'Daily Attendance', route: '/app/attendance/management' },
-                { icon: 'fas fa-calendar-week', label: 'Weekly Timesheet', route: '/app/attendance/weekly-timesheet' },
-                { icon: 'fas fa-sign-in-alt', label: 'Clock In / Out', route: '/app/attendance/clock-in-out' }
-              ]
-            }
+            { icon: 'fas fa-calendar', label: 'Holiday Calendar', route: '/app/leave/holidays' }
           ]
         },
         {
@@ -178,30 +167,22 @@ export class SidebarComponent implements OnInit {
           expanded: false,
           permissionKey: 'Payroll',
           children: [
-            {
-              icon: 'fas fa-cogs',
-              label: 'Payroll Rules',
-              expanded: false,
-              children: [
-                { icon: 'fas fa-list', label: 'Salary Heads', route: '/app/payroll/rules/salary-heads' },
-                { icon: 'fas fa-calendar-week', label: 'Pay Frequencies', route: '/app/payroll/rules/pay-frequencies' },
-                { icon: 'fas fa-clock', label: 'Overtime Rules', route: '/app/payroll/rules/overtime-rules' },
-                { icon: 'fas fa-percent', label: 'Tax Rules', route: '/app/payroll/rules/tax-rules' },
-                { icon: 'fas fa-gavel', label: 'Statutory Rules', route: '/app/payroll/rules/statutory-rules' }
-              ]
-            },
+            { icon: 'fas fa-clock', label: 'Time Clock', route: '/app/attendance/clock-in-out' },
+            { icon: 'fas fa-calendar-week', label: 'Weekly Attendance', route: '/app/attendance/weekly-timesheet' },
+            { icon: 'fas fa-user-clock', label: 'Daily Attendance', route: '/app/attendance/management' },
+            { icon: 'fas fa-check-circle', label: 'Attendance Approval', route: '/app/payroll/timesheets' },
             {
               icon: 'fas fa-tasks',
-              label: 'Payroll Processing',
+              label: 'Payroll Workflow',
               expanded: false,
               children: [
-                { icon: 'fas fa-clipboard-check', label: 'Timesheet Approval', route: '/app/payroll/timesheets' },
-                { icon: 'fas fa-calculator', label: 'Calculate Payroll', route: '/app/payroll/calculate' },
-                { icon: 'fas fa-play-circle', label: 'Process Payroll', route: '/app/payroll/process' },
-                { icon: 'fas fa-history', label: 'Payroll History', route: '/app/payroll/history' }
+                { icon: 'fas fa-user-check', label: 'Approve Selected Employees', route: '/app/payroll/timesheets' },
+                { icon: 'fas fa-file-alt', label: 'Generate Timesheet Summary', route: '/app/payroll/calculate' },
+                { icon: 'fas fa-calculator', label: 'Payroll Calculation Complete', route: '/app/payroll/calculate' },
+                { icon: 'fas fa-play-circle', label: 'Payroll Process', route: '/app/payroll/process' },
+                { icon: 'fas fa-history', label: 'View Payroll History', route: '/app/payroll/history' }
               ]
-            },
-            { icon: 'fas fa-user-circle', label: 'Employee Self-Service', route: '/app/payroll/self-service' }
+            }
           ]
         },
         {
