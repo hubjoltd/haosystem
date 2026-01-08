@@ -94,8 +94,6 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadDropdownData();
-    
     // Subscribe to route params for proper data loading on navigation
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
@@ -103,6 +101,7 @@ export class EmployeeDetailComponent implements OnInit {
         this.isNewEmployee = true;
         this.isEditMode = true;
         this.loading = false;
+        this.loadDropdownData();
       } else if (id) {
         this.isNewEmployee = false;
         this.employeeId = parseInt(id);
@@ -141,7 +140,11 @@ export class EmployeeDetailComponent implements OnInit {
     ).subscribe({
       next: (data) => {
         this.employee = data;
+        // Load additional data after main employee is loaded
         this.loadSubData();
+        if (this.isEditMode) {
+          this.loadDropdownData();
+        }
       },
       error: (err) => {
         console.error('Error loading employee:', err);
