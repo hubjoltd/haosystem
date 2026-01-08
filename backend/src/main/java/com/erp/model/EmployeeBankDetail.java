@@ -16,6 +16,7 @@ public class EmployeeBankDetail {
     
     private String bankName;
     private String branchName;
+    private String accountHolderName;
     private String accountNumber;
     private String accountType;
     private String ifscCode;
@@ -50,6 +51,8 @@ public class EmployeeBankDetail {
     public void setBankName(String bankName) { this.bankName = bankName; }
     public String getBranchName() { return branchName; }
     public void setBranchName(String branchName) { this.branchName = branchName; }
+    public String getAccountHolderName() { return accountHolderName; }
+    public void setAccountHolderName(String accountHolderName) { this.accountHolderName = accountHolderName; }
     public String getAccountNumber() { return accountNumber; }
     public void setAccountNumber(String accountNumber) { this.accountNumber = accountNumber; }
     public String getAccountType() { return accountType; }

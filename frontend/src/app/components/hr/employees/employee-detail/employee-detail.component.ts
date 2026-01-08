@@ -218,7 +218,7 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   getEmptyBankDetail(): EmployeeBankDetail {
-    return { bankName: '', accountNumber: '', isPrimary: false, active: true };
+    return { bankName: '', accountHolderName: '', accountNumber: '', isPrimary: false, active: true };
   }
 
   getEmptySalary(): EmployeeSalary {
@@ -495,17 +495,18 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   saveBankDetail() {
-    if (!this.employeeId) return;
+    if (!this.employeeId || this.saving) return;
+    this.saving = true;
     
     if (this.isEditingSubItem && this.editingBank.id) {
       this.employeeService.updateBankDetail(this.editingBank.id, this.editingBank).subscribe({
-        next: () => { this.showBankModal = false; this.loadSubData(); },
-        error: (err) => console.error('Error updating bank detail:', err)
+        next: () => { this.saving = false; this.showBankModal = false; this.loadSubData(); },
+        error: (err) => { this.saving = false; console.error('Error updating bank detail:', err); }
       });
     } else {
       this.employeeService.createBankDetail(this.employeeId, this.editingBank).subscribe({
-        next: () => { this.showBankModal = false; this.loadSubData(); },
-        error: (err) => console.error('Error creating bank detail:', err)
+        next: () => { this.saving = false; this.showBankModal = false; this.loadSubData(); },
+        error: (err) => { this.saving = false; console.error('Error creating bank detail:', err); }
       });
     }
   }

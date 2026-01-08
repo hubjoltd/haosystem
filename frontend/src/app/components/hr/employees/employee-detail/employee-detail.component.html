@@ -404,6 +404,7 @@
       <thead>
         <tr>
           <th>Bank Name</th>
+          <th>Account Holder Name</th>
           <th>Account Number</th>
           <th>Account Type</th>
           <th>Routing Number</th>
@@ -414,6 +415,7 @@
       <tbody>
         <tr *ngFor="let b of bankDetails">
           <td>{{ b.bankName }}</td>
+          <td>{{ b.accountHolderName || '-' }}</td>
           <td>{{ b.accountNumber }}</td>
           <td>{{ b.accountType === 'CHECKING' ? 'Checking Account' : (b.accountType === 'SAVINGS' ? 'Savings' : b.accountType) }}</td>
           <td>{{ b.routingNumber || '-' }}</td>
@@ -955,6 +957,10 @@
         <input type="text" [(ngModel)]="editingBank.bankName" />
       </div>
       <div class="form-group">
+        <label>Account Holder Name (As per bank records)</label>
+        <input type="text" [(ngModel)]="editingBank.accountHolderName" placeholder="Name as it appears on bank records" />
+      </div>
+      <div class="form-group">
         <label>Account Number *</label>
         <input type="text" [(ngModel)]="editingBank.accountNumber" />
       </div>
@@ -987,8 +993,8 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" (click)="showBankModal = false">Cancel</button>
-      <button class="btn-primary" (click)="saveBankDetail()">Save</button>
+      <button class="btn-secondary" (click)="showBankModal = false" [disabled]="saving">Cancel</button>
+      <button class="btn-primary" (click)="saveBankDetail()" [disabled]="saving">{{ saving ? 'Saving...' : 'Save' }}</button>
     </div>
   </div>
 </div>

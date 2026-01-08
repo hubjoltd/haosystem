@@ -74,6 +74,7 @@ export interface EmployeeBankDetail {
   employee?: Employee;
   bankName: string;
   branchName?: string;
+  accountHolderName?: string;
   accountNumber: string;
   accountType?: string;
   ifscCode?: string;
