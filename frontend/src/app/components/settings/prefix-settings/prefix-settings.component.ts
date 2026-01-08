@@ -46,7 +46,7 @@ export class PrefixSettingsComponent implements OnInit {
   }
 
   loadSettings(): void {
-    this.loading = false;
+    this.loading = true;
     this.settingsService.getPrefixSettings().subscribe({
       next: (data) => {
         if (data) {

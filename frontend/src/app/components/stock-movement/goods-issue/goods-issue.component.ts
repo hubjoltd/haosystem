@@ -75,7 +75,7 @@ export class GoodsIssueComponent implements OnInit {
   }
 
   loadIssues(): void {
-    this.loading = false;
+    this.loading = true;
     this.stockMovementService.getAllIssues().subscribe({
       next: (data: any[]) => {
         this.issueList = data.map(issue => ({

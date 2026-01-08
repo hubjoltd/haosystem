@@ -24,7 +24,7 @@ export class RolesSettingsComponent implements OnInit {
   }
 
   loadRoles(): void {
-    this.loading = false;
+    this.loading = true;
     this.roleService.getAll().subscribe({
       next: (data) => {
         this.roles = data;

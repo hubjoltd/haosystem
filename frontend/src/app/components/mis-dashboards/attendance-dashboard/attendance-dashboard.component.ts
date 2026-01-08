@@ -19,7 +19,7 @@ export class AttendanceDashboardComponent implements OnInit {
   }
 
   loadStats(): void {
-    this.loading = false;
+    this.loading = true;
     this.dashboardService.getAttendanceStats().subscribe({
       next: (data) => {
         this.stats = data;

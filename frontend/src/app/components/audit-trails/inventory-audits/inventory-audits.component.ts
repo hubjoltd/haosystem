@@ -29,7 +29,7 @@ export class InventoryAuditsComponent implements OnInit {
   }
 
   loadAudits(): void {
-    this.loading = false;
+    this.loading = true;
     this.auditService.getInventoryAudits().subscribe({
       next: (data) => {
         this.audits = data;

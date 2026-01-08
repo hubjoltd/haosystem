@@ -20,7 +20,7 @@ export class HRDashboardComponent implements OnInit {
   }
 
   loadStats(): void {
-    this.loading = false;
+    this.loading = true;
     this.dashboardService.getHRStats().subscribe({
       next: (data) => {
         this.stats = data;

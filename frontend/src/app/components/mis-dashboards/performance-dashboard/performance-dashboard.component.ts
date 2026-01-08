@@ -19,7 +19,7 @@ export class PerformanceDashboardComponent implements OnInit {
   }
 
   loadStats(): void {
-    this.loading = false;
+    this.loading = true;
     this.dashboardService.getPerformanceStats().subscribe({
       next: (data) => {
         this.stats = data;

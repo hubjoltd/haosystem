@@ -23,7 +23,7 @@ export class StaffManagementComponent implements OnInit {
   }
 
   loadStaff(): void {
-    this.loading = false;
+    this.loading = true;
     this.staffService.getAll().subscribe({
       next: (data) => {
         this.staff = data;

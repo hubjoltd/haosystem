@@ -26,7 +26,7 @@ export class PrListReportComponent implements OnInit {
   }
 
   generateReport(): void {
-    this.loading = false;
+    this.loading = true;
     this.prService.getAll().subscribe({
       next: (data) => {
         this.reportData = data.map((pr: any) => ({

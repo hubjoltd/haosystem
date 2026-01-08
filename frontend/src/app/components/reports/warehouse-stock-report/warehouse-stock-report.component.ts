@@ -35,7 +35,7 @@ dataReady: boolean = false;  // Only show content when ready
   }
 
   generateReport(): void {
-    this.loading = false;
+    this.loading = true;
     this.itemService.getAll().subscribe({
       next: (data) => {
         this.reportData = data.map((item: any) => ({

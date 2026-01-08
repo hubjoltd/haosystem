@@ -21,7 +21,7 @@ dataReady: boolean = false;  // Only show content when ready
   ngOnInit(): void {}
 
   generateReport(): void {
-    this.loading = false;
+    this.loading = true;
     this.prService.getAll().subscribe({
       next: (data) => {
         const pendingItems: any[] = [];

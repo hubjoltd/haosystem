@@ -24,7 +24,7 @@ dataReady: boolean = false;  // Only show content when ready
   ngOnInit(): void {}
 
   generateReport(): void {
-    this.loading = false;
+    this.loading = true;
     this.fulfillmentService.getAll().subscribe({
       next: (data) => {
         this.reportData = data.map((f: any) => ({

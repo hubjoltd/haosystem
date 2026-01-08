@@ -92,7 +92,7 @@ export class GoodsReceiptComponent implements OnInit {
   }
 
   loadGRNs(): void {
-    this.loading = false;
+    this.loading = true;
     this.stockMovementService.getAllGRN().subscribe({
       next: (data) => {
         this.grnList = data.map((grn: any) => ({

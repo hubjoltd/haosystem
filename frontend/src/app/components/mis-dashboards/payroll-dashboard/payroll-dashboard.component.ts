@@ -19,7 +19,7 @@ export class PayrollDashboardComponent implements OnInit {
   }
 
   loadStats(): void {
-    this.loading = false;
+    this.loading = true;
     this.dashboardService.getPayrollStats().subscribe({
       next: (data) => {
         this.stats = data;

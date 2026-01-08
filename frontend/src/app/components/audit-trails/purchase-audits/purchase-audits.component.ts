@@ -33,7 +33,7 @@ export class PurchaseAuditsComponent implements OnInit {
   }
 
   loadAudits(): void {
-    this.loading = false;
+    this.loading = true;
     this.auditService.getPurchaseAudits().subscribe({
       next: (data) => {
         this.audits = data;
