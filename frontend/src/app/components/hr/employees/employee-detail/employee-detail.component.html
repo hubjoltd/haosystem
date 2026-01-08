@@ -1,5 +1,13 @@
 <div class="employee-detail-container">
-  <div class="page-header">
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-spinner">
+      <i class="fas fa-spinner fa-spin fa-3x"></i>
+      <p>Loading employee data...</p>
+    </div>
+  </div>
+
+  <div class="page-header" *ngIf="!loading">
     <div class="header-left">
       <button class="btn-back" (click)="goBack()">
         <i class="fas fa-arrow-left"></i>
@@ -25,7 +33,7 @@
     </div>
   </div>
 
-  <div class="tabs">
+  <div class="tabs" *ngIf="!loading">
     <button [class.active]="activeTab === 'personal'" (click)="setTab('personal')">Personal Info</button>
     <button [class.active]="activeTab === 'employment'" (click)="setTab('employment')">Employment</button>
     <button [class.active]="activeTab === 'bank'" (click)="setTab('bank')" [class.disabled]="isNewEmployee">Bank Details</button>
