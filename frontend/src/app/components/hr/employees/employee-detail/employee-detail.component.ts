@@ -100,11 +100,15 @@ export class EmployeeDetailComponent implements OnInit {
         this.isNewEmployee = true;
         this.isEditMode = true;
         this.loading = false;
+        this.employee = this.getEmptyEmployee();
         this.loadDropdownData();
       } else if (id) {
         this.isNewEmployee = false;
         this.employeeId = parseInt(id);
+        this.loading = true;
         this.loadEmployee();
+      } else {
+        this.loading = false;
       }
     });
     
@@ -134,15 +138,13 @@ export class EmployeeDetailComponent implements OnInit {
       return;
     }
     
-    this.loading = true;
-    
-    // Safety timeout - ensure loading clears after 10 seconds max
+    // Safety timeout - ensure loading clears after 5 seconds max
     const timeout = setTimeout(() => {
       if (this.loading) {
         this.loading = false;
-        console.warn('Employee loading timed out');
+        console.warn('Employee loading timed out after 5 seconds');
       }
-    }, 10000);
+    }, 5000);
     
     this.employeeService.getById(this.employeeId).subscribe({
       next: (data) => {
@@ -161,6 +163,10 @@ export class EmployeeDetailComponent implements OnInit {
         if (err.status === 401 || err.status === 403) {
           this.router.navigate(['/login']);
         }
+      },
+      complete: () => {
+        clearTimeout(timeout);
+        this.loading = false;
       }
     });
   }
