@@ -67,6 +67,9 @@ export class EmployeeListComponent implements OnInit {
       error: (err) => {
         console.error('Error loading employees:', err);
         this.incrementSubscriptionCount();
+        if (err.status === 401 || err.status === 403) {
+          this.router.navigate(['/login']);
+        }
       }
     });
     

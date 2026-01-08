@@ -142,6 +142,9 @@ export class EmployeeDetailComponent implements OnInit {
       error: (err) => {
         console.error('Error loading employee:', err);
         this.loading = false;
+        if (err.status === 401 || err.status === 403) {
+          this.router.navigate(['/login']);
+        }
       }
     });
   }
