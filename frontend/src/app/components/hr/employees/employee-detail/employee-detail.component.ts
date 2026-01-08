@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { combineLatest } from 'rxjs';
 import { EmployeeService, Employee, EmployeeBankDetail, EmployeeSalary, EmployeeEducation, EmployeeExperience, EmployeeAsset } from '../../../../services/employee.service';
 import { OrganizationService, Department, Designation, Grade, JobRole, Location, CostCenter, ExpenseCenter } from '../../../../services/organization.service';
 import { DocumentService, DocumentCategory, DocumentType, EmployeeDocument, ChecklistCategory, ChecklistDocumentType } from '../../../../services/document.service';
@@ -93,9 +94,15 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Subscribe to route params for proper data loading on navigation
-    this.route.paramMap.subscribe(params => {
+    // Combine route params and query params to avoid race conditions
+    combineLatest([
+      this.route.paramMap,
+      this.route.queryParamMap
+    ]).subscribe(([params, queryParams]) => {
       const id = params.get('id');
+      const editParam = queryParams.get('edit');
+      this.isEditMode = editParam === 'true';
+      
       if (id === 'new') {
         this.isNewEmployee = true;
         this.isEditMode = true;
@@ -103,19 +110,17 @@ export class EmployeeDetailComponent implements OnInit {
         this.employee = this.getEmptyEmployee();
         this.loadDropdownData();
       } else if (id) {
-        this.isNewEmployee = false;
-        this.employeeId = parseInt(id);
-        this.loading = true;
-        this.loadEmployee();
+        const newEmployeeId = parseInt(id);
+        // Only reload if employee ID changed
+        if (this.employeeId !== newEmployeeId || !this.employee.id) {
+          this.isNewEmployee = false;
+          this.employeeId = newEmployeeId;
+          this.loading = true;
+          this.loadEmployee();
+        }
       } else {
         this.loading = false;
       }
-    });
-    
-    // Subscribe to query params for edit mode
-    this.route.queryParamMap.subscribe(params => {
-      const editParam = params.get('edit');
-      this.isEditMode = editParam === 'true';
     });
   }
 
