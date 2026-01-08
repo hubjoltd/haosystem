@@ -159,6 +159,8 @@ export class EmployeeDetailComponent implements OnInit {
         this.employee = data;
         this.loading = false;
         this.cdr.detectChanges();
+        // Load all sub-data at once
+        this.loadAllTabData();
         // Load dropdown data only when in edit mode
         if (this.isEditMode) {
           this.loadDropdownData();
@@ -175,6 +177,21 @@ export class EmployeeDetailComponent implements OnInit {
         }
       }
     });
+  }
+
+  loadAllTabData() {
+    if (!this.employeeId) return;
+    
+    // Load all tab data at once
+    this.employeeService.getBankDetails(this.employeeId).subscribe(data => this.bankDetails = data);
+    this.employeeService.getSalaryHistory(this.employeeId).subscribe(data => this.salaryHistory = data);
+    this.employeeService.getEducation(this.employeeId).subscribe(data => this.education = data);
+    this.employeeService.getExperience(this.employeeId).subscribe(data => this.experience = data);
+    this.employeeService.getAssets(this.employeeId).subscribe(data => this.assets = data);
+    this.documentService.getEmployeeDocuments(this.employeeId).subscribe(data => this.documents = data);
+    this.loadDocumentChecklist();
+    this.loadLeaveBalances();
+    this.loadRecruitmentHistory();
   }
 
   loadSubData() {
@@ -229,39 +246,6 @@ export class EmployeeDetailComponent implements OnInit {
       return;
     }
     this.activeTab = tab;
-    
-    // Lazy load data for each tab when clicked
-    if (!this.employeeId) return;
-    
-    if (tab === 'bank' && this.bankDetails.length === 0) {
-      this.employeeService.getBankDetails(this.employeeId).subscribe(data => this.bankDetails = data);
-    }
-    if ((tab === 'salary' || tab === 'ctcHistory') && this.salaryHistory.length === 0) {
-      this.employeeService.getSalaryHistory(this.employeeId).subscribe(data => this.salaryHistory = data);
-    }
-    if (tab === 'education' && this.education.length === 0) {
-      this.employeeService.getEducation(this.employeeId).subscribe(data => this.education = data);
-    }
-    if (tab === 'experience' && this.experience.length === 0) {
-      this.employeeService.getExperience(this.employeeId).subscribe(data => this.experience = data);
-    }
-    if (tab === 'assets' && this.assets.length === 0) {
-      this.employeeService.getAssets(this.employeeId).subscribe(data => this.assets = data);
-    }
-    if (tab === 'documents') {
-      if (this.documents.length === 0) {
-        this.documentService.getEmployeeDocuments(this.employeeId).subscribe(data => this.documents = data);
-      }
-      if (this.documentChecklist.length === 0) {
-        this.loadDocumentChecklist();
-      }
-    }
-    if (tab === 'leave' && this.leaveBalances.length === 0) {
-      this.loadLeaveBalances();
-    }
-    if (tab === 'recruitment' && !this.recruitmentHistory) {
-      this.loadRecruitmentHistory();
-    }
   }
 
   loadDocumentChecklist() {
