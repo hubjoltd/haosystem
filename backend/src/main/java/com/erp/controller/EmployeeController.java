@@ -35,7 +35,7 @@ public class EmployeeController {
 
     @GetMapping
     public List<Employee> getAll() {
-        return employeeRepository.findAll();
+        return employeeRepository.findAllByOrderByIdDesc();
     }
     
     @GetMapping("/active")
