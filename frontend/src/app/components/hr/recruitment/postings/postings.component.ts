@@ -51,6 +51,7 @@ export class RecruitmentPostingsComponent implements OnInit {
   postings: JobPosting[] = [];
   requisitions: any[] = [];
   loading = false;
+  saving = false;
   showModal = false;
   isEditing = false;
   selectedPosting: JobPosting = this.getEmptyPosting();
@@ -280,6 +281,7 @@ export class RecruitmentPostingsComponent implements OnInit {
   }
 
   savePosting(): void {
+    if (this.saving) return;
     this.updateChannels();
     
     if (!this.selectedPosting.jobTitle || !this.selectedPosting.applicationDeadline) {
@@ -287,15 +289,18 @@ export class RecruitmentPostingsComponent implements OnInit {
       return;
     }
 
+    this.saving = true;
     if (this.isEditing) {
       this.recruitmentService.updateJobPosting(this.selectedPosting.id!, this.selectedPosting).subscribe({
         next: () => {
+          this.saving = false;
           const idx = this.postings.findIndex(p => p.id === this.selectedPosting.id);
           if (idx >= 0) this.postings[idx] = { ...this.selectedPosting };
           this.notificationService.success('Job posting updated successfully');
           this.closeModal();
         },
         error: () => {
+          this.saving = false;
           const idx = this.postings.findIndex(p => p.id === this.selectedPosting.id);
           if (idx >= 0) this.postings[idx] = { ...this.selectedPosting };
           this.notificationService.success('Job posting updated successfully');
@@ -305,11 +310,13 @@ export class RecruitmentPostingsComponent implements OnInit {
     } else {
       this.recruitmentService.createJobPosting(this.selectedPosting).subscribe({
         next: (created) => {
+          this.saving = false;
           this.postings.unshift(created);
           this.notificationService.success('Job posting created successfully');
           this.closeModal();
         },
         error: () => {
+          this.saving = false;
           this.selectedPosting.id = this.postings.length + 1;
           this.selectedPosting.createdAt = new Date().toISOString();
           this.postings.unshift({ ...this.selectedPosting });

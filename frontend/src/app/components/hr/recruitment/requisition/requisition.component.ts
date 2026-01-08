@@ -62,6 +62,7 @@ export class RecruitmentRequisitionComponent implements OnInit {
   requisitions: ManpowerRequisition[] = [];
   departments: any[] = [];
   loading = false;
+  saving = false;
   showModal = false;
   isEditing = false;
   selectedRequisition: ManpowerRequisition = this.getEmptyRequisition();
@@ -231,8 +232,10 @@ export class RecruitmentRequisitionComponent implements OnInit {
   }
 
   saveRequisition(asDraft: boolean = true): void {
+    if (this.saving) return;
     if (!this.validateForm()) return;
     
+    this.saving = true;
     this.selectedRequisition.status = asDraft ? 'DRAFT' : 'PENDING';
     if (!asDraft) {
       this.selectedRequisition.currentApprovalLevel = 1;
@@ -244,6 +247,7 @@ export class RecruitmentRequisitionComponent implements OnInit {
     
     obs.subscribe({
       next: () => {
+        this.saving = false;
         this.notificationService.success(
           asDraft 
             ? 'Requisition saved as draft' 
@@ -253,6 +257,7 @@ export class RecruitmentRequisitionComponent implements OnInit {
         this.loadData();
       },
       error: (err) => {
+        this.saving = false;
         console.error('Error saving requisition:', err);
         this.notificationService.error('Error saving requisition');
       }

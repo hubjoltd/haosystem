@@ -55,6 +55,7 @@ export class RecruitmentCandidatesComponent implements OnInit {
   candidates: Candidate[] = [];
   jobPostings: any[] = [];
   loading = false;
+  saving = false;
   showModal = false;
   isEditing = false;
   selectedCandidate: Candidate = this.getEmptyCandidate();
@@ -262,20 +263,24 @@ export class RecruitmentCandidatesComponent implements OnInit {
   }
 
   saveCandidate(): void {
+    if (this.saving) return;
     if (!this.selectedCandidate.firstName || !this.selectedCandidate.lastName || !this.selectedCandidate.email) {
       this.notificationService.error('Please fill in all required fields');
       return;
     }
 
+    this.saving = true;
     if (this.isEditing) {
       this.recruitmentService.updateCandidate(this.selectedCandidate.id!, this.selectedCandidate).subscribe({
         next: () => {
+          this.saving = false;
           const idx = this.candidates.findIndex(c => c.id === this.selectedCandidate.id);
           if (idx >= 0) this.candidates[idx] = { ...this.selectedCandidate };
           this.notificationService.success('Candidate updated successfully');
           this.closeModal();
         },
         error: () => {
+          this.saving = false;
           const idx = this.candidates.findIndex(c => c.id === this.selectedCandidate.id);
           if (idx >= 0) this.candidates[idx] = { ...this.selectedCandidate };
           this.notificationService.success('Candidate updated successfully');
@@ -292,11 +297,13 @@ export class RecruitmentCandidatesComponent implements OnInit {
       
       this.recruitmentService.createCandidate(this.selectedCandidate).subscribe({
         next: (created) => {
+          this.saving = false;
           this.candidates.unshift(created);
           this.notificationService.success('Candidate added successfully');
           this.closeModal();
         },
         error: () => {
+          this.saving = false;
           this.selectedCandidate.id = this.candidates.length + 1;
           this.selectedCandidate.createdAt = new Date().toISOString();
           this.candidates.unshift({ ...this.selectedCandidate });

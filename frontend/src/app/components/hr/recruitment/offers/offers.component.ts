@@ -53,6 +53,7 @@ export class RecruitmentOffersComponent implements OnInit {
   offers: OfferLetter[] = [];
   candidates: any[] = [];
   loading = false;
+  saving = false;
   showModal = false;
   isEditing = false;
   selectedOffer: OfferLetter = this.getEmptyOffer();

@@ -243,9 +243,13 @@
     </div>
 
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-      <button class="btn btn-outline" (click)="saveRequisition(true)">Save as Draft</button>
-      <button class="btn btn-primary" (click)="saveRequisition(false)">Submit for Approval</button>
+      <button class="btn btn-secondary" (click)="closeModal()" [disabled]="saving">Cancel</button>
+      <button class="btn btn-outline" (click)="saveRequisition(true)" [disabled]="saving">
+        <i *ngIf="saving" class="fas fa-spinner fa-spin"></i> {{ saving ? 'Saving...' : 'Save as Draft' }}
+      </button>
+      <button class="btn btn-primary" (click)="saveRequisition(false)" [disabled]="saving">
+        <i *ngIf="saving" class="fas fa-spinner fa-spin"></i> {{ saving ? 'Submitting...' : 'Submit for Approval' }}
+      </button>
     </div>
   </div>
 </div>

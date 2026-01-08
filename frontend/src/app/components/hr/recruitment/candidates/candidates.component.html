@@ -251,9 +251,10 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-      <button class="btn btn-primary" (click)="saveCandidate()">
-        {{ isEditing ? 'Update Candidate' : 'Add Candidate' }}
+      <button class="btn btn-secondary" (click)="closeModal()" [disabled]="saving">Cancel</button>
+      <button class="btn btn-primary" (click)="saveCandidate()" [disabled]="saving">
+        <i *ngIf="saving" class="fa fa-spinner fa-spin"></i>
+        {{ saving ? 'Saving...' : (isEditing ? 'Update Candidate' : 'Add Candidate') }}
       </button>
     </div>
   </div>

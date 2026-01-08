@@ -61,6 +61,7 @@ export class RecruitmentInterviewsComponent implements OnInit {
   interviews: Interview[] = [];
   candidates: any[] = [];
   loading = false;
+  saving = false;
   showModal = false;
   isEditing = false;
   selectedInterview: Interview = this.getEmptyInterview();
