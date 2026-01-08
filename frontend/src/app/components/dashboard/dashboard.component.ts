@@ -35,8 +35,8 @@ export class DashboardComponent implements OnInit {
   }
 
   loadDashboardData(): void {
-    this.loading = false;
-    this.dataReady = true;
+    this.loading = true;
+    this.dataReady = false;
     this.subscriptionCount = 0;
 
     this.dashboardService.getStats().subscribe({

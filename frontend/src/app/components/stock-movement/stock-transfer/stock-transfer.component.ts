@@ -72,7 +72,7 @@ export class StockTransferComponent implements OnInit {
   }
 
   loadTransfers(): void {
-    this.loading = false;
+    this.loading = true;
     this.stockMovementService.getAllTransfers().subscribe({
       next: (data: any[]) => {
         this.transferList = data.map(transfer => ({

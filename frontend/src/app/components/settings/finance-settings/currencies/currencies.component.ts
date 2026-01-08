@@ -28,7 +28,8 @@ export class CurrenciesComponent implements OnInit {
   }
 
   loadCurrencies(): void {
-    this.loading = false;
+    this.loading = true;
+    setTimeout(() => { this.loading = false; }, 300);
   }
 
   getEmptyCurrency(): Currency {

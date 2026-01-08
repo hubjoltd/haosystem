@@ -19,10 +19,12 @@ dataReady: boolean = false;  // Only show content when ready
   ngOnInit(): void {}
 
   generateReport(): void {
-    this.loading = false;
+    this.loading = true;
+    this.dataReady = false;
     setTimeout(() => {
       this.reportData = [];
-      this.completeLoading();
+      this.loading = false;
+      this.dataReady = true;
     }, 500);
   }
 
@@ -38,7 +40,7 @@ dataReady: boolean = false;  // Only show content when ready
     this.exportService.exportToCSV(this.reportData, 'direct-purchase-report');
   }
   completeLoading(): void {
-    this.completeLoading();
+    this.loading = false;
     this.dataReady = true;
   }
 }

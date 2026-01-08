@@ -25,7 +25,8 @@ export class PaymentModesComponent implements OnInit {
   }
 
   loadPaymentModes(): void {
-    this.loading = false;
+    this.loading = true;
+    setTimeout(() => { this.loading = false; }, 300);
   }
 
   getEmptyPaymentMode(): PaymentMode {

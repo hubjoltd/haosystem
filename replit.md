@@ -8,7 +8,15 @@
 - **Export Options**: Added export dropdown (Excel, CSV, PDF, Print) to Departments page matching Employee List pattern
 - **Date Format Pipe**: Created MM-DD-YYYY date format pipe for consistent date display across system
 - **Employee List Sorting**: Added `findAllByOrderByIdDesc()` method to show newest employees first
-- **Data Loading State Fix**: Fixed loading state management across ALL HR modules (Employee List, Departments, Designations, Locations, Grades, Cost Centers, Job Roles, Expense Centers, Recruitment modules, Training, Onboarding, Loans, Settlement, Letters, Compensation, Document Expiry) to properly set `loading = true` at start of data fetch and `loading = false` on completion - ensures data loads automatically on page load without requiring user interaction
+- **Data Loading State Fix (Comprehensive)**: Fixed loading state management across the ENTIRE application to properly set `loading = true` at start of data fetch and `loading = false` on completion. Fixed modules include:
+  - HR: Employee List, Departments, Designations, Locations, Grades, Cost Centers, Job Roles, Expense Centers, Document Expiry
+  - Recruitment: Requisition, Job Postings, Candidates, Interviews, Offers
+  - Training, Onboarding, Loans (Main, Approvals, Ledger, EMI, Repayments), Settlement, Letters, Compensation
+  - Dashboard, Leave Types
+  - Stock Movement: Stock Transfer, Stock Adjustments
+  - Purchase: PR Fulfillment (Stock Issue, Material Transfer, Convert to PO), PR Print
+  - Settings: General Settings, Finance Settings (Tax Rates, Expense Categories, Currencies, Payment Modes)
+  - Reports: Item Movement, Direct Purchase, Labor Cost Allocation
 - **Unified Employee Selection in Payroll Workflow**: Added consistent table-based checkbox selection across all payroll steps matching Step 0 (Daily Attendance Approval) pattern:
   - Step 1 (Generate Timesheets): Select employees with checkbox column, "Select All" header, X employees selected counter, Generate Timesheets button
   - Step 2 (Calculate Payroll): Select employees with checkbox column, "Select All" header, X employees selected counter, Calculate Payroll button

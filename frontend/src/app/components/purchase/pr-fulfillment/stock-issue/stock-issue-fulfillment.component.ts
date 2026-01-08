@@ -52,7 +52,7 @@ export class StockIssueFulfillmentComponent implements OnInit {
   }
 
   loadData(): void {
-    this.loading = false;
+    this.loading = true;
     
     this.generateIssueNumber();
     

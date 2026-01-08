@@ -26,7 +26,8 @@ export class ExpenseCategoriesComponent implements OnInit {
   }
 
   loadCategories(): void {
-    this.loading = false;
+    this.loading = true;
+    setTimeout(() => { this.loading = false; }, 300);
   }
 
   getEmptyCategory(): ExpenseCategory {

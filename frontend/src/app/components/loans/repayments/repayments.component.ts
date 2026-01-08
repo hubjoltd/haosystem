@@ -18,7 +18,7 @@ export class LoanRepaymentsComponent implements OnInit {
   }
 
   loadRepayments(): void {
-    this.loading = false;
+    this.loading = true;
     setTimeout(() => { this.loading = false; }, 500);
   }
 }

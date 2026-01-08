@@ -53,7 +53,7 @@ export class MaterialTransferFulfillmentComponent implements OnInit {
   }
 
   loadData(): void {
-    this.loading = false;
+    this.loading = true;
     
     this.generateTransferNumber();
     

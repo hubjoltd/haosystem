@@ -70,7 +70,8 @@ export class LaborCostAllocationReportComponent implements OnInit {
   loadPayrollRecords(): void {
     if (!this.selectedRunId) return;
     
-    this.loading = false;
+    this.loading = true;
+    this.dataReady = false;
     this.payrollService.getPayrollRecordsByRun(this.selectedRunId).subscribe({
       next: (data) => {
         this.payrollRecords = data;

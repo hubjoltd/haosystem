@@ -54,7 +54,7 @@ export class LeaveTypesComponent implements OnInit {
   }
 
   loadLeaveTypes(): void {
-    this.loading = false;
+    this.loading = true;
     this.leaveService.getAllLeaveTypes().subscribe({
       next: (data) => {
         this.leaveTypes = data;

@@ -56,7 +56,8 @@ dataReady: boolean = false;  // Only show content when ready
       return;
     }
     
-    this.loading = false;
+    this.loading = true;
+    this.dataReady = false;
     
     const filter: LedgerFilter = {
       itemId: parseInt(this.selectedItem)

@@ -26,7 +26,8 @@ export class TaxRatesComponent implements OnInit {
   }
 
   loadTaxRates(): void {
-    this.loading = false;
+    this.loading = true;
+    setTimeout(() => { this.loading = false; }, 300);
   }
 
   getEmptyTaxRate(): TaxRate {

@@ -81,7 +81,7 @@ export class StockAdjustmentsComponent implements OnInit {
   }
 
   loadAdjustments(): void {
-    this.loading = false;
+    this.loading = true;
     this.stockMovementService.getAllAdjustments().subscribe({
       next: (data: any[]) => {
         this.adjustments = data.map(adj => ({
