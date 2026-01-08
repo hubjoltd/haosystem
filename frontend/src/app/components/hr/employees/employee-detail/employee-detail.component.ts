@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { finalize } from 'rxjs/operators';
 import { EmployeeService, Employee, EmployeeBankDetail, EmployeeSalary, EmployeeEducation, EmployeeExperience, EmployeeAsset } from '../../../../services/employee.service';
 import { OrganizationService, Department, Designation, Grade, JobRole, Location, CostCenter, ExpenseCenter } from '../../../../services/organization.service';
 import { DocumentService, DocumentCategory, DocumentType, EmployeeDocument, ChecklistCategory, ChecklistDocumentType } from '../../../../services/document.service';
@@ -130,16 +129,26 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   loadEmployee() {
-    if (!this.employeeId) return;
+    if (!this.employeeId) {
+      this.loading = false;
+      return;
+    }
     
     this.loading = true;
-    this.employeeService.getById(this.employeeId).pipe(
-      finalize(() => {
+    
+    // Safety timeout - ensure loading clears after 10 seconds max
+    const timeout = setTimeout(() => {
+      if (this.loading) {
         this.loading = false;
-      })
-    ).subscribe({
+        console.warn('Employee loading timed out');
+      }
+    }, 10000);
+    
+    this.employeeService.getById(this.employeeId).subscribe({
       next: (data) => {
+        clearTimeout(timeout);
         this.employee = data;
+        this.loading = false;
         // Load additional data after main employee is loaded
         this.loadSubData();
         if (this.isEditMode) {
@@ -147,6 +156,8 @@ export class EmployeeDetailComponent implements OnInit {
         }
       },
       error: (err) => {
+        clearTimeout(timeout);
+        this.loading = false;
         console.error('Error loading employee:', err);
         if (err.status === 401 || err.status === 403) {
           this.router.navigate(['/login']);
