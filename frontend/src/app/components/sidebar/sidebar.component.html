@@ -9,7 +9,7 @@
   <nav class="sidebar-nav">
     <ul class="nav-list">
       <ng-container *ngFor="let item of menuItems">
-        <ng-container *ngTemplateOutlet="menuItemTemplate; context: { $implicit: item, level: 0 }"></ng-container>
+        <ng-container *ngTemplateOutlet="menuItemTemplate; context: { $implicit: item, level: 0, parentItems: menuItems }"></ng-container>
       </ng-container>
     </ul>
   </nav>
@@ -22,12 +22,12 @@
   </div>
 </aside>
 
-<ng-template #menuItemTemplate let-item let-level="level">
+<ng-template #menuItemTemplate let-item let-level="level" let-parentItems="parentItems">
   <li class="nav-item" 
       [class.active]="isActive(item.route)" 
       [class.has-active-child]="hasActiveChild(item)"
       [style.padding-left.px]="level > 0 ? level * 12 : 0">
-    <a class="nav-link" (click)="toggleMenu(item)" [title]="item.label">
+    <a class="nav-link" (click)="toggleMenu(item, parentItems)" [title]="item.label">
       <i [class]="item.icon"></i>
       <span class="nav-text">{{ item.label }}</span>
       <i *ngIf="item.children && item.children.length > 0" 
@@ -37,7 +37,7 @@
     
     <ul class="sub-menu" [class.nested]="level > 0" *ngIf="item.children && item.children.length > 0 && item.expanded">
       <ng-container *ngFor="let child of item.children">
-        <ng-container *ngTemplateOutlet="menuItemTemplate; context: { $implicit: child, level: level + 1 }"></ng-container>
+        <ng-container *ngTemplateOutlet="menuItemTemplate; context: { $implicit: child, level: level + 1, parentItems: item.children }"></ng-container>
       </ng-container>
     </ul>
   </li>

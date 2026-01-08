@@ -1,6 +1,12 @@
 # Hao System - Angular Frontend
 
 ## Recent Changes (January 2026)
+- **Sidebar Accordion Behavior**: Fixed sidebar menu to collapse other menus when a new menu is expanded (accordion-style behavior)
+- **Search Bar UI Fix**: Improved search bar styling with proper rounded edges, focus states, and better visual appearance
+- **Employee Code Read-Only**: Made employee code field read-only for existing employees (only editable for new employees)
+- **Double-Click Save Prevention**: Added saving flag to prevent duplicate submissions when clicking save button multiple times
+- **Export Options**: Added export dropdown (Excel, CSV, PDF, Print) to Departments page matching Employee List pattern
+- **Date Format Pipe**: Created MM-DD-YYYY date format pipe for consistent date display across system
 - **Unified Employee Selection in Payroll Workflow**: Added consistent table-based checkbox selection across all payroll steps matching Step 0 (Daily Attendance Approval) pattern:
   - Step 1 (Generate Timesheets): Select employees with checkbox column, "Select All" header, X employees selected counter, Generate Timesheets button
   - Step 2 (Calculate Payroll): Select employees with checkbox column, "Select All" header, X employees selected counter, Calculate Payroll button

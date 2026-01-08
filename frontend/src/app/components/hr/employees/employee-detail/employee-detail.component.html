@@ -12,16 +12,16 @@
       <button class="btn-secondary" *ngIf="!isEditMode" (click)="toggleEditMode()">
         <i class="fas fa-edit"></i> Edit
       </button>
-      <button class="btn-primary" *ngIf="isEditMode" (click)="saveEmployee()">
-        <i class="fas fa-save"></i> Save
+      <button class="btn-primary" *ngIf="isEditMode" (click)="saveEmployee()" [disabled]="saving">
+        <i class="fas" [ngClass]="saving ? 'fa-spinner fa-spin' : 'fa-save'"></i> {{ saving ? 'Saving...' : 'Save' }}
       </button>
-      <button class="btn-secondary" *ngIf="isEditMode" (click)="cancel()">Cancel</button>
+      <button class="btn-secondary" *ngIf="isEditMode" (click)="cancel()" [disabled]="saving">Cancel</button>
     </div>
     <div class="header-actions" *ngIf="isNewEmployee">
-      <button class="btn-primary" (click)="saveEmployee()">
-        <i class="fas fa-save"></i> Save
+      <button class="btn-primary" (click)="saveEmployee()" [disabled]="saving">
+        <i class="fas" [ngClass]="saving ? 'fa-spinner fa-spin' : 'fa-save'"></i> {{ saving ? 'Saving...' : 'Save' }}
       </button>
-      <button class="btn-secondary" (click)="cancel()">Cancel</button>
+      <button class="btn-secondary" (click)="cancel()" [disabled]="saving">Cancel</button>
     </div>
   </div>
 
@@ -43,7 +43,7 @@
       <div class="form-grid">
         <div class="form-group">
           <label>Employee Code *</label>
-          <input type="text" [(ngModel)]="employee.employeeCode" [disabled]="!isEditMode" />
+          <input type="text" [(ngModel)]="employee.employeeCode" [disabled]="!isNewEmployee || !isEditMode" [class.readonly-field]="!isNewEmployee" />
         </div>
         <div class="form-group">
           <label>First Name *</label>

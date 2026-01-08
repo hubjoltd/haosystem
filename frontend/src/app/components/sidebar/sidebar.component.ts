@@ -373,11 +373,30 @@ export class SidebarComponent implements OnInit {
     return this.authService.hasFeatureAccess(item.permissionKey);
   }
 
-  toggleMenu(item: MenuItem) {
+  toggleMenu(item: MenuItem, parentItems?: MenuItem[]) {
     if (item.children) {
-      item.expanded = !item.expanded;
+      const newState = !item.expanded;
+      // Only close sibling menus at the same level (not parent chain)
+      if (parentItems) {
+        parentItems.forEach(sibling => {
+          if (sibling !== item && sibling.expanded) {
+            sibling.expanded = false;
+            this.closeAllChildren(sibling);
+          }
+        });
+      }
+      item.expanded = newState;
     } else if (item.route) {
       this.router.navigate([item.route]);
+    }
+  }
+
+  private closeAllChildren(item: MenuItem) {
+    if (item.children) {
+      item.children.forEach(child => {
+        child.expanded = false;
+        this.closeAllChildren(child);
+      });
     }
   }
 

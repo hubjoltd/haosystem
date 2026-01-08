@@ -1,5 +1,14 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { OrganizationService, Department, CostCenter, Location } from '../../../../services/organization.service';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 
 @Component({
   selector: 'app-departments',
@@ -15,12 +24,21 @@ export class DepartmentsComponent implements OnInit {
   loading = false;
   dataReady = false;
   saving = false;
+  showExportMenu = false;
   
   showModal = false;
   isEditMode = false;
   editing: Department = this.getEmptyDepartment();
 
   constructor(private orgService: OrganizationService, private cdr: ChangeDetectorRef) {}
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.export-dropdown')) {
+      this.showExportMenu = false;
+    }
+  }
 
   ngOnInit() {
     this.loadData();
@@ -91,5 +109,69 @@ export class DepartmentsComponent implements OnInit {
         error: (err) => console.error('Error deleting:', err)
       });
     }
+  }
+
+  toggleExportMenu() {
+    this.showExportMenu = !this.showExportMenu;
+  }
+
+  exportToExcel() {
+    const data = this.departments.map(d => ({
+      'Code': d.code,
+      'Name': d.name,
+      'Description': d.description || '',
+      'Location': d.location?.name || '',
+      'Cost Center': d.costCenter?.name || '',
+      'Status': d.active ? 'Active' : 'Inactive'
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Departments');
+    XLSX.writeFile(wb, 'departments.xlsx');
+    this.showExportMenu = false;
+  }
+
+  exportToCSV() {
+    const data = this.departments.map(d => ({
+      'Code': d.code,
+      'Name': d.name,
+      'Description': d.description || '',
+      'Location': d.location?.name || '',
+      'Cost Center': d.costCenter?.name || '',
+      'Status': d.active ? 'Active' : 'Inactive'
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'departments.csv';
+    link.click();
+    this.showExportMenu = false;
+  }
+
+  exportToPDF() {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text('Departments', 14, 20);
+    doc.autoTable({
+      startY: 30,
+      head: [['Code', 'Name', 'Description', 'Location', 'Cost Center', 'Status']],
+      body: this.departments.map(d => [
+        d.code,
+        d.name,
+        d.description || '',
+        d.location?.name || '',
+        d.costCenter?.name || '',
+        d.active ? 'Active' : 'Inactive'
+      ])
+    });
+    doc.save('departments.pdf');
+    this.showExportMenu = false;
+  }
+
+  printDepartments() {
+    window.print();
+    this.showExportMenu = false;
   }
 }

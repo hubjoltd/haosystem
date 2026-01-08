@@ -77,6 +77,7 @@ export class EmployeeDetailComponent implements OnInit {
   isEditingSubItem = false;
 
   loading = false;
+  saving = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -395,20 +396,31 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   saveEmployee() {
+    if (this.saving) return;
+    this.saving = true;
+    
     if (this.isNewEmployee) {
       this.employeeService.create(this.employee).subscribe({
         next: (created) => {
+          this.saving = false;
           this.router.navigate(['/app/hr/employees', created.id]);
         },
-        error: (err) => console.error('Error creating employee:', err)
+        error: (err) => {
+          this.saving = false;
+          console.error('Error creating employee:', err);
+        }
       });
     } else if (this.employeeId) {
       this.employeeService.update(this.employeeId, this.employee).subscribe({
         next: () => {
+          this.saving = false;
           this.isEditMode = false;
           this.loadEmployee();
         },
-        error: (err) => console.error('Error updating employee:', err)
+        error: (err) => {
+          this.saving = false;
+          console.error('Error updating employee:', err);
+        }
       });
     }
   }
