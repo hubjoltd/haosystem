@@ -17,6 +17,7 @@ export class DocumentTypesComponent implements OnInit {
   
   showModal = false;
   isEditMode = false;
+  loading = false;
   saving = false;
   savingCategory = false;
   editing: DocumentType = this.getEmptyType();
@@ -32,16 +33,22 @@ export class DocumentTypesComponent implements OnInit {
   }
 
   loadData() {
+    this.loading = true;
+    let count = 0;
+    const total = 2;
+    const check = () => { count++; if (count >= total) this.loading = false; };
+    
     this.documentService.getAllCategories().subscribe({
-      next: (data) => this.categories = data,
-      error: (err) => console.error('Error loading categories:', err)
+      next: (data) => { this.categories = data; check(); },
+      error: (err) => { console.error('Error loading categories:', err); check(); }
     });
     this.documentService.getAllTypes().subscribe({
       next: (data) => {
         this.documentTypes = data;
         this.filterTypes();
+        check();
       },
-      error: (err) => console.error('Error loading document types:', err)
+      error: (err) => { console.error('Error loading document types:', err); check(); }
     });
   }
 
