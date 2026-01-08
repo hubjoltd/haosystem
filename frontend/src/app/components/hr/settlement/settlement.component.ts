@@ -16,6 +16,7 @@ export class SettlementComponent implements OnInit {
   showForm = false;
   showDetail = false;
   selectedSettlement: any = null;
+  saving = false;
   formData: any = {};
   separationTypes = ['RESIGNATION', 'TERMINATION', 'RETIREMENT', 'CONTRACT_END', 'MUTUAL_SEPARATION'];
 
@@ -67,13 +68,15 @@ export class SettlementComponent implements OnInit {
   }
 
   saveSettlement(): void {
+    if (this.saving) return;
     if (!this.formData.employeeId || !this.formData.lastWorkingDay) {
       alert('Please select an employee and last working day');
       return;
     }
+    this.saving = true;
     this.settlementService.initiateSettlement(this.formData).subscribe({
-      next: () => { this.closeForm(); this.loadSettlements(); this.loadDashboard(); },
-      error: (err) => { console.error(err); alert(err.error?.error || 'Error initiating settlement'); }
+      next: () => { this.saving = false; this.closeForm(); this.loadSettlements(); this.loadDashboard(); },
+      error: (err) => { this.saving = false; console.error(err); alert(err.error?.error || 'Error initiating settlement'); }
     });
   }
 

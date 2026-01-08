@@ -20,6 +20,7 @@ export class LettersComponent implements OnInit {
   selectedLetter: HRLetter | null = null;
   filterType = '';
   filterStatus = '';
+  saving = false;
 
   letterTypes = [
     { value: 'OFFER', label: 'Offer Letter' },
@@ -92,6 +93,7 @@ export class LettersComponent implements OnInit {
   }
 
   generateLetter(): void {
+    if (this.saving) return;
     if (!this.formData.employeeId) {
       alert('Please select an employee');
       return;
@@ -146,13 +148,16 @@ export class LettersComponent implements OnInit {
         return;
     }
 
+    this.saving = true;
     request.subscribe({
       next: () => {
+        this.saving = false;
         alert('Letter generated successfully!');
         this.closeForm();
         this.loadLetters();
       },
       error: (err: any) => {
+        this.saving = false;
         console.error(err);
         alert('Error generating letter: ' + (err.error?.message || 'Please try again'));
       }

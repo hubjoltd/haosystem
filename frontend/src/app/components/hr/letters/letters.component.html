@@ -139,8 +139,8 @@
         </ng-container>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeForm()">Cancel</button>
-        <button class="btn btn-primary" (click)="generateLetter()">Generate Letter</button>
+        <button class="btn btn-secondary" (click)="closeForm()" [disabled]="saving">Cancel</button>
+        <button class="btn btn-primary" (click)="generateLetter()" [disabled]="saving">{{ saving ? 'Generating...' : 'Generate Letter' }}</button>
       </div>
     </div>
   </div>

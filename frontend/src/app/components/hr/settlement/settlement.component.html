@@ -118,8 +118,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
-        <button type="button" class="btn btn-primary" (click)="saveSettlement()">Initiate</button>
+        <button type="button" class="btn btn-secondary" (click)="closeForm()" [disabled]="saving">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="saveSettlement()" [disabled]="saving">{{ saving ? 'Saving...' : 'Initiate' }}</button>
       </div>
     </div>
   </div>

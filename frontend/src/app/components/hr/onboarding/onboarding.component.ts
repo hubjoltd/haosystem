@@ -26,6 +26,7 @@ export class OnboardingComponent implements OnInit {
   showTaskForm = false;
   showAssetModal = false;
   showAssetForm = false;
+  saving = false;
   
   editingPlan: any = null;
   planFormData: any = {};
@@ -130,6 +131,9 @@ export class OnboardingComponent implements OnInit {
   }
 
   savePlan(): void {
+    if (this.saving) return;
+    this.saving = true;
+
     const payload = {
       ...this.planFormData,
       employee: this.planFormData.employeeId ? { id: this.planFormData.employeeId } : null,
@@ -142,8 +146,8 @@ export class OnboardingComponent implements OnInit {
       : this.onboardingService.createPlan(payload);
 
     obs.subscribe({
-      next: () => { this.closePlanForm(); this.loadPlans(); this.loadDashboard(); },
-      error: (err) => { console.error(err); alert('Error saving onboarding plan'); }
+      next: () => { this.saving = false; this.closePlanForm(); this.loadPlans(); this.loadDashboard(); },
+      error: (err) => { this.saving = false; console.error(err); alert('Error saving onboarding plan'); }
     });
   }
 
@@ -200,6 +204,9 @@ export class OnboardingComponent implements OnInit {
   }
 
   saveTask(): void {
+    if (this.saving) return;
+    this.saving = true;
+
     const payload = {
       ...this.taskFormData,
       assignedTo: this.taskFormData.assignedToId ? { id: this.taskFormData.assignedToId } : null
@@ -207,11 +214,12 @@ export class OnboardingComponent implements OnInit {
 
     this.onboardingService.createTask(payload).subscribe({
       next: () => { 
+        this.saving = false;
         this.closeTaskForm(); 
         this.viewTasks(this.selectedPlan);
         this.loadDashboard();
       },
-      error: (err) => { console.error(err); alert('Error saving task'); }
+      error: (err) => { this.saving = false; console.error(err); alert('Error saving task'); }
     });
   }
 
@@ -269,6 +277,9 @@ export class OnboardingComponent implements OnInit {
   }
 
   saveAsset(): void {
+    if (this.saving) return;
+    this.saving = true;
+
     const payload = {
       ...this.assetFormData,
       employee: { id: this.assetFormData.employeeId }
@@ -276,10 +287,11 @@ export class OnboardingComponent implements OnInit {
 
     this.onboardingService.assignAsset(payload).subscribe({
       next: () => {
+        this.saving = false;
         this.closeAssetForm();
         this.loadAssets(this.selectedAssetPlan.employee?.id);
       },
-      error: (err) => { console.error(err); alert('Error assigning asset'); }
+      error: (err) => { this.saving = false; console.error(err); alert('Error assigning asset'); }
     });
   }
 

@@ -339,8 +339,8 @@
           </div>
         </div>
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-secondary" (click)="closeForm()" [disabled]="saving">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : 'Save' }}</button>
         </div>
       </form>
 
@@ -384,8 +384,8 @@
           <textarea [(ngModel)]="formData.reason" name="reason" rows="3"></textarea>
         </div>
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Submit for Approval</button>
+          <button type="button" class="btn btn-secondary" (click)="closeForm()" [disabled]="saving">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Submitting...' : 'Submit for Approval' }}</button>
         </div>
       </form>
 
@@ -439,8 +439,8 @@
           <textarea [(ngModel)]="formData.eligibilityRules" name="eligibilityRules" rows="3" placeholder="Define eligibility criteria..."></textarea>
         </div>
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-secondary" (click)="closeForm()" [disabled]="saving">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : 'Save' }}</button>
         </div>
       </form>
 
@@ -513,8 +513,8 @@
           <textarea [(ngModel)]="formData.description" name="description" rows="3"></textarea>
         </div>
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-secondary" (click)="closeForm()" [disabled]="saving">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : 'Save' }}</button>
         </div>
       </form>
 
@@ -569,8 +569,8 @@
           </div>
         </div>
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-secondary" (click)="closeForm()" [disabled]="saving">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : 'Save' }}</button>
         </div>
       </form>
 
@@ -608,8 +608,8 @@
           </div>
         </div>
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
-          <button type="submit" class="btn btn-primary">{{ editMode ? 'Update' : 'Enroll' }}</button>
+          <button type="button" class="btn btn-secondary" (click)="closeForm()" [disabled]="saving">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : (editMode ? 'Update' : 'Enroll') }}</button>
         </div>
       </form>
     </div>

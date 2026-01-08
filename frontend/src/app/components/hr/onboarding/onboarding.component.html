@@ -134,8 +134,8 @@
           <textarea [(ngModel)]="planFormData.notes" name="notes" rows="3"></textarea>
         </div>
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closePlanForm()">Cancel</button>
-          <button type="submit" class="btn btn-primary">{{ editingPlan ? 'Update' : 'Create' }} Plan</button>
+          <button type="button" class="btn btn-secondary" (click)="closePlanForm()" [disabled]="saving">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : (editingPlan ? 'Update' : 'Create') + ' Plan' }}</button>
         </div>
       </form>
     </div>
@@ -212,8 +212,8 @@
           <textarea [(ngModel)]="taskFormData.description" name="description" rows="3" placeholder="Task details..."></textarea>
         </div>
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeTaskForm()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Add Task</button>
+          <button type="button" class="btn btn-secondary" (click)="closeTaskForm()" [disabled]="saving">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : 'Add Task' }}</button>
         </div>
       </form>
     </div>
@@ -298,8 +298,8 @@
           <textarea [(ngModel)]="assetFormData.notes" name="notes" rows="3" placeholder="Additional notes..."></textarea>
         </div>
         <div class="form-actions">
-          <button type="button" class="btn btn-secondary" (click)="closeAssetForm()">Cancel</button>
-          <button type="submit" class="btn btn-primary">Assign Asset</button>
+          <button type="button" class="btn btn-secondary" (click)="closeAssetForm()" [disabled]="saving">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : 'Assign Asset' }}</button>
         </div>
       </form>
     </div>

@@ -27,6 +27,7 @@ export class CompensationComponent implements OnInit {
   editMode = false;
   formData: any = {};
   selectedItem: any = null;
+  saving = false;
 
   benefitTypes = ['HEALTH', 'DENTAL', 'VISION', 'LIFE_INSURANCE', 'DISABILITY', 'RETIREMENT', 'OTHER'];
   allowanceTypes = ['HOUSING', 'TRANSPORT', 'MEAL', 'PHONE', 'INTERNET', 'EDUCATION', 'OTHER'];
@@ -230,75 +231,81 @@ export class CompensationComponent implements OnInit {
   }
 
   save(): void {
+    if (this.saving) return;
+    this.saving = true;
+
+    const onSuccess = () => { this.saving = false; this.closeForm(); this.loadData(); };
+    const onError = (msg: string) => (err: any) => { this.saving = false; console.error(err); alert(msg); };
+
     switch (this.activeTab) {
       case 'salary-bands':
         if (this.editMode && this.selectedItem) {
           this.compensationService.updateSalaryBand(this.selectedItem.id, this.formData).subscribe({
-            next: () => { this.closeForm(); this.loadData(); },
-            error: (err) => { console.error(err); alert('Error updating salary band'); }
+            next: onSuccess,
+            error: onError('Error updating salary band')
           });
         } else {
           this.compensationService.createSalaryBand(this.formData).subscribe({
-            next: () => { this.closeForm(); this.loadData(); },
-            error: (err) => { console.error(err); alert('Error creating salary band'); }
+            next: onSuccess,
+            error: onError('Error creating salary band')
           });
         }
         break;
       case 'salary-revision':
         this.compensationService.createSalaryRevision(this.formData).subscribe({
-          next: () => { this.closeForm(); this.loadData(); },
-          error: (err) => { console.error(err); alert('Error creating salary revision'); }
+          next: onSuccess,
+          error: onError('Error creating salary revision')
         });
         break;
       case 'bonus-incentive':
         if (this.editMode && this.selectedItem) {
           this.compensationService.updateBonusIncentive(this.selectedItem.id, this.formData).subscribe({
-            next: () => { this.closeForm(); this.loadData(); },
-            error: (err) => { console.error(err); alert('Error updating bonus/incentive'); }
+            next: onSuccess,
+            error: onError('Error updating bonus/incentive')
           });
         } else {
           this.compensationService.createBonusIncentive(this.formData).subscribe({
-            next: () => { this.closeForm(); this.loadData(); },
-            error: (err) => { console.error(err); alert('Error creating bonus/incentive'); }
+            next: onSuccess,
+            error: onError('Error creating bonus/incentive')
           });
         }
         break;
       case 'benefit-plans':
         if (this.editMode && this.selectedItem) {
           this.compensationService.updateBenefitPlan(this.selectedItem.id, this.formData).subscribe({
-            next: () => { this.closeForm(); this.loadData(); },
-            error: (err) => { console.error(err); alert('Error updating benefit plan'); }
+            next: onSuccess,
+            error: onError('Error updating benefit plan')
           });
         } else {
           this.compensationService.createBenefitPlan(this.formData).subscribe({
-            next: () => { this.closeForm(); this.loadData(); },
-            error: (err) => { console.error(err); alert('Error creating benefit plan'); }
+            next: onSuccess,
+            error: onError('Error creating benefit plan')
           });
         }
         break;
       case 'allowances':
         if (this.editMode && this.selectedItem) {
           this.compensationService.updateAllowance(this.selectedItem.id, this.formData).subscribe({
-            next: () => { this.closeForm(); this.loadData(); },
-            error: (err) => { console.error(err); alert('Error updating allowance'); }
+            next: onSuccess,
+            error: onError('Error updating allowance')
           });
         } else {
           this.compensationService.createAllowance(this.formData).subscribe({
-            next: () => { this.closeForm(); this.loadData(); },
-            error: (err) => { console.error(err); alert('Error creating allowance'); }
+            next: onSuccess,
+            error: onError('Error creating allowance')
           });
         }
         break;
       case 'enrollment':
         if (this.editMode && this.selectedItem) {
           this.compensationService.updateEmployeeBenefit(this.selectedItem.id, this.formData).subscribe({
-            next: () => { this.closeForm(); this.loadData(); },
-            error: (err) => { console.error(err); alert('Error updating enrollment'); }
+            next: onSuccess,
+            error: onError('Error updating enrollment')
           });
         } else {
           this.compensationService.enrollEmployeeInBenefit(this.formData).subscribe({
-            next: () => { this.closeForm(); this.loadData(); },
-            error: (err) => { console.error(err); alert('Error enrolling employee'); }
+            next: onSuccess,
+            error: onError('Error enrolling employee')
           });
         }
         break;
