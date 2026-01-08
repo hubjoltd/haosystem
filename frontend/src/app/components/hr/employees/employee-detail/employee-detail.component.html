@@ -45,7 +45,7 @@
     <button [class.active]="activeTab === 'recruitment'" (click)="setTab('recruitment')" [class.disabled]="isNewEmployee">Recruitment History</button>
   </div>
 
-  <div class="tab-content" *ngIf="activeTab === 'personal'">
+  <div class="tab-content" *ngIf="activeTab === 'personal' && !loading">
     <div class="form-section">
       <h3>Basic Information</h3>
       <div class="form-grid">
@@ -269,7 +269,7 @@
     </div>
   </div>
 
-  <div class="tab-content" *ngIf="activeTab === 'employment'">
+  <div class="tab-content" *ngIf="activeTab === 'employment' && !loading">
     <div class="form-section">
       <h3>Organization Details</h3>
       <div class="form-grid">
@@ -393,7 +393,7 @@
     </div>
   </div>
 
-  <div class="tab-content" *ngIf="activeTab === 'bank'">
+  <div class="tab-content" *ngIf="activeTab === 'bank' && !loading">
     <div class="section-header">
       <h3>Bank Details</h3>
       <button class="btn-primary btn-sm" (click)="openBankModal()">
@@ -428,7 +428,7 @@
     <p class="no-data" *ngIf="bankDetails.length === 0">No bank details added</p>
   </div>
 
-  <div class="tab-content" *ngIf="activeTab === 'salary'">
+  <div class="tab-content" *ngIf="activeTab === 'salary' && !loading">
     <div class="section-header">
       <h3>Salary History</h3>
       <button class="btn-primary btn-sm" (click)="openSalaryModal()">
@@ -464,7 +464,7 @@
     <p class="no-data" *ngIf="salaryHistory.length === 0">No salary records</p>
   </div>
 
-  <div class="tab-content" *ngIf="activeTab === 'ctcHistory'">
+  <div class="tab-content" *ngIf="activeTab === 'ctcHistory' && !loading">
     <div class="section-header">
       <h3>CTC History</h3>
       <p class="section-description">Version-wise salary history with change justification</p>
@@ -507,7 +507,7 @@
     <p class="no-data" *ngIf="salaryHistory.length === 0 && !isNewEmployee">No CTC history records</p>
   </div>
 
-  <div class="tab-content" *ngIf="activeTab === 'education'">
+  <div class="tab-content" *ngIf="activeTab === 'education' && !loading">
     <div class="section-header">
       <h3>Educational Qualifications</h3>
       <button class="btn-primary btn-sm" (click)="openEducationModal()">
@@ -544,7 +544,7 @@
     <p class="no-data" *ngIf="education.length === 0">No education records</p>
   </div>
 
-  <div class="tab-content" *ngIf="activeTab === 'experience'">
+  <div class="tab-content" *ngIf="activeTab === 'experience' && !loading">
     <div class="section-header">
       <h3>Work Experience</h3>
       <button class="btn-primary btn-sm" (click)="openExperienceModal()">
@@ -581,7 +581,7 @@
     <p class="no-data" *ngIf="experience.length === 0">No experience records</p>
   </div>
 
-  <div class="tab-content" *ngIf="activeTab === 'assets'">
+  <div class="tab-content" *ngIf="activeTab === 'assets' && !loading">
     <div class="section-header">
       <h3>Assigned Assets</h3>
       <button class="btn-primary btn-sm" (click)="openAssetModal()">
@@ -630,7 +630,7 @@
     <p class="no-data" *ngIf="assets.length === 0">No assets assigned</p>
   </div>
 
-  <div class="tab-content" *ngIf="activeTab === 'documents'">
+  <div class="tab-content" *ngIf="activeTab === 'documents' && !loading">
     <div class="section-header">
       <h3>Employee Documents</h3>
       <button class="btn-primary btn-sm" (click)="openDocumentModal()">
@@ -727,7 +727,7 @@
     <p class="no-data" *ngIf="documentChecklist.length === 0 && !loadingDocumentChecklist">No document types configured. Please configure document types in HR Settings.</p>
   </div>
 
-  <div class="tab-content" *ngIf="activeTab === 'leave'">
+  <div class="tab-content" *ngIf="activeTab === 'leave' && !loading">
     <div class="section-header">
       <h3>Leave Balances</h3>
       <div class="header-actions">
@@ -821,7 +821,7 @@
     </div>
   </div>
 
-  <div class="tab-content" *ngIf="activeTab === 'recruitment'">
+  <div class="tab-content" *ngIf="activeTab === 'recruitment' && !loading">
     <div class="section-header">
       <h3>Recruitment History</h3>
       <p class="section-description">Complete hiring journey from requisition to onboarding</p>

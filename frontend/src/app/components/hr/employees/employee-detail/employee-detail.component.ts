@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import { EmployeeService, Employee, EmployeeBankDetail, EmployeeSalary, EmployeeEducation, EmployeeExperience, EmployeeAsset } from '../../../../services/employee.service';
 import { OrganizationService, Department, Designation, Grade, JobRole, Location, CostCenter, ExpenseCenter } from '../../../../services/organization.service';
 import { DocumentService, DocumentCategory, DocumentType, EmployeeDocument, ChecklistCategory, ChecklistDocumentType } from '../../../../services/document.service';
@@ -133,15 +134,17 @@ export class EmployeeDetailComponent implements OnInit {
     if (!this.employeeId) return;
     
     this.loading = true;
-    this.employeeService.getById(this.employeeId).subscribe({
+    this.employeeService.getById(this.employeeId).pipe(
+      finalize(() => {
+        this.loading = false;
+      })
+    ).subscribe({
       next: (data) => {
         this.employee = data;
         this.loadSubData();
-        this.loading = false;
       },
       error: (err) => {
         console.error('Error loading employee:', err);
-        this.loading = false;
         if (err.status === 401 || err.status === 403) {
           this.router.navigate(['/login']);
         }
