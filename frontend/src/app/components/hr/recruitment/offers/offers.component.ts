@@ -102,7 +102,7 @@ export class RecruitmentOffersComponent implements OnInit {
   }
 
   loadData(): void {
-    this.loading = false;
+    this.loading = true;
     this.recruitmentService.getOffers().subscribe({
       next: (data) => {
         this.offers = data;

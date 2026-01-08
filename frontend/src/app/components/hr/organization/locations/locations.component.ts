@@ -27,6 +27,8 @@ export class LocationsComponent implements OnInit {
   }
 
   loadData() {
+    this.loading = true;
+    this.dataReady = false;
     this.orgService.getLocations().subscribe({
       next: (data) => { this.locations = data; this.completeLoading(); },
       error: (err) => { console.error('Error loading locations:', err); this.completeLoading(); }

@@ -26,8 +26,18 @@ export class DesignationsComponent implements OnInit {
   }
 
   loadData() {
+    this.loading = true;
+    this.dataReady = false;
     let count = 0;
-    const check = () => { count++; if (count >= 2) this.completeLoading(); };
+    const total = 2;
+    const check = () => { 
+      count++; 
+      if (count >= total) {
+        this.loading = false;
+        this.dataReady = true;
+        this.cdr.detectChanges();
+      }
+    };
     
     this.orgService.getDesignations().subscribe({
       next: (data) => { this.designations = data; check(); },

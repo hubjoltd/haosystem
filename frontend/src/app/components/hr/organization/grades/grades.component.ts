@@ -25,6 +25,8 @@ export class GradesComponent implements OnInit {
   }
 
   loadData() {
+    this.loading = true;
+    this.dataReady = false;
     this.orgService.getGrades().subscribe({
       next: (data) => { this.grades = data; this.completeLoading(); },
       error: (err) => { console.error('Error loading grades:', err); this.completeLoading(); }

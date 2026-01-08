@@ -77,7 +77,7 @@ export class TrainingComponent implements OnInit {
   }
 
   loadPrograms(): void {
-    this.loading = false;
+    this.loading = true;
     this.trainingService.getPrograms().subscribe({
       next: (data) => { this.programs = data; this.loading = false; },
       error: (err) => { console.error(err); this.loading = false; }
@@ -85,7 +85,7 @@ export class TrainingComponent implements OnInit {
   }
 
   loadSessions(): void {
-    this.loading = false;
+    this.loading = true;
     this.trainingService.getSessions().subscribe({
       next: (data) => { this.sessions = data; this.loading = false; this.generateCalendar(); },
       error: (err) => { console.error(err); this.loading = false; }

@@ -25,6 +25,8 @@ export class CostCentersComponent implements OnInit {
   }
 
   loadData() {
+    this.loading = true;
+    this.dataReady = false;
     this.orgService.getCostCenters().subscribe({
       next: (data) => { this.costCenters = data; this.completeLoading(); },
       error: (err) => { console.error('Error loading cost centers:', err); this.completeLoading(); }

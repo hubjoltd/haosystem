@@ -64,7 +64,7 @@ export class RecruitmentComponent implements OnInit {
   }
 
   loadRequisitions(): void {
-    this.loading = false;
+    this.loading = true;
     this.recruitmentService.getRequisitions().subscribe({
       next: (data) => { this.requisitions = data; this.loading = false; },
       error: (err) => { console.error(err); this.loading = false; }
@@ -72,7 +72,7 @@ export class RecruitmentComponent implements OnInit {
   }
 
   loadJobPostings(): void {
-    this.loading = false;
+    this.loading = true;
     this.recruitmentService.getJobPostings().subscribe({
       next: (data) => { this.jobPostings = data; this.loading = false; },
       error: (err) => { console.error(err); this.loading = false; }
@@ -80,7 +80,7 @@ export class RecruitmentComponent implements OnInit {
   }
 
   loadCandidates(): void {
-    this.loading = false;
+    this.loading = true;
     this.recruitmentService.getCandidates().subscribe({
       next: (data) => { this.candidates = data; this.loading = false; },
       error: (err) => { console.error(err); this.loading = false; }
@@ -88,7 +88,7 @@ export class RecruitmentComponent implements OnInit {
   }
 
   loadInterviews(): void {
-    this.loading = false;
+    this.loading = true;
     this.recruitmentService.getUpcomingInterviews().subscribe({
       next: (data) => { this.interviews = data; this.loading = false; },
       error: (err) => { console.error(err); this.loading = false; }

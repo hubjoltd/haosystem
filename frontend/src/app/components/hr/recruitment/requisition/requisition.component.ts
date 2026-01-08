@@ -119,7 +119,7 @@ export class RecruitmentRequisitionComponent implements OnInit {
   }
 
   loadData(): void {
-    this.loading = false;
+    this.loading = true;
     this.recruitmentService.getRequisitions().subscribe({
       next: (data) => {
         this.requisitions = data;

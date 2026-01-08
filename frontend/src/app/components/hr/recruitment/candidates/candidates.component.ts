@@ -87,7 +87,7 @@ export class RecruitmentCandidatesComponent implements OnInit {
   }
 
   loadData(): void {
-    this.loading = false;
+    this.loading = true;
     this.recruitmentService.getCandidates().subscribe({
       next: (data) => {
         this.candidates = data;

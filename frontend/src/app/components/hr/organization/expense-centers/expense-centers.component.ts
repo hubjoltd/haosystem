@@ -26,6 +26,8 @@ export class ExpenseCentersComponent implements OnInit {
   }
 
   loadData() {
+    this.loading = true;
+    this.dataReady = false;
     let count = 0;
     const check = () => { count++; if (count >= 2) this.completeLoading(); };
     

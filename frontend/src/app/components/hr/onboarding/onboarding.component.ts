@@ -69,7 +69,7 @@ export class OnboardingComponent implements OnInit {
   }
 
   loadPlans(): void {
-    this.loading = false;
+    this.loading = true;
     this.onboardingService.getPlans().subscribe({
       next: (data) => { 
         this.plans = data; 

@@ -27,17 +27,30 @@ export class JobRolesComponent implements OnInit {
   }
 
   loadData() {
+    this.loading = true;
+    this.dataReady = false;
+    let count = 0;
+    const total = 3;
+    const check = () => { 
+      count++; 
+      if (count >= total) {
+        this.loading = false;
+        this.dataReady = true;
+        this.cdr.detectChanges();
+      }
+    };
+    
     this.orgService.getJobRoles().subscribe({
-      next: (data) => { this.jobRoles = data; this.cdr.detectChanges(); },
-      error: (err) => { console.error('Error loading job roles:', err); }
+      next: (data) => { this.jobRoles = data; check(); },
+      error: (err) => { console.error('Error loading job roles:', err); check(); }
     });
     this.orgService.getDepartments().subscribe({
-      next: (data) => { this.departments = data; this.cdr.detectChanges(); },
-      error: (err) => { console.error('Error loading departments:', err); }
+      next: (data) => { this.departments = data; check(); },
+      error: (err) => { console.error('Error loading departments:', err); check(); }
     });
     this.orgService.getGrades().subscribe({
-      next: (data) => { this.grades = data; this.cdr.detectChanges(); },
-      error: (err) => { console.error('Error loading grades:', err); }
+      next: (data) => { this.grades = data; check(); },
+      error: (err) => { console.error('Error loading grades:', err); check(); }
     });
   }
   
