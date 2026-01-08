@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EmployeeService, Employee, EmployeeBankDetail, EmployeeSalary, EmployeeEducation, EmployeeExperience, EmployeeAsset } from '../../../../services/employee.service';
 import { OrganizationService, Department, Designation, Grade, JobRole, Location, CostCenter, ExpenseCenter } from '../../../../services/organization.service';
@@ -86,7 +86,8 @@ export class EmployeeDetailComponent implements OnInit {
     private orgService: OrganizationService,
     private documentService: DocumentService,
     private recruitmentService: RecruitmentService,
-    private leaveService: LeaveService
+    private leaveService: LeaveService,
+    private cdr: ChangeDetectorRef
   ) {
     const currentYear = new Date().getFullYear();
     this.availableYears = [currentYear - 1, currentYear, currentYear + 1];
@@ -135,6 +136,7 @@ export class EmployeeDetailComponent implements OnInit {
   loadEmployee() {
     if (!this.employeeId) {
       this.loading = false;
+      this.cdr.detectChanges();
       return;
     }
     
@@ -145,6 +147,7 @@ export class EmployeeDetailComponent implements OnInit {
     const timeout = setTimeout(() => {
       if (this.loading) {
         this.loading = false;
+        this.cdr.detectChanges();
         console.warn('Employee loading timed out after 5 seconds');
       }
     }, 5000);
@@ -155,6 +158,7 @@ export class EmployeeDetailComponent implements OnInit {
         clearTimeout(timeout);
         this.employee = data;
         this.loading = false;
+        this.cdr.detectChanges();
         // Load dropdown data only when in edit mode
         if (this.isEditMode) {
           this.loadDropdownData();
@@ -164,6 +168,7 @@ export class EmployeeDetailComponent implements OnInit {
         console.error('Error loading employee:', err);
         clearTimeout(timeout);
         this.loading = false;
+        this.cdr.detectChanges();
         // Show error but don't redirect - let user see the page
         if (err.status === 401 || err.status === 403) {
           this.router.navigate(['/login']);
