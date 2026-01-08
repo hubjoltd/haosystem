@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { combineLatest } from 'rxjs';
 import { EmployeeService, Employee, EmployeeBankDetail, EmployeeSalary, EmployeeEducation, EmployeeExperience, EmployeeAsset } from '../../../../services/employee.service';
 import { OrganizationService, Department, Designation, Grade, JobRole, Location, CostCenter, ExpenseCenter } from '../../../../services/organization.service';
 import { DocumentService, DocumentCategory, DocumentType, EmployeeDocument, ChecklistCategory, ChecklistDocumentType } from '../../../../services/document.service';
@@ -94,33 +93,29 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Combine route params and query params to avoid race conditions
-    combineLatest([
-      this.route.paramMap,
-      this.route.queryParamMap
-    ]).subscribe(([params, queryParams]) => {
-      const id = params.get('id');
-      const editParam = queryParams.get('edit');
-      this.isEditMode = editParam === 'true';
-      
-      if (id === 'new') {
-        this.isNewEmployee = true;
-        this.isEditMode = true;
-        this.loading = false;
-        this.employee = this.getEmptyEmployee();
-        this.loadDropdownData();
-      } else if (id) {
-        const newEmployeeId = parseInt(id);
-        // Only reload if employee ID changed
-        if (this.employeeId !== newEmployeeId || !this.employee.id) {
-          this.isNewEmployee = false;
-          this.employeeId = newEmployeeId;
-          this.loading = true;
-          this.loadEmployee();
-        }
-      } else {
-        this.loading = false;
-      }
+    // Get the ID from the route snapshot (synchronous, immediate)
+    const id = this.route.snapshot.paramMap.get('id');
+    const editParam = this.route.snapshot.queryParamMap.get('edit');
+    this.isEditMode = editParam === 'true';
+    
+    if (id === 'new') {
+      this.isNewEmployee = true;
+      this.isEditMode = true;
+      this.loading = false;
+      this.employee = this.getEmptyEmployee();
+      this.loadDropdownData();
+    } else if (id) {
+      this.isNewEmployee = false;
+      this.employeeId = parseInt(id);
+      this.loading = true;
+      this.loadEmployee();
+    } else {
+      this.loading = false;
+    }
+    
+    // Listen for query param changes (for edit mode toggle)
+    this.route.queryParamMap.subscribe(params => {
+      this.isEditMode = params.get('edit') === 'true';
     });
   }
 
@@ -143,6 +138,9 @@ export class EmployeeDetailComponent implements OnInit {
       return;
     }
     
+    console.log('Loading employee:', this.employeeId);
+    this.loading = true;
+    
     // Safety timeout - ensure loading clears after 5 seconds max
     const timeout = setTimeout(() => {
       if (this.loading) {
@@ -153,6 +151,7 @@ export class EmployeeDetailComponent implements OnInit {
     
     this.employeeService.getById(this.employeeId).subscribe({
       next: (data) => {
+        console.log('Employee loaded successfully:', data);
         clearTimeout(timeout);
         this.employee = data;
         this.loading = false;
@@ -162,16 +161,13 @@ export class EmployeeDetailComponent implements OnInit {
         }
       },
       error: (err) => {
+        console.error('Error loading employee:', err);
         clearTimeout(timeout);
         this.loading = false;
-        console.error('Error loading employee:', err);
+        // Show error but don't redirect - let user see the page
         if (err.status === 401 || err.status === 403) {
           this.router.navigate(['/login']);
         }
-      },
-      complete: () => {
-        clearTimeout(timeout);
-        this.loading = false;
       }
     });
   }
