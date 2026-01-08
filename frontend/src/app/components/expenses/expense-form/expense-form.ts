@@ -51,12 +51,15 @@ export class ExpenseFormComponent implements OnInit {
     this.loadCategories();
     this.loadExpenseTypes();
     
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id && id !== 'new') {
-      this.expenseId = parseInt(id);
-      this.isEditing = true;
-      this.loadExpense();
-    }
+    // Subscribe to route params for proper data loading on navigation
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id && id !== 'new') {
+        this.expenseId = parseInt(id);
+        this.isEditing = true;
+        this.loadExpense();
+      }
+    });
   }
 
   loadExpenseTypes(): void {

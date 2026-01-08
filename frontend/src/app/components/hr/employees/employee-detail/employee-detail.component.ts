@@ -95,17 +95,25 @@ export class EmployeeDetailComponent implements OnInit {
   ngOnInit() {
     this.loadDropdownData();
     
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id === 'new') {
-      this.isNewEmployee = true;
-      this.isEditMode = true;
-    } else if (id) {
-      this.employeeId = parseInt(id);
-      this.loadEmployee();
-      
-      const editParam = this.route.snapshot.queryParamMap.get('edit');
+    // Subscribe to route params for proper data loading on navigation
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id === 'new') {
+        this.isNewEmployee = true;
+        this.isEditMode = true;
+        this.loading = false;
+      } else if (id) {
+        this.isNewEmployee = false;
+        this.employeeId = parseInt(id);
+        this.loadEmployee();
+      }
+    });
+    
+    // Subscribe to query params for edit mode
+    this.route.queryParamMap.subscribe(params => {
+      const editParam = params.get('edit');
       this.isEditMode = editParam === 'true';
-    }
+    });
   }
 
   loadDropdownData() {

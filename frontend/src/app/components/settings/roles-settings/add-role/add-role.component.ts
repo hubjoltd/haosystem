@@ -152,12 +152,15 @@ export class AddRoleComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.editMode = true;
-      this.roleId = parseInt(id);
-      this.loadRole();
-    }
+    // Subscribe to route params for proper data loading on navigation
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.editMode = true;
+        this.roleId = parseInt(id);
+        this.loadRole();
+      }
+    });
   }
 
   loadRole(): void {

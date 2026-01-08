@@ -40,12 +40,15 @@ export class AddStaffComponent implements OnInit {
   ngOnInit(): void {
     this.loadRoles();
     
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.editMode = true;
-      this.staffId = parseInt(id);
-      this.loadStaff();
-    }
+    // Subscribe to route params for proper data loading on navigation
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.editMode = true;
+        this.staffId = parseInt(id);
+        this.loadStaff();
+      }
+    });
   }
 
   loadRoles(): void {
