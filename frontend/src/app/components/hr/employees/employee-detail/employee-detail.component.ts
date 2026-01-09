@@ -5,6 +5,7 @@ import { OrganizationService, Department, Designation, Grade, JobRole, Location,
 import { DocumentService, DocumentCategory, DocumentType, EmployeeDocument, ChecklistCategory, ChecklistDocumentType } from '../../../../services/document.service';
 import { RecruitmentService } from '../../../../services/recruitment.service';
 import { LeaveService, LeaveBalance } from '../../../../services/leave.service';
+import { ToastService } from '../../../../services/toast.service';
 
 export interface RecruitmentHistory {
   requisition?: any;
@@ -93,7 +94,8 @@ export class EmployeeDetailComponent implements OnInit {
     private documentService: DocumentService,
     private recruitmentService: RecruitmentService,
     private leaveService: LeaveService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toastService: ToastService
   ) {
     const currentYear = new Date().getFullYear();
     this.availableYears = [currentYear - 1, currentYear, currentYear + 1];
@@ -310,11 +312,11 @@ export class EmployeeDetailComponent implements OnInit {
     if (file) {
       const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
       if (!allowedTypes.includes(file.type)) {
-        alert('Only PDF and image files (JPEG, PNG, GIF) are allowed.');
+        this.toastService.error('Only PDF and image files (JPEG, PNG, GIF) are allowed.');
         return;
       }
       if (file.size > 10 * 1024 * 1024) {
-        alert('File size must be less than 10MB.');
+        this.toastService.error('File size must be less than 10MB.');
         return;
       }
       this.selectedFile = file;
@@ -467,7 +469,7 @@ export class EmployeeDetailComponent implements OnInit {
           this.saving = false;
           console.error('Error creating employee:', err);
           const errorMsg = err.error?.message || err.message || 'Failed to create employee. Please try again.';
-          alert(errorMsg);
+          this.toastService.error(errorMsg);
         }
       });
     } else if (this.employeeId) {
@@ -475,17 +477,16 @@ export class EmployeeDetailComponent implements OnInit {
         next: (updated) => {
           this.saving = false;
           this.isEditMode = false;
-          // Update local state instead of reloading everything
           if (updated) {
             this.employee = updated;
           }
-          alert('Employee updated successfully!');
+          this.toastService.success('Employee updated successfully!');
         },
         error: (err) => {
           this.saving = false;
           console.error('Error updating employee:', err);
           const errorMsg = err.error?.message || err.message || 'Failed to update employee. Please try again.';
-          alert(errorMsg);
+          this.toastService.error(errorMsg);
         }
       });
     }
@@ -854,7 +855,7 @@ export class EmployeeDetailComponent implements OnInit {
       error: (err) => {
         console.error('Error initializing leave balances:', err);
         this.initializingLeave = false;
-        alert('Error initializing leave balances. Please try again.');
+        this.toastService.error('Error initializing leave balances. Please try again.');
       }
     });
   }
@@ -889,7 +890,7 @@ export class EmployeeDetailComponent implements OnInit {
       error: (err) => {
         console.error('Error saving leave balance:', err);
         this.savingLeaveBalance = false;
-        alert('Error saving leave balance. Please try again.');
+        this.toastService.error('Error saving leave balance. Please try again.');
       }
     });
   }

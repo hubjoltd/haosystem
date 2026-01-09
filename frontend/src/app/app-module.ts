@@ -108,6 +108,7 @@ import { ClockInOutComponent } from './components/attendance/clock-in-out/clock-
 import { LeaveTypesComponent } from './components/leave/leave-types/leave-types.component';
 import { LeaveRequestsComponent } from './components/leave/leave-requests/leave-requests.component';
 import { HolidayCalendarComponent } from './components/leave/holiday-calendar/holiday-calendar.component';
+import { ToastComponent } from './components/shared/toast/toast.component';
 
 @NgModule({
   declarations: [
@@ -206,7 +207,8 @@ import { HolidayCalendarComponent } from './components/leave/holiday-calendar/ho
     RecruitmentPostingsComponent,
     RecruitmentCandidatesComponent,
     RecruitmentInterviewsComponent,
-    RecruitmentOffersComponent
+    RecruitmentOffersComponent,
+    ToastComponent
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
