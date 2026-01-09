@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LeaveService, LeaveType } from '../../../services/leave.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-leave-types',
@@ -22,7 +23,10 @@ export class LeaveTypesComponent implements OnInit {
 
   formData: LeaveType = this.getEmptyFormData();
 
-  constructor(private leaveService: LeaveService) {}
+  constructor(
+    private leaveService: LeaveService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadLeaveTypes();
@@ -55,14 +59,20 @@ export class LeaveTypesComponent implements OnInit {
 
   loadLeaveTypes(): void {
     this.loading = true;
-    this.leaveService.getAllLeaveTypes().subscribe({
+    this.cdr.markForCheck();
+    this.leaveService.getAllLeaveTypes().pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
       next: (data) => {
         this.leaveTypes = data;
         this.filterLeaveTypes();
-        this.loading = false;
+        this.cdr.markForCheck();
       },
-      error: () => {
-        this.loading = false;
+      error: (err) => {
+        console.error('Error loading leave types:', err);
       }
     });
   }
@@ -95,26 +105,27 @@ export class LeaveTypesComponent implements OnInit {
   saveLeaveType(): void {
     if (this.saving) return;
     this.saving = true;
+    this.cdr.markForCheck();
     
-    if (this.editMode && this.selectedLeaveType?.id) {
-      this.leaveService.updateLeaveType(this.selectedLeaveType.id, this.formData).subscribe({
-        next: () => {
-          this.saving = false;
-          this.loadLeaveTypes();
-          this.closeModal();
-        },
-        error: () => { this.saving = false; }
-      });
-    } else {
-      this.leaveService.createLeaveType(this.formData).subscribe({
-        next: () => {
-          this.saving = false;
-          this.loadLeaveTypes();
-          this.closeModal();
-        },
-        error: () => { this.saving = false; }
-      });
-    }
+    const request$ = this.editMode && this.selectedLeaveType?.id
+      ? this.leaveService.updateLeaveType(this.selectedLeaveType.id, this.formData)
+      : this.leaveService.createLeaveType(this.formData);
+      
+    request$.pipe(
+      finalize(() => {
+        this.saving = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: () => {
+        this.loadLeaveTypes();
+        this.closeModal();
+      },
+      error: (err) => {
+        console.error('Error saving leave type:', err);
+        alert('Error saving leave type');
+      }
+    });
   }
 
   deleteLeaveType(id: number): void {
