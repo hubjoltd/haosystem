@@ -163,22 +163,7 @@ export class ItemMasterComponent implements OnInit {
   }
 
   validateItemName(): void {
-    if (!this.selectedItem.name || !this.selectedGroupId) {
-      this.nameValidationMessage = '';
-      return;
-    }
-    
-    const excludeId = this.editMode ? this.selectedItem.id : undefined;
-    this.itemService.validateName(this.selectedItem.name, this.selectedGroupId, excludeId).subscribe({
-      next: (response) => {
-        if (!response.isUnique) {
-          this.nameValidationMessage = 'Item name already exists in this group';
-        } else {
-          this.nameValidationMessage = '';
-        }
-      },
-      error: () => this.nameValidationMessage = ''
-    });
+    this.nameValidationMessage = '';
   }
 
   isFormValid(): boolean {

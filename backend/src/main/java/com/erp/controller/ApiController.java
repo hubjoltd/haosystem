@@ -217,25 +217,11 @@ public class ApiController {
     
     @PostMapping("/inventory/items")
     public ResponseEntity<?> createItem(@RequestBody Item item) {
-        if (item.getGroup() != null && item.getName() != null) {
-            if (!itemService.isNameUniqueInGroup(item.getName(), item.getGroup().getId(), null)) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Item name already exists in this group");
-                return ResponseEntity.badRequest().body(error);
-            }
-        }
         return ResponseEntity.ok(itemService.save(item));
     }
     
     @PutMapping("/inventory/items/{id}")
     public ResponseEntity<?> updateItem(@PathVariable Long id, @RequestBody Item item) {
-        if (item.getGroup() != null && item.getName() != null) {
-            if (!itemService.isNameUniqueInGroup(item.getName(), item.getGroup().getId(), id)) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Item name already exists in this group");
-                return ResponseEntity.badRequest().body(error);
-            }
-        }
         return ResponseEntity.ok(itemService.update(id, item));
     }
     
