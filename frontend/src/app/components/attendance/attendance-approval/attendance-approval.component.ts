@@ -259,6 +259,18 @@ export class AttendanceApprovalComponent implements OnInit {
     return `${clockIn} - ${clockOut || '-'}`;
   }
 
+  formatTimeRange(clockIn?: string, clockOut?: string): string {
+    if (!clockIn) return '—';
+    const inTime = clockIn.substring(0, 5);
+    const outTime = clockOut ? clockOut.substring(0, 5) : '—';
+    return `${inTime} - ${outTime}`;
+  }
+
+  formatStatus(status: string): string {
+    if (!status) return 'Pending';
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+  }
+
   formatDate(date: string): string {
     if (!date) return '-';
     const d = new Date(date);

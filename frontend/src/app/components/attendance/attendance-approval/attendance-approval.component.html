@@ -31,10 +31,16 @@
             <option value="REJECTED">Rejected</option>
           </select>
         </div>
-        <button class="btn-approve" (click)="approveSelected()" [disabled]="selectedIds.length === 0 || loading">
+        <button class="btn-approve" 
+                *ngIf="selectedIds.length > 0"
+                (click)="approveSelected()" 
+                [disabled]="loading">
           <i class="fas fa-check"></i> Approve ({{ selectedIds.length }})
         </button>
-        <button class="btn-reject" (click)="rejectSelected()" [disabled]="selectedIds.length === 0 || loading">
+        <button class="btn-reject" 
+                *ngIf="selectedIds.length > 0"
+                (click)="rejectSelected()" 
+                [disabled]="loading">
           <i class="fas fa-times"></i> Reject
         </button>
       </div>
@@ -65,27 +71,24 @@
                      (change)="toggleSelect(record.id!)" />
             </td>
             <td>
-              <div class="employee-cell">
-                <div class="avatar">{{ getEmployeeInitials(record.employee) }}</div>
-                <span class="name">{{ getEmployeeName(record.employee) }}</span>
-              </div>
+              <span class="employee-name">{{ getEmployeeName(record.employee) }}</span>
             </td>
             <td>{{ formatDate(record.attendanceDate) }}</td>
-            <td>{{ formatTime(record.clockIn, record.clockOut) }}</td>
+            <td>{{ formatTimeRange(record.clockIn, record.clockOut) }}</td>
             <td>{{ calculateHours(record) }}</td>
             <td>
               <span class="status-badge" [ngClass]="getStatusClass(record.approvalStatus || 'PENDING')">
-                {{ record.approvalStatus || 'PENDING' }}
+                {{ formatStatus(record.approvalStatus || 'PENDING') }}
               </span>
             </td>
             <td class="actions-col">
-              <button class="btn-icon approve" 
+              <button class="action-btn approve" 
                       (click)="approveRecord(record.id!)" 
                       [disabled]="loading || record.approvalStatus === 'APPROVED'"
                       title="Approve">
                 <i class="fas fa-check"></i>
               </button>
-              <button class="btn-icon reject" 
+              <button class="action-btn reject" 
                       (click)="rejectRecord(record.id!)" 
                       [disabled]="loading || record.approvalStatus === 'REJECTED'"
                       title="Reject">
