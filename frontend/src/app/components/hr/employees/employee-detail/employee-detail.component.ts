@@ -160,6 +160,10 @@ export class EmployeeDetailComponent implements OnInit {
         console.log('Employee loaded successfully:', data);
         clearTimeout(timeout);
         this.employee = data;
+        // Ensure employeeId is set from the loaded data
+        if (data.id) {
+          this.employeeId = data.id;
+        }
         this.loading = false;
         this.cdr.detectChanges();
         // Load all sub-data at once
