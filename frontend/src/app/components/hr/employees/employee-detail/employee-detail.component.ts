@@ -463,10 +463,13 @@ export class EmployeeDetailComponent implements OnInit {
       this.employeeService.create(this.employee).subscribe({
         next: (created) => {
           this.saving = false;
+          this.cdr.detectChanges();
+          this.toastService.success('Employee created successfully!');
           this.router.navigate(['/app/hr/employees', created.id]);
         },
         error: (err) => {
           this.saving = false;
+          this.cdr.detectChanges();
           console.error('Error creating employee:', err);
           const errorMsg = err.error?.message || err.message || 'Failed to create employee. Please try again.';
           this.toastService.error(errorMsg);
@@ -481,10 +484,12 @@ export class EmployeeDetailComponent implements OnInit {
           if (updated) {
             this.employee = updated;
           }
+          this.cdr.detectChanges();
           this.toastService.success('Employee updated successfully!');
         },
         error: (err) => {
           this.saving = false;
+          this.cdr.detectChanges();
           console.error('Error updating employee:', err);
           const errorMsg = err.error?.message || err.message || 'Failed to update employee. Please try again.';
           this.toastService.error(errorMsg);
