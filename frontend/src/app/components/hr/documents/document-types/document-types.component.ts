@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { DocumentService, DocumentCategory, DocumentType } from '../../../../services/document.service';
+import { ToastService } from '../../../../services/toast.service';
 
 @Component({
   selector: 'app-document-types',
@@ -26,7 +27,11 @@ export class DocumentTypesComponent implements OnInit {
   isEditCategoryMode = false;
   editingCategory: DocumentCategory = this.getEmptyCategory();
 
-  constructor(private documentService: DocumentService) {}
+  constructor(
+    private documentService: DocumentService,
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.loadData();
@@ -202,10 +207,10 @@ export class DocumentTypesComponent implements OnInit {
   initDefaultCategories() {
     this.documentService.initCategories().subscribe({
       next: () => { 
-        alert('Default categories initialized successfully!');
+        this.toastService.success('Default categories initialized successfully!');
         this.loadData(); 
       },
-      error: (err) => console.error('Error initializing categories:', err)
+      error: (err) => { console.error('Error initializing categories:', err); this.toastService.error('Error initializing categories'); }
     });
   }
 }

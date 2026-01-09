@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RecruitmentService } from '../../../services/recruitment.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-recruitment',
@@ -37,7 +38,9 @@ export class RecruitmentComponent implements OnInit {
 
   constructor(
     private recruitmentService: RecruitmentService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -112,8 +115,12 @@ export class RecruitmentComponent implements OnInit {
       ? this.recruitmentService.updateRequisition(this.editingItem.id, this.formData)
       : this.recruitmentService.createRequisition(this.formData);
     obs.subscribe({
-      next: () => { this.closeForm(); this.loadRequisitions(); },
-      error: (err) => { console.error(err); alert('Error saving requisition'); }
+      next: () => { 
+        this.toastService.success(this.editingItem ? 'Requisition updated' : 'Requisition created'); 
+        this.closeForm(); 
+        this.loadRequisitions(); 
+      },
+      error: (err) => { console.error(err); this.toastService.error('Error saving requisition'); }
     });
   }
 
@@ -176,8 +183,13 @@ export class RecruitmentComponent implements OnInit {
 
   saveJobPosting(): void {
     this.recruitmentService.createJobPosting(this.postingData).subscribe({
-      next: () => { this.closePostingForm(); this.loadJobPostings(); this.loadDashboard(); },
-      error: (err) => { console.error(err); alert('Error creating job posting'); }
+      next: () => { 
+        this.toastService.success('Job posting created successfully'); 
+        this.closePostingForm(); 
+        this.loadJobPostings(); 
+        this.loadDashboard(); 
+      },
+      error: (err) => { console.error(err); this.toastService.error('Error creating job posting'); }
     });
   }
 
@@ -201,8 +213,13 @@ export class RecruitmentComponent implements OnInit {
 
   saveCandidate(): void {
     this.recruitmentService.createCandidate(this.candidateData).subscribe({
-      next: () => { this.closeCandidateForm(); this.loadCandidates(); this.loadDashboard(); },
-      error: (err) => { console.error(err); alert('Error adding candidate'); }
+      next: () => { 
+        this.toastService.success('Candidate added successfully'); 
+        this.closeCandidateForm(); 
+        this.loadCandidates(); 
+        this.loadDashboard(); 
+      },
+      error: (err) => { console.error(err); this.toastService.error('Error adding candidate'); }
     });
   }
 
@@ -226,8 +243,13 @@ export class RecruitmentComponent implements OnInit {
 
   saveInterview(): void {
     this.recruitmentService.scheduleInterview(this.interviewData).subscribe({
-      next: () => { this.closeInterviewForm(); this.loadInterviews(); this.loadDashboard(); },
-      error: (err) => { console.error(err); alert('Error scheduling interview'); }
+      next: () => { 
+        this.toastService.success('Interview scheduled successfully'); 
+        this.closeInterviewForm(); 
+        this.loadInterviews(); 
+        this.loadDashboard(); 
+      },
+      error: (err) => { console.error(err); this.toastService.error('Error scheduling interview'); }
     });
   }
 

@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/cor
 import { Router } from '@angular/router';
 import { EmployeeService, Employee } from '../../../../services/employee.service';
 import { OrganizationService, Department, Designation } from '../../../../services/organization.service';
+import { ToastService } from '../../../../services/toast.service';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -38,7 +39,8 @@ export class EmployeeListComponent implements OnInit {
     private employeeService: EmployeeService,
     private orgService: OrganizationService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toastService: ToastService
   ) {}
 
   ngOnInit() {
@@ -247,7 +249,7 @@ export class EmployeeListComponent implements OnInit {
     this.showExportMenu = false;
     const data = this.getExportData();
     if (data.length === 0) {
-      alert('No data to export');
+      this.toastService.warning('No data to export');
       return;
     }
     
@@ -314,7 +316,7 @@ export class EmployeeListComponent implements OnInit {
     
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      alert('Please allow popups for this website');
+      this.toastService.warning('Please allow popups for this website');
       return;
     }
     

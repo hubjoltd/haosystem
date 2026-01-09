@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { OrganizationService, JobRole, Department, Grade } from '../../../../services/organization.service';
+import { ToastService } from '../../../../services/toast.service';
 
 @Component({
   selector: 'app-job-roles',
@@ -20,7 +21,7 @@ export class JobRolesComponent implements OnInit {
   isEditMode = false;
   editing: JobRole = this.getEmpty();
 
-  constructor(private orgService: OrganizationService, private cdr: ChangeDetectorRef) {}
+  constructor(private orgService: OrganizationService, private cdr: ChangeDetectorRef, private toastService: ToastService) {}
 
   ngOnInit() {
     this.loadData();
@@ -86,13 +87,35 @@ export class JobRolesComponent implements OnInit {
     
     if (this.isEditMode && this.editing.id) {
       this.orgService.updateJobRole(this.editing.id, this.editing).subscribe({
-        next: () => { this.saving = false; this.loadData(); this.closeModal(); },
-        error: (err) => { this.saving = false; console.error('Error updating:', err); }
+        next: () => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Job Role updated successfully!');
+          this.loadData(); 
+          this.closeModal(); 
+        },
+        error: (err) => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          console.error('Error updating:', err); 
+          this.toastService.error('Failed to update job role');
+        }
       });
     } else {
       this.orgService.createJobRole(this.editing).subscribe({
-        next: () => { this.saving = false; this.loadData(); this.closeModal(); },
-        error: (err) => { this.saving = false; console.error('Error creating:', err); }
+        next: () => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Job Role created successfully!');
+          this.loadData(); 
+          this.closeModal(); 
+        },
+        error: (err) => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          console.error('Error creating:', err); 
+          this.toastService.error('Failed to create job role');
+        }
       });
     }
   }

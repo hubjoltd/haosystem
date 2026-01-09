@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { OrganizationService, Grade } from '../../../../services/organization.service';
+import { ToastService } from '../../../../services/toast.service';
 
 @Component({
   selector: 'app-grades',
@@ -18,7 +19,7 @@ export class GradesComponent implements OnInit {
   isEditMode = false;
   editing: Grade = this.getEmpty();
 
-  constructor(private orgService: OrganizationService, private cdr: ChangeDetectorRef) {}
+  constructor(private orgService: OrganizationService, private cdr: ChangeDetectorRef, private toastService: ToastService) {}
 
   ngOnInit() {
     this.loadData();
@@ -65,13 +66,35 @@ export class GradesComponent implements OnInit {
     
     if (this.isEditMode && this.editing.id) {
       this.orgService.updateGrade(this.editing.id, this.editing).subscribe({
-        next: () => { this.saving = false; this.loadData(); this.closeModal(); },
-        error: (err) => { this.saving = false; console.error('Error updating:', err); }
+        next: () => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Grade updated successfully!');
+          this.loadData(); 
+          this.closeModal(); 
+        },
+        error: (err) => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          console.error('Error updating:', err); 
+          this.toastService.error('Failed to update grade');
+        }
       });
     } else {
       this.orgService.createGrade(this.editing).subscribe({
-        next: () => { this.saving = false; this.loadData(); this.closeModal(); },
-        error: (err) => { this.saving = false; console.error('Error creating:', err); }
+        next: () => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Grade created successfully!');
+          this.loadData(); 
+          this.closeModal(); 
+        },
+        error: (err) => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          console.error('Error creating:', err); 
+          this.toastService.error('Failed to create grade');
+        }
       });
     }
   }

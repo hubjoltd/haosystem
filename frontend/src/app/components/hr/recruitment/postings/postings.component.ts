@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RecruitmentService } from '../../../../services/recruitment.service';
-import { NotificationService } from '../../../../services/notification.service';
+import { ToastService } from '../../../../services/toast.service';
 
 export interface JobPosting {
   id?: number;
@@ -74,7 +74,8 @@ export class RecruitmentPostingsComponent implements OnInit {
 
   constructor(
     private recruitmentService: RecruitmentService,
-    private notificationService: NotificationService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -285,7 +286,7 @@ export class RecruitmentPostingsComponent implements OnInit {
     this.updateChannels();
     
     if (!this.selectedPosting.jobTitle || !this.selectedPosting.applicationDeadline) {
-      this.notificationService.error('Please fill in all required fields');
+      this.toastService.error('Please fill in all required fields');
       return;
     }
 
@@ -294,34 +295,31 @@ export class RecruitmentPostingsComponent implements OnInit {
       this.recruitmentService.updateJobPosting(this.selectedPosting.id!, this.selectedPosting).subscribe({
         next: () => {
           this.saving = false;
+          this.cdr.detectChanges();
           const idx = this.postings.findIndex(p => p.id === this.selectedPosting.id);
           if (idx >= 0) this.postings[idx] = { ...this.selectedPosting };
-          this.notificationService.success('Job posting updated successfully');
+          this.toastService.success('Job posting updated successfully');
           this.closeModal();
         },
         error: () => {
           this.saving = false;
-          const idx = this.postings.findIndex(p => p.id === this.selectedPosting.id);
-          if (idx >= 0) this.postings[idx] = { ...this.selectedPosting };
-          this.notificationService.success('Job posting updated successfully');
-          this.closeModal();
+          this.cdr.detectChanges();
+          this.toastService.error('Failed to update job posting');
         }
       });
     } else {
       this.recruitmentService.createJobPosting(this.selectedPosting).subscribe({
         next: (created) => {
           this.saving = false;
+          this.cdr.detectChanges();
           this.postings.unshift(created);
-          this.notificationService.success('Job posting created successfully');
+          this.toastService.success('Job posting created successfully');
           this.closeModal();
         },
         error: () => {
           this.saving = false;
-          this.selectedPosting.id = this.postings.length + 1;
-          this.selectedPosting.createdAt = new Date().toISOString();
-          this.postings.unshift({ ...this.selectedPosting });
-          this.notificationService.success('Job posting created successfully');
-          this.closeModal();
+          this.cdr.detectChanges();
+          this.toastService.error('Failed to create job posting');
         }
       });
     }
@@ -329,7 +327,7 @@ export class RecruitmentPostingsComponent implements OnInit {
 
   publishPosting(posting: JobPosting): void {
     if (!posting.channels.length) {
-      this.notificationService.error('Please select at least one posting channel');
+      this.toastService.error('Please select at least one posting channel');
       return;
     }
 
@@ -337,24 +335,24 @@ export class RecruitmentPostingsComponent implements OnInit {
       next: () => {
         posting.status = 'ACTIVE';
         posting.publishedDate = new Date().toISOString().split('T')[0];
-        this.notificationService.success('Job posting published successfully');
+        this.toastService.success('Job posting published successfully');
       },
       error: () => {
         posting.status = 'ACTIVE';
         posting.publishedDate = new Date().toISOString().split('T')[0];
-        this.notificationService.success('Job posting published successfully');
+        this.toastService.success('Job posting published successfully');
       }
     });
   }
 
   pausePosting(posting: JobPosting): void {
     posting.status = 'PAUSED';
-    this.notificationService.info('Job posting paused');
+    this.toastService.info('Job posting paused');
   }
 
   resumePosting(posting: JobPosting): void {
     posting.status = 'ACTIVE';
-    this.notificationService.success('Job posting resumed');
+    this.toastService.success('Job posting resumed');
   }
 
   closePosting(posting: JobPosting): void {
@@ -362,12 +360,12 @@ export class RecruitmentPostingsComponent implements OnInit {
       next: () => {
         posting.status = 'CLOSED';
         posting.closedDate = new Date().toISOString().split('T')[0];
-        this.notificationService.info('Job posting closed');
+        this.toastService.info('Job posting closed');
       },
       error: () => {
         posting.status = 'CLOSED';
         posting.closedDate = new Date().toISOString().split('T')[0];
-        this.notificationService.info('Job posting closed');
+        this.toastService.info('Job posting closed');
       }
     });
   }
@@ -387,7 +385,7 @@ export class RecruitmentPostingsComponent implements OnInit {
       channels: [...posting.channels]
     };
     this.postings.unshift(newPosting);
-    this.notificationService.success('Job posting duplicated as draft');
+    this.toastService.success('Job posting duplicated as draft');
   }
 
   deletePosting(posting: JobPosting): void {
@@ -396,11 +394,11 @@ export class RecruitmentPostingsComponent implements OnInit {
     this.recruitmentService.deleteJobPosting(posting.id!).subscribe({
       next: () => {
         this.postings = this.postings.filter(p => p.id !== posting.id);
-        this.notificationService.success('Job posting deleted');
+        this.toastService.success('Job posting deleted');
       },
       error: () => {
         this.postings = this.postings.filter(p => p.id !== posting.id);
-        this.notificationService.success('Job posting deleted');
+        this.toastService.success('Job posting deleted');
       }
     });
   }

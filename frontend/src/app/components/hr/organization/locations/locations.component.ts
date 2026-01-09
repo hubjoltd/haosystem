@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { OrganizationService, Location } from '../../../../services/organization.service';
+import { ToastService } from '../../../../services/toast.service';
 
 @Component({
   selector: 'app-locations',
@@ -20,7 +21,7 @@ export class LocationsComponent implements OnInit {
 
   locationTypes = ['Headquarters', 'Branch', 'Warehouse', 'Office', 'Factory', 'Remote'];
 
-  constructor(private orgService: OrganizationService, private cdr: ChangeDetectorRef) {}
+  constructor(private orgService: OrganizationService, private cdr: ChangeDetectorRef, private toastService: ToastService) {}
 
   ngOnInit() {
     this.loadData();
@@ -67,13 +68,35 @@ export class LocationsComponent implements OnInit {
     
     if (this.isEditMode && this.editing.id) {
       this.orgService.updateLocation(this.editing.id, this.editing).subscribe({
-        next: () => { this.saving = false; this.loadData(); this.closeModal(); },
-        error: (err) => { this.saving = false; console.error('Error updating:', err); }
+        next: () => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Location updated successfully!');
+          this.loadData(); 
+          this.closeModal(); 
+        },
+        error: (err) => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          console.error('Error updating:', err); 
+          this.toastService.error('Failed to update location');
+        }
       });
     } else {
       this.orgService.createLocation(this.editing).subscribe({
-        next: () => { this.saving = false; this.loadData(); this.closeModal(); },
-        error: (err) => { this.saving = false; console.error('Error creating:', err); }
+        next: () => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Location created successfully!');
+          this.loadData(); 
+          this.closeModal(); 
+        },
+        error: (err) => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          console.error('Error creating:', err); 
+          this.toastService.error('Failed to create location');
+        }
       });
     }
   }

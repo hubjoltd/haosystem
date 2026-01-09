@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { OrganizationService, Department, CostCenter, Location } from '../../../../services/organization.service';
+import { ToastService } from '../../../../services/toast.service';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -30,7 +31,7 @@ export class DepartmentsComponent implements OnInit {
   isEditMode = false;
   editing: Department = this.getEmptyDepartment();
 
-  constructor(private orgService: OrganizationService, private cdr: ChangeDetectorRef) {}
+  constructor(private orgService: OrganizationService, private cdr: ChangeDetectorRef, private toastService: ToastService) {}
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
@@ -104,13 +105,35 @@ export class DepartmentsComponent implements OnInit {
     
     if (this.isEditMode && this.editing.id) {
       this.orgService.updateDepartment(this.editing.id, this.editing).subscribe({
-        next: () => { this.saving = false; this.loadData(); this.closeModal(); },
-        error: (err) => { this.saving = false; console.error('Error updating:', err); }
+        next: () => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Department updated successfully!');
+          this.loadData(); 
+          this.closeModal(); 
+        },
+        error: (err) => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          console.error('Error updating:', err); 
+          this.toastService.error('Failed to update department');
+        }
       });
     } else {
       this.orgService.createDepartment(this.editing).subscribe({
-        next: () => { this.saving = false; this.loadData(); this.closeModal(); },
-        error: (err) => { this.saving = false; console.error('Error creating:', err); }
+        next: () => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Department created successfully!');
+          this.loadData(); 
+          this.closeModal(); 
+        },
+        error: (err) => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          console.error('Error creating:', err); 
+          this.toastService.error('Failed to create department');
+        }
       });
     }
   }

@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RecruitmentService } from '../../../../services/recruitment.service';
-import { NotificationService } from '../../../../services/notification.service';
+import { ToastService } from '../../../../services/toast.service';
 
 export interface Interview {
   id?: number;
@@ -85,7 +85,8 @@ export class RecruitmentInterviewsComponent implements OnInit {
 
   constructor(
     private recruitmentService: RecruitmentService,
-    private notificationService: NotificationService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -281,43 +282,45 @@ export class RecruitmentInterviewsComponent implements OnInit {
 
   saveInterview(): void {
     if (!this.selectedInterview.candidateId || !this.selectedInterview.scheduledDate || !this.selectedInterview.scheduledTime) {
-      this.notificationService.error('Please fill in all required fields');
+      this.toastService.error('Please fill in all required fields');
       return;
     }
 
     if (this.selectedInterview.panelMembers.length === 0) {
-      this.notificationService.error('Please add at least one panel member');
+      this.toastService.error('Please add at least one panel member');
       return;
     }
 
+    this.saving = true;
     if (this.isEditing) {
       this.recruitmentService.updateInterview(this.selectedInterview.id!, this.selectedInterview).subscribe({
         next: () => {
+          this.saving = false;
+          this.cdr.detectChanges();
           const idx = this.interviews.findIndex(i => i.id === this.selectedInterview.id);
           if (idx >= 0) this.interviews[idx] = { ...this.selectedInterview };
-          this.notificationService.success('Interview updated successfully');
+          this.toastService.success('Interview updated successfully');
           this.closeModal();
         },
         error: () => {
-          const idx = this.interviews.findIndex(i => i.id === this.selectedInterview.id);
-          if (idx >= 0) this.interviews[idx] = { ...this.selectedInterview };
-          this.notificationService.success('Interview updated successfully');
-          this.closeModal();
+          this.saving = false;
+          this.cdr.detectChanges();
+          this.toastService.error('Failed to update interview');
         }
       });
     } else {
       this.recruitmentService.scheduleInterview(this.selectedInterview).subscribe({
         next: (created) => {
+          this.saving = false;
+          this.cdr.detectChanges();
           this.interviews.unshift(created);
-          this.notificationService.success('Interview scheduled successfully');
+          this.toastService.success('Interview scheduled successfully');
           this.closeModal();
         },
         error: () => {
-          this.selectedInterview.id = this.interviews.length + 1;
-          this.selectedInterview.createdAt = new Date().toISOString();
-          this.interviews.unshift({ ...this.selectedInterview });
-          this.notificationService.success('Interview scheduled successfully');
-          this.closeModal();
+          this.saving = false;
+          this.cdr.detectChanges();
+          this.toastService.error('Failed to schedule interview');
         }
       });
     }
@@ -347,7 +350,7 @@ export class RecruitmentInterviewsComponent implements OnInit {
 
   submitFeedback(): void {
     if (!this.feedbackInterview || this.feedbackData.overallRating === 0) {
-      this.notificationService.error('Please provide an overall rating');
+      this.toastService.error('Please provide an overall rating');
       return;
     }
 
@@ -358,13 +361,13 @@ export class RecruitmentInterviewsComponent implements OnInit {
       next: () => {
         this.feedbackInterview!.feedback = { ...this.feedbackData };
         this.feedbackInterview!.status = 'COMPLETED';
-        this.notificationService.success('Feedback submitted successfully');
+        this.toastService.success('Feedback submitted successfully');
         this.closeFeedbackModal();
       },
       error: () => {
         this.feedbackInterview!.feedback = { ...this.feedbackData };
         this.feedbackInterview!.status = 'COMPLETED';
-        this.notificationService.success('Feedback submitted successfully');
+        this.toastService.success('Feedback submitted successfully');
         this.closeFeedbackModal();
       }
     });
@@ -378,19 +381,19 @@ export class RecruitmentInterviewsComponent implements OnInit {
       next: () => {
         interview.status = 'CANCELLED';
         interview.notes = reason;
-        this.notificationService.info('Interview cancelled');
+        this.toastService.info('Interview cancelled');
       },
       error: () => {
         interview.status = 'CANCELLED';
         interview.notes = reason;
-        this.notificationService.info('Interview cancelled');
+        this.toastService.info('Interview cancelled');
       }
     });
   }
 
   markNoShow(interview: Interview): void {
     interview.status = 'NO_SHOW';
-    this.notificationService.warning('Interview marked as No Show');
+    this.toastService.warning('Interview marked as No Show');
   }
 
   getStatusClass(status: string): string {

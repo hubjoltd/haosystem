@@ -1,5 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { OrganizationService, Designation, Grade } from '../../../../services/organization.service';
+import { ToastService } from '../../../../services/toast.service';
 
 @Component({
   selector: 'app-designations',
@@ -19,7 +20,7 @@ export class DesignationsComponent implements OnInit {
   isEditMode = false;
   editing: Designation = this.getEmpty();
 
-  constructor(private orgService: OrganizationService, private cdr: ChangeDetectorRef) {}
+  constructor(private orgService: OrganizationService, private cdr: ChangeDetectorRef, private toastService: ToastService) {}
 
   ngOnInit() {
     this.loadData();
@@ -79,27 +80,41 @@ export class DesignationsComponent implements OnInit {
     if (this.saving) return;
     
     if (!this.editing.code || !this.editing.title) {
-      alert('Please fill in code and title');
+      this.toastService.warning('Please fill in code and title');
       return;
     }
     
     this.saving = true;
     if (this.isEditMode && this.editing.id) {
       this.orgService.updateDesignation(this.editing.id, this.editing).subscribe({
-        next: () => { this.loadData(); this.closeModal(); this.saving = false; },
+        next: () => { 
+          this.saving = false;
+          this.cdr.detectChanges();
+          this.toastService.success('Designation updated successfully!');
+          this.loadData(); 
+          this.closeModal(); 
+        },
         error: (err) => { 
           console.error('Error updating:', err); 
           this.saving = false;
-          alert('Error updating designation');
+          this.cdr.detectChanges();
+          this.toastService.error('Failed to update designation');
         }
       });
     } else {
       this.orgService.createDesignation(this.editing).subscribe({
-        next: () => { this.loadData(); this.closeModal(); this.saving = false; },
+        next: () => { 
+          this.saving = false;
+          this.cdr.detectChanges();
+          this.toastService.success('Designation created successfully!');
+          this.loadData(); 
+          this.closeModal(); 
+        },
         error: (err) => { 
           console.error('Error creating:', err); 
           this.saving = false;
-          alert('Error creating designation');
+          this.cdr.detectChanges();
+          this.toastService.error('Failed to create designation');
         }
       });
     }

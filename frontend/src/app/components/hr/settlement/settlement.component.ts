@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { SettlementService } from '../../../services/settlement.service';
 import { EmployeeService } from '../../../services/employee.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-settlement',
@@ -22,7 +23,9 @@ export class SettlementComponent implements OnInit {
 
   constructor(
     private settlementService: SettlementService,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -70,13 +73,24 @@ export class SettlementComponent implements OnInit {
   saveSettlement(): void {
     if (this.saving) return;
     if (!this.formData.employeeId || !this.formData.lastWorkingDay) {
-      alert('Please select an employee and last working day');
+      this.toastService.error('Please select an employee and last working day');
       return;
     }
     this.saving = true;
     this.settlementService.initiateSettlement(this.formData).subscribe({
-      next: () => { this.saving = false; this.closeForm(); this.loadSettlements(); this.loadDashboard(); },
-      error: (err) => { this.saving = false; console.error(err); alert(err.error?.error || 'Error initiating settlement'); }
+      next: () => { 
+        this.saving = false; 
+        this.cdr.detectChanges();
+        this.toastService.success('Settlement initiated successfully');
+        this.closeForm(); 
+        this.loadSettlements(); 
+        this.loadDashboard(); 
+      },
+      error: (err) => { 
+        this.saving = false; 
+        this.cdr.detectChanges();
+        this.toastService.error(err.error?.error || 'Error initiating settlement'); 
+      }
     });
   }
 
@@ -93,8 +107,16 @@ export class SettlementComponent implements OnInit {
   submitSettlement(id: number): void {
     if (confirm('Submit this settlement for approval?')) {
       this.settlementService.submit(id).subscribe({
-        next: () => { this.loadSettlements(); this.loadDashboard(); this.closeDetail(); },
-        error: (err) => { console.error(err); alert(err.error?.error || 'Error submitting settlement'); }
+        next: () => { 
+          this.toastService.success('Settlement submitted successfully');
+          this.loadSettlements(); 
+          this.loadDashboard(); 
+          this.closeDetail(); 
+        },
+        error: (err) => { 
+          console.error(err); 
+          this.toastService.error(err.error?.error || 'Error submitting settlement'); 
+        }
       });
     }
   }
@@ -102,8 +124,16 @@ export class SettlementComponent implements OnInit {
   approveSettlement(id: number): void {
     if (confirm('Approve this settlement?')) {
       this.settlementService.approve(id, 'Admin').subscribe({
-        next: () => { this.loadSettlements(); this.loadDashboard(); this.closeDetail(); },
-        error: (err) => { console.error(err); alert(err.error?.error || 'Error approving settlement'); }
+        next: () => { 
+          this.toastService.success('Settlement approved successfully');
+          this.loadSettlements(); 
+          this.loadDashboard(); 
+          this.closeDetail(); 
+        },
+        error: (err) => { 
+          console.error(err); 
+          this.toastService.error(err.error?.error || 'Error approving settlement'); 
+        }
       });
     }
   }
@@ -112,8 +142,16 @@ export class SettlementComponent implements OnInit {
     const remarks = prompt('Enter rejection reason:');
     if (remarks) {
       this.settlementService.reject(id, remarks).subscribe({
-        next: () => { this.loadSettlements(); this.loadDashboard(); this.closeDetail(); },
-        error: (err) => { console.error(err); alert(err.error?.error || 'Error rejecting settlement'); }
+        next: () => { 
+          this.toastService.success('Settlement rejected');
+          this.loadSettlements(); 
+          this.loadDashboard(); 
+          this.closeDetail(); 
+        },
+        error: (err) => { 
+          console.error(err); 
+          this.toastService.error(err.error?.error || 'Error rejecting settlement'); 
+        }
       });
     }
   }
@@ -121,8 +159,16 @@ export class SettlementComponent implements OnInit {
   processSettlement(id: number): void {
     if (confirm('Process this settlement for payment?')) {
       this.settlementService.process(id, 'Admin').subscribe({
-        next: () => { this.loadSettlements(); this.loadDashboard(); this.closeDetail(); },
-        error: (err) => { console.error(err); alert(err.error?.error || 'Error processing settlement'); }
+        next: () => { 
+          this.toastService.success('Settlement processed successfully');
+          this.loadSettlements(); 
+          this.loadDashboard(); 
+          this.closeDetail(); 
+        },
+        error: (err) => { 
+          console.error(err); 
+          this.toastService.error(err.error?.error || 'Error processing settlement'); 
+        }
       });
     }
   }
@@ -130,8 +176,15 @@ export class SettlementComponent implements OnInit {
   deleteSettlement(id: number): void {
     if (confirm('Delete this draft settlement?')) {
       this.settlementService.delete(id).subscribe({
-        next: () => { this.loadSettlements(); this.loadDashboard(); },
-        error: (err) => { console.error(err); alert(err.error?.error || 'Error deleting settlement'); }
+        next: () => { 
+          this.toastService.success('Settlement deleted');
+          this.loadSettlements(); 
+          this.loadDashboard(); 
+        },
+        error: (err) => { 
+          console.error(err); 
+          this.toastService.error(err.error?.error || 'Error deleting settlement'); 
+        }
       });
     }
   }

@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { DocumentService, EmployeeDocument } from '../../../../services/document.service';
+import { ToastService } from '../../../../services/toast.service';
 
 @Component({
   selector: 'app-document-expiry',
@@ -19,7 +20,9 @@ export class DocumentExpiryComponent implements OnInit {
 
   constructor(
     private documentService: DocumentService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -85,10 +88,10 @@ export class DocumentExpiryComponent implements OnInit {
     
     this.documentService.verifyDocument(doc.id, status, remarks || undefined).subscribe({
       next: () => {
-        alert(`Document ${status.toLowerCase()} successfully!`);
+        this.toastService.success(`Document ${status.toLowerCase()} successfully!`);
         this.loadData();
       },
-      error: (err) => console.error('Error verifying document:', err)
+      error: (err) => { console.error('Error verifying document:', err); this.toastService.error('Error verifying document'); }
     });
   }
 
@@ -97,20 +100,20 @@ export class DocumentExpiryComponent implements OnInit {
     
     this.documentService.resetReminder(doc.id).subscribe({
       next: () => {
-        alert('Reminder reset successfully. Notification will be sent again when expiry approaches.');
+        this.toastService.success('Reminder reset successfully. Notification will be sent again when expiry approaches.');
         this.loadData();
       },
-      error: (err) => console.error('Error resetting reminder:', err)
+      error: (err) => { console.error('Error resetting reminder:', err); this.toastService.error('Error resetting reminder'); }
     });
   }
 
   runExpiryCheck() {
     this.documentService.checkExpiry().subscribe({
       next: (response) => {
-        alert(`Expiry check completed. Processed: ${response.processed}, Notifications: ${response.notifications}`);
+        this.toastService.success(`Expiry check completed. Processed: ${response.processed}, Notifications: ${response.notifications}`);
         this.loadData();
       },
-      error: (err) => console.error('Error running expiry check:', err)
+      error: (err) => { console.error('Error running expiry check:', err); this.toastService.error('Error running expiry check'); }
     });
   }
 

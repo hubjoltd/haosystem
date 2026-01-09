@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OnboardingService } from '../../../services/onboarding.service';
 import { EmployeeService } from '../../../services/employee.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-onboarding',
@@ -38,7 +39,9 @@ export class OnboardingComponent implements OnInit {
 
   constructor(
     private onboardingService: OnboardingService,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -146,8 +149,20 @@ export class OnboardingComponent implements OnInit {
       : this.onboardingService.createPlan(payload);
 
     obs.subscribe({
-      next: () => { this.saving = false; this.closePlanForm(); this.loadPlans(); this.loadDashboard(); },
-      error: (err) => { this.saving = false; console.error(err); alert('Error saving onboarding plan'); }
+      next: () => { 
+        this.saving = false; 
+        this.cdr.detectChanges();
+        this.toastService.success(this.editingPlan ? 'Onboarding plan updated' : 'Onboarding plan created');
+        this.closePlanForm(); 
+        this.loadPlans(); 
+        this.loadDashboard(); 
+      },
+      error: (err) => { 
+        this.saving = false; 
+        this.cdr.detectChanges();
+        console.error(err); 
+        this.toastService.error('Error saving onboarding plan'); 
+      }
     });
   }
 
@@ -215,11 +230,18 @@ export class OnboardingComponent implements OnInit {
     this.onboardingService.createTask(payload).subscribe({
       next: () => { 
         this.saving = false;
+        this.cdr.detectChanges();
+        this.toastService.success('Task created successfully');
         this.closeTaskForm(); 
         this.viewTasks(this.selectedPlan);
         this.loadDashboard();
       },
-      error: (err) => { this.saving = false; console.error(err); alert('Error saving task'); }
+      error: (err) => { 
+        this.saving = false; 
+        this.cdr.detectChanges();
+        console.error(err); 
+        this.toastService.error('Error saving task'); 
+      }
     });
   }
 
@@ -288,10 +310,17 @@ export class OnboardingComponent implements OnInit {
     this.onboardingService.assignAsset(payload).subscribe({
       next: () => {
         this.saving = false;
+        this.cdr.detectChanges();
+        this.toastService.success('Asset assigned successfully');
         this.closeAssetForm();
         this.loadAssets(this.selectedAssetPlan.employee?.id);
       },
-      error: (err) => { this.saving = false; console.error(err); alert('Error assigning asset'); }
+      error: (err) => { 
+        this.saving = false; 
+        this.cdr.detectChanges();
+        console.error(err); 
+        this.toastService.error('Error assigning asset'); 
+      }
     });
   }
 

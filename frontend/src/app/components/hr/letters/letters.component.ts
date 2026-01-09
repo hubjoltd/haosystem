@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HRLetterService, HRLetter } from '../../../services/hr-letter.service';
 import { EmployeeService } from '../../../services/employee.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-letters',
@@ -43,7 +44,9 @@ export class LettersComponent implements OnInit {
 
   constructor(
     private letterService: HRLetterService,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -95,7 +98,7 @@ export class LettersComponent implements OnInit {
   generateLetter(): void {
     if (this.saving) return;
     if (!this.formData.employeeId) {
-      alert('Please select an employee');
+      this.toastService.error('Please select an employee');
       return;
     }
 
@@ -111,31 +114,31 @@ export class LettersComponent implements OnInit {
         break;
       case 'EXPERIENCE':
         if (!this.formData.lastWorkingDate) {
-          alert('Please enter the last working date');
+          this.toastService.error('Please enter the last working date');
           return;
         }
         request = this.letterService.generateExperienceLetter(employeeId, this.formData.lastWorkingDate);
         break;
       case 'WARNING':
         if (!this.formData.reason || this.formData.reason.trim() === '') {
-          alert('Please enter the reason for the warning');
+          this.toastService.error('Please enter the reason for the warning');
           return;
         }
         request = this.letterService.generateWarningLetter(employeeId, this.formData.reason, this.formData.warningLevel);
         break;
       case 'SALARY_REVISION':
         if (!this.formData.effectiveDate) {
-          alert('Please enter the effective date');
+          this.toastService.error('Please enter the effective date');
           return;
         }
         const newSalary = this.formData.newSalary ? parseFloat(this.formData.newSalary) : null;
         const increment = this.formData.increment ? parseFloat(this.formData.increment) : null;
         if (this.formData.newSalary && isNaN(newSalary as number)) {
-          alert('Please enter a valid salary amount');
+          this.toastService.error('Please enter a valid salary amount');
           return;
         }
         if (this.formData.increment && isNaN(increment as number)) {
-          alert('Please enter a valid increment percentage');
+          this.toastService.error('Please enter a valid increment percentage');
           return;
         }
         request = this.letterService.generateSalaryRevisionLetter(employeeId, {
@@ -152,14 +155,16 @@ export class LettersComponent implements OnInit {
     request.subscribe({
       next: () => {
         this.saving = false;
-        alert('Letter generated successfully!');
+        this.cdr.detectChanges();
+        this.toastService.success('Letter generated successfully!');
         this.closeForm();
         this.loadLetters();
       },
       error: (err: any) => {
         this.saving = false;
+        this.cdr.detectChanges();
         console.error(err);
-        alert('Error generating letter: ' + (err.error?.message || 'Please try again'));
+        this.toastService.error('Error generating letter: ' + (err.error?.message || 'Please try again'));
       }
     });
   }

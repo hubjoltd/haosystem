@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CompensationService } from '../../../services/compensation.service';
 import { EmployeeService } from '../../../services/employee.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-compensation',
@@ -38,7 +39,9 @@ export class CompensationComponent implements OnInit {
 
   constructor(
     private compensationService: CompensationService,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -234,8 +237,19 @@ export class CompensationComponent implements OnInit {
     if (this.saving) return;
     this.saving = true;
 
-    const onSuccess = () => { this.saving = false; this.closeForm(); this.loadData(); };
-    const onError = (msg: string) => (err: any) => { this.saving = false; console.error(err); alert(msg); };
+    const onSuccess = () => { 
+      this.saving = false; 
+      this.cdr.detectChanges();
+      this.toastService.success('Saved successfully'); 
+      this.closeForm(); 
+      this.loadData(); 
+    };
+    const onError = (msg: string) => (err: any) => { 
+      this.saving = false; 
+      this.cdr.detectChanges();
+      console.error(err); 
+      this.toastService.error(msg); 
+    };
 
     switch (this.activeTab) {
       case 'salary-bands':
@@ -318,32 +332,32 @@ export class CompensationComponent implements OnInit {
     switch (this.activeTab) {
       case 'salary-bands':
         this.compensationService.deleteSalaryBand(id).subscribe({
-          next: () => this.loadData(),
-          error: (err) => { console.error(err); alert('Error deleting salary band'); }
+          next: () => { this.toastService.success('Salary band deleted'); this.loadData(); },
+          error: (err) => { console.error(err); this.toastService.error('Error deleting salary band'); }
         });
         break;
       case 'bonus-incentive':
         this.compensationService.deleteBonusIncentive(id).subscribe({
-          next: () => this.loadData(),
-          error: (err) => { console.error(err); alert('Error deleting bonus/incentive'); }
+          next: () => { this.toastService.success('Bonus/incentive deleted'); this.loadData(); },
+          error: (err) => { console.error(err); this.toastService.error('Error deleting bonus/incentive'); }
         });
         break;
       case 'benefit-plans':
         this.compensationService.deleteBenefitPlan(id).subscribe({
-          next: () => this.loadData(),
-          error: (err) => { console.error(err); alert('Error deleting benefit plan'); }
+          next: () => { this.toastService.success('Benefit plan deleted'); this.loadData(); },
+          error: (err) => { console.error(err); this.toastService.error('Error deleting benefit plan'); }
         });
         break;
       case 'allowances':
         this.compensationService.deleteAllowance(id).subscribe({
-          next: () => this.loadData(),
-          error: (err) => { console.error(err); alert('Error deleting allowance'); }
+          next: () => { this.toastService.success('Allowance deleted'); this.loadData(); },
+          error: (err) => { console.error(err); this.toastService.error('Error deleting allowance'); }
         });
         break;
       case 'enrollment':
         this.compensationService.cancelEmployeeBenefit(id).subscribe({
-          next: () => this.loadData(),
-          error: (err) => { console.error(err); alert('Error canceling enrollment'); }
+          next: () => { this.toastService.success('Enrollment canceled'); this.loadData(); },
+          error: (err) => { console.error(err); this.toastService.error('Error canceling enrollment'); }
         });
         break;
     }
@@ -351,8 +365,8 @@ export class CompensationComponent implements OnInit {
 
   approveRevision(id: number): void {
     this.compensationService.approveSalaryRevision(id, 1).subscribe({
-      next: () => this.loadData(),
-      error: (err) => { console.error(err); alert('Error approving revision'); }
+      next: () => { this.toastService.success('Revision approved'); this.loadData(); },
+      error: (err) => { console.error(err); this.toastService.error('Error approving revision'); }
     });
   }
 
@@ -360,8 +374,8 @@ export class CompensationComponent implements OnInit {
     const reason = prompt('Enter rejection reason:');
     if (reason) {
       this.compensationService.rejectSalaryRevision(id, reason).subscribe({
-        next: () => this.loadData(),
-        error: (err) => { console.error(err); alert('Error rejecting revision'); }
+        next: () => { this.toastService.success('Revision rejected'); this.loadData(); },
+        error: (err) => { console.error(err); this.toastService.error('Error rejecting revision'); }
       });
     }
   }

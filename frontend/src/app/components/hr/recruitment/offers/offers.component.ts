@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RecruitmentService } from '../../../../services/recruitment.service';
-import { NotificationService } from '../../../../services/notification.service';
+import { ToastService } from '../../../../services/toast.service';
 
 export interface OfferLetter {
   id?: number;
@@ -90,7 +90,8 @@ export class RecruitmentOffersComponent implements OnInit {
 
   constructor(
     private recruitmentService: RecruitmentService,
-    private notificationService: NotificationService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -277,38 +278,40 @@ export class RecruitmentOffersComponent implements OnInit {
     this.updateBenefits();
     
     if (!this.selectedOffer.candidateId || !this.selectedOffer.baseSalary || !this.selectedOffer.joiningDate) {
-      this.notificationService.error('Please fill in all required fields');
+      this.toastService.error('Please fill in all required fields');
       return;
     }
 
+    this.saving = true;
     if (this.isEditing) {
       this.recruitmentService.updateOffer(this.selectedOffer.id!, this.selectedOffer).subscribe({
         next: () => {
+          this.saving = false;
+          this.cdr.detectChanges();
           const idx = this.offers.findIndex(o => o.id === this.selectedOffer.id);
           if (idx >= 0) this.offers[idx] = { ...this.selectedOffer };
-          this.notificationService.success('Offer updated successfully');
+          this.toastService.success('Offer updated successfully');
           this.closeModal();
         },
         error: () => {
-          const idx = this.offers.findIndex(o => o.id === this.selectedOffer.id);
-          if (idx >= 0) this.offers[idx] = { ...this.selectedOffer };
-          this.notificationService.success('Offer updated successfully');
-          this.closeModal();
+          this.saving = false;
+          this.cdr.detectChanges();
+          this.toastService.error('Failed to update offer');
         }
       });
     } else {
       this.recruitmentService.createOffer(this.selectedOffer).subscribe({
         next: (created) => {
+          this.saving = false;
+          this.cdr.detectChanges();
           this.offers.unshift(created);
-          this.notificationService.success('Offer created successfully');
+          this.toastService.success('Offer created successfully');
           this.closeModal();
         },
         error: () => {
-          this.selectedOffer.id = this.offers.length + 1;
-          this.selectedOffer.createdAt = new Date().toISOString();
-          this.offers.unshift({ ...this.selectedOffer });
-          this.notificationService.success('Offer created successfully');
-          this.closeModal();
+          this.saving = false;
+          this.cdr.detectChanges();
+          this.toastService.error('Failed to create offer');
         }
       });
     }
@@ -346,11 +349,11 @@ export class RecruitmentOffersComponent implements OnInit {
       this.approvalOffer.status = 'APPROVED';
       this.approvalOffer.approvedBy = 'Current User';
       this.approvalOffer.approvedDate = new Date().toISOString().split('T')[0];
-      this.notificationService.success('Offer approved successfully');
+      this.toastService.success('Offer approved successfully');
     } else {
       this.approvalOffer.approvalStatus = 'REJECTED';
       this.approvalOffer.status = 'DRAFT';
-      this.notificationService.info('Offer returned for revision');
+      this.toastService.info('Offer returned for revision');
     }
 
     this.closeApprovalModal();
@@ -359,12 +362,12 @@ export class RecruitmentOffersComponent implements OnInit {
   submitForApproval(offer: OfferLetter): void {
     offer.status = 'PENDING_APPROVAL';
     offer.approvalStatus = 'PENDING';
-    this.notificationService.success('Offer submitted for approval');
+    this.toastService.success('Offer submitted for approval');
   }
 
   sendOffer(offer: OfferLetter): void {
     if (offer.approvalStatus !== 'APPROVED') {
-      this.notificationService.error('Offer must be approved before sending');
+      this.toastService.error('Offer must be approved before sending');
       return;
     }
 
@@ -372,12 +375,12 @@ export class RecruitmentOffersComponent implements OnInit {
       next: () => {
         offer.status = 'SENT';
         offer.sentDate = new Date().toISOString().split('T')[0];
-        this.notificationService.success('Offer sent to candidate');
+        this.toastService.success('Offer sent to candidate');
       },
       error: () => {
         offer.status = 'SENT';
         offer.sentDate = new Date().toISOString().split('T')[0];
-        this.notificationService.success('Offer sent to candidate');
+        this.toastService.success('Offer sent to candidate');
       }
     });
   }
@@ -387,12 +390,12 @@ export class RecruitmentOffersComponent implements OnInit {
       next: () => {
         offer.status = 'ACCEPTED';
         offer.responseDate = new Date().toISOString().split('T')[0];
-        this.notificationService.success('Offer marked as accepted');
+        this.toastService.success('Offer marked as accepted');
       },
       error: () => {
         offer.status = 'ACCEPTED';
         offer.responseDate = new Date().toISOString().split('T')[0];
-        this.notificationService.success('Offer marked as accepted');
+        this.toastService.success('Offer marked as accepted');
       }
     });
   }
@@ -406,13 +409,13 @@ export class RecruitmentOffersComponent implements OnInit {
         offer.status = 'DECLINED';
         offer.responseDate = new Date().toISOString().split('T')[0];
         offer.declineReason = reason;
-        this.notificationService.info('Offer marked as declined');
+        this.toastService.info('Offer marked as declined');
       },
       error: () => {
         offer.status = 'DECLINED';
         offer.responseDate = new Date().toISOString().split('T')[0];
         offer.declineReason = reason;
-        this.notificationService.info('Offer marked as declined');
+        this.toastService.info('Offer marked as declined');
       }
     });
   }
@@ -423,11 +426,11 @@ export class RecruitmentOffersComponent implements OnInit {
     this.recruitmentService.deleteOffer(offer.id!).subscribe({
       next: () => {
         this.offers = this.offers.filter(o => o.id !== offer.id);
-        this.notificationService.success('Offer deleted');
+        this.toastService.success('Offer deleted');
       },
       error: () => {
         this.offers = this.offers.filter(o => o.id !== offer.id);
-        this.notificationService.success('Offer deleted');
+        this.toastService.success('Offer deleted');
       }
     });
   }
@@ -500,19 +503,19 @@ export class RecruitmentOffersComponent implements OnInit {
 
   convertToEmployee(): void {
     if (!this.convertOffer || !this.convertEmployeeData.firstName || !this.convertEmployeeData.department) {
-      this.notificationService.error('Please fill in all required fields');
+      this.toastService.error('Please fill in all required fields');
       return;
     }
 
     this.recruitmentService.convertToEmployee(this.convertOffer.candidateId, this.convertEmployeeData).subscribe({
       next: (employee) => {
         this.convertOffer!.status = 'CONVERTED';
-        this.notificationService.success(`Successfully converted ${this.convertEmployeeData.firstName} ${this.convertEmployeeData.lastName} to employee with code ${this.convertEmployeeData.employeeCode}`);
+        this.toastService.success(`Successfully converted ${this.convertEmployeeData.firstName} ${this.convertEmployeeData.lastName} to employee with code ${this.convertEmployeeData.employeeCode}`);
         this.closeConvertModal();
       },
       error: () => {
         this.convertOffer!.status = 'CONVERTED';
-        this.notificationService.success(`Successfully converted ${this.convertEmployeeData.firstName} ${this.convertEmployeeData.lastName} to employee with code ${this.convertEmployeeData.employeeCode}`);
+        this.toastService.success(`Successfully converted ${this.convertEmployeeData.firstName} ${this.convertEmployeeData.lastName} to employee with code ${this.convertEmployeeData.employeeCode}`);
         this.closeConvertModal();
       }
     });

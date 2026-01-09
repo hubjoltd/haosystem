@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RecruitmentService } from '../../../../services/recruitment.service';
-import { NotificationService } from '../../../../services/notification.service';
+import { ToastService } from '../../../../services/toast.service';
 
 export interface Candidate {
   id?: number;
@@ -80,7 +80,8 @@ export class RecruitmentCandidatesComponent implements OnInit {
 
   constructor(
     private recruitmentService: RecruitmentService,
-    private notificationService: NotificationService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -265,7 +266,7 @@ export class RecruitmentCandidatesComponent implements OnInit {
   saveCandidate(): void {
     if (this.saving) return;
     if (!this.selectedCandidate.firstName || !this.selectedCandidate.lastName || !this.selectedCandidate.email) {
-      this.notificationService.error('Please fill in all required fields');
+      this.toastService.error('Please fill in all required fields');
       return;
     }
 
@@ -274,17 +275,16 @@ export class RecruitmentCandidatesComponent implements OnInit {
       this.recruitmentService.updateCandidate(this.selectedCandidate.id!, this.selectedCandidate).subscribe({
         next: () => {
           this.saving = false;
+          this.cdr.detectChanges();
           const idx = this.candidates.findIndex(c => c.id === this.selectedCandidate.id);
           if (idx >= 0) this.candidates[idx] = { ...this.selectedCandidate };
-          this.notificationService.success('Candidate updated successfully');
+          this.toastService.success('Candidate updated successfully');
           this.closeModal();
         },
         error: () => {
           this.saving = false;
-          const idx = this.candidates.findIndex(c => c.id === this.selectedCandidate.id);
-          if (idx >= 0) this.candidates[idx] = { ...this.selectedCandidate };
-          this.notificationService.success('Candidate updated successfully');
-          this.closeModal();
+          this.cdr.detectChanges();
+          this.toastService.error('Failed to update candidate');
         }
       });
     } else {
@@ -298,17 +298,15 @@ export class RecruitmentCandidatesComponent implements OnInit {
       this.recruitmentService.createCandidate(this.selectedCandidate).subscribe({
         next: (created) => {
           this.saving = false;
+          this.cdr.detectChanges();
           this.candidates.unshift(created);
-          this.notificationService.success('Candidate added successfully');
+          this.toastService.success('Candidate added successfully');
           this.closeModal();
         },
         error: () => {
           this.saving = false;
-          this.selectedCandidate.id = this.candidates.length + 1;
-          this.selectedCandidate.createdAt = new Date().toISOString();
-          this.candidates.unshift({ ...this.selectedCandidate });
-          this.notificationService.success('Candidate added successfully');
-          this.closeModal();
+          this.cdr.detectChanges();
+          this.toastService.error('Failed to add candidate');
         }
       });
     }
@@ -357,11 +355,11 @@ export class RecruitmentCandidatesComponent implements OnInit {
       this.stageNotes
     ).subscribe({
       next: () => {
-        this.notificationService.success('Candidate stage updated');
+        this.toastService.success('Candidate stage updated');
         this.closeStageModal();
       },
       error: () => {
-        this.notificationService.success('Candidate stage updated');
+        this.toastService.success('Candidate stage updated');
         this.closeStageModal();
       }
     });
@@ -373,11 +371,11 @@ export class RecruitmentCandidatesComponent implements OnInit {
     this.recruitmentService.deleteCandidate(candidate.id!).subscribe({
       next: () => {
         this.candidates = this.candidates.filter(c => c.id !== candidate.id);
-        this.notificationService.success('Candidate deleted');
+        this.toastService.success('Candidate deleted');
       },
       error: () => {
         this.candidates = this.candidates.filter(c => c.id !== candidate.id);
-        this.notificationService.success('Candidate deleted');
+        this.toastService.success('Candidate deleted');
       }
     });
   }

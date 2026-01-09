@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RecruitmentService } from '../../../../services/recruitment.service';
 import { OrganizationService } from '../../../../services/organization.service';
 import { SettingsService } from '../../../../services/settings.service';
-import { NotificationService } from '../../../../services/notification.service';
+import { ToastService } from '../../../../services/toast.service';
 import { AuthService } from '../../../../services/auth.service';
 
 export interface ManpowerRequisition {
@@ -100,8 +100,9 @@ export class RecruitmentRequisitionComponent implements OnInit {
     private recruitmentService: RecruitmentService,
     private organizationService: OrganizationService,
     private settingsService: SettingsService,
-    private notificationService: NotificationService,
-    private authService: AuthService
+    private toastService: ToastService,
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -218,7 +219,7 @@ export class RecruitmentRequisitionComponent implements OnInit {
 
   openEditModal(req: ManpowerRequisition): void {
     if (req.status !== 'DRAFT') {
-      this.notificationService.error('Only draft requisitions can be edited');
+      this.toastService.error('Only draft requisitions can be edited');
       return;
     }
     this.isEditing = true;
@@ -248,7 +249,8 @@ export class RecruitmentRequisitionComponent implements OnInit {
     obs.subscribe({
       next: () => {
         this.saving = false;
-        this.notificationService.success(
+        this.cdr.detectChanges();
+        this.toastService.success(
           asDraft 
             ? 'Requisition saved as draft' 
             : 'Requisition submitted for approval'
@@ -258,23 +260,24 @@ export class RecruitmentRequisitionComponent implements OnInit {
       },
       error: (err) => {
         this.saving = false;
+        this.cdr.detectChanges();
         console.error('Error saving requisition:', err);
-        this.notificationService.error('Error saving requisition');
+        this.toastService.error('Error saving requisition');
       }
     });
   }
 
   validateForm(): boolean {
     if (!this.selectedRequisition.jobTitle?.trim()) {
-      this.notificationService.error('Job title is required');
+      this.toastService.error('Job title is required');
       return false;
     }
     if (!this.selectedRequisition.numberOfPositions || this.selectedRequisition.numberOfPositions < 1) {
-      this.notificationService.error('Number of positions must be at least 1');
+      this.toastService.error('Number of positions must be at least 1');
       return false;
     }
     if (!this.selectedRequisition.justification?.trim()) {
-      this.notificationService.error('Justification is required');
+      this.toastService.error('Justification is required');
       return false;
     }
     return true;
@@ -286,12 +289,12 @@ export class RecruitmentRequisitionComponent implements OnInit {
     if (confirm('Submit this requisition for approval?')) {
       this.recruitmentService.submitRequisition(req.id!).subscribe({
         next: () => {
-          this.notificationService.success('Requisition submitted for approval');
+          this.toastService.success('Requisition submitted for approval');
           this.loadData();
         },
         error: (err) => {
           console.error('Error submitting requisition:', err);
-          this.notificationService.error('Error submitting requisition');
+          this.toastService.error('Error submitting requisition');
         }
       });
     }
@@ -320,7 +323,7 @@ export class RecruitmentRequisitionComponent implements OnInit {
     
     obs.subscribe({
       next: () => {
-        this.notificationService.success(
+        this.toastService.success(
           action === 'approve' 
             ? 'Requisition approved successfully' 
             : 'Requisition rejected'
@@ -329,7 +332,7 @@ export class RecruitmentRequisitionComponent implements OnInit {
         this.loadData();
       },
       error: () => {
-        this.notificationService.error(`Error ${action}ing requisition`);
+        this.toastService.error(`Error ${action}ing requisition`);
       }
     });
   }
@@ -338,11 +341,11 @@ export class RecruitmentRequisitionComponent implements OnInit {
     if (confirm('Put this requisition on hold?')) {
       this.recruitmentService.holdRequisition(req.id!).subscribe({
         next: () => {
-          this.notificationService.success('Requisition put on hold');
+          this.toastService.success('Requisition put on hold');
           this.loadData();
         },
         error: () => {
-          this.notificationService.error('Error updating requisition');
+          this.toastService.error('Error updating requisition');
         }
       });
     }
@@ -350,19 +353,19 @@ export class RecruitmentRequisitionComponent implements OnInit {
 
   deleteRequisition(req: ManpowerRequisition): void {
     if (req.status !== 'DRAFT') {
-      this.notificationService.error('Only draft requisitions can be deleted');
+      this.toastService.error('Only draft requisitions can be deleted');
       return;
     }
     
     if (confirm(`Delete requisition ${req.requisitionNumber}?`)) {
       this.recruitmentService.deleteRequisition(req.id!).subscribe({
         next: () => {
-          this.notificationService.success('Requisition deleted');
+          this.toastService.success('Requisition deleted');
           this.loadData();
         },
         error: (err) => {
           console.error('Error deleting requisition:', err);
-          this.notificationService.error('Error deleting requisition');
+          this.toastService.error('Error deleting requisition');
         }
       });
     }

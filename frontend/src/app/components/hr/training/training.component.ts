@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TrainingService } from '../../../services/training.service';
 import { EmployeeService } from '../../../services/employee.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-training',
@@ -41,7 +42,9 @@ export class TrainingComponent implements OnInit {
 
   constructor(
     private trainingService: TrainingService,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -108,7 +111,7 @@ export class TrainingComponent implements OnInit {
     if (this.saving) return;
     
     if (!this.formData.name) {
-      alert('Please enter a program name');
+      this.toastService.error('Please enter a program name');
       return;
     }
     
@@ -118,16 +121,19 @@ export class TrainingComponent implements OnInit {
       : this.trainingService.createProgram(this.formData);
     obs.subscribe({
       next: () => { 
+        this.saving = false;
+        this.cdr.detectChanges();
+        this.toastService.success(this.editingItem ? 'Program updated successfully' : 'Program created successfully');
         this.closeForm(); 
         this.loadPrograms(); 
         this.loadDashboard(); 
-        this.saving = false;
       },
       error: (err) => { 
         console.error(err); 
         this.saving = false;
+        this.cdr.detectChanges();
         const errorMsg = err.error?.message || err.error?.error || 'Error saving program';
-        alert(errorMsg); 
+        this.toastService.error(errorMsg); 
       }
     });
   }
@@ -165,7 +171,7 @@ export class TrainingComponent implements OnInit {
     if (this.saving) return;
     
     if (!this.sessionFormData.programId || !this.sessionFormData.sessionDate) {
-      alert('Please select a program and session date');
+      this.toastService.error('Please select a program and session date');
       return;
     }
     
@@ -181,16 +187,19 @@ export class TrainingComponent implements OnInit {
 
     obs.subscribe({
       next: () => { 
+        this.saving = false;
+        this.cdr.detectChanges();
+        this.toastService.success(this.editingSession ? 'Session updated successfully' : 'Session created successfully');
         this.closeSessionForm(); 
         this.loadSessions(); 
         this.loadDashboard(); 
-        this.saving = false;
       },
       error: (err) => { 
         console.error(err); 
         this.saving = false;
+        this.cdr.detectChanges();
         const errorMsg = err.error?.message || err.error?.error || 'Error saving session';
-        alert(errorMsg); 
+        this.toastService.error(errorMsg); 
       }
     });
   }
@@ -248,11 +257,12 @@ export class TrainingComponent implements OnInit {
 
     this.trainingService.enrollEmployee(payload).subscribe({
       next: () => { 
+        this.toastService.success('Employee enrolled successfully');
         this.loadEnrollments(this.selectedSession.id);
         this.enrollmentData = {};
         this.loadSessions();
       },
-      error: (err) => { console.error(err); alert('Error enrolling employee'); }
+      error: (err) => { console.error(err); this.toastService.error('Error enrolling employee'); }
     });
   }
 
@@ -277,10 +287,11 @@ export class TrainingComponent implements OnInit {
   submitFeedback(): void {
     this.trainingService.submitFeedback(this.selectedEnrollment.id, this.feedbackData).subscribe({
       next: () => {
+        this.toastService.success('Feedback submitted successfully');
         this.closeFeedbackModal();
         this.loadEnrollments(this.selectedSession.id);
       },
-      error: (err) => { console.error(err); alert('Error submitting feedback'); }
+      error: (err) => { console.error(err); this.toastService.error('Error submitting feedback'); }
     });
   }
 
@@ -288,9 +299,9 @@ export class TrainingComponent implements OnInit {
     this.trainingService.generateCertificate(enrollment.id).subscribe({
       next: (data) => {
         this.loadEnrollments(this.selectedSession.id);
-        alert('Certificate generated successfully!');
+        this.toastService.success('Certificate generated successfully!');
       },
-      error: (err) => { console.error(err); alert('Error generating certificate'); }
+      error: (err) => { console.error(err); this.toastService.error('Error generating certificate'); }
     });
   }
 

@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LoanService } from '../../../services/loan.service';
 import { EmployeeService } from '../../../services/employee.service';
 import { AuthService } from '../../../services/auth.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-loans',
@@ -52,7 +53,9 @@ export class LoansComponent implements OnInit {
   constructor(
     private loanService: LoanService,
     private employeeService: EmployeeService,
-    private authService: AuthService
+    private authService: AuthService,
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {
     this.currentUserId = this.authService.getCurrentUserId() || 0;
   }
@@ -245,7 +248,7 @@ export class LoansComponent implements OnInit {
     if (this.saving) return;
     
     if (!this.formData.employeeId || !this.formData.requestedAmount) {
-      alert('Please fill in all required fields');
+      this.toastService.error('Please fill in all required fields');
       return;
     }
 
@@ -257,16 +260,19 @@ export class LoansComponent implements OnInit {
     
     request.subscribe({
       next: () => {
+        this.saving = false;
+        this.cdr.detectChanges();
+        this.toastService.success(this.editMode ? 'Loan updated successfully' : 'Loan application submitted');
         this.closeForm();
         this.loadLoans();
         this.loadDashboard();
-        this.saving = false;
       },
       error: (err) => {
         console.error(err);
         this.saving = false;
+        this.cdr.detectChanges();
         const errorMsg = err.error?.message || err.error?.error || 'Error saving loan application';
-        alert(errorMsg);
+        this.toastService.error(errorMsg);
       }
     });
   }
