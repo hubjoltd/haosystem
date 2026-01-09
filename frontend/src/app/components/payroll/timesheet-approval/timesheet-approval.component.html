@@ -34,7 +34,7 @@
       <div class="step-line" [class.completed]="currentStep > 1"></div>
       <div class="step-text">
         <span class="step-number">Step 2:</span>
-        <span class="step-title">Generate Timesheets</span>
+        <span class="step-title">Generated Timesheets</span>
       </div>
     </div>
 
@@ -183,73 +183,89 @@
     </div>
   </div>
 
-  <!-- Step 2: Generate Timesheet - Choose Employees -->
+  <!-- Step 2: Generate Timesheet for Approved Employees -->
   <div class="step-content" *ngIf="currentStep === 1">
     <div class="section-box">
       <div class="step-header">
-        <h3>Step 2: Generate Timesheet Summary</h3>
-        <p class="period-info">Period: {{ generateStartDate }} - {{ generateEndDate }} ({{ getPayPeriodTypeLabel() }})</p>
+        <h3>Step 2: Generated Timesheets</h3>
+        <p class="period-info">Date: {{ formatDateDisplay(approvedStartDate) }} - {{ formatDateDisplay(approvedEndDate) }}</p>
       </div>
 
-      <div class="form-grid compact">
-        <div class="form-group">
-          <label>Pay Period Type</label>
-          <select [(ngModel)]="selectedPayPeriodType" (change)="onPayPeriodTypeChange()">
-            <option value="MONTHLY">Monthly</option>
-            <option value="WEEKLY">Weekly</option>
-            <option value="BI_WEEKLY">Bi-Weekly</option>
-            <option value="SEMI_MONTHLY">Semi-Monthly</option>
-          </select>
+      <div class="summary-stats-row">
+        <div class="stat-box blue">
+          <div class="stat-icon"><i class="fas fa-users"></i></div>
+          <div class="stat-info">
+            <span class="stat-label">Employees</span>
+            <span class="stat-value">{{ getApprovedEmployeesForTimesheet().length }}</span>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Period Start</label>
-          <input type="date" [(ngModel)]="generateStartDate" />
+        <div class="stat-box purple">
+          <div class="stat-icon"><i class="fas fa-clock"></i></div>
+          <div class="stat-info">
+            <span class="stat-label">Total Hours</span>
+            <span class="stat-value">{{ totalApprovedHours.toFixed(1) }}h</span>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Period End</label>
-          <input type="date" [(ngModel)]="generateEndDate" />
+        <div class="stat-box orange">
+          <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+          <div class="stat-info">
+            <span class="stat-label">Overtime</span>
+            <span class="stat-value">{{ totalApprovedOT.toFixed(1) }}h</span>
+          </div>
+        </div>
+        <div class="stat-box green">
+          <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+          <div class="stat-info">
+            <span class="stat-label">Total Records</span>
+            <span class="stat-value">{{ totalApprovedRecords }}</span>
+          </div>
         </div>
       </div>
 
       <div class="sub-section">
-        <h4><i class="fas fa-users"></i> Select Employees to Generate Timesheets</h4>
+        <h4><i class="fas fa-file-alt"></i> Individual Time Sheet</h4>
       </div>
 
       <div class="table-container">
-        <table class="data-table timesheet-summary-table">
+        <table class="data-table timesheet-table">
           <thead>
             <tr>
-              <th class="checkbox-col">
-                <input type="checkbox" [checked]="allTimesheetEmployeesSelected" (change)="toggleAllTimesheetEmployees()" />
-              </th>
-              <th>#</th>
+              <th>S.no</th>
               <th>EMP ID</th>
-              <th>NAME</th>
-              <th>DEPARTMENT</th>
-              <th>TYPE</th>
+              <th>FIRST NAME</th>
+              <th>LAST NAME</th>
+              <th>REG HOURS</th>
+              <th>OT HOURS</th>
+              <th>TOTAL HOURS</th>
               <th>STATUS</th>
+              <th>ACTION</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let emp of timesheetEmployees; let i = index">
-              <td class="checkbox-col">
-                <input type="checkbox" [checked]="isTimesheetEmployeeSelected(emp.id!)" (change)="toggleTimesheetEmployeeSelection(emp.id!)" />
-              </td>
+            <tr *ngFor="let emp of getApprovedEmployeesForTimesheet(); let i = index">
               <td>{{ i + 1 }}</td>
-              <td class="emp-id">{{ emp.employeeCode }}</td>
-              <td class="emp-name">{{ emp.firstName }} {{ emp.lastName }}</td>
-              <td>{{ emp.department?.name || 'General' }}</td>
-              <td>{{ emp.employmentType || 'Full-Time' }}</td>
+              <td class="emp-id">{{ emp.empId }}</td>
+              <td>{{ emp.firstName }}</td>
+              <td>{{ emp.lastName }}</td>
+              <td>{{ emp.totalRegHours.toFixed(1) }}</td>
+              <td>{{ emp.totalOTHours.toFixed(1) }}</td>
+              <td class="hours-total">{{ emp.totalHours.toFixed(1) }}</td>
               <td>
-                <span class="status-badge" [ngClass]="emp.active ? 'approved' : 'pending'">
-                  {{ emp.active ? 'Active' : 'Inactive' }}
-                </span>
+                <span class="status-badge approved">{{ emp.status }}</span>
+              </td>
+              <td class="action-buttons">
+                <button class="btn btn-sm btn-view" (click)="viewIndividualTimesheet(emp)" title="View Timesheet">
+                  <i class="fas fa-eye"></i> View
+                </button>
+                <button class="btn btn-sm btn-pdf" (click)="downloadIndividualTimesheetPdf(emp)" title="Download PDF">
+                  <i class="fas fa-file-pdf"></i> PDF
+                </button>
               </td>
             </tr>
-            <tr *ngIf="timesheetEmployees.length === 0">
-              <td colspan="7" class="no-data">
-                <i class="fas fa-users"></i>
-                No employees found
+            <tr *ngIf="getApprovedEmployeesForTimesheet().length === 0">
+              <td colspan="9" class="no-data">
+                <i class="fas fa-file-alt"></i>
+                No approved timesheets found. Check Step 1 for approved attendance records.
               </td>
             </tr>
           </tbody>
@@ -258,20 +274,90 @@
 
       <div class="step-actions-bar">
         <div class="left-actions">
-          <span class="selected-info">{{ selectedTimesheetEmployeeIds.length }} employees selected</span>
+          <span class="selected-info">{{ getApprovedEmployeesForTimesheet().length }} employees with approved timesheets</span>
         </div>
         <div class="right-actions">
           <button class="btn btn-outline-secondary" (click)="goToStep(0)">
             <i class="fas fa-arrow-left"></i> Back
           </button>
-          <button class="btn btn-success" [disabled]="selectedTimesheetEmployeeIds.length === 0 || generating" (click)="generateTimesheetsForPeriod()">
-            <i class="fas fa-sync" [class.fa-spin]="generating"></i>
-            {{ generating ? 'Generating...' : 'Generate Timesheets' }}
-          </button>
           <button class="btn btn-primary" (click)="goToStep(2)">
             Next: Calculate Payroll <i class="fas fa-arrow-right"></i>
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Individual Timesheet Modal -->
+  <div class="modal-overlay" *ngIf="showIndividualTimesheet" (click)="closeIndividualTimesheet()">
+    <div class="modal-content individual-timesheet-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header blue-header">
+        <h3>Individual Time Sheet</h3>
+        <button class="close-btn" (click)="closeIndividualTimesheet()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="employee-info-row">
+          <div class="info-item">
+            <span class="label">EMP ID:</span>
+            <span class="value">{{ selectedTimesheetEmployee?.empId }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">NAME:</span>
+            <span class="value">{{ selectedTimesheetEmployee?.name }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">PERIOD:</span>
+            <span class="value">{{ formatShortDate(approvedStartDate) }} - {{ formatShortDate(approvedEndDate) }}</span>
+          </div>
+        </div>
+
+        <table class="data-table individual-timesheet-table">
+          <thead>
+            <tr>
+              <th>S.NO</th>
+              <th>DATE</th>
+              <th>DAY</th>
+              <th>CLOCK IN</th>
+              <th>CLOCK OUT</th>
+              <th>LUNCH HOUR</th>
+              <th>REG HOURS</th>
+              <th>OT HOURS</th>
+              <th>TOTAL HOURS</th>
+              <th>STATUS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let record of individualTimesheetRecords; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ formatShortDate(record.date) }}</td>
+              <td>{{ record.day }}</td>
+              <td>{{ record.clockIn }}</td>
+              <td>{{ record.clockOut }}</td>
+              <td>{{ record.lunchHour }}</td>
+              <td>{{ record.regHours.toFixed(1) }}</td>
+              <td>{{ record.otHours.toFixed(1) }}</td>
+              <td class="hours-total">{{ record.totalHours.toFixed(1) }}</td>
+              <td>
+                <span class="status-badge approved">{{ record.status }}</span>
+              </td>
+            </tr>
+            <tr *ngIf="individualTimesheetRecords.length === 0">
+              <td colspan="10" class="no-data">
+                <i class="fas fa-spinner fa-spin"></i> Loading timesheet records...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" (click)="closeIndividualTimesheet()">Close</button>
+        <button class="btn btn-pdf" (click)="downloadIndividualTimesheetPdf(selectedTimesheetEmployee)">
+          <i class="fas fa-file-pdf"></i> Download PDF
+        </button>
       </div>
     </div>
   </div>

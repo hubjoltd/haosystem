@@ -592,4 +592,206 @@ export class TimesheetApprovalComponent implements OnInit {
       default: return 'pending';
     }
   }
+
+  // Generated Timesheets - Individual Timesheet View
+  showIndividualTimesheet = false;
+  selectedTimesheetEmployee: any = null;
+  individualTimesheetRecords: any[] = [];
+
+  viewIndividualTimesheet(emp: any): void {
+    this.selectedTimesheetEmployee = emp;
+    this.individualTimesheetRecords = [];
+    this.showIndividualTimesheet = true;
+    this.cdr.markForCheck();
+
+    // Get attendance records for this employee in the date range
+    this.attendanceService.getByEmployeeAndDateRange(emp.employeeId, this.generateStartDate, this.generateEndDate).subscribe({
+      next: (records) => {
+        this.individualTimesheetRecords = records
+          .filter(r => r.approvalStatus === 'APPROVED')
+          .map(r => {
+            const date = new Date(r.attendanceDate);
+            const regHours = r.regularHours || 0;
+            const otHours = r.overtimeHours || 0;
+            return {
+              date: r.attendanceDate,
+              day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+              clockIn: r.clockIn || 'OFF',
+              clockOut: r.clockOut || 'OFF',
+              lunchHour: r.clockIn && r.clockOut ? 1 : 0,
+              regHours: regHours,
+              otHours: otHours,
+              totalHours: regHours + otHours,
+              status: r.approvalStatus || 'Approved'
+            };
+          })
+          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Error loading individual timesheet:', err);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  closeIndividualTimesheet(): void {
+    this.showIndividualTimesheet = false;
+    this.selectedTimesheetEmployee = null;
+    this.individualTimesheetRecords = [];
+    this.cdr.markForCheck();
+  }
+
+  downloadIndividualTimesheetPdf(emp: any): void {
+    // Get attendance records for this employee
+    this.attendanceService.getByEmployeeAndDateRange(emp.employeeId, this.generateStartDate, this.generateEndDate).subscribe({
+      next: (records) => {
+        const approvedRecords = records
+          .filter(r => r.approvalStatus === 'APPROVED')
+          .sort((a, b) => new Date(a.attendanceDate).getTime() - new Date(b.attendanceDate).getTime());
+        
+        this.generateTimesheetPdf(emp, approvedRecords);
+      },
+      error: (err) => {
+        console.error('Error loading records for PDF:', err);
+        this.showMessage('Error generating PDF', 'error');
+      }
+    });
+  }
+
+  generateTimesheetPdf(emp: any, records: AttendanceRecord[]): void {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Blue header
+    doc.setFillColor(0, 51, 102);
+    doc.rect(0, 0, pageWidth, 35, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.text('Single Employee Time Sheet', pageWidth / 2, 15, { align: 'center' });
+    doc.setFontSize(10);
+    doc.text('Hao System - Time & Payroll', pageWidth / 2, 23, { align: 'center' });
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    
+    const periodStart = new Date(this.generateStartDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    const periodEnd = new Date(this.generateEndDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+    
+    // Employee Info
+    doc.text(`EMP ID:`, 14, 45);
+    doc.setFont('helvetica', 'bold');
+    doc.text(emp.empId || emp.employeeCode, 40, 45);
+    doc.setFont('helvetica', 'normal');
+    
+    doc.text(`PERIOD:`, 120, 45);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${periodStart} - ${periodEnd}`, 145, 45);
+    doc.setFont('helvetica', 'normal');
+    
+    doc.text(`NAME:`, 14, 52);
+    doc.setFont('helvetica', 'bold');
+    doc.text(emp.name || emp.employeeName, 40, 52);
+    doc.setFont('helvetica', 'normal');
+    
+    const totalHours = records.reduce((sum, r) => sum + (r.regularHours || 0) + (r.overtimeHours || 0), 0);
+    doc.text(`TOTAL HOURS:`, 120, 52);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${totalHours.toFixed(1)}h`, 160, 52);
+    doc.setFont('helvetica', 'normal');
+    
+    // Table data
+    const tableData = records.map(r => {
+      const date = new Date(r.attendanceDate);
+      const dateStr = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+      const dayStr = date.toLocaleDateString('en-US', { weekday: 'short' });
+      const lunchHours = r.clockIn && r.clockOut ? 1 : 0;
+      const regHours = r.regularHours || 0;
+      const otHours = r.overtimeHours || 0;
+      const total = regHours + otHours;
+      
+      return [
+        dateStr,
+        dayStr,
+        r.clockIn || 'OFF',
+        r.clockOut || 'OFF',
+        lunchHours.toString(),
+        regHours.toFixed(1),
+        otHours.toFixed(1),
+        total.toFixed(1),
+        r.approvalStatus || 'Approved'
+      ];
+    });
+    
+    autoTable(doc, {
+      startY: 60,
+      head: [['DATE', 'DAY', 'CLOCK IN', 'CLOCK OUT', 'LUNCH', 'REG HRS', 'OT HRS', 'TOTAL', 'STATUS']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [0, 51, 102],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      bodyStyles: {
+        halign: 'center'
+      },
+      alternateRowStyles: {
+        fillColor: [240, 248, 255]
+      },
+      columnStyles: {
+        0: { cellWidth: 22 },
+        1: { cellWidth: 15 },
+        2: { cellWidth: 20 },
+        3: { cellWidth: 20 },
+        4: { cellWidth: 15 },
+        5: { cellWidth: 18 },
+        6: { cellWidth: 18 },
+        7: { cellWidth: 18 },
+        8: { cellWidth: 22 }
+      }
+    });
+    
+    doc.save(`Timesheet_${emp.empId || emp.employeeCode}_${periodStart.replace(/\//g, '-')}.pdf`);
+    this.showMessage('PDF downloaded successfully!', 'success');
+  }
+
+  // Get approved employees for timesheet generation
+  getApprovedEmployeesForTimesheet(): any[] {
+    const uniqueEmployeeIds = new Set(this.approvedAttendanceRecords.map(r => r.employeeId));
+    return this.employees
+      .filter(e => uniqueEmployeeIds.has(e.id!))
+      .map(e => {
+        const empRecords = this.approvedAttendanceRecords.filter(r => r.employeeId === e.id);
+        const totalRegHours = empRecords.reduce((sum, r) => sum + r.regularHours, 0);
+        const totalOTHours = empRecords.reduce((sum, r) => sum + r.overtimeHours, 0);
+        return {
+          employeeId: e.id,
+          empId: e.employeeCode || `EMP${e.id}`,
+          employeeCode: e.employeeCode || `EMP${e.id}`,
+          name: `${e.firstName || ''} ${e.lastName || ''}`.trim(),
+          firstName: e.firstName,
+          lastName: e.lastName,
+          department: e.department?.name || 'General',
+          totalRegHours: totalRegHours,
+          totalOTHours: totalOTHours,
+          totalHours: totalRegHours + totalOTHours,
+          recordCount: empRecords.length,
+          status: 'Approved'
+        };
+      });
+  }
+
+  getDayName(dateStr: string): string {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { weekday: 'short' });
+  }
+
+  formatShortDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+  }
 }
