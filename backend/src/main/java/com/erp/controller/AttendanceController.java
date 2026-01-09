@@ -164,6 +164,8 @@ public class AttendanceController {
             }
         }
 
+        record.setApprovalStatus("PENDING");
+
         return ResponseEntity.ok(attendanceRecordRepository.save(record));
     }
 
