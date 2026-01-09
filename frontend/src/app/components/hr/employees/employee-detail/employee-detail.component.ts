@@ -451,6 +451,12 @@ export class EmployeeDetailComponent implements OnInit {
     return reason ? labels[reason] || reason : '-';
   }
 
+  maskAccountNumber(value: string | undefined | null): string {
+    if (!value) return '-';
+    const lastFour = value.slice(-4);
+    return `XXXX ${lastFour}`;
+  }
+
   toggleEditMode() {
     this.isEditMode = !this.isEditMode;
   }

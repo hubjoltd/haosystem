@@ -176,9 +176,7 @@ export class SidebarComponent implements OnInit {
               label: 'Payroll Workflow',
               expanded: false,
               children: [
-                { icon: 'fas fa-clipboard-check', label: 'Timesheet Approval', route: '/app/payroll/timesheets' },
-                { icon: 'fas fa-calculator', label: 'Payroll Calculate', route: '/app/payroll/calculate' },
-                { icon: 'fas fa-cog', label: 'Process Payroll', route: '/app/payroll/process' },
+                { icon: 'fas fa-cog', label: 'Process Payroll', route: '/app/payroll/timesheets' },
                 { icon: 'fas fa-history', label: 'Payroll History', route: '/app/payroll/history' }
               ]
             }

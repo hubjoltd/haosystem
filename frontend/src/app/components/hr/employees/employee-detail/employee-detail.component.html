@@ -416,9 +416,9 @@
         <tr *ngFor="let b of bankDetails">
           <td>{{ b.bankName }}</td>
           <td>{{ b.accountHolderName || '-' }}</td>
-          <td>{{ b.accountNumber }}</td>
+          <td>{{ maskAccountNumber(b.accountNumber) }}</td>
           <td>{{ b.accountType === 'CHECKING' ? 'Checking Account' : (b.accountType === 'SAVINGS' ? 'Savings' : b.accountType) }}</td>
-          <td>{{ b.routingNumber || '-' }}</td>
+          <td>{{ maskAccountNumber(b.routingNumber) }}</td>
           <td><span class="badge" [class.badge-primary]="b.isPrimary">{{ b.isPrimary ? 'Yes' : 'No' }}</span></td>
           <td>
             <button class="btn-icon" (click)="openBankModal(b)"><i class="fas fa-edit"></i></button>
