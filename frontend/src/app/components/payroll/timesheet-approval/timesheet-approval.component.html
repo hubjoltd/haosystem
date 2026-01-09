@@ -375,92 +375,99 @@
       <div class="payroll-summary-cards">
         <div class="payroll-card green">
           <span class="card-label">Total Gross Pay</span>
-          <span class="card-value">{{ formatCurrency(totalGrossPay) }}</span>
+          <span class="card-value">{{ formatCurrency(step3TotalGross) }}</span>
         </div>
         <div class="payroll-card red">
           <span class="card-label">Total Taxes</span>
-          <span class="card-value">{{ formatCurrency(totalGrossPay * 0.22) }}</span>
+          <span class="card-value">{{ formatCurrency(step3TotalTax) }}</span>
         </div>
         <div class="payroll-card blue">
           <span class="card-label">Total Net Pay</span>
-          <span class="card-value">{{ formatCurrency(totalNetPay) }}</span>
+          <span class="card-value">{{ formatCurrency(step3TotalNetPay) }}</span>
         </div>
-        <div class="payroll-card purple">
+        <div class="payroll-card gray">
           <span class="card-label">Employees</span>
-          <span class="card-value">{{ selectedCalcEmployeeIds.length }}</span>
+          <span class="card-value">{{ step3EmployeeCount }}</span>
         </div>
       </div>
 
       <div class="step-header">
-        <h3>Step 3: Select Employees to Calculate Payroll</h3>
-        <p class="period-info">Period: {{ generateStartDate }} - {{ generateEndDate }}</p>
+        <h3>Step 2: Payroll Calculation Complete</h3>
+        <p class="period-info">Period: {{ generateStartDate && generateEndDate ? generateStartDate + ' - ' + generateEndDate : '-' }}</p>
       </div>
 
-      <div class="sub-section">
-        <h4><i class="fas fa-calculator"></i> Employee Payroll Calculation</h4>
+      <div class="loading-indicator" *ngIf="payrollCalcLoading">
+        <i class="fas fa-spinner fa-spin"></i> Calculating payroll...
       </div>
 
-      <div class="loading-indicator" *ngIf="payablesLoading">
-        <i class="fas fa-spinner fa-spin"></i> Loading payroll data...
-      </div>
-
-      <div class="table-container" *ngIf="!payablesLoading">
-        <table class="data-table payroll-calc-table">
+      <div class="table-container" *ngIf="!payrollCalcLoading">
+        <table class="data-table payroll-calc-table-new">
           <thead>
             <tr>
-              <th class="checkbox-col">
-                <input type="checkbox" [checked]="allCalcEmployeesSelected" (change)="toggleAllCalcEmployees()" />
-              </th>
-              <th>#</th>
+              <th>S.NO</th>
               <th>EMP ID</th>
               <th>NAME</th>
+              <th>TYPE</th>
               <th>HOURS</th>
-              <th>HOURLY RATE</th>
-              <th>GROSS PAY</th>
-              <th>TOTAL TAX</th>
-              <th>NET PAY</th>
+              <th class="green-header">GROSS</th>
+              <th>FEDERAL</th>
+              <th>STATE</th>
+              <th>SOC.SEC</th>
+              <th>MEDICARE</th>
+              <th class="red-header">TOTAL TAX</th>
+              <th class="green-header">NET PAY</th>
               <th>STATUS</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let emp of payableEmployees; let i = index">
-              <td class="checkbox-col">
-                <input type="checkbox" [checked]="isCalcEmployeeSelected(emp.employeeId)" (change)="toggleCalcEmployeeSelection(emp.employeeId)" />
-              </td>
-              <td>{{ i + 1 }}</td>
-              <td class="emp-id">{{ emp.empId }}</td>
-              <td class="emp-name">{{ emp.name }}</td>
-              <td>{{ emp.hours.toFixed(2) }} hrs</td>
-              <td>{{ formatCurrency(emp.hourlyRate) }}/hr</td>
-              <td class="green-text">{{ formatCurrency(emp.hours * emp.hourlyRate) }}</td>
-              <td class="red-text">{{ formatCurrency(emp.taxes) }}</td>
-              <td class="green-text">{{ formatCurrency(emp.netAmount) }}</td>
+            <tr *ngFor="let row of payrollCalculationRows">
+              <td>{{ row.sno }}</td>
+              <td class="emp-id">{{ row.empId }}</td>
+              <td class="emp-name">{{ row.name }}</td>
+              <td>{{ row.type }}</td>
+              <td>{{ row.hours.toFixed(2) }}h</td>
+              <td class="green-text">{{ formatCurrency(row.gross) }}</td>
+              <td>{{ formatCurrency(row.federal) }}</td>
+              <td>{{ formatCurrency(row.state) }}</td>
+              <td>{{ formatCurrency(row.socSec) }}</td>
+              <td>{{ formatCurrency(row.medicare) }}</td>
+              <td class="red-text">{{ formatCurrency(row.totalTax) }}</td>
+              <td class="green-text">{{ formatCurrency(row.netPay) }}</td>
               <td>
-                <span class="status-badge" [ngClass]="emp.status === 'Ready' ? 'approved' : 'pending'">
-                  {{ emp.status }}
+                <span class="status-badge" [ngClass]="row.status === 'Calculated' ? 'approved' : 'pending'">
+                  {{ row.status }}
                 </span>
               </td>
             </tr>
-            <tr *ngIf="payableEmployees.length === 0">
-              <td colspan="10" class="no-data">
+            <tr *ngIf="payrollCalculationRows.length === 0 && !payrollCalcLoading">
+              <td colspan="13" class="no-data">
                 <i class="fas fa-calculator"></i>
                 No payroll data. Generate timesheets first.
               </td>
             </tr>
           </tbody>
+          <tfoot *ngIf="payrollCalculationRows.length > 0">
+            <tr class="total-row">
+              <td colspan="4" class="text-right"><strong>TOTAL</strong></td>
+              <td><strong>{{ step3TotalHours.toFixed(2) }}h</strong></td>
+              <td class="green-text"><strong>{{ formatCurrency(step3TotalGross) }}</strong></td>
+              <td><strong>{{ formatCurrency(0) }}</strong></td>
+              <td><strong>{{ formatCurrency(0) }}</strong></td>
+              <td><strong>{{ formatCurrency(0) }}</strong></td>
+              <td><strong>{{ formatCurrency(0) }}</strong></td>
+              <td class="red-text"><strong>{{ formatCurrency(step3TotalTax) }}</strong></td>
+              <td class="green-text"><strong>{{ formatCurrency(step3TotalNetPay) }}</strong></td>
+              <td></td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 
       <div class="step-actions-bar">
-        <div class="left-actions">
-          <span class="selected-info">{{ selectedCalcEmployeeIds.length }} employees selected</span>
-        </div>
+        <div class="left-actions"></div>
         <div class="right-actions">
           <button class="btn btn-outline-secondary" (click)="goToStep(1)">
-            <i class="fas fa-arrow-left"></i> Back
-          </button>
-          <button class="btn btn-success" [disabled]="selectedCalcEmployeeIds.length === 0" (click)="calculateSelectedPayroll()">
-            <i class="fas fa-calculator"></i> Calculate Payroll
+            Back
           </button>
           <button class="btn btn-primary" (click)="goToStep(3)">
             Next: Process Payroll <i class="fas fa-arrow-right"></i>

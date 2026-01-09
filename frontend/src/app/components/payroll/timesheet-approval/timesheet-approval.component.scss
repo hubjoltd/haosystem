@@ -710,7 +710,88 @@
       &.red { background: linear-gradient(135deg, #d94848, #f06060); }
       &.blue { background: linear-gradient(135deg, #008080, #00a0a0); }
       &.purple { background: linear-gradient(135deg, #6a5acd, #8b7dd8); }
+      &.gray { background: linear-gradient(135deg, #6c757d, #868e96); }
     }
+  }
+
+  .payroll-calc-table-new {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+
+    thead {
+      th {
+        background: #f8f9fa;
+        color: #333;
+        padding: 12px 10px;
+        text-align: center;
+        font-weight: 600;
+        border-bottom: 2px solid #e0e0e0;
+        white-space: nowrap;
+
+        &.green-header {
+          color: #28a745;
+        }
+
+        &.red-header {
+          color: #dc3545;
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid #eee;
+        transition: background 0.2s;
+
+        &:hover {
+          background: #f0f9f9;
+        }
+
+        td {
+          padding: 12px 10px;
+          text-align: center;
+          vertical-align: middle;
+
+          &.emp-id {
+            font-weight: 600;
+            color: #008080;
+          }
+
+          &.emp-name {
+            text-align: left;
+            font-weight: 500;
+          }
+        }
+      }
+    }
+
+    tfoot {
+      .total-row {
+        background: #f8f9fa;
+        border-top: 2px solid #e0e0e0;
+
+        td {
+          padding: 14px 10px;
+          text-align: center;
+          font-weight: 600;
+
+          &.text-right {
+            text-align: right;
+          }
+        }
+      }
+    }
+  }
+
+  .green-text {
+    color: #28a745 !important;
+    font-weight: 600;
+  }
+
+  .red-text {
+    color: #dc3545 !important;
+    font-weight: 600;
   }
 
   .section-header {

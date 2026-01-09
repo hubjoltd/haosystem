@@ -72,6 +72,24 @@ interface IndividualTimesheetRow {
   status: string;
 }
 
+interface PayrollCalculationRow {
+  sno: number;
+  empId: string;
+  name: string;
+  type: string;
+  hours: number;
+  hourlyRate: number;
+  gross: number;
+  federal: number;
+  state: number;
+  socSec: number;
+  medicare: number;
+  totalTax: number;
+  netPay: number;
+  status: string;
+  employeeId: number;
+}
+
 @Component({
   selector: 'app-timesheet-approval',
   standalone: true,
@@ -120,7 +138,16 @@ export class TimesheetApprovalComponent implements OnInit {
   selectedTimesheetEmployee: GeneratedTimesheetSummary | null = null;
   individualTimesheetRows: IndividualTimesheetRow[] = [];
 
-  // Step 3: Calculate Payroll
+  // Step 3: Calculate Payroll (new design)
+  payrollCalculationRows: PayrollCalculationRow[] = [];
+  payrollCalcLoading = false;
+  step3TotalGross = 0;
+  step3TotalTax = 0;
+  step3TotalNetPay = 0;
+  step3TotalHours = 0;
+  step3EmployeeCount = 0;
+  
+  // Legacy Step 3 fields (keep for Step 4 compatibility)
   payableEmployees: PayableEmployee[] = [];
   allCalcEmployeesSelected = false;
   selectedCalcEmployeeIds: number[] = [];
@@ -175,9 +202,120 @@ export class TimesheetApprovalComponent implements OnInit {
       this.loadApprovedAttendance();
     } else if (step === 1) {
       // Step 2: Generate Timesheet - employees already loaded
-    } else if (step === 2 || step === 3) {
+    } else if (step === 2) {
+      // Step 3: Calculate Payroll - auto-calculate from generated timesheets
+      this.autoCalculatePayroll();
+    } else if (step === 3) {
       this.loadPayableEmployees();
     }
+    this.cdr.markForCheck();
+  }
+  
+  autoCalculatePayroll(): void {
+    this.payrollCalcLoading = true;
+    this.payrollCalculationRows = [];
+    this.cdr.markForCheck();
+    
+    // Load salary data for all employees with generated timesheets
+    if (this.generatedTimesheets.length === 0) {
+      this.payrollCalcLoading = false;
+      this.step3TotalGross = 0;
+      this.step3TotalTax = 0;
+      this.step3TotalNetPay = 0;
+      this.step3TotalHours = 0;
+      this.step3EmployeeCount = 0;
+      this.cdr.markForCheck();
+      return;
+    }
+    
+    let completed = 0;
+    const total = this.generatedTimesheets.length;
+    const tempRows: PayrollCalculationRow[] = [];
+    
+    this.generatedTimesheets.forEach((ts, idx) => {
+      this.employeeService.getCurrentSalary(ts.employeeId).subscribe({
+        next: (salary) => {
+          const hourlyRate = salary?.hourlyRate || 0;
+          const totalHours = ts.totalHours;
+          const gross = totalHours * hourlyRate;
+          // All taxes are 0 as per requirement
+          const federal = 0;
+          const state = 0;
+          const socSec = 0;
+          const medicare = 0;
+          const totalTax = 0;
+          const netPay = gross - totalTax;
+          
+          tempRows.push({
+            sno: idx + 1,
+            empId: ts.employeeCode,
+            name: `${ts.firstName} ${ts.lastName}`.trim(),
+            type: 'Hourly',
+            hours: totalHours,
+            hourlyRate: hourlyRate,
+            gross: gross,
+            federal: federal,
+            state: state,
+            socSec: socSec,
+            medicare: medicare,
+            totalTax: totalTax,
+            netPay: netPay,
+            status: 'Calculated',
+            employeeId: ts.employeeId
+          });
+          
+          completed++;
+          if (completed === total) {
+            this.finalizePayrollCalculation(tempRows);
+          }
+        },
+        error: () => {
+          // If no salary data, use 0 hourly rate
+          const totalHours = ts.totalHours;
+          tempRows.push({
+            sno: idx + 1,
+            empId: ts.employeeCode,
+            name: `${ts.firstName} ${ts.lastName}`.trim(),
+            type: 'Hourly',
+            hours: totalHours,
+            hourlyRate: 0,
+            gross: 0,
+            federal: 0,
+            state: 0,
+            socSec: 0,
+            medicare: 0,
+            totalTax: 0,
+            netPay: 0,
+            status: 'No Rate',
+            employeeId: ts.employeeId
+          });
+          
+          completed++;
+          if (completed === total) {
+            this.finalizePayrollCalculation(tempRows);
+          }
+        }
+      });
+    });
+  }
+  
+  finalizePayrollCalculation(rows: PayrollCalculationRow[]): void {
+    // Sort by employee code and reassign S.NO
+    rows.sort((a, b) => a.empId.localeCompare(b.empId));
+    rows.forEach((row, idx) => row.sno = idx + 1);
+    
+    this.payrollCalculationRows = rows;
+    this.step3TotalHours = rows.reduce((sum, r) => sum + r.hours, 0);
+    this.step3TotalGross = rows.reduce((sum, r) => sum + r.gross, 0);
+    this.step3TotalTax = rows.reduce((sum, r) => sum + r.totalTax, 0);
+    this.step3TotalNetPay = rows.reduce((sum, r) => sum + r.netPay, 0);
+    this.step3EmployeeCount = rows.length;
+    
+    // Also sync to legacy fields for Step 4
+    this.totalGrossPay = this.step3TotalGross;
+    this.totalNetPay = this.step3TotalNetPay;
+    
+    this.payrollCalcLoading = false;
     this.cdr.markForCheck();
   }
 
