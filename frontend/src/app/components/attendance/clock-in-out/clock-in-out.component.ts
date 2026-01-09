@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
-import { Employee } from '../../../services/employee.service';
+import { EmployeeService, Employee } from '../../../services/employee.service';
 
 @Component({
   selector: 'app-clock-in-out',
@@ -28,13 +28,15 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
   currentEarnings: number = 0;
   timerInterval: any = null;
   clockInterval: any = null;
+  refreshInterval: any = null;
   
   lastSessionHours: number = 0;
   lastSessionEarnings: number = 0;
   showSessionSummary: boolean = false;
 
   constructor(
-    private attendanceService: AttendanceService
+    private attendanceService: AttendanceService,
+    private employeeService: EmployeeService
   ) {}
 
   ngOnInit(): void {
@@ -44,6 +46,10 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     
     this.loadEmployees();
     this.loadTodayActivities();
+    
+    this.refreshInterval = setInterval(() => {
+      this.loadTodayActivities();
+    }, 30000);
   }
   
   ngOnDestroy(): void {
@@ -53,12 +59,15 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     if (this.clockInterval) {
       clearInterval(this.clockInterval);
     }
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
   }
 
   loadEmployees(): void {
-    this.attendanceService.getEmployeesForClock().subscribe({
+    this.employeeService.getAll().subscribe({
       next: (data: Employee[]) => {
-        this.employees = data;
+        this.employees = data.filter((e: Employee) => e.active);
       },
       error: (err: any) => console.error('Error loading employees:', err)
     });
