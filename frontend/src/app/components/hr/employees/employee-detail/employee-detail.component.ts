@@ -523,13 +523,35 @@ export class EmployeeDetailComponent implements OnInit {
     
     if (this.isEditingSubItem && this.editingBank.id) {
       this.employeeService.updateBankDetail(this.editingBank.id, this.editingBank).subscribe({
-        next: () => { this.saving = false; this.showBankModal = false; this.loadSubData(); },
-        error: (err) => { this.saving = false; console.error('Error updating bank detail:', err); }
+        next: () => { 
+          this.saving = false; 
+          this.showBankModal = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Bank detail updated successfully');
+          this.loadSubData(); 
+        },
+        error: (err) => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          console.error('Error updating bank detail:', err); 
+          this.toastService.error('Failed to update bank detail');
+        }
       });
     } else {
       this.employeeService.createBankDetail(this.employeeId, this.editingBank).subscribe({
-        next: () => { this.saving = false; this.showBankModal = false; this.loadSubData(); },
-        error: (err) => { this.saving = false; console.error('Error creating bank detail:', err); }
+        next: () => { 
+          this.saving = false; 
+          this.showBankModal = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Bank detail added successfully');
+          this.loadSubData(); 
+        },
+        error: (err) => { 
+          this.saving = false; 
+          this.cdr.detectChanges();
+          console.error('Error creating bank detail:', err); 
+          this.toastService.error('Failed to add bank detail');
+        }
       });
     }
   }
@@ -580,11 +602,23 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   saveSalary() {
-    if (!this.employeeId) return;
+    if (!this.employeeId || this.saving) return;
+    this.saving = true;
     
     this.employeeService.createSalary(this.employeeId, this.editingSalary).subscribe({
-      next: () => { this.showSalaryModal = false; this.loadSubData(); },
-      error: (err) => console.error('Error creating salary:', err)
+      next: () => { 
+        this.saving = false;
+        this.showSalaryModal = false; 
+        this.cdr.detectChanges();
+        this.toastService.success('Salary added successfully');
+        this.loadSubData(); 
+      },
+      error: (err) => {
+        this.saving = false;
+        this.cdr.detectChanges();
+        console.error('Error creating salary:', err);
+        this.toastService.error('Failed to add salary');
+      }
     });
   }
 
@@ -595,17 +629,40 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   saveEducation() {
-    if (!this.employeeId) return;
+    if (!this.employeeId || this.saving) return;
+    this.saving = true;
     
     if (this.isEditingSubItem && this.editingEducation.id) {
       this.employeeService.updateEducation(this.editingEducation.id, this.editingEducation).subscribe({
-        next: () => { this.showEducationModal = false; this.loadSubData(); },
-        error: (err) => console.error('Error updating education:', err)
+        next: () => { 
+          this.saving = false;
+          this.showEducationModal = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Education updated successfully');
+          this.loadSubData(); 
+        },
+        error: (err) => {
+          this.saving = false;
+          this.cdr.detectChanges();
+          console.error('Error updating education:', err);
+          this.toastService.error('Failed to update education');
+        }
       });
     } else {
       this.employeeService.createEducation(this.employeeId, this.editingEducation).subscribe({
-        next: () => { this.showEducationModal = false; this.loadSubData(); },
-        error: (err) => console.error('Error creating education:', err)
+        next: () => { 
+          this.saving = false;
+          this.showEducationModal = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Education added successfully');
+          this.loadSubData(); 
+        },
+        error: (err) => {
+          this.saving = false;
+          this.cdr.detectChanges();
+          console.error('Error creating education:', err);
+          this.toastService.error('Failed to add education');
+        }
       });
     }
   }
@@ -626,17 +683,40 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   saveExperience() {
-    if (!this.employeeId) return;
+    if (!this.employeeId || this.saving) return;
+    this.saving = true;
     
     if (this.isEditingSubItem && this.editingExperience.id) {
       this.employeeService.updateExperience(this.editingExperience.id, this.editingExperience).subscribe({
-        next: () => { this.showExperienceModal = false; this.loadSubData(); },
-        error: (err) => console.error('Error updating experience:', err)
+        next: () => { 
+          this.saving = false;
+          this.showExperienceModal = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Experience updated successfully');
+          this.loadSubData(); 
+        },
+        error: (err) => {
+          this.saving = false;
+          this.cdr.detectChanges();
+          console.error('Error updating experience:', err);
+          this.toastService.error('Failed to update experience');
+        }
       });
     } else {
       this.employeeService.createExperience(this.employeeId, this.editingExperience).subscribe({
-        next: () => { this.showExperienceModal = false; this.loadSubData(); },
-        error: (err) => console.error('Error creating experience:', err)
+        next: () => { 
+          this.saving = false;
+          this.showExperienceModal = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Experience added successfully');
+          this.loadSubData(); 
+        },
+        error: (err) => {
+          this.saving = false;
+          this.cdr.detectChanges();
+          console.error('Error creating experience:', err);
+          this.toastService.error('Failed to add experience');
+        }
       });
     }
   }
@@ -657,17 +737,40 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   saveAsset() {
-    if (!this.employeeId) return;
+    if (!this.employeeId || this.saving) return;
+    this.saving = true;
     
     if (this.isEditingSubItem && this.editingAsset.id) {
       this.employeeService.updateAsset(this.editingAsset.id, this.editingAsset).subscribe({
-        next: () => { this.showAssetModal = false; this.loadSubData(); },
-        error: (err) => console.error('Error updating asset:', err)
+        next: () => { 
+          this.saving = false;
+          this.showAssetModal = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Asset updated successfully');
+          this.loadSubData(); 
+        },
+        error: (err) => {
+          this.saving = false;
+          this.cdr.detectChanges();
+          console.error('Error updating asset:', err);
+          this.toastService.error('Failed to update asset');
+        }
       });
     } else {
       this.employeeService.createAsset(this.employeeId, this.editingAsset).subscribe({
-        next: () => { this.showAssetModal = false; this.loadSubData(); },
-        error: (err) => console.error('Error creating asset:', err)
+        next: () => { 
+          this.saving = false;
+          this.showAssetModal = false; 
+          this.cdr.detectChanges();
+          this.toastService.success('Asset added successfully');
+          this.loadSubData(); 
+        },
+        error: (err) => {
+          this.saving = false;
+          this.cdr.detectChanges();
+          console.error('Error creating asset:', err);
+          this.toastService.error('Failed to add asset');
+        }
       });
     }
   }
@@ -702,27 +805,44 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   saveDocument() {
-    if (!this.employeeId) return;
+    if (!this.employeeId || this.saving) return;
+    this.saving = true;
     
     if (this.isEditingSubItem && this.editingDocument.id) {
       this.documentService.updateDocument(this.editingDocument.id, this.editingDocument).subscribe({
         next: () => { 
+          this.saving = false;
           this.showDocumentModal = false; 
           this.selectedFile = null;
+          this.cdr.detectChanges();
+          this.toastService.success('Document updated successfully');
           this.loadSubData(); 
           this.loadDocumentChecklist();
         },
-        error: (err) => console.error('Error updating document:', err)
+        error: (err) => {
+          this.saving = false;
+          this.cdr.detectChanges();
+          console.error('Error updating document:', err);
+          this.toastService.error('Failed to update document');
+        }
       });
     } else {
       this.documentService.createDocument(this.employeeId, this.editingDocument).subscribe({
         next: () => { 
+          this.saving = false;
           this.showDocumentModal = false; 
           this.selectedFile = null;
+          this.cdr.detectChanges();
+          this.toastService.success('Document added successfully');
           this.loadSubData(); 
           this.loadDocumentChecklist();
         },
-        error: (err) => console.error('Error creating document:', err)
+        error: (err) => {
+          this.saving = false;
+          this.cdr.detectChanges();
+          console.error('Error creating document:', err);
+          this.toastService.error('Failed to add document');
+        }
       });
     }
   }
