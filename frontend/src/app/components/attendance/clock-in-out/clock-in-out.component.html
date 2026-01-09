@@ -81,14 +81,14 @@
         </div>
 
         <div class="clock-buttons">
-          <button class="btn-clock-in" (click)="clockIn()" [disabled]="loading || !selectedEmployeeId || isClockedIn()">
-            <i class="fas fa-play-circle" *ngIf="!loading"></i>
-            <i class="fas fa-spinner fa-spin" *ngIf="loading"></i>
+          <button class="btn-clock-in" (click)="clockIn()" [disabled]="loading || loadingRecord || !selectedEmployeeId || isClockedIn()">
+            <i class="fas fa-play-circle" *ngIf="!loading && !loadingRecord"></i>
+            <i class="fas fa-spinner fa-spin" *ngIf="loading || loadingRecord"></i>
             Clock In
           </button>
-          <button class="btn-clock-out" (click)="clockOut()" [disabled]="loading || !selectedEmployeeId || !isClockedIn()">
-            <i class="fas fa-stop-circle" *ngIf="!loading"></i>
-            <i class="fas fa-spinner fa-spin" *ngIf="loading"></i>
+          <button class="btn-clock-out" (click)="clockOut()" [disabled]="loading || loadingRecord || !selectedEmployeeId || !isClockedIn()">
+            <i class="fas fa-stop-circle" *ngIf="!loading && !loadingRecord"></i>
+            <i class="fas fa-spinner fa-spin" *ngIf="loading || loadingRecord"></i>
             Clock Out
           </button>
         </div>

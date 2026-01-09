@@ -18,6 +18,7 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
   selectedEmployeeId: number | null = null;
   selectedEmployee: Employee | null = null;
   loading = false;
+  loadingRecord = false;
   message = '';
   messageType = '';
   
@@ -68,6 +69,11 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     this.employeeService.getAll().subscribe({
       next: (data: Employee[]) => {
         this.employees = data.filter((e: Employee) => e.active);
+        if (this.employees.length > 0 && !this.selectedEmployeeId) {
+          this.selectedEmployeeId = this.employees[0].id!;
+          this.selectedEmployee = this.employees[0];
+          this.loadEmployeeTodayRecord();
+        }
       },
       error: (err: any) => console.error('Error loading employees:', err)
     });
@@ -84,13 +90,15 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
   }
 
   onEmployeeChange(): void {
-    this.stopTimer();
     this.showSessionSummary = false;
     
     if (this.selectedEmployeeId) {
       this.selectedEmployee = this.employees.find(e => e.id === this.selectedEmployeeId) || null;
+      this.stopTimer();
+      this.todayRecord = null;
       this.loadEmployeeTodayRecord();
     } else {
+      this.stopTimer();
       this.selectedEmployee = null;
       this.todayRecord = null;
     }
@@ -99,16 +107,19 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
   loadEmployeeTodayRecord(): void {
     if (!this.selectedEmployeeId) return;
     
+    this.loadingRecord = true;
     const today = new Date().toISOString().split('T')[0];
     this.attendanceService.getByEmployeeAndDateRange(this.selectedEmployeeId, today, today).subscribe({
       next: (records: AttendanceRecord[]) => {
         this.todayRecord = records.length > 0 ? records[0] : null;
+        this.loadingRecord = false;
         if (this.todayRecord && this.todayRecord.clockIn && !this.todayRecord.clockOut) {
           this.startTimerFromClockIn(this.todayRecord.clockIn);
         }
       },
       error: () => {
         this.todayRecord = null;
+        this.loadingRecord = false;
       }
     });
   }
@@ -184,9 +195,13 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.loadTodayActivities();
         
-        this.elapsedSeconds = 0;
-        this.currentEarnings = 0;
-        this.startTimer();
+        if (record.clockIn) {
+          this.startTimerFromClockIn(record.clockIn);
+        } else {
+          this.elapsedSeconds = 0;
+          this.currentEarnings = 0;
+          this.startTimer();
+        }
       },
       error: (err) => {
         this.showMessage(err.error?.error || 'Failed to clock in', 'error');
