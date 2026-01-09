@@ -76,6 +76,15 @@ public class AttendanceController {
         return ResponseEntity.ok(attendanceRecordRepository.findByEmployeeIdAndAttendanceDateBetween(employeeId, start, end));
     }
 
+    @GetMapping("/date-range")
+    public ResponseEntity<List<AttendanceRecord>> getByDateRange(
+            @RequestParam String startDate,
+            @RequestParam String endDate) {
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+        return ResponseEntity.ok(attendanceRecordRepository.findByAttendanceDateBetween(start, end));
+    }
+
     @PostMapping("/clock-in")
     public ResponseEntity<?> clockIn(@RequestBody Map<String, Object> request) {
         Long employeeId = Long.valueOf(request.get("employeeId").toString());

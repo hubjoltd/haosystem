@@ -99,6 +99,12 @@ export class AttendanceService {
     });
   }
 
+  getByDateRange(startDate: string, endDate: string): Observable<AttendanceRecord[]> {
+    return this.http.get<AttendanceRecord[]>(`${this.baseUrl}/date-range`, {
+      params: { startDate, endDate }
+    });
+  }
+
   clockIn(employeeId: number, captureMethod: string = 'WEB'): Observable<AttendanceRecord> {
     return this.http.post<AttendanceRecord>(`${this.baseUrl}/clock-in`, { employeeId, captureMethod });
   }
