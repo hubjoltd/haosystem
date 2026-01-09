@@ -249,4 +249,15 @@
       }
     }
   }
+
+  .loading-row {
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
+    font-size: 14px;
+    
+    i {
+      margin-right: 8px;
+    }
+  }
 }

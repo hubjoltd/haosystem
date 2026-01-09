@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceService, AttendanceRecord, AttendanceRule, ProjectTimeEntry } from '../../../services/attendance.service';
@@ -11,11 +11,13 @@ import { finalize, forkJoin } from 'rxjs';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './attendance-management.component.html',
-  styleUrls: ['./attendance-management.component.scss']
+  styleUrls: ['./attendance-management.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AttendanceManagementComponent implements OnInit {
   employees: Employee[] = [];
   attendanceRecords: AttendanceRecord[] = [];
+  filteredRecords: AttendanceRecord[] = [];
   attendanceRules: AttendanceRule[] = [];
   projectTimeEntries: ProjectTimeEntry[] = [];
 
@@ -23,7 +25,8 @@ export class AttendanceManagementComponent implements OnInit {
   selectedEmployeeId: number | null = null;
   filterStatus = '';
   searchTerm = '';
-  loading = true;
+  loading = false;
+  dataLoaded = false;
 
   showManualEntryModal = false;
   showBulkUploadModal = false;
@@ -38,7 +41,8 @@ export class AttendanceManagementComponent implements OnInit {
   constructor(
     private attendanceService: AttendanceService,
     private employeeService: EmployeeService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -46,35 +50,53 @@ export class AttendanceManagementComponent implements OnInit {
   }
 
   loadData(): void {
+    if (this.dataLoaded) return;
     this.loading = true;
+    this.cdr.detectChanges();
+    
     forkJoin({
       employees: this.employeeService.getAll(),
       records: this.attendanceService.getByDate(this.selectedDate)
     }).pipe(
-      finalize(() => this.loading = false)
+      finalize(() => {
+        this.loading = false;
+        this.dataLoaded = true;
+        this.cdr.detectChanges();
+      })
     ).subscribe({
       next: (data) => {
         this.employees = data.employees;
         this.attendanceRecords = data.records;
+        this.applyFilters();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading data:', err);
         this.toastService.error('Failed to load attendance data');
+        this.cdr.detectChanges();
       }
     });
   }
 
   loadAttendanceRecords(): void {
     this.loading = true;
+    this.cdr.detectChanges();
+    
     this.attendanceService.getByDate(this.selectedDate).pipe(
-      finalize(() => this.loading = false)
+      finalize(() => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      })
     ).subscribe({
       next: (data) => {
         this.attendanceRecords = data;
+        this.applyFilters();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading records:', err);
         this.toastService.error('Failed to load attendance records');
+        this.cdr.detectChanges();
       }
     });
   }
@@ -83,7 +105,11 @@ export class AttendanceManagementComponent implements OnInit {
     this.loadAttendanceRecords();
   }
 
-  getFilteredRecords(): AttendanceRecord[] {
+  onSearchChange(): void {
+    this.applyFilters();
+  }
+
+  applyFilters(): void {
     let records = this.attendanceRecords;
     if (this.filterStatus) {
       records = records.filter(r => r.status === this.filterStatus);
@@ -98,7 +124,8 @@ export class AttendanceManagementComponent implements OnInit {
         return name.includes(term);
       });
     }
-    return records;
+    this.filteredRecords = records;
+    this.cdr.detectChanges();
   }
 
   countWorking(): number {

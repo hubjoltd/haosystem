@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
@@ -12,13 +12,15 @@ import { finalize, forkJoin } from 'rxjs';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './attendance-approval.component.html',
-  styleUrls: ['./attendance-approval.component.scss']
+  styleUrls: ['./attendance-approval.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AttendanceApprovalComponent implements OnInit {
   attendanceRecords: AttendanceRecord[] = [];
   filteredRecords: AttendanceRecord[] = [];
   employees: Employee[] = [];
-  loading = true;
+  loading = false;
+  dataLoaded = false;
 
   selectedIds: number[] = [];
   filterStatus = 'PENDING';
@@ -28,29 +30,39 @@ export class AttendanceApprovalComponent implements OnInit {
     private attendanceService: AttendanceService,
     private employeeService: EmployeeService,
     private payrollService: PayrollService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.loadData();
   }
 
-  loadData(): void {
+  loadData(forceReload: boolean = false): void {
+    if (this.dataLoaded && !forceReload) return;
     this.loading = true;
+    this.cdr.detectChanges();
+    
     forkJoin({
       employees: this.employeeService.getAll(),
       records: this.attendanceService.getAllRecords()
     }).pipe(
-      finalize(() => this.loading = false)
+      finalize(() => {
+        this.loading = false;
+        this.dataLoaded = true;
+        this.cdr.detectChanges();
+      })
     ).subscribe({
       next: (data) => {
         this.employees = data.employees;
         this.attendanceRecords = data.records;
         this.filterRecords();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading data:', err);
         this.toastService.error('Failed to load attendance records');
+        this.cdr.detectChanges();
       }
     });
   }
@@ -71,6 +83,7 @@ export class AttendanceApprovalComponent implements OnInit {
     }
 
     this.filteredRecords = records;
+    this.cdr.detectChanges();
   }
 
   onFilterChange(): void {
@@ -109,12 +122,18 @@ export class AttendanceApprovalComponent implements OnInit {
 
   approveRecord(id: number): void {
     this.loading = true;
+    this.cdr.detectChanges();
+    
     this.attendanceService.approve(id).pipe(
-      finalize(() => this.loading = false)
+      finalize(() => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      })
     ).subscribe({
       next: () => {
         this.toastService.success('Attendance approved successfully');
-        this.loadData();
+        this.dataLoaded = false;
+        this.loadData(true);
         this.generateTimesheetForRecord(id);
       },
       error: (err) => {
@@ -129,12 +148,18 @@ export class AttendanceApprovalComponent implements OnInit {
     if (remarks === null) return;
 
     this.loading = true;
+    this.cdr.detectChanges();
+    
     this.attendanceService.reject(id, remarks).pipe(
-      finalize(() => this.loading = false)
+      finalize(() => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      })
     ).subscribe({
       next: () => {
         this.toastService.success('Attendance rejected');
-        this.loadData();
+        this.dataLoaded = false;
+        this.loadData(true);
       },
       error: (err) => {
         console.error('Error rejecting:', err);
@@ -147,14 +172,20 @@ export class AttendanceApprovalComponent implements OnInit {
     if (this.selectedIds.length === 0) return;
 
     this.loading = true;
+    this.cdr.detectChanges();
+    
     this.attendanceService.bulkApprove(this.selectedIds).pipe(
-      finalize(() => this.loading = false)
+      finalize(() => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      })
     ).subscribe({
       next: () => {
         this.toastService.success(`Approved ${this.selectedIds.length} attendance records`);
         this.generateTimesheetsForApproved(this.selectedIds);
         this.selectedIds = [];
-        this.loadData();
+        this.dataLoaded = false;
+        this.loadData(true);
       },
       error: (err) => {
         console.error('Error bulk approving:', err);
@@ -192,12 +223,14 @@ export class AttendanceApprovalComponent implements OnInit {
     if (completed + errors === total) {
       this.loading = false;
       this.selectedIds = [];
-      this.loadData();
+      this.dataLoaded = false;
+      this.loadData(true);
       if (errors === 0) {
         this.toastService.success(`Rejected ${total} records successfully`);
       } else {
         this.toastService.warning(`Rejected ${completed} records, ${errors} failed`);
       }
+      this.cdr.detectChanges();
     }
   }
 

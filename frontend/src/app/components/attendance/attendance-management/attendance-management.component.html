@@ -29,13 +29,17 @@
       <div class="filters">
         <div class="search-box">
           <i class="fas fa-search"></i>
-          <input type="text" placeholder="Search employee..." [(ngModel)]="searchTerm" />
+          <input type="text" placeholder="Search employee..." [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" />
         </div>
         <input type="date" [(ngModel)]="selectedDate" (change)="onDateChange()" class="date-picker" />
       </div>
     </div>
 
-    <table class="attendance-table">
+    <div *ngIf="loading" class="loading-row">
+      <i class="fas fa-spinner fa-spin"></i> Loading...
+    </div>
+
+    <table class="attendance-table" *ngIf="!loading">
       <thead>
         <tr>
           <th>Employee</th>
@@ -46,7 +50,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let record of getFilteredRecords()">
+        <tr *ngFor="let record of filteredRecords">
           <td>
             <div class="employee-cell">
               <div class="avatar">{{ getInitials(record.employee) }}</div>
@@ -62,7 +66,7 @@
             </span>
           </td>
         </tr>
-        <tr *ngIf="getFilteredRecords().length === 0">
+        <tr *ngIf="filteredRecords.length === 0">
           <td colspan="5" class="no-data">No attendance records found for this date</td>
         </tr>
       </tbody>
