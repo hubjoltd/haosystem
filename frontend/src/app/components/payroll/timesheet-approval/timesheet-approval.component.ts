@@ -115,6 +115,8 @@ export class TimesheetApprovalComponent implements OnInit {
     this.setDefaultDates();
     this.loadEmployees();
     this.loadPayFrequencies();
+    this.loadDailyAttendance();
+    this.loadTimesheets();
   }
 
   setDefaultDates(): void {
