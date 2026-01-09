@@ -583,6 +583,18 @@
         color: #c03030;
         &::before { background: #e04040; }
       }
+      
+      &.processed {
+        background: linear-gradient(135deg, #d0f5e8, #b8f0d8);
+        color: #00806a;
+        &::before { background: #00a080; }
+      }
+      
+      &.hold {
+        background: linear-gradient(135deg, #fff3d0, #ffe8a8);
+        color: #a06800;
+        &::before { background: #e09000; }
+      }
     }
 
     .no-data {
@@ -711,6 +723,7 @@
       &.blue { background: linear-gradient(135deg, #008080, #00a0a0); }
       &.purple { background: linear-gradient(135deg, #6a5acd, #8b7dd8); }
       &.gray { background: linear-gradient(135deg, #6c757d, #868e96); }
+      &.orange { background: linear-gradient(135deg, #e09000, #f0a000); }
     }
   }
 

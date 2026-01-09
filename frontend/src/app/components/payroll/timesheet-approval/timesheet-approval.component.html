@@ -404,6 +404,9 @@
         <table class="data-table payroll-calc-table-new">
           <thead>
             <tr>
+              <th class="checkbox-col">
+                <input type="checkbox" [checked]="allStep3Selected" (change)="toggleAllStep3Selection()" />
+              </th>
               <th>S.NO</th>
               <th>EMP ID</th>
               <th>NAME</th>
@@ -420,7 +423,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let row of payrollCalculationRows">
+            <tr *ngFor="let row of payrollCalculationRows" [class.selected]="row.selected">
+              <td class="checkbox-col">
+                <input type="checkbox" [checked]="row.selected" (change)="toggleStep3RowSelection(row)" />
+              </td>
               <td>{{ row.sno }}</td>
               <td class="emp-id">{{ row.empId }}</td>
               <td class="emp-name">{{ row.name }}</td>
@@ -440,7 +446,7 @@
               </td>
             </tr>
             <tr *ngIf="payrollCalculationRows.length === 0 && !payrollCalcLoading">
-              <td colspan="13" class="no-data">
+              <td colspan="14" class="no-data">
                 <i class="fas fa-calculator"></i>
                 No payroll data. Generate timesheets first.
               </td>
@@ -448,6 +454,7 @@
           </tbody>
           <tfoot *ngIf="payrollCalculationRows.length > 0">
             <tr class="total-row">
+              <td></td>
               <td colspan="4" class="text-right"><strong>TOTAL</strong></td>
               <td><strong>{{ step3TotalHours.toFixed(2) }}h</strong></td>
               <td class="green-text"><strong>{{ formatCurrency(step3TotalGross) }}</strong></td>
@@ -464,10 +471,15 @@
       </div>
 
       <div class="step-actions-bar">
-        <div class="left-actions"></div>
+        <div class="left-actions">
+          <span class="selected-info">{{ getSelectedStep3Count() }} employee(s) selected</span>
+        </div>
         <div class="right-actions">
           <button class="btn btn-outline-secondary" (click)="goToStep(1)">
             Back
+          </button>
+          <button class="btn btn-success" [disabled]="getSelectedStep3Count() === 0" (click)="processSelectedPayroll()">
+            <i class="fas fa-check-circle"></i> Process Payroll
           </button>
           <button class="btn btn-primary" (click)="goToStep(3)">
             Next: Process Payroll <i class="fas fa-arrow-right"></i>
@@ -481,90 +493,170 @@
   <div class="step-content" *ngIf="currentStep === 3">
     <div class="section-box">
       <div class="step-header">
-        <h3>Step 4: Process Payroll</h3>
-        <p class="period-info">Review and finalize payroll for processing</p>
+        <h3>Step 3: Process Payroll</h3>
+        <p class="period-info">Review processed and held payroll records</p>
       </div>
 
       <div class="payroll-summary-cards">
         <div class="payroll-card green">
-          <span class="card-label">Total Gross Pay</span>
-          <span class="card-value">{{ formatCurrency(totalGrossPay) }}</span>
-        </div>
-        <div class="payroll-card red">
-          <span class="card-label">Total Taxes</span>
-          <span class="card-value">{{ formatCurrency(totalGrossPay * 0.22) }}</span>
+          <span class="card-label">Processed Gross</span>
+          <span class="card-value">{{ formatCurrency(step4TotalProcessedGross) }}</span>
         </div>
         <div class="payroll-card blue">
-          <span class="card-label">Total Net Pay</span>
-          <span class="card-value">{{ formatCurrency(totalNetPay) }}</span>
+          <span class="card-label">Processed Net</span>
+          <span class="card-value">{{ formatCurrency(step4TotalProcessedNet) }}</span>
         </div>
-        <div class="payroll-card purple">
+        <div class="payroll-card orange">
+          <span class="card-label">Hold Gross</span>
+          <span class="card-value">{{ formatCurrency(step4TotalHoldGross) }}</span>
+        </div>
+        <div class="payroll-card gray">
           <span class="card-label">Employees</span>
-          <span class="card-value">{{ employeesToProcess }}</span>
+          <span class="card-value">{{ processedPayrollRows.length + holdPayrollRows.length }}</span>
         </div>
       </div>
 
+      <!-- Processed Payroll Table -->
       <div class="sub-section">
-        <h4><i class="fas fa-cog"></i> Select Employees for Final Processing</h4>
+        <h4><i class="fas fa-check-circle text-success"></i> Processed Payroll</h4>
       </div>
 
       <div class="table-container">
-        <table class="data-table process-table">
+        <table class="data-table payroll-calc-table-new processed-table">
           <thead>
             <tr>
-              <th class="checkbox-col">
-                <input type="checkbox" [checked]="areAllPayablesSelected()" (change)="selectAllPayables()" />
-              </th>
-              <th>#</th>
+              <th>S.NO</th>
               <th>EMP ID</th>
               <th>NAME</th>
+              <th>TYPE</th>
               <th>HOURS</th>
-              <th>HOURLY RATE</th>
-              <th>GROSS PAY</th>
-              <th>TAXES</th>
-              <th>NET PAY</th>
+              <th class="green-header">GROSS</th>
+              <th>FEDERAL</th>
+              <th>STATE</th>
+              <th>SOC.SEC</th>
+              <th>MEDICARE</th>
+              <th class="red-header">TOTAL TAX</th>
+              <th class="green-header">NET PAY</th>
               <th>STATUS</th>
+              <th>ACTION</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let emp of payableEmployees; let i = index" [class.selected]="emp.selected">
-              <td class="checkbox-col">
-                <input type="checkbox" [checked]="emp.selected" (change)="togglePayableSelection(emp)" />
-              </td>
-              <td>{{ i + 1 }}</td>
-              <td class="emp-id">{{ emp.empId }}</td>
-              <td class="emp-name">{{ emp.name }}</td>
-              <td>{{ emp.hours.toFixed(2) }} hrs</td>
-              <td>{{ formatCurrency(emp.hourlyRate) }}/hr</td>
-              <td class="green-text">{{ formatCurrency(emp.hours * emp.hourlyRate) }}</td>
-              <td class="red-text">{{ formatCurrency(emp.taxes) }}</td>
-              <td class="green-text">{{ formatCurrency(emp.netAmount) }}</td>
+            <tr *ngFor="let row of processedPayrollRows">
+              <td>{{ row.sno }}</td>
+              <td class="emp-id">{{ row.empId }}</td>
+              <td class="emp-name">{{ row.name }}</td>
+              <td>{{ row.type }}</td>
+              <td>{{ row.hours.toFixed(2) }}h</td>
+              <td class="green-text">{{ formatCurrency(row.gross) }}</td>
+              <td>{{ formatCurrency(row.federal) }}</td>
+              <td>{{ formatCurrency(row.state) }}</td>
+              <td>{{ formatCurrency(row.socSec) }}</td>
+              <td>{{ formatCurrency(row.medicare) }}</td>
+              <td class="red-text">{{ formatCurrency(row.totalTax) }}</td>
+              <td class="green-text">{{ formatCurrency(row.netPay) }}</td>
               <td>
-                <span class="status-badge" [ngClass]="emp.status === 'Processed' ? 'approved' : 'pending'">
-                  {{ emp.status }}
-                </span>
+                <span class="status-badge processed">{{ row.status }}</span>
+              </td>
+              <td>
+                <button class="btn btn-sm btn-warning" (click)="holdPayroll(row)" title="Hold Payroll">
+                  <i class="fas fa-pause"></i> Hold
+                </button>
               </td>
             </tr>
-            <tr *ngIf="payableEmployees.length === 0">
-              <td colspan="10" class="no-data">
-                <i class="fas fa-users"></i>
-                No employees ready for processing
+            <tr *ngIf="processedPayrollRows.length === 0">
+              <td colspan="14" class="no-data">
+                <i class="fas fa-check-circle"></i>
+                No processed payroll records. Process employees from Step 2.
               </td>
             </tr>
           </tbody>
+          <tfoot *ngIf="processedPayrollRows.length > 0">
+            <tr class="total-row">
+              <td colspan="5" class="text-right"><strong>TOTAL</strong></td>
+              <td class="green-text"><strong>{{ formatCurrency(step4TotalProcessedGross) }}</strong></td>
+              <td colspan="5"></td>
+              <td class="green-text"><strong>{{ formatCurrency(step4TotalProcessedNet) }}</strong></td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Hold Payroll Table -->
+      <div class="sub-section" style="margin-top: 30px;">
+        <h4><i class="fas fa-pause-circle text-warning"></i> Hold Payroll</h4>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table payroll-calc-table-new hold-table">
+          <thead>
+            <tr>
+              <th>S.NO</th>
+              <th>EMP ID</th>
+              <th>NAME</th>
+              <th>TYPE</th>
+              <th>HOURS</th>
+              <th class="green-header">GROSS</th>
+              <th>FEDERAL</th>
+              <th>STATE</th>
+              <th>SOC.SEC</th>
+              <th>MEDICARE</th>
+              <th class="red-header">TOTAL TAX</th>
+              <th class="green-header">NET PAY</th>
+              <th>STATUS</th>
+              <th>ACTION</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of holdPayrollRows">
+              <td>{{ row.sno }}</td>
+              <td class="emp-id">{{ row.empId }}</td>
+              <td class="emp-name">{{ row.name }}</td>
+              <td>{{ row.type }}</td>
+              <td>{{ row.hours.toFixed(2) }}h</td>
+              <td class="green-text">{{ formatCurrency(row.gross) }}</td>
+              <td>{{ formatCurrency(row.federal) }}</td>
+              <td>{{ formatCurrency(row.state) }}</td>
+              <td>{{ formatCurrency(row.socSec) }}</td>
+              <td>{{ formatCurrency(row.medicare) }}</td>
+              <td class="red-text">{{ formatCurrency(row.totalTax) }}</td>
+              <td class="green-text">{{ formatCurrency(row.netPay) }}</td>
+              <td>
+                <span class="status-badge hold">{{ row.status }}</span>
+              </td>
+              <td>
+                <button class="btn btn-sm btn-success" (click)="releaseFromHold(row)" title="Release from Hold">
+                  <i class="fas fa-play"></i> Release
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="holdPayrollRows.length === 0">
+              <td colspan="14" class="no-data">
+                <i class="fas fa-pause-circle"></i>
+                No payroll records on hold
+              </td>
+            </tr>
+          </tbody>
+          <tfoot *ngIf="holdPayrollRows.length > 0">
+            <tr class="total-row">
+              <td colspan="5" class="text-right"><strong>TOTAL</strong></td>
+              <td class="green-text"><strong>{{ formatCurrency(step4TotalHoldGross) }}</strong></td>
+              <td colspan="5"></td>
+              <td class="green-text"><strong>{{ formatCurrency(step4TotalHoldNet) }}</strong></td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 
       <div class="step-actions-bar">
         <div class="left-actions">
-          <span class="selected-info">{{ employeesToProcess }} employees selected</span>
+          <span class="selected-info">{{ processedPayrollRows.length }} processed, {{ holdPayrollRows.length }} on hold</span>
         </div>
         <div class="right-actions">
           <button class="btn btn-outline-secondary" (click)="goToStep(2)">
-            <i class="fas fa-arrow-left"></i> Back
-          </button>
-          <button class="btn btn-success" [disabled]="employeesToProcess === 0" (click)="processPayables()">
-            <i class="fas fa-check-circle"></i> Process Payroll
+            Back
           </button>
           <button class="btn btn-primary" (click)="goToStep(5)">
             View Payroll History <i class="fas fa-arrow-right"></i>

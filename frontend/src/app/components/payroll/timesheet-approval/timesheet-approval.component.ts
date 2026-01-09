@@ -88,6 +88,7 @@ interface PayrollCalculationRow {
   netPay: number;
   status: string;
   employeeId: number;
+  selected: boolean;
 }
 
 @Component({
@@ -156,7 +157,18 @@ export class TimesheetApprovalComponent implements OnInit {
   employeeSalaryMap: Map<number, EmployeeSalary> = new Map();
   payablesLoading = false;
 
-  // Step 4: Process Payroll
+  // Step 3: Selection for processing
+  allStep3Selected = false;
+  
+  // Step 4: Process Payroll - Two tables
+  processedPayrollRows: PayrollCalculationRow[] = [];
+  holdPayrollRows: PayrollCalculationRow[] = [];
+  step4TotalProcessedGross = 0;
+  step4TotalProcessedNet = 0;
+  step4TotalHoldGross = 0;
+  step4TotalHoldNet = 0;
+  
+  // Legacy Step 4 fields
   employeesToProcess = 0;
   showPayrollSummary = false;
   processedSalariedEmployees: ProcessedEmployee[] = [];
@@ -261,7 +273,8 @@ export class TimesheetApprovalComponent implements OnInit {
             totalTax: totalTax,
             netPay: netPay,
             status: 'Calculated',
-            employeeId: ts.employeeId
+            employeeId: ts.employeeId,
+            selected: false
           });
           
           completed++;
@@ -287,7 +300,8 @@ export class TimesheetApprovalComponent implements OnInit {
             totalTax: 0,
             netPay: 0,
             status: 'No Rate',
-            employeeId: ts.employeeId
+            employeeId: ts.employeeId,
+            selected: false
           });
           
           completed++;
@@ -317,6 +331,101 @@ export class TimesheetApprovalComponent implements OnInit {
     
     this.payrollCalcLoading = false;
     this.cdr.markForCheck();
+  }
+  
+  // Step 3: Selection methods
+  toggleAllStep3Selection(): void {
+    this.allStep3Selected = !this.allStep3Selected;
+    this.payrollCalculationRows.forEach(row => row.selected = this.allStep3Selected);
+    this.cdr.markForCheck();
+  }
+  
+  toggleStep3RowSelection(row: PayrollCalculationRow): void {
+    row.selected = !row.selected;
+    this.allStep3Selected = this.payrollCalculationRows.every(r => r.selected);
+    this.cdr.markForCheck();
+  }
+  
+  getSelectedStep3Count(): number {
+    return this.payrollCalculationRows.filter(r => r.selected).length;
+  }
+  
+  processSelectedPayroll(): void {
+    const selected = this.payrollCalculationRows.filter(r => r.selected);
+    if (selected.length === 0) {
+      this.showMessage('Please select at least one employee to process', 'error');
+      return;
+    }
+    
+    // Move selected to processed, update status
+    selected.forEach(row => {
+      row.status = 'Processed';
+      row.selected = false;
+      this.processedPayrollRows.push({ ...row });
+    });
+    
+    // Remove from calculation rows
+    this.payrollCalculationRows = this.payrollCalculationRows.filter(r => r.status !== 'Processed');
+    
+    // Renumber remaining rows
+    this.payrollCalculationRows.forEach((row, idx) => row.sno = idx + 1);
+    this.processedPayrollRows.forEach((row, idx) => row.sno = idx + 1);
+    
+    // Update Step 4 totals
+    this.updateStep4Totals();
+    
+    // Recalculate Step 3 totals
+    this.step3TotalHours = this.payrollCalculationRows.reduce((sum, r) => sum + r.hours, 0);
+    this.step3TotalGross = this.payrollCalculationRows.reduce((sum, r) => sum + r.gross, 0);
+    this.step3TotalTax = this.payrollCalculationRows.reduce((sum, r) => sum + r.totalTax, 0);
+    this.step3TotalNetPay = this.payrollCalculationRows.reduce((sum, r) => sum + r.netPay, 0);
+    this.step3EmployeeCount = this.payrollCalculationRows.length;
+    
+    this.allStep3Selected = false;
+    this.showMessage(`Payroll processed for ${selected.length} employee(s)!`, 'success');
+    this.cdr.markForCheck();
+  }
+  
+  updateStep4Totals(): void {
+    this.step4TotalProcessedGross = this.processedPayrollRows.reduce((sum, r) => sum + r.gross, 0);
+    this.step4TotalProcessedNet = this.processedPayrollRows.reduce((sum, r) => sum + r.netPay, 0);
+    this.step4TotalHoldGross = this.holdPayrollRows.reduce((sum, r) => sum + r.gross, 0);
+    this.step4TotalHoldNet = this.holdPayrollRows.reduce((sum, r) => sum + r.netPay, 0);
+  }
+  
+  // Step 4: Move between tables
+  holdPayroll(row: PayrollCalculationRow): void {
+    const idx = this.processedPayrollRows.findIndex(r => r.employeeId === row.employeeId);
+    if (idx > -1) {
+      const movedRow = this.processedPayrollRows.splice(idx, 1)[0];
+      movedRow.status = 'Hold';
+      this.holdPayrollRows.push(movedRow);
+      
+      // Renumber both tables
+      this.processedPayrollRows.forEach((r, i) => r.sno = i + 1);
+      this.holdPayrollRows.forEach((r, i) => r.sno = i + 1);
+      
+      this.updateStep4Totals();
+      this.showMessage(`Payroll for ${movedRow.name} moved to Hold`, 'warning');
+      this.cdr.markForCheck();
+    }
+  }
+  
+  releaseFromHold(row: PayrollCalculationRow): void {
+    const idx = this.holdPayrollRows.findIndex(r => r.employeeId === row.employeeId);
+    if (idx > -1) {
+      const movedRow = this.holdPayrollRows.splice(idx, 1)[0];
+      movedRow.status = 'Processed';
+      this.processedPayrollRows.push(movedRow);
+      
+      // Renumber both tables
+      this.processedPayrollRows.forEach((r, i) => r.sno = i + 1);
+      this.holdPayrollRows.forEach((r, i) => r.sno = i + 1);
+      
+      this.updateStep4Totals();
+      this.showMessage(`Payroll for ${movedRow.name} released from Hold`, 'success');
+      this.cdr.markForCheck();
+    }
   }
 
   loadEmployees(): void {
