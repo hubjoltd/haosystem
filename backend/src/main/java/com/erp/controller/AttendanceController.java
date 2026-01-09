@@ -48,11 +48,13 @@ public class AttendanceController {
         return ResponseEntity.ok(employeeRepository.findByActiveTrue());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<AttendanceRecord> getById(@PathVariable Long id) {
-        return attendanceRecordRepository.findById(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/date-range")
+    public ResponseEntity<List<AttendanceRecord>> getByDateRange(
+            @RequestParam String startDate,
+            @RequestParam String endDate) {
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+        return ResponseEntity.ok(attendanceRecordRepository.findByAttendanceDateBetween(start, end));
     }
 
     @GetMapping("/employee/{employeeId}")
@@ -76,13 +78,11 @@ public class AttendanceController {
         return ResponseEntity.ok(attendanceRecordRepository.findByEmployeeIdAndAttendanceDateBetween(employeeId, start, end));
     }
 
-    @GetMapping("/date-range")
-    public ResponseEntity<List<AttendanceRecord>> getByDateRange(
-            @RequestParam String startDate,
-            @RequestParam String endDate) {
-        LocalDate start = LocalDate.parse(startDate);
-        LocalDate end = LocalDate.parse(endDate);
-        return ResponseEntity.ok(attendanceRecordRepository.findByAttendanceDateBetween(start, end));
+    @GetMapping("/{id}")
+    public ResponseEntity<AttendanceRecord> getById(@PathVariable Long id) {
+        return attendanceRecordRepository.findById(id)
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/clock-in")
