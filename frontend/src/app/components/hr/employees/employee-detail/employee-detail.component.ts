@@ -455,6 +455,8 @@ export class EmployeeDetailComponent implements OnInit {
         error: (err) => {
           this.saving = false;
           console.error('Error creating employee:', err);
+          const errorMsg = err.error?.message || err.message || 'Failed to create employee. Please try again.';
+          alert(errorMsg);
         }
       });
     } else if (this.employeeId) {
@@ -470,6 +472,8 @@ export class EmployeeDetailComponent implements OnInit {
         error: (err) => {
           this.saving = false;
           console.error('Error updating employee:', err);
+          const errorMsg = err.error?.message || err.message || 'Failed to update employee. Please try again.';
+          alert(errorMsg);
         }
       });
     }
