@@ -98,6 +98,7 @@ public class AttendanceController {
         record.setClockIn(LocalTime.now());
         record.setCaptureMethod(captureMethod);
         record.setStatus("PRESENT");
+        record.setApprovalStatus("APPROVED");
 
         AttendanceRule rule = attendanceRuleRepository.findByIsDefaultTrue().orElse(null);
         if (rule != null && rule.getStandardStartTime() != null && rule.getGraceMinutesIn() != null) {
