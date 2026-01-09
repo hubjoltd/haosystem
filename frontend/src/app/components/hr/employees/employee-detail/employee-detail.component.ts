@@ -479,6 +479,7 @@ export class EmployeeDetailComponent implements OnInit {
           if (updated) {
             this.employee = updated;
           }
+          alert('Employee updated successfully!');
         },
         error: (err) => {
           this.saving = false;
