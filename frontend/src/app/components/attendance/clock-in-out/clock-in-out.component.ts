@@ -284,4 +284,37 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
   isClockedOut(): boolean {
     return !!(this.todayRecord && this.todayRecord.clockOut);
   }
+
+  quickClockOut(record: AttendanceRecord): void {
+    if (!record.employeeId && !record.employee?.id) {
+      this.showMessage('Cannot clock out - employee not found', 'error');
+      return;
+    }
+    
+    const employeeId = record.employeeId || record.employee?.id;
+    this.loading = true;
+    
+    this.attendanceService.clockOut(employeeId!).subscribe({
+      next: (updatedRecord) => {
+        this.showMessage(`${this.getEmployeeName(record)} clocked out successfully!`, 'success');
+        this.loading = false;
+        this.loadTodayActivities();
+        
+        if (this.selectedEmployeeId === employeeId) {
+          this.todayRecord = updatedRecord;
+          this.stopTimer();
+          
+          const hoursWorked = this.elapsedSeconds / 3600;
+          const earnings = hoursWorked * this.getHourlyRate();
+          this.lastSessionHours = hoursWorked;
+          this.lastSessionEarnings = earnings;
+          this.showSessionSummary = true;
+        }
+      },
+      error: (err) => {
+        this.showMessage(err.error?.error || 'Failed to clock out', 'error');
+        this.loading = false;
+      }
+    });
+  }
 }
