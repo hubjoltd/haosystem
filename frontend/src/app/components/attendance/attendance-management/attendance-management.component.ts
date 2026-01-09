@@ -49,16 +49,13 @@ export class AttendanceManagementComponent implements OnInit {
     this.loading = true;
     forkJoin({
       employees: this.employeeService.getAll(),
-      records: this.attendanceService.getByDate(this.selectedDate),
-      rules: this.attendanceService.getAllRules()
+      records: this.attendanceService.getByDate(this.selectedDate)
     }).pipe(
       finalize(() => this.loading = false)
     ).subscribe({
       next: (data) => {
         this.employees = data.employees;
         this.attendanceRecords = data.records;
-        this.attendanceRules = data.rules;
-        this.toastService.info('Attendance data loaded');
       },
       error: (err) => {
         console.error('Error loading data:', err);

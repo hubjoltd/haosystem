@@ -47,7 +47,6 @@ export class AttendanceApprovalComponent implements OnInit {
         this.employees = data.employees;
         this.attendanceRecords = data.records;
         this.filterRecords();
-        this.toastService.info('Attendance records loaded');
       },
       error: (err) => {
         console.error('Error loading data:', err);
