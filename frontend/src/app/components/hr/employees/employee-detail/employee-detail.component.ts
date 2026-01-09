@@ -168,10 +168,8 @@ export class EmployeeDetailComponent implements OnInit {
         this.cdr.detectChanges();
         // Load all sub-data at once
         this.loadAllTabData();
-        // Load dropdown data only when in edit mode
-        if (this.isEditMode) {
-          this.loadDropdownData();
-        }
+        // Load dropdown data for both view and edit modes (needed for select displays)
+        this.loadDropdownData();
       },
       error: (err) => {
         console.error('Error loading employee:', err);
