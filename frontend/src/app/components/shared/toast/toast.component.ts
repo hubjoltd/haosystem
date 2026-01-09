@@ -80,7 +80,9 @@ export class ToastComponent implements OnInit, OnDestroy {
   constructor(private toastService: ToastService) {}
 
   ngOnInit(): void {
+    console.log('ToastComponent initialized');
     this.subscription = this.toastService.toasts$.subscribe(toasts => {
+      console.log('Toast component received toasts:', toasts);
       this.toasts = toasts;
     });
   }
