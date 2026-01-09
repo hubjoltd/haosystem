@@ -83,14 +83,14 @@
         </div>
 
         <div class="clock-buttons">
-          <button class="btn-clock-in" (click)="clockIn()" [disabled]="loading || loadingRecord || !selectedEmployeeId || isClockedIn()">
-            <i class="fas fa-play-circle" *ngIf="!loading && !loadingRecord"></i>
-            <i class="fas fa-spinner fa-spin" *ngIf="loading || loadingRecord"></i>
+          <button class="btn-clock-in" (click)="clockIn()" [disabled]="loadingClockIn || loadingClockOut || loadingRecord || !selectedEmployeeId || isClockedIn()">
+            <i class="fas fa-play-circle" *ngIf="!loadingClockIn"></i>
+            <i class="fas fa-spinner fa-spin" *ngIf="loadingClockIn"></i>
             Clock In
           </button>
-          <button class="btn-clock-out" (click)="clockOut()" [disabled]="loading || loadingRecord || !selectedEmployeeId || !isClockedIn()">
-            <i class="fas fa-stop-circle" *ngIf="!loading && !loadingRecord"></i>
-            <i class="fas fa-spinner fa-spin" *ngIf="loading || loadingRecord"></i>
+          <button class="btn-clock-out" (click)="clockOut()" [disabled]="loadingClockIn || loadingClockOut || loadingRecord || !selectedEmployeeId || !isClockedIn()">
+            <i class="fas fa-stop-circle" *ngIf="!loadingClockOut"></i>
+            <i class="fas fa-spinner fa-spin" *ngIf="loadingClockOut"></i>
             Clock Out
           </button>
         </div>
@@ -123,7 +123,7 @@
                 *ngIf="record.clockIn && !record.clockOut" 
                 class="btn-quick-clock-out" 
                 (click)="quickClockOut(record)"
-                [disabled]="loading">
+                [disabled]="loadingClockOut">
                 <i class="fas fa-stop-circle"></i> Clock Out
               </button>
               <div class="activity-status" [ngClass]="getActivityStatus(record).toLowerCase()" *ngIf="record.clockOut || !record.clockIn">

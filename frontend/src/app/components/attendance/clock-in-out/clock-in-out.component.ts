@@ -17,7 +17,8 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
   employees: Employee[] = [];
   selectedEmployeeId: number | null = null;
   selectedEmployee: Employee | null = null;
-  loading = false;
+  loadingClockIn = false;
+  loadingClockOut = false;
   loadingRecord = false;
   loadingEmployees = true;
   message = '';
@@ -204,14 +205,14 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
       this.showMessage('Please select an employee', 'error');
       return;
     }
-    this.loading = true;
+    this.loadingClockIn = true;
     this.showSessionSummary = false;
     
     this.attendanceService.clockIn(this.selectedEmployeeId, 'WEB').subscribe({
       next: (record) => {
         this.todayRecord = record;
         this.showMessage('Clocked in successfully! Timer started.', 'success');
-        this.loading = false;
+        this.loadingClockIn = false;
         this.loadTodayActivities();
         
         if (record.clockIn) {
@@ -224,7 +225,7 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.showMessage(err.error?.error || 'Failed to clock in', 'error');
-        this.loading = false;
+        this.loadingClockIn = false;
       }
     });
   }
@@ -234,7 +235,7 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
       this.showMessage('Please select an employee', 'error');
       return;
     }
-    this.loading = true;
+    this.loadingClockOut = true;
     
     const hoursWorked = this.elapsedSeconds / 3600;
     const earnings = hoursWorked * this.getHourlyRate();
@@ -249,12 +250,12 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
         this.showSessionSummary = true;
         
         this.showMessage(`Clocked out! Worked ${this.formatHoursMinutes(hoursWorked)} | Earned $${earnings.toFixed(2)}`, 'success');
-        this.loading = false;
+        this.loadingClockOut = false;
         this.loadTodayActivities();
       },
       error: (err) => {
         this.showMessage(err.error?.error || 'Failed to clock out', 'error');
-        this.loading = false;
+        this.loadingClockOut = false;
       }
     });
   }
@@ -335,12 +336,12 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     }
     
     const employeeId = record.employeeId || record.employee?.id;
-    this.loading = true;
+    this.loadingClockOut = true;
     
     this.attendanceService.clockOut(employeeId!).subscribe({
       next: (updatedRecord) => {
         this.showMessage(`${this.getEmployeeName(record)} clocked out successfully!`, 'success');
-        this.loading = false;
+        this.loadingClockOut = false;
         this.loadTodayActivities();
         
         if (this.selectedEmployeeId === employeeId) {
@@ -356,7 +357,7 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.showMessage(err.error?.error || 'Failed to clock out', 'error');
-        this.loading = false;
+        this.loadingClockOut = false;
       }
     });
   }
