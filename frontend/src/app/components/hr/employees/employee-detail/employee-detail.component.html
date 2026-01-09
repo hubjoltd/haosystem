@@ -441,6 +441,7 @@
       <thead>
         <tr>
           <th>Effective From</th>
+          <th>Basic Salary</th>
           <th>HRA</th>
           <th>Gross</th>
           <th>Deductions</th>
@@ -453,6 +454,7 @@
       <tbody>
         <tr *ngFor="let s of salaryHistory" [class.current-row]="s.isCurrent">
           <td>{{ s.effectiveFrom }}</td>
+          <td>{{ s.basicSalary | number }}</td>
           <td>{{ s.hraAmount | number }}</td>
           <td>{{ s.grossSalary | number }}</td>
           <td>{{ (s.otherDeductions || 0) | number }}</td>
@@ -1012,6 +1014,30 @@
           <input type="date" [(ngModel)]="editingSalary.effectiveFrom" />
         </div>
         <div class="form-group">
+          <label>Basic Salary (Annual) *</label>
+          <input type="number" [(ngModel)]="editingSalary.basicSalary" (input)="onBasicSalaryChange()" placeholder="Enter annual basic salary" />
+        </div>
+        <div class="form-group">
+          <label>Working Days/Week</label>
+          <input type="number" [(ngModel)]="workingDaysPerWeek" (input)="onBasicSalaryChange()" min="1" max="7" placeholder="5" />
+        </div>
+        <div class="form-group">
+          <label>Working Hours/Day</label>
+          <input type="number" [(ngModel)]="workingHoursPerDay" (input)="onBasicSalaryChange()" min="1" max="24" placeholder="8" />
+        </div>
+        <div class="form-group">
+          <label>Weekly Salary</label>
+          <input type="number" [value]="calculatedWeeklySalary" readonly class="readonly-field" />
+        </div>
+        <div class="form-group">
+          <label>Daily Salary</label>
+          <input type="number" [value]="calculatedDailySalary" readonly class="readonly-field" />
+        </div>
+        <div class="form-group">
+          <label>Hourly Rate (Auto-calculated)</label>
+          <input type="number" [(ngModel)]="editingSalary.hourlyRate" step="0.01" readonly class="readonly-field highlight-field" />
+        </div>
+        <div class="form-group">
           <label>HRA (House Rent Allowance)</label>
           <input type="number" [(ngModel)]="editingSalary.hraAmount" />
         </div>
@@ -1042,10 +1068,6 @@
         <div class="form-group">
           <label>CTC (Annual)</label>
           <input type="number" [(ngModel)]="editingSalary.ctcAnnual" />
-        </div>
-        <div class="form-group">
-          <label>Hourly Rate</label>
-          <input type="number" [(ngModel)]="editingSalary.hourlyRate" step="0.01" />
         </div>
         <div class="form-group">
           <label>Pay Frequency</label>

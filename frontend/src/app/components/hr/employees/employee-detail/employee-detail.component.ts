@@ -79,6 +79,12 @@ export class EmployeeDetailComponent implements OnInit {
   loading = false;
   saving = false;
 
+  // Salary calculation fields
+  workingDaysPerWeek: number = 5;
+  workingHoursPerDay: number = 8;
+  calculatedWeeklySalary: number = 0;
+  calculatedDailySalary: number = 0;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -531,14 +537,37 @@ export class EmployeeDetailComponent implements OnInit {
 
   openSalaryModal() {
     this.editingSalary = this.getEmptySalary();
+    // Reset calculation fields to defaults
+    this.workingDaysPerWeek = 5;
+    this.workingHoursPerDay = 8;
+    this.calculatedWeeklySalary = 0;
+    this.calculatedDailySalary = 0;
     this.showSalaryModal = true;
   }
 
   onBasicSalaryChange(): void {
+    // Formula:
+    // 1. Weekly Salary = Annual Salary / 52 weeks
+    // 2. Daily Salary = Weekly Salary / Working Days Per Week
+    // 3. Hourly Rate = Daily Salary / Working Hours Per Day
+    
     if (this.editingSalary.basicSalary && this.editingSalary.basicSalary > 0) {
-      const annualSalary = this.editingSalary.basicSalary * 12;
-      const hoursPerYear = 2080;
-      this.editingSalary.hourlyRate = Math.round((annualSalary / hoursPerYear) * 100) / 100;
+      const annualSalary = this.editingSalary.basicSalary;
+      const daysPerWeek = this.workingDaysPerWeek || 5;
+      const hoursPerDay = this.workingHoursPerDay || 8;
+      
+      // Step 1: Calculate weekly salary
+      this.calculatedWeeklySalary = Math.round((annualSalary / 52) * 100) / 100;
+      
+      // Step 2: Calculate daily salary
+      this.calculatedDailySalary = Math.round((this.calculatedWeeklySalary / daysPerWeek) * 100) / 100;
+      
+      // Step 3: Calculate hourly rate
+      this.editingSalary.hourlyRate = Math.round((this.calculatedDailySalary / hoursPerDay) * 100) / 100;
+    } else {
+      this.calculatedWeeklySalary = 0;
+      this.calculatedDailySalary = 0;
+      this.editingSalary.hourlyRate = 0;
     }
   }
 
