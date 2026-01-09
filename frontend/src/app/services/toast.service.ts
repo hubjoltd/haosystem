@@ -33,6 +33,7 @@ export class ToastService {
   }
 
   success(message: string, duration = 3000): void {
+    console.log('Toast success:', message);
     this.show(message, 'success', duration);
   }
 

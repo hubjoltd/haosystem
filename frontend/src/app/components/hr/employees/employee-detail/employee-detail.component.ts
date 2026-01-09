@@ -475,6 +475,7 @@ export class EmployeeDetailComponent implements OnInit {
     } else if (this.employeeId) {
       this.employeeService.update(this.employeeId, this.employee).subscribe({
         next: (updated) => {
+          console.log('Employee update success:', updated);
           this.saving = false;
           this.isEditMode = false;
           if (updated) {
