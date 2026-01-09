@@ -46,6 +46,32 @@ interface ApprovedAttendanceRow {
   status: string;
 }
 
+interface GeneratedTimesheetSummary {
+  employeeId: number;
+  employeeCode: string;
+  firstName: string;
+  lastName: string;
+  department: string;
+  totalRegularHours: number;
+  totalOvertimeHours: number;
+  totalHours: number;
+  status: string;
+  records: ApprovedAttendanceRow[];
+}
+
+interface IndividualTimesheetRow {
+  sno: number;
+  date: string;
+  day: string;
+  clockIn: string;
+  clockOut: string;
+  lunchHour: number;
+  regHours: number;
+  otHours: number;
+  totalHours: number;
+  status: string;
+}
+
 @Component({
   selector: 'app-timesheet-approval',
   standalone: true,
@@ -86,6 +112,13 @@ export class TimesheetApprovalComponent implements OnInit {
   allTimesheetEmployeesSelected = false;
   selectedTimesheetEmployeeIds: number[] = [];
   timesheetEmployees: Employee[] = [];
+  
+  generatedTimesheets: GeneratedTimesheetSummary[] = [];
+  timesheetsGenerated = false;
+  
+  showTimesheetModal = false;
+  selectedTimesheetEmployee: GeneratedTimesheetSummary | null = null;
+  individualTimesheetRows: IndividualTimesheetRow[] = [];
 
   // Step 3: Calculate Payroll
   payableEmployees: PayableEmployee[] = [];
@@ -293,35 +326,202 @@ export class TimesheetApprovalComponent implements OnInit {
   }
 
   generateTimesheetsForPeriod(): void {
-    if (this.selectedTimesheetEmployeeIds.length === 0) {
-      this.showMessage('Please select at least one employee', 'error');
-      return;
-    }
-    
     this.generating = true;
+    this.generatedTimesheets = [];
     this.cdr.markForCheck();
     
-    const payload: any = {
-      startDate: this.generateStartDate,
-      endDate: this.generateEndDate,
-      type: 'ATTENDANCE',
-      employeeIds: this.selectedTimesheetEmployeeIds
-    };
-    
-    this.payrollService.generateTimesheetsFromAttendance(payload).subscribe({
-      next: (result) => {
+    this.attendanceService.getByDateRange(this.generateStartDate, this.generateEndDate).subscribe({
+      next: (records) => {
+        const approvedRecords = records.filter(r => r.approvalStatus === 'APPROVED');
+        
+        const employeeMap = new Map<number, GeneratedTimesheetSummary>();
+        
+        approvedRecords.forEach(r => {
+          const empId = r.employeeId!;
+          const emp = this.employees.find(e => e.id === empId);
+          
+          if (!employeeMap.has(empId)) {
+            employeeMap.set(empId, {
+              employeeId: empId,
+              employeeCode: emp?.employeeCode || `EMP${empId}`,
+              firstName: emp?.firstName || 'Unknown',
+              lastName: emp?.lastName || '',
+              department: emp?.department?.name || 'General',
+              totalRegularHours: 0,
+              totalOvertimeHours: 0,
+              totalHours: 0,
+              status: 'Generated',
+              records: []
+            });
+          }
+          
+          const ts = employeeMap.get(empId)!;
+          const regHours = r.regularHours || 0;
+          const otHours = r.overtimeHours || 0;
+          
+          ts.totalRegularHours += regHours;
+          ts.totalOvertimeHours += otHours;
+          ts.totalHours += regHours + otHours;
+          
+          ts.records.push({
+            id: r.id!,
+            employeeId: empId,
+            employeeCode: emp?.employeeCode || `EMP${empId}`,
+            employeeName: emp ? `${emp.firstName} ${emp.lastName}` : 'Unknown',
+            department: emp?.department?.name || 'General',
+            attendanceDate: r.attendanceDate,
+            clockIn: r.clockIn || '-',
+            clockOut: r.clockOut || '-',
+            regularHours: regHours,
+            overtimeHours: otHours,
+            status: 'Approved'
+          });
+        });
+        
+        this.generatedTimesheets = Array.from(employeeMap.values());
+        this.generatedTimesheets.sort((a, b) => a.employeeCode.localeCompare(b.employeeCode));
+        
+        this.timesheetsGenerated = true;
         this.generating = false;
-        this.showMessage(`Generated ${result.generated || 0} timesheets for ${this.selectedTimesheetEmployeeIds.length} employees!`, 'success');
-        this.loadTimesheets();
+        this.showMessage(`Generated ${this.generatedTimesheets.length} timesheets from approved attendance!`, 'success');
         this.cdr.markForCheck();
       },
       error: (err) => {
-        this.generating = false;
         console.error('Error generating timesheets:', err);
-        this.showMessage('Error generating timesheets. Please try again.', 'error');
+        this.generating = false;
+        this.showMessage('Error generating timesheets', 'error');
         this.cdr.markForCheck();
       }
     });
+  }
+  
+  viewTimesheet(ts: GeneratedTimesheetSummary): void {
+    this.selectedTimesheetEmployee = ts;
+    this.individualTimesheetRows = ts.records.map((r, idx) => {
+      const date = new Date(r.attendanceDate);
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+      return {
+        sno: idx + 1,
+        date: r.attendanceDate,
+        day: dayName,
+        clockIn: r.clockIn,
+        clockOut: r.clockOut,
+        lunchHour: 1,
+        regHours: r.regularHours,
+        otHours: r.overtimeHours,
+        totalHours: r.regularHours + r.overtimeHours,
+        status: r.status
+      };
+    });
+    this.showTimesheetModal = true;
+    this.cdr.markForCheck();
+  }
+  
+  closeTimesheetModal(): void {
+    this.showTimesheetModal = false;
+    this.selectedTimesheetEmployee = null;
+    this.individualTimesheetRows = [];
+    this.cdr.markForCheck();
+  }
+  
+  downloadTimesheetPDF(ts: GeneratedTimesheetSummary): void {
+    const doc = new jsPDF('landscape', 'mm', 'a4');
+    
+    doc.setFillColor(0, 102, 153);
+    doc.rect(0, 0, 297, 35, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('EMPLOYEE TIMESHEET', 148.5, 15, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Period: ${this.generateStartDate} to ${this.generateEndDate}`, 148.5, 25, { align: 'center' });
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Employee Information', 14, 45);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Employee ID: ${ts.employeeCode}`, 14, 53);
+    doc.text(`Name: ${ts.firstName} ${ts.lastName}`, 14, 60);
+    doc.text(`Department: ${ts.department}`, 120, 53);
+    doc.text(`Status: ${ts.status}`, 120, 60);
+    
+    const tableData = ts.records.map((r, idx) => {
+      const date = new Date(r.attendanceDate);
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+      return [
+        (idx + 1).toString(),
+        r.attendanceDate,
+        dayName,
+        r.clockIn,
+        r.clockOut,
+        '1:00',
+        r.regularHours.toFixed(1),
+        r.overtimeHours.toFixed(1),
+        (r.regularHours + r.overtimeHours).toFixed(1),
+        r.status
+      ];
+    });
+    
+    autoTable(doc, {
+      startY: 70,
+      head: [['#', 'Date', 'Day', 'Clock In', 'Clock Out', 'Lunch', 'Reg Hrs', 'OT Hrs', 'Total', 'Status']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [0, 102, 153],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      bodyStyles: {
+        halign: 'center',
+        fontSize: 9
+      },
+      alternateRowStyles: {
+        fillColor: [240, 248, 255]
+      },
+      columnStyles: {
+        0: { cellWidth: 10 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 15 },
+        3: { cellWidth: 20 },
+        4: { cellWidth: 20 },
+        5: { cellWidth: 15 },
+        6: { cellWidth: 18 },
+        7: { cellWidth: 18 },
+        8: { cellWidth: 18 },
+        9: { cellWidth: 25 }
+      }
+    });
+    
+    const finalY = (doc as any).lastAutoTable?.finalY || 150;
+    
+    doc.setFillColor(0, 102, 153);
+    doc.rect(14, finalY + 10, 269, 25, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SUMMARY', 20, finalY + 20);
+    
+    doc.setFontSize(10);
+    doc.text(`Regular Hours: ${ts.totalRegularHours.toFixed(1)}`, 70, finalY + 20);
+    doc.text(`Overtime Hours: ${ts.totalOvertimeHours.toFixed(1)}`, 140, finalY + 20);
+    doc.text(`Total Hours: ${ts.totalHours.toFixed(1)}`, 210, finalY + 20);
+    
+    doc.setTextColor(128, 128, 128);
+    doc.setFontSize(8);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 200);
+    doc.text('Hao System - Employee Timesheet', 250, 200);
+    
+    doc.save(`Timesheet_${ts.employeeCode}_${this.generateStartDate}.pdf`);
+    this.showMessage(`Downloaded timesheet PDF for ${ts.firstName} ${ts.lastName}`, 'success');
   }
 
   loadTimesheets(): void {

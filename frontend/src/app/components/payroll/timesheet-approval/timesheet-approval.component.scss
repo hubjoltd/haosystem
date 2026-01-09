@@ -1239,3 +1239,256 @@
     }
   }
 }
+
+.action-col {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    
+    &.btn-info {
+      background: #17a2b8;
+      color: white;
+      border: none;
+      
+      &:hover {
+        background: #138496;
+      }
+    }
+    
+    &.btn-primary {
+      background: #006699;
+      color: white;
+      border: none;
+      
+      &:hover {
+        background: #005588;
+      }
+    }
+  }
+}
+
+.hours.total {
+  font-weight: 600;
+  color: #006699;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.timesheet-modal {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+  
+  .modal-header {
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    &.blue-header {
+      background: linear-gradient(135deg, #006699, #004466);
+      color: white;
+    }
+    
+    h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    .close-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+    }
+  }
+  
+  .modal-body {
+    padding: 24px;
+    max-height: calc(90vh - 160px);
+    overflow-y: auto;
+    
+    .employee-info-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #e6f3ff, #d9ecff);
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border-left: 4px solid #006699;
+      
+      .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        
+        .label {
+          font-size: 11px;
+          text-transform: uppercase;
+          color: #666;
+          font-weight: 600;
+        }
+        
+        .value {
+          font-size: 14px;
+          font-weight: 600;
+          color: #006699;
+        }
+      }
+    }
+    
+    .individual-timesheet-table {
+      width: 100%;
+      border-collapse: collapse;
+      
+      thead {
+        tr {
+          background: linear-gradient(135deg, #006699, #004466);
+          
+          th {
+            color: white;
+            padding: 12px 16px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+          }
+        }
+      }
+      
+      tbody {
+        tr {
+          border-bottom: 1px solid #e8f0f5;
+          
+          &:nth-child(even) {
+            background: #f0f8ff;
+          }
+          
+          &:hover {
+            background: #e6f3ff;
+          }
+          
+          td {
+            padding: 12px 16px;
+            text-align: center;
+            font-size: 13px;
+          }
+        }
+      }
+      
+      tfoot {
+        .summary-row {
+          background: linear-gradient(135deg, #006699, #004466);
+          
+          td {
+            padding: 14px 16px;
+            color: white;
+            font-weight: 600;
+            
+            &.text-right {
+              text-align: right;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .modal-footer {
+    padding: 16px 24px;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid #e8f0f5;
+    
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      
+      &.btn-outline-secondary {
+        background: white;
+        border: 1px solid #ddd;
+        color: #666;
+        
+        &:hover {
+          background: #f5f5f5;
+        }
+      }
+      
+      &.btn-primary {
+        background: #006699;
+        border: none;
+        color: white;
+        
+        &:hover {
+          background: #005588;
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.generated-timesheet-table {
+  .action-col {
+    min-width: 160px;
+  }
+}
