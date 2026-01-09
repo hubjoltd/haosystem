@@ -357,12 +357,39 @@ export class TimesheetApprovalComponent implements OnInit {
       return;
     }
     
+    const today = new Date().toISOString().split('T')[0];
+    
     // Move selected to processed, update status
     selected.forEach(row => {
       row.status = 'Processed';
       row.selected = false;
       this.processedPayrollRows.push({ ...row });
     });
+    
+    // Save to PayrollService for history
+    const processedRecords = selected.map((row, idx) => {
+      const emp = this.employees.find(e => e.id === row.employeeId);
+      return {
+        sno: idx + 1,
+        empId: row.empId,
+        employeeId: row.employeeId,
+        name: row.name,
+        project: emp?.department?.name || 'General',
+        hours: row.hours,
+        hourlyRate: row.hourlyRate,
+        gross: row.gross,
+        federal: row.federal,
+        state: row.state,
+        socSec: row.socSec,
+        medicare: row.medicare,
+        netPay: row.netPay,
+        status: 'Processed',
+        periodStart: this.generateStartDate,
+        periodEnd: this.generateEndDate,
+        processedDate: today
+      };
+    });
+    this.payrollService.addProcessedPayrollRecords(processedRecords);
     
     // Remove from calculation rows
     this.payrollCalculationRows = this.payrollCalculationRows.filter(r => r.status !== 'Processed');

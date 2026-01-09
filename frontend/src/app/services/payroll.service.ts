@@ -227,14 +227,52 @@ export interface EmployeeBenefit {
   updatedAt?: string;
 }
 
+export interface ProcessedPayrollRecord {
+  sno: number;
+  empId: string;
+  employeeId?: number;
+  name: string;
+  project: string;
+  hours: number;
+  hourlyRate: number;
+  gross: number;
+  federal: number;
+  state: number;
+  socSec: number;
+  medicare: number;
+  netPay: number;
+  status: string;
+  periodStart: string;
+  periodEnd: string;
+  processedDate: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class PayrollService {
   private rulesUrl = '/api/payroll/rules';
   private payrollUrl = '/api/payroll';
+  
+  private processedPayrollRecords: ProcessedPayrollRecord[] = [];
 
   constructor(private http: HttpClient) {}
+  
+  addProcessedPayrollRecords(records: ProcessedPayrollRecord[]): void {
+    this.processedPayrollRecords.push(...records);
+  }
+  
+  getProcessedPayrollRecords(): ProcessedPayrollRecord[] {
+    return [...this.processedPayrollRecords];
+  }
+  
+  getProcessedPayrollRecordsByEmployee(employeeId: number): ProcessedPayrollRecord[] {
+    return this.processedPayrollRecords.filter(r => r.employeeId === employeeId);
+  }
+  
+  clearProcessedPayrollRecords(): void {
+    this.processedPayrollRecords = [];
+  }
 
   getSalaryHeads(): Observable<SalaryHead[]> {
     return this.http.get<SalaryHead[]>(`${this.rulesUrl}/salary-heads`);

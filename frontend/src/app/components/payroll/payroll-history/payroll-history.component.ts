@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { PayrollService, PayrollRun, PayrollRecord } from '../../../services/payroll.service';
+import { PayrollService, PayrollRun, PayrollRecord, ProcessedPayrollRecord } from '../../../services/payroll.service';
 import { EmployeeService, Employee } from '../../../services/employee.service';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface PayrollHistoryRecord {
   empId: string;
@@ -47,7 +49,8 @@ interface PayrollRunSummary {
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './payroll-history.component.html',
-  styleUrls: ['./payroll-history.component.scss']
+  styleUrls: ['./payroll-history.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PayrollHistoryComponent implements OnInit {
   loading = false;
@@ -85,15 +88,63 @@ export class PayrollHistoryComponent implements OnInit {
 
   constructor(
     private payrollService: PayrollService,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.loadData();
+    this.loadProcessedPayrollFromService();
+  }
+  
+  private processedFromService: PayrollHistoryRecord[] = [];
+  
+  loadProcessedPayrollFromService(): void {
+    const processedRecords = this.payrollService.getProcessedPayrollRecords();
+    if (processedRecords.length > 0) {
+      this.processedFromService = processedRecords.map(r => ({
+        empId: r.empId,
+        name: r.name,
+        employeeType: 'Hourly',
+        project: r.project,
+        subcontractor: '-',
+        payRatePeriod: 'Weekly',
+        periodFrom: r.periodStart,
+        periodTo: r.periodEnd,
+        hours: r.hours,
+        regular: r.gross,
+        bonus: 0,
+        allowances: 0,
+        deductions: 0,
+        gross: r.gross,
+        ytdGross: r.gross * 12,
+        fedTax: r.federal,
+        stateTax: r.state,
+        socSecTax: r.socSec,
+        medicareTax: r.medicare,
+        expenses: 0,
+        totalTax: r.federal + r.state + r.socSec + r.medicare,
+        netPay: r.netPay,
+        payDate: r.processedDate,
+        paymentDate: r.processedDate,
+        payStatus: 'Paid'
+      }));
+      this.cdr.markForCheck();
+    }
+  }
+  
+  mergeRecordsFromAllSources(): void {
+    if (this.processedFromService.length > 0) {
+      this.historyRecords = [...this.processedFromService, ...this.historyRecords];
+    }
+    this.extractProjects();
+    this.calculateSummary();
+    this.cdr.markForCheck();
   }
 
   loadData(): void {
     this.loading = true;
+    this.cdr.markForCheck();
     
     this.employeeService.getAll().subscribe({
       next: (emps) => {
@@ -104,6 +155,7 @@ export class PayrollHistoryComponent implements OnInit {
         console.error('Error loading employees:', err);
         this.loading = false;
         this.generateSampleData();
+        this.cdr.markForCheck();
       }
     });
   }
@@ -118,6 +170,7 @@ export class PayrollHistoryComponent implements OnInit {
         console.error('Error loading payroll runs:', err);
         this.loading = false;
         this.generateSampleData();
+        this.cdr.markForCheck();
       }
     });
   }
@@ -126,6 +179,7 @@ export class PayrollHistoryComponent implements OnInit {
     if (this.payrollRuns.length === 0) {
       this.loading = false;
       this.generateSampleData();
+      this.cdr.markForCheck();
       return;
     }
     
@@ -141,7 +195,7 @@ export class PayrollHistoryComponent implements OnInit {
             if (completed === this.payrollRuns.length) {
               this.payrollRecords = allRecords;
               this.processHistoryRecords();
-              this.calculateSummary();
+              this.mergeRecordsFromAllSources();
               this.loading = false;
             }
           },
@@ -151,7 +205,7 @@ export class PayrollHistoryComponent implements OnInit {
               this.payrollRecords = allRecords;
               if (allRecords.length > 0) {
                 this.processHistoryRecords();
-                this.calculateSummary();
+                this.mergeRecordsFromAllSources();
               } else {
                 this.generateSampleData();
               }
@@ -167,6 +221,7 @@ export class PayrollHistoryComponent implements OnInit {
     if (this.payrollRuns.every(r => !r.id)) {
       this.loading = false;
       this.generateSampleData();
+      this.cdr.markForCheck();
     }
   }
 
@@ -251,8 +306,7 @@ export class PayrollHistoryComponent implements OnInit {
       { periodType: 'Bi-Weekly', periodRange: 'Nov 30 - Dec 13, 2025', payDate: 'Dec 20, 2025', gross: 2800.00, netPay: 2109.80, status: 'Paid' }
     ];
     
-    this.extractProjects();
-    this.calculateSummary();
+    this.mergeRecordsFromAllSources();
   }
 
   extractProjects(): void {
@@ -372,7 +426,53 @@ export class PayrollHistoryComponent implements OnInit {
   }
 
   exportToPDF(): void {
-    alert('Exporting to PDF...');
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    
+    doc.setFontSize(16);
+    doc.setTextColor(0, 128, 128);
+    doc.text('Payroll History Report', 14, 15);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 22);
+    doc.text(`Total Records: ${this.filteredRecords.length}`, 14, 28);
+    doc.text(`Total Net Pay: ${this.formatCurrency(this.totalNetFiltered)}`, 100, 28);
+    
+    const tableData = this.filteredRecords.map((r, i) => [
+      i + 1,
+      r.empId,
+      r.name,
+      r.employeeType,
+      r.project || '-',
+      r.payRatePeriod,
+      this.formatDate(r.periodFrom),
+      this.formatDate(r.periodTo),
+      `${r.hours}h`,
+      this.formatCurrency(r.gross),
+      this.formatCurrency(r.totalTax),
+      this.formatCurrency(r.netPay),
+      r.payStatus
+    ]);
+    
+    autoTable(doc, {
+      head: [['#', 'EMP ID', 'NAME', 'TYPE', 'PROJECT', 'PAY PERIOD', 'FROM', 'TO', 'HOURS', 'GROSS', 'TAX', 'NET PAY', 'STATUS']],
+      body: tableData,
+      startY: 35,
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [0, 128, 128], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [240, 248, 248] },
+      foot: [[
+        '', '', '', '', '', '', '', '', 
+        `${this.totalHoursFiltered.toFixed(2)}h`,
+        this.formatCurrency(this.totalGrossFiltered),
+        this.formatCurrency(this.totalTaxFiltered),
+        this.formatCurrency(this.totalNetFiltered),
+        ''
+      ]],
+      footStyles: { fillColor: [0, 128, 128], textColor: 255, fontStyle: 'bold' }
+    });
+    
+    doc.save(`payroll_history_${new Date().toISOString().split('T')[0]}.pdf`);
   }
 
   exportToCSV(): void {

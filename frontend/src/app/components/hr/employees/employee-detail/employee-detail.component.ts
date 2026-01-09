@@ -5,6 +5,7 @@ import { OrganizationService, Department, Designation, Grade, JobRole, Location,
 import { DocumentService, DocumentCategory, DocumentType, EmployeeDocument, ChecklistCategory, ChecklistDocumentType } from '../../../../services/document.service';
 import { RecruitmentService } from '../../../../services/recruitment.service';
 import { LeaveService, LeaveBalance } from '../../../../services/leave.service';
+import { PayrollService, PayrollRecord, Timesheet } from '../../../../services/payroll.service';
 import { ToastService } from '../../../../services/toast.service';
 
 export interface RecruitmentHistory {
@@ -53,6 +54,10 @@ export class EmployeeDetailComponent implements OnInit {
   savingLeaveBalance = false;
   originalLeaveBalance: LeaveBalance | null = null;
   
+  payrollRecords: PayrollRecord[] = [];
+  timesheets: Timesheet[] = [];
+  loadingPayroll = false;
+  
   departments: Department[] = [];
   designations: Designation[] = [];
   grades: Grade[] = [];
@@ -94,6 +99,7 @@ export class EmployeeDetailComponent implements OnInit {
     private documentService: DocumentService,
     private recruitmentService: RecruitmentService,
     private leaveService: LeaveService,
+    private payrollService: PayrollService,
     private cdr: ChangeDetectorRef,
     private toastService: ToastService
   ) {
@@ -255,10 +261,45 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   setTab(tab: string) {
-    if (this.isNewEmployee && ['bank', 'salary', 'ctcHistory', 'assets', 'documents', 'leave', 'recruitment'].includes(tab)) {
+    if (this.isNewEmployee && ['bank', 'salary', 'ctcHistory', 'assets', 'documents', 'leave', 'recruitment', 'payroll'].includes(tab)) {
       return;
     }
     this.activeTab = tab;
+    
+    if (tab === 'payroll' && this.payrollRecords.length === 0) {
+      this.loadPayrollData();
+    }
+  }
+  
+  loadPayrollData(): void {
+    if (!this.employeeId) return;
+    
+    this.loadingPayroll = true;
+    this.cdr.detectChanges();
+    
+    this.payrollService.getPayrollRecordsByEmployee(this.employeeId).subscribe({
+      next: (records) => {
+        this.payrollRecords = records;
+        this.loadingPayroll = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.payrollRecords = [];
+        this.loadingPayroll = false;
+        this.cdr.detectChanges();
+      }
+    });
+    
+    this.payrollService.getTimesheetsByEmployee(this.employeeId).subscribe({
+      next: (timesheets) => {
+        this.timesheets = timesheets;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.timesheets = [];
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   loadDocumentChecklist() {

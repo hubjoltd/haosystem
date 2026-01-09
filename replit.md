@@ -29,7 +29,8 @@ Preferred communication style: Simple, everyday language.
 -   **Loans & Advances Management**: Handles loan applications, approval workflows, EMI configuration, auto-deduction, ledger, and repayment history.
 -   **Compensation & Benefits**: Sets up salary bands, revisions, bonus, health insurance, and allowances.
 -   **F&F Settlement**: Processes Final and Full Settlements for employee separations.
--   **Payroll Management**: A 5-phase workflow including Rules Configuration, Attendance Approval & Timesheets, Payroll Calculation, Process Payroll, and Employee Self-Service (ESS), with comprehensive history. Features consistent employee selection with checkboxes across payroll steps.
+-   **Payroll Management**: A 5-phase workflow including Rules Configuration, Attendance Approval & Timesheets, Payroll Calculation, Process Payroll, and Employee Self-Service (ESS), with comprehensive history. Features consistent employee selection with checkboxes across payroll steps. Payroll History includes PDF/CSV export and OnPush change detection for performance.
+-   **Employee Payroll Tab**: Employee detail page includes a dedicated Payroll tab showing payroll records and timesheets history for each employee.
 -   **Employee Self-Service (ESS) Portal**: Allows employees to view pay stubs, attendance summaries, manage leave/expense/loan requests, access HR policies & documents, and view assigned assets. Features auto-initialization and carry-forward of leave balances.
 -   **Project Management Module**: Full-featured module with tabs for Overview, Members, Client Permissions, Billing, Tasks, Milestones, Timesheets, Files, and Notes.
 -   **Admin Notifications**: Real-time system notifications with approval workflows.
@@ -51,6 +52,9 @@ Preferred communication style: Simple, everyday language.
 -   Document types drill-down for filtering and selection, with comprehensive document checklists and file upload capabilities (PDF, image files up to 10MB).
 -   Terminology standardization (e.g., "Company" instead of "Branch").
 -   Consistent loading states for all save/update/edit operations.
+-   OnPush change detection strategy with ChangeDetectorRef for performance-critical payroll components.
+-   Processed payroll data flows from timesheet-approval to payroll-history via PayrollService in-memory cache.
+-   jspdf-autotable integration for formatted PDF reports with summary footers.
 
 ## External Dependencies
 

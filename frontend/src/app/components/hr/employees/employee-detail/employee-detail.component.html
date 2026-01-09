@@ -43,6 +43,7 @@
     <button [class.active]="activeTab === 'documents'" (click)="setTab('documents')" [class.disabled]="isNewEmployee">Documents</button>
     <button [class.active]="activeTab === 'leave'" (click)="setTab('leave')" [class.disabled]="isNewEmployee">Leave</button>
     <button [class.active]="activeTab === 'recruitment'" (click)="setTab('recruitment')" [class.disabled]="isNewEmployee">Recruitment History</button>
+    <button [class.active]="activeTab === 'payroll'" (click)="setTab('payroll')" [class.disabled]="isNewEmployee">Payroll</button>
   </div>
 
   <div class="tab-content" *ngIf="activeTab === 'personal' && !loading">
@@ -944,6 +945,87 @@
     </div>
 
     <p class="no-data" *ngIf="!recruitmentHistory && !loadingRecruitmentHistory">No recruitment history available for this employee</p>
+  </div>
+</div>
+
+<div class="employee-detail-container" *ngIf="activeTab === 'payroll' && !loading">
+  <div class="tab-content">
+    <div class="form-section">
+      <h3>Payroll Records</h3>
+      <div class="loading-container" *ngIf="loadingPayroll">
+        <i class="fas fa-spinner fa-spin"></i> Loading payroll data...
+      </div>
+      
+      <div *ngIf="!loadingPayroll && payrollRecords.length === 0">
+        <p class="no-data">No payroll records found for this employee.</p>
+      </div>
+      
+      <table class="data-table" *ngIf="!loadingPayroll && payrollRecords.length > 0">
+        <thead>
+          <tr>
+            <th>Pay Run #</th>
+            <th>Period</th>
+            <th>Gross Pay</th>
+            <th>Taxes</th>
+            <th>Net Pay</th>
+            <th>Status</th>
+            <th>Processed</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of payrollRecords">
+            <td>{{ record.payrollRun?.payrollRunNumber || '-' }}</td>
+            <td>{{ record.payrollRun?.periodStartDate }} - {{ record.payrollRun?.periodEndDate }}</td>
+            <td>{{ record.grossPay | number:'1.2-2' }}</td>
+            <td>{{ record.totalTaxes | number:'1.2-2' }}</td>
+            <td>{{ record.netPay | number:'1.2-2' }}</td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'badge-success': record.status === 'PROCESSED',
+                'badge-warning': record.status === 'CALCULATED',
+                'badge-info': record.status === 'PENDING'
+              }">{{ record.status }}</span>
+            </td>
+            <td>{{ record.payrollRun?.processedAt | date:'short' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="form-section" style="margin-top: 2rem;">
+      <h3>Timesheets</h3>
+      
+      <div *ngIf="!loadingPayroll && timesheets.length === 0">
+        <p class="no-data">No timesheets found for this employee.</p>
+      </div>
+      
+      <table class="data-table" *ngIf="timesheets.length > 0">
+        <thead>
+          <tr>
+            <th>Period</th>
+            <th>Hours</th>
+            <th>Overtime</th>
+            <th>Status</th>
+            <th>Approved By</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ts of timesheets">
+            <td>{{ ts.periodStartDate }} - {{ ts.periodEndDate }}</td>
+            <td>{{ ts.totalRegularHours || 0 }}h</td>
+            <td>{{ ts.totalOvertimeHours || 0 }}h</td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'badge-success': ts.status === 'APPROVED',
+                'badge-warning': ts.status === 'PENDING',
+                'badge-danger': ts.status === 'REJECTED'
+              }">{{ ts.status }}</span>
+            </td>
+            <td>{{ ts.approvedBy?.firstName || '-' }} {{ ts.approvedBy?.lastName || '' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
