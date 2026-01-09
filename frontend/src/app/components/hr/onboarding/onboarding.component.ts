@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 import { OnboardingService } from '../../../services/onboarding.service';
 import { EmployeeService } from '../../../services/employee.service';
 import { ToastService } from '../../../services/toast.service';
@@ -67,20 +68,29 @@ export class OnboardingComponent implements OnInit {
 
   loadDashboard(): void {
     this.onboardingService.getDashboard().subscribe({
-      next: (data) => this.dashboard = data,
+      next: (data) => {
+        this.dashboard = data;
+        this.cdr.markForCheck();
+      },
       error: (err) => console.error('Error loading dashboard:', err)
     });
   }
 
   loadPlans(): void {
     this.loading = true;
-    this.onboardingService.getPlans().subscribe({
+    this.cdr.markForCheck();
+    this.onboardingService.getPlans().pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
       next: (data) => { 
         this.plans = data; 
-        this.loading = false; 
         this.loadNewHiresPendingOnboarding();
+        this.cdr.markForCheck();
       },
-      error: (err) => { console.error(err); this.loading = false; }
+      error: (err) => console.error(err)
     });
   }
 
@@ -89,6 +99,7 @@ export class OnboardingComponent implements OnInit {
       next: (data) => {
         this.employees = data;
         this.loadNewHiresPendingOnboarding();
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error loading employees:', err)
     });
@@ -136,6 +147,7 @@ export class OnboardingComponent implements OnInit {
   savePlan(): void {
     if (this.saving) return;
     this.saving = true;
+    this.cdr.markForCheck();
 
     const payload = {
       ...this.planFormData,
@@ -148,18 +160,19 @@ export class OnboardingComponent implements OnInit {
       ? this.onboardingService.updatePlan(this.editingPlan.id, payload)
       : this.onboardingService.createPlan(payload);
 
-    obs.subscribe({
+    obs.pipe(
+      finalize(() => {
+        this.saving = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
       next: () => { 
-        this.saving = false; 
-        this.cdr.detectChanges();
         this.toastService.success(this.editingPlan ? 'Onboarding plan updated' : 'Onboarding plan created');
         this.closePlanForm(); 
         this.loadPlans(); 
         this.loadDashboard(); 
       },
       error: (err) => { 
-        this.saving = false; 
-        this.cdr.detectChanges();
         console.error(err); 
         this.toastService.error('Error saving onboarding plan'); 
       }
@@ -221,24 +234,26 @@ export class OnboardingComponent implements OnInit {
   saveTask(): void {
     if (this.saving) return;
     this.saving = true;
+    this.cdr.markForCheck();
 
     const payload = {
       ...this.taskFormData,
       assignedTo: this.taskFormData.assignedToId ? { id: this.taskFormData.assignedToId } : null
     };
 
-    this.onboardingService.createTask(payload).subscribe({
-      next: () => { 
+    this.onboardingService.createTask(payload).pipe(
+      finalize(() => {
         this.saving = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: () => { 
         this.toastService.success('Task created successfully');
         this.closeTaskForm(); 
         this.viewTasks(this.selectedPlan);
         this.loadDashboard();
       },
       error: (err) => { 
-        this.saving = false; 
-        this.cdr.detectChanges();
         console.error(err); 
         this.toastService.error('Error saving task'); 
       }
@@ -301,23 +316,25 @@ export class OnboardingComponent implements OnInit {
   saveAsset(): void {
     if (this.saving) return;
     this.saving = true;
+    this.cdr.markForCheck();
 
     const payload = {
       ...this.assetFormData,
       employee: { id: this.assetFormData.employeeId }
     };
 
-    this.onboardingService.assignAsset(payload).subscribe({
-      next: () => {
+    this.onboardingService.assignAsset(payload).pipe(
+      finalize(() => {
         this.saving = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: () => {
         this.toastService.success('Asset assigned successfully');
         this.closeAssetForm();
         this.loadAssets(this.selectedAssetPlan.employee?.id);
       },
       error: (err) => { 
-        this.saving = false; 
-        this.cdr.detectChanges();
         console.error(err); 
         this.toastService.error('Error assigning asset'); 
       }

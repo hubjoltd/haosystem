@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import { RecruitmentService } from '../../../services/recruitment.service';
 import { ToastService } from '../../../services/toast.service';
 
@@ -50,7 +51,10 @@ export class RecruitmentComponent implements OnInit {
 
   loadDashboard(): void {
     this.recruitmentService.getDashboard().subscribe({
-      next: (data) => this.dashboard = data,
+      next: (data) => {
+        this.dashboard = data;
+        this.cdr.markForCheck();
+      },
       error: (err) => console.error('Error loading dashboard:', err)
     });
   }
@@ -68,33 +72,69 @@ export class RecruitmentComponent implements OnInit {
 
   loadRequisitions(): void {
     this.loading = true;
-    this.recruitmentService.getRequisitions().subscribe({
-      next: (data) => { this.requisitions = data; this.loading = false; },
-      error: (err) => { console.error(err); this.loading = false; }
+    this.cdr.markForCheck();
+    this.recruitmentService.getRequisitions().pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: (data) => {
+        this.requisitions = data;
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error(err)
     });
   }
 
   loadJobPostings(): void {
     this.loading = true;
-    this.recruitmentService.getJobPostings().subscribe({
-      next: (data) => { this.jobPostings = data; this.loading = false; },
-      error: (err) => { console.error(err); this.loading = false; }
+    this.cdr.markForCheck();
+    this.recruitmentService.getJobPostings().pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: (data) => {
+        this.jobPostings = data;
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error(err)
     });
   }
 
   loadCandidates(): void {
     this.loading = true;
-    this.recruitmentService.getCandidates().subscribe({
-      next: (data) => { this.candidates = data; this.loading = false; },
-      error: (err) => { console.error(err); this.loading = false; }
+    this.cdr.markForCheck();
+    this.recruitmentService.getCandidates().pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: (data) => {
+        this.candidates = data;
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error(err)
     });
   }
 
   loadInterviews(): void {
     this.loading = true;
-    this.recruitmentService.getUpcomingInterviews().subscribe({
-      next: (data) => { this.interviews = data; this.loading = false; },
-      error: (err) => { console.error(err); this.loading = false; }
+    this.cdr.markForCheck();
+    this.recruitmentService.getUpcomingInterviews().pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: (data) => {
+        this.interviews = data;
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error(err)
     });
   }
 

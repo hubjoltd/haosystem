@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 import { RecruitmentService } from '../../../../services/recruitment.service';
 import { OrganizationService } from '../../../../services/organization.service';
 import { SettingsService } from '../../../../services/settings.service';
@@ -122,20 +123,28 @@ export class RecruitmentRequisitionComponent implements OnInit {
 
   loadData(): void {
     this.loading = true;
-    this.recruitmentService.getRequisitions().subscribe({
+    this.cdr.markForCheck();
+    this.recruitmentService.getRequisitions().pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
       next: (data) => {
         this.requisitions = data;
-        this.loading = false;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error loading requisitions:', err);
         this.requisitions = [];
-        this.loading = false;
       }
     });
 
     this.organizationService.getDepartments().subscribe({
-      next: (data) => this.departments = data,
+      next: (data) => {
+        this.departments = data;
+        this.cdr.markForCheck();
+      },
       error: () => this.departments = []
     });
   }
@@ -237,6 +246,7 @@ export class RecruitmentRequisitionComponent implements OnInit {
     if (!this.validateForm()) return;
     
     this.saving = true;
+    this.cdr.markForCheck();
     this.selectedRequisition.status = asDraft ? 'DRAFT' : 'PENDING';
     if (!asDraft) {
       this.selectedRequisition.currentApprovalLevel = 1;
@@ -246,10 +256,13 @@ export class RecruitmentRequisitionComponent implements OnInit {
       ? this.recruitmentService.updateRequisition(this.selectedRequisition.id!, this.selectedRequisition)
       : this.recruitmentService.createRequisition(this.selectedRequisition);
     
-    obs.subscribe({
-      next: () => {
+    obs.pipe(
+      finalize(() => {
         this.saving = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: () => {
         this.toastService.success(
           asDraft 
             ? 'Requisition saved as draft' 
@@ -259,8 +272,6 @@ export class RecruitmentRequisitionComponent implements OnInit {
         this.loadData();
       },
       error: (err) => {
-        this.saving = false;
-        this.cdr.detectChanges();
         console.error('Error saving requisition:', err);
         this.toastService.error('Error saving requisition');
       }

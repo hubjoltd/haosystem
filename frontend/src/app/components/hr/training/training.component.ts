@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 import { TrainingService } from '../../../services/training.service';
 import { EmployeeService } from '../../../services/employee.service';
 import { ToastService } from '../../../services/toast.service';
@@ -55,14 +56,20 @@ export class TrainingComponent implements OnInit {
 
   loadDashboard(): void {
     this.trainingService.getDashboard().subscribe({
-      next: (data) => this.dashboard = data,
+      next: (data) => {
+        this.dashboard = data;
+        this.cdr.markForCheck();
+      },
       error: (err) => console.error('Error loading dashboard:', err)
     });
   }
 
   loadEmployees(): void {
     this.employeeService.getActive().subscribe({
-      next: (data) => this.employees = data,
+      next: (data) => {
+        this.employees = data;
+        this.cdr.markForCheck();
+      },
       error: (err) => console.error('Error loading employees:', err)
     });
   }
@@ -81,17 +88,36 @@ export class TrainingComponent implements OnInit {
 
   loadPrograms(): void {
     this.loading = true;
-    this.trainingService.getPrograms().subscribe({
-      next: (data) => { this.programs = data; this.loading = false; },
-      error: (err) => { console.error(err); this.loading = false; }
+    this.cdr.markForCheck();
+    this.trainingService.getPrograms().pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: (data) => {
+        this.programs = data;
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error(err)
     });
   }
 
   loadSessions(): void {
     this.loading = true;
-    this.trainingService.getSessions().subscribe({
-      next: (data) => { this.sessions = data; this.loading = false; this.generateCalendar(); },
-      error: (err) => { console.error(err); this.loading = false; }
+    this.cdr.markForCheck();
+    this.trainingService.getSessions().pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: (data) => {
+        this.sessions = data;
+        this.generateCalendar();
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error(err)
     });
   }
 
@@ -116,13 +142,17 @@ export class TrainingComponent implements OnInit {
     }
     
     this.saving = true;
+    this.cdr.markForCheck();
     const obs = this.editingItem
       ? this.trainingService.updateProgram(this.editingItem.id, this.formData)
       : this.trainingService.createProgram(this.formData);
-    obs.subscribe({
-      next: () => { 
+    obs.pipe(
+      finalize(() => {
         this.saving = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: () => { 
         this.toastService.success(this.editingItem ? 'Program updated successfully' : 'Program created successfully');
         this.closeForm(); 
         this.loadPrograms(); 
@@ -130,8 +160,6 @@ export class TrainingComponent implements OnInit {
       },
       error: (err) => { 
         console.error(err); 
-        this.saving = false;
-        this.cdr.detectChanges();
         const errorMsg = err.error?.message || err.error?.error || 'Error saving program';
         this.toastService.error(errorMsg); 
       }
@@ -176,6 +204,7 @@ export class TrainingComponent implements OnInit {
     }
     
     this.saving = true;
+    this.cdr.markForCheck();
     const payload = {
       ...this.sessionFormData,
       program: this.sessionFormData.programId ? { id: this.sessionFormData.programId } : null
@@ -185,10 +214,13 @@ export class TrainingComponent implements OnInit {
       ? this.trainingService.updateSession(this.editingSession.id, payload)
       : this.trainingService.createSession(payload);
 
-    obs.subscribe({
-      next: () => { 
+    obs.pipe(
+      finalize(() => {
         this.saving = false;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: () => { 
         this.toastService.success(this.editingSession ? 'Session updated successfully' : 'Session created successfully');
         this.closeSessionForm(); 
         this.loadSessions(); 
@@ -196,8 +228,6 @@ export class TrainingComponent implements OnInit {
       },
       error: (err) => { 
         console.error(err); 
-        this.saving = false;
-        this.cdr.detectChanges();
         const errorMsg = err.error?.message || err.error?.error || 'Error saving session';
         this.toastService.error(errorMsg); 
       }
