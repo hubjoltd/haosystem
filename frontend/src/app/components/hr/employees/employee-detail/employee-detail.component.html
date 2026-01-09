@@ -1018,22 +1018,6 @@
           <input type="number" [(ngModel)]="editingSalary.basicSalary" (input)="onBasicSalaryChange()" placeholder="Enter annual basic salary" />
         </div>
         <div class="form-group">
-          <label>Working Days/Week</label>
-          <input type="number" [(ngModel)]="workingDaysPerWeek" (input)="onBasicSalaryChange()" min="1" max="7" placeholder="5" />
-        </div>
-        <div class="form-group">
-          <label>Working Hours/Day</label>
-          <input type="number" [(ngModel)]="workingHoursPerDay" (input)="onBasicSalaryChange()" min="1" max="24" placeholder="8" />
-        </div>
-        <div class="form-group">
-          <label>Weekly Salary</label>
-          <input type="number" [value]="calculatedWeeklySalary" readonly class="readonly-field" />
-        </div>
-        <div class="form-group">
-          <label>Daily Salary</label>
-          <input type="number" [value]="calculatedDailySalary" readonly class="readonly-field" />
-        </div>
-        <div class="form-group">
           <label>Hourly Rate (Auto-calculated)</label>
           <input type="number" [(ngModel)]="editingSalary.hourlyRate" step="0.01" readonly class="readonly-field highlight-field" />
         </div>
