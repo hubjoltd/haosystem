@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LeaveService, LeaveRequest, LeaveType, LeaveBalance } from '../../../services/leave.service';
 import { EmployeeService } from '../../../services/employee.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-leave-requests',
@@ -44,7 +45,8 @@ export class LeaveRequestsComponent implements OnInit {
 
   constructor(
     private leaveService: LeaveService,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -55,14 +57,20 @@ export class LeaveRequestsComponent implements OnInit {
 
   loadRequests(): void {
     this.loading = true;
-    this.leaveService.getAllRequests().subscribe({
+    this.cdr.markForCheck();
+    this.leaveService.getAllRequests().pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
       next: (data) => {
         this.requests = data;
         this.filterRequests();
-        this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
-        this.loading = false;
+        console.error('Error loading leave requests');
       }
     });
   }
@@ -192,15 +200,20 @@ export class LeaveRequestsComponent implements OnInit {
     }
 
     this.saving = true;
-    this.leaveService.createRequest(this.formData).subscribe({
+    this.cdr.markForCheck();
+    
+    this.leaveService.createRequest(this.formData).pipe(
+      finalize(() => {
+        this.saving = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
       next: () => {
         this.loadRequests();
         this.closeModal();
-        this.saving = false;
       },
       error: (err) => {
-        this.saving = false;
-        const errorMsg = err.error?.error || 'Error submitting leave request';
+        const errorMsg = err.error?.error || err.error?.message || 'Error submitting leave request';
         alert(errorMsg);
       }
     });
