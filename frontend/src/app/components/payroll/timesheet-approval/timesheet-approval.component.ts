@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PayrollService, Timesheet, PayFrequency } from '../../../services/payroll.service';
@@ -32,116 +32,106 @@ interface ProcessedEmployee {
   category: string;
 }
 
+interface ApprovedAttendanceRow {
+  id: number;
+  employeeId: number;
+  employeeCode: string;
+  employeeName: string;
+  department: string;
+  attendanceDate: string;
+  clockIn: string;
+  clockOut: string;
+  regularHours: number;
+  overtimeHours: number;
+  status: string;
+}
+
 @Component({
   selector: 'app-timesheet-approval',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './timesheet-approval.component.html',
-  styleUrls: ['./timesheet-approval.component.scss']
+  styleUrls: ['./timesheet-approval.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TimesheetApprovalComponent implements OnInit {
-  activeTab: 'attendance' | 'timesheet' | 'payables' = 'attendance';
   currentStep = 0;
   loading = false;
   message = '';
   messageType = '';
+  dataLoaded = false;
 
   employees: Employee[] = [];
-  attendanceRecords: AttendanceRecord[] = [];
+  approvedAttendanceRecords: ApprovedAttendanceRow[] = [];
   timesheets: Timesheet[] = [];
   filteredTimesheets: Timesheet[] = [];
   payFrequencies: PayFrequency[] = [];
 
-  selectedDate: string = '';
-  weekEndingDate: string = '';
-  payDate: string = '';
-  approvedBy: string = 'HR Manager';
+  // Step 1: Approved Attendance date range
+  approvedStartDate: string = '';
+  approvedEndDate: string = '';
+  
+  // Summary stats for Step 1
+  totalApprovedEmployees = 0;
+  totalApprovedHours = 0;
+  totalApprovedOT = 0;
+  totalApprovedRecords = 0;
 
-  filterStatus = 'ALL';
-  statusOptions = ['ALL', 'DRAFT', 'PENDING_APPROVAL', 'APPROVED', 'REJECTED'];
-
-  totalEmployees = 0;
-  totalHours = 0;
-  totalOvertime = 0;
-
-  showGenerateModal = false;
+  // Step 2: Generate Timesheet
+  selectedPayPeriodType = 'MONTHLY';
   generateStartDate = '';
   generateEndDate = '';
   generating = false;
+  
+  allTimesheetEmployeesSelected = false;
+  selectedTimesheetEmployeeIds: number[] = [];
+  timesheetEmployees: Employee[] = [];
 
-  selectedTimesheetIds: number[] = [];
-  selectedEmployee: any = null;
-
-  showTimesheetPdfModal = false;
-  pdfTimesheet: Timesheet | null = null;
-  pdfAttendanceRecords: AttendanceRecord[] = [];
-
+  // Step 3: Calculate Payroll
   payableEmployees: PayableEmployee[] = [];
-  selectedPayableIds: number[] = [];
-  payablesLoading = false;
-  employeesToProcess = 0;
+  allCalcEmployeesSelected = false;
+  selectedCalcEmployeeIds: number[] = [];
   totalGrossPay = 0;
   totalNetPay = 0;
   employeeSalaryMap: Map<number, EmployeeSalary> = new Map();
+  payablesLoading = false;
 
+  // Step 4: Process Payroll
+  employeesToProcess = 0;
   showPayrollSummary = false;
   processedSalariedEmployees: ProcessedEmployee[] = [];
   processedHourlyEmployees: ProcessedEmployee[] = [];
   processedTotal = 0;
   processedNetTotal = 0;
 
-  selectedPayPeriodType = 'MONTHLY';
-  timesheetPayDate = '';
-  selectedAttendanceIds: number[] = [];
-  allAttendanceSelected = false;
-  selectedAttendanceCount = 0;
-
-  // Employee selection for Step 1: Generate Timesheet
-  allTimesheetEmployeesSelected = false;
-  selectedTimesheetEmployeeIds: number[] = [];
-  timesheetEmployees: Employee[] = [];
-
-  // Employee selection for Step 2: Calculate Payroll
-  allCalcEmployeesSelected = false;
-  selectedCalcEmployeeIds: number[] = [];
-
   constructor(
     private payrollService: PayrollService,
     private attendanceService: AttendanceService,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.setDefaultDates();
     this.loadEmployees();
     this.loadPayFrequencies();
-    this.loadDailyAttendance();
-    this.loadTimesheets();
   }
 
   setDefaultDates(): void {
     const today = new Date();
-    this.selectedDate = today.toISOString().split('T')[0];
-    this.timesheetPayDate = today.toISOString().split('T')[0];
-
-    const dayOfWeek = today.getDay();
-    const daysToSunday = 7 - dayOfWeek;
-    const sunday = new Date(today);
-    sunday.setDate(today.getDate() + daysToSunday);
-    this.weekEndingDate = sunday.toISOString().split('T')[0];
-
-    const nextFriday = new Date(today);
-    nextFriday.setDate(today.getDate() + (5 - dayOfWeek + 7) % 7 + 7);
-    this.payDate = nextFriday.toISOString().split('T')[0];
-
+    
+    // Default to current month for approved attendance
     const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    this.approvedStartDate = firstOfMonth.toISOString().split('T')[0];
+    this.approvedEndDate = lastOfMonth.toISOString().split('T')[0];
     this.generateStartDate = firstOfMonth.toISOString().split('T')[0];
     this.generateEndDate = lastOfMonth.toISOString().split('T')[0];
   }
 
   goToStep(step: number): void {
-    if (step === 4) {
+    if (step === 5) {
       window.location.href = '/app/payroll/history';
       return;
     }
@@ -149,107 +139,99 @@ export class TimesheetApprovalComponent implements OnInit {
     this.currentStep = step;
     
     if (step === 0) {
-      this.loadDailyAttendance();
+      this.loadApprovedAttendance();
     } else if (step === 1) {
-      this.loadTimesheets();
+      // Step 2: Generate Timesheet - employees already loaded
     } else if (step === 2 || step === 3) {
       this.loadPayableEmployees();
     }
+    this.cdr.markForCheck();
   }
 
-  previousDate(): void {
-    const current = new Date(this.selectedDate);
-    current.setDate(current.getDate() - 1);
-    this.selectedDate = current.toISOString().split('T')[0];
-    this.onDateChange();
+  loadEmployees(): void {
+    this.employeeService.getAll().subscribe({
+      next: (data) => {
+        this.employees = data.filter(e => e.active);
+        this.timesheetEmployees = [...this.employees];
+        // Auto-load approved attendance immediately
+        this.loadApprovedAttendance();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Error loading employees:', err);
+        this.cdr.markForCheck();
+      }
+    });
   }
 
-  nextDate(): void {
-    const current = new Date(this.selectedDate);
-    current.setDate(current.getDate() + 1);
-    this.selectedDate = current.toISOString().split('T')[0];
-    this.onDateChange();
-  }
-
-  toggleAllAttendance(): void {
-    this.allAttendanceSelected = !this.allAttendanceSelected;
-    if (this.allAttendanceSelected) {
-      this.selectedAttendanceIds = this.attendanceRecords.map(r => r.id!).filter(id => id !== undefined);
-    } else {
-      this.selectedAttendanceIds = [];
+  loadApprovedAttendance(forceReload: boolean = false): void {
+    if (this.dataLoaded && !forceReload) {
+      return;
     }
-    this.selectedAttendanceCount = this.selectedAttendanceIds.length;
-  }
-
-  isAttendanceSelected(record: AttendanceRecord): boolean {
-    return record.id ? this.selectedAttendanceIds.includes(record.id) : false;
-  }
-
-  toggleAttendanceSelection(record: AttendanceRecord): void {
-    if (!record.id) return;
-    const idx = this.selectedAttendanceIds.indexOf(record.id);
-    if (idx > -1) {
-      this.selectedAttendanceIds.splice(idx, 1);
-    } else {
-      this.selectedAttendanceIds.push(record.id);
-    }
-    this.selectedAttendanceCount = this.selectedAttendanceIds.length;
-    this.allAttendanceSelected = this.selectedAttendanceIds.length === this.attendanceRecords.length;
-  }
-
-  approveSelectedAttendance(): void {
-    if (this.selectedAttendanceIds.length === 0) return;
     
-    this.attendanceService.bulkApprove(this.selectedAttendanceIds).subscribe({
-      next: (result) => {
-        let message = `${result.approved || 0} attendance records approved`;
-        if (result.skipped > 0) {
-          message += `, ${result.skipped} skipped (already processed)`;
-        }
-        this.showMessage(message, 'success');
-        this.selectedAttendanceIds = [];
-        this.selectedAttendanceCount = 0;
-        this.allAttendanceSelected = false;
-        this.loadDailyAttendance();
-      },
-      error: (err) => {
-        console.error('Error approving attendance:', err);
-        this.showMessage('Error approving attendance records. Please try again.', 'error');
-      }
-    });
-  }
-
-  approveSingleAttendance(record: AttendanceRecord): void {
-    if (!record.id) return;
-    this.attendanceService.approve(record.id).subscribe({
-      next: () => {
-        this.showMessage('Attendance approved successfully!', 'success');
-        this.loadDailyAttendance();
-      },
-      error: (err) => {
-        console.error('Error approving attendance:', err);
-        this.showMessage('Error approving attendance. Please try again.', 'error');
-      }
-    });
-  }
-
-  rejectSingleAttendance(record: AttendanceRecord): void {
-    if (!record.id) return;
-    const reason = prompt('Please enter rejection reason:');
-    if (reason === null) return;
+    this.loading = true;
+    this.approvedAttendanceRecords = [];
+    this.cdr.markForCheck();
     
-    this.attendanceService.reject(record.id, reason).subscribe({
-      next: () => {
-        this.showMessage('Attendance rejected.', 'success');
-        this.loadDailyAttendance();
+    // Use the date-range endpoint to get all attendance in range
+    this.attendanceService.getByDateRange(this.approvedStartDate, this.approvedEndDate).subscribe({
+      next: (records) => {
+        // Filter only approved records and build display data
+        const approved = records.filter(r => r.approvalStatus === 'APPROVED');
+        
+        this.approvedAttendanceRecords = approved.map(r => {
+          const emp = this.employees.find(e => e.id === r.employeeId);
+          return {
+            id: r.id!,
+            employeeId: r.employeeId!,
+            employeeCode: emp?.employeeCode || `EMP${r.employeeId}`,
+            employeeName: emp ? `${emp.firstName || ''} ${emp.lastName || ''}`.trim() : 'Unknown',
+            department: emp?.department?.name || 'General',
+            attendanceDate: r.attendanceDate,
+            clockIn: r.clockIn || '-',
+            clockOut: r.clockOut || '-',
+            regularHours: r.regularHours || 0,
+            overtimeHours: r.overtimeHours || 0,
+            status: r.approvalStatus || 'APPROVED'
+          };
+        });
+        
+        this.calculateApprovedSummary();
+        this.loading = false;
+        this.dataLoaded = true;
+        this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Error rejecting attendance:', err);
-        this.showMessage('Error rejecting attendance. Please try again.', 'error');
+        console.error('Error loading approved attendance:', err);
+        this.loading = false;
+        this.cdr.markForCheck();
       }
     });
   }
 
+  calculateApprovedSummary(): void {
+    const uniqueEmployees = new Set(this.approvedAttendanceRecords.map(r => r.employeeId));
+    this.totalApprovedEmployees = uniqueEmployees.size;
+    this.totalApprovedRecords = this.approvedAttendanceRecords.length;
+    this.totalApprovedHours = this.approvedAttendanceRecords.reduce((sum, r) => sum + r.regularHours, 0);
+    this.totalApprovedOT = this.approvedAttendanceRecords.reduce((sum, r) => sum + r.overtimeHours, 0);
+  }
+
+  onApprovedDateChange(): void {
+    this.loadApprovedAttendance(true);
+  }
+
+  loadPayFrequencies(): void {
+    this.payrollService.getPayFrequencies().subscribe({
+      next: (data) => {
+        this.payFrequencies = data;
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('Error loading pay frequencies:', err)
+    });
+  }
+
+  // Step 2: Generate Timesheet
   onPayPeriodTypeChange(): void {
     const today = new Date();
     switch (this.selectedPayPeriodType) {
@@ -282,6 +264,32 @@ export class TimesheetApprovalComponent implements OnInit {
         this.generateStartDate = firstOfMonth.toISOString().split('T')[0];
         this.generateEndDate = lastOfMonth.toISOString().split('T')[0];
     }
+    this.cdr.markForCheck();
+  }
+
+  toggleAllTimesheetEmployees(): void {
+    this.allTimesheetEmployeesSelected = !this.allTimesheetEmployeesSelected;
+    if (this.allTimesheetEmployeesSelected) {
+      this.selectedTimesheetEmployeeIds = this.timesheetEmployees.map(e => e.id!);
+    } else {
+      this.selectedTimesheetEmployeeIds = [];
+    }
+    this.cdr.markForCheck();
+  }
+
+  toggleTimesheetEmployeeSelection(empId: number): void {
+    const idx = this.selectedTimesheetEmployeeIds.indexOf(empId);
+    if (idx > -1) {
+      this.selectedTimesheetEmployeeIds.splice(idx, 1);
+    } else {
+      this.selectedTimesheetEmployeeIds.push(empId);
+    }
+    this.allTimesheetEmployeesSelected = this.selectedTimesheetEmployeeIds.length === this.timesheetEmployees.length;
+    this.cdr.markForCheck();
+  }
+
+  isTimesheetEmployeeSelected(empId: number): boolean {
+    return this.selectedTimesheetEmployeeIds.includes(empId);
   }
 
   generateTimesheetsForPeriod(): void {
@@ -291,6 +299,8 @@ export class TimesheetApprovalComponent implements OnInit {
     }
     
     this.generating = true;
+    this.cdr.markForCheck();
+    
     const payload: any = {
       startDate: this.generateStartDate,
       endDate: this.generateEndDate,
@@ -303,60 +313,37 @@ export class TimesheetApprovalComponent implements OnInit {
         this.generating = false;
         this.showMessage(`Generated ${result.generated || 0} timesheets for ${this.selectedTimesheetEmployeeIds.length} employees!`, 'success');
         this.loadTimesheets();
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.generating = false;
         console.error('Error generating timesheets:', err);
         this.showMessage('Error generating timesheets. Please try again.', 'error');
+        this.cdr.markForCheck();
       }
     });
   }
 
-  showMessage(text: string, type: string): void {
-    this.message = text;
-    this.messageType = type;
-    setTimeout(() => {
-      this.message = '';
-      this.messageType = '';
-    }, 5000);
-  }
-
-  loadEmployees(): void {
-    this.employeeService.getAll().subscribe({
+  loadTimesheets(): void {
+    this.loading = true;
+    this.cdr.markForCheck();
+    
+    this.payrollService.getTimesheets().subscribe({
       next: (data) => {
-        this.employees = data.filter(e => e.active);
-        this.timesheetEmployees = [...this.employees];
-        this.loadDailyAttendance();
+        this.timesheets = data;
+        this.filteredTimesheets = data;
+        this.loading = false;
+        this.cdr.markForCheck();
       },
-      error: (err) => console.error('Error loading employees:', err)
+      error: (err) => {
+        console.error('Error loading timesheets:', err);
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
-  // Employee selection methods for Step 1: Generate Timesheet
-  toggleAllTimesheetEmployees(): void {
-    this.allTimesheetEmployeesSelected = !this.allTimesheetEmployeesSelected;
-    if (this.allTimesheetEmployeesSelected) {
-      this.selectedTimesheetEmployeeIds = this.timesheetEmployees.map(e => e.id!);
-    } else {
-      this.selectedTimesheetEmployeeIds = [];
-    }
-  }
-
-  toggleTimesheetEmployeeSelection(empId: number): void {
-    const idx = this.selectedTimesheetEmployeeIds.indexOf(empId);
-    if (idx > -1) {
-      this.selectedTimesheetEmployeeIds.splice(idx, 1);
-    } else {
-      this.selectedTimesheetEmployeeIds.push(empId);
-    }
-    this.allTimesheetEmployeesSelected = this.selectedTimesheetEmployeeIds.length === this.timesheetEmployees.length;
-  }
-
-  isTimesheetEmployeeSelected(empId: number): boolean {
-    return this.selectedTimesheetEmployeeIds.includes(empId);
-  }
-
-  // Employee selection methods for Step 2: Calculate Payroll
+  // Step 3: Calculate Payroll
   toggleAllCalcEmployees(): void {
     this.allCalcEmployeesSelected = !this.allCalcEmployeesSelected;
     if (this.allCalcEmployeesSelected) {
@@ -365,6 +352,7 @@ export class TimesheetApprovalComponent implements OnInit {
       this.selectedCalcEmployeeIds = [];
     }
     this.updateCalcSummary();
+    this.cdr.markForCheck();
   }
 
   toggleCalcEmployeeSelection(empId: number): void {
@@ -376,6 +364,7 @@ export class TimesheetApprovalComponent implements OnInit {
     }
     this.allCalcEmployeesSelected = this.selectedCalcEmployeeIds.length === this.payableEmployees.length;
     this.updateCalcSummary();
+    this.cdr.markForCheck();
   }
 
   isCalcEmployeeSelected(empId: number): boolean {
@@ -388,384 +377,15 @@ export class TimesheetApprovalComponent implements OnInit {
     this.totalNetPay = selected.reduce((sum, e) => sum + e.netAmount, 0);
   }
 
-  loadDailyAttendance(): void {
-    this.loading = true;
-    this.attendanceRecords = [];
-
-    let completed = 0;
-    const allRecords: AttendanceRecord[] = [];
-
-    if (this.employees.length === 0) {
-      this.loading = false;
-      this.calculateDailySummary();
-      return;
-    }
-
-    this.employees.forEach(emp => {
-      this.attendanceService.getByEmployeeAndDateRange(emp.id!, this.selectedDate, this.selectedDate).subscribe({
-        next: (records) => {
-          records.forEach(r => {
-            r.employee = emp;
-          });
-          allRecords.push(...records);
-          completed++;
-          if (completed === this.employees.length) {
-            this.attendanceRecords = allRecords;
-            this.calculateDailySummary();
-            this.loading = false;
-          }
-        },
-        error: () => {
-          completed++;
-          if (completed === this.employees.length) {
-            this.attendanceRecords = allRecords;
-            this.calculateDailySummary();
-            this.loading = false;
-          }
-        }
-      });
-    });
-  }
-
-  calculateDailySummary(): void {
-    this.totalEmployees = this.attendanceRecords.length;
-    this.totalHours = this.attendanceRecords.reduce((sum, r) => sum + (r.regularHours || 0), 0);
-    this.totalOvertime = this.attendanceRecords.reduce((sum, r) => sum + (r.overtimeHours || 0), 0);
-  }
-
-  onDateChange(): void {
-    this.loadDailyAttendance();
-  }
-
-  loadPayFrequencies(): void {
-    this.payrollService.getPayFrequencies().subscribe({
-      next: (data) => this.payFrequencies = data,
-      error: (err) => console.error('Error loading pay frequencies:', err)
-    });
-  }
-
-  loadTimesheets(): void {
-    this.loading = true;
-    this.payrollService.getTimesheets().subscribe({
-      next: (data) => {
-        this.timesheets = data;
-        this.filterTimesheets();
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading timesheets:', err);
-        this.loading = false;
-      }
-    });
-  }
-
-  filterTimesheets(): void {
-    this.filteredTimesheets = this.timesheets.filter(t => {
-      return this.filterStatus === 'ALL' || t.status === this.filterStatus;
-    });
-  }
-
-  switchTab(tab: 'attendance' | 'timesheet' | 'payables'): void {
-    this.activeTab = tab;
-    if (tab === 'timesheet' && this.timesheets.length === 0) {
-      this.loadTimesheets();
-    }
-    if (tab === 'payables') {
-      this.loadPayableEmployees();
-    }
-  }
-
-  openGenerateModal(): void {
-    this.showGenerateModal = true;
-  }
-
-  closeGenerateModal(): void {
-    this.showGenerateModal = false;
-  }
-
-  generateTimesheets(): void {
-    if (!this.generateStartDate || !this.generateEndDate) return;
-
-    this.generating = true;
-    this.payrollService.generateTimesheets(this.generateStartDate, this.generateEndDate).subscribe({
-      next: (result) => {
-        this.generating = false;
-        this.closeGenerateModal();
-        this.loadTimesheets();
-        this.showMessage(`Generated ${result.generated} timesheets successfully`, 'success');
-      },
-      error: (err) => {
-        this.generating = false;
-        console.error('Error generating timesheets:', err);
-        this.showMessage('Error generating timesheets', 'error');
-      }
-    });
-  }
-
-  toggleTimesheetSelection(id: number): void {
-    const idx = this.selectedTimesheetIds.indexOf(id);
-    if (idx > -1) {
-      this.selectedTimesheetIds.splice(idx, 1);
-    } else {
-      this.selectedTimesheetIds.push(id);
-    }
-  }
-
-  isTimesheetSelected(id: number): boolean {
-    return this.selectedTimesheetIds.includes(id);
-  }
-
-  getPendingTimesheets(): Timesheet[] {
-    return this.filteredTimesheets.filter(t => t.status === 'PENDING_APPROVAL');
-  }
-
-  areAllPendingSelected(): boolean {
-    const pending = this.getPendingTimesheets();
-    if (pending.length === 0) return false;
-    return pending.every(t => this.selectedTimesheetIds.includes(t.id!));
-  }
-
-  selectAllTimesheets(): void {
-    if (this.areAllPendingSelected()) {
-      this.selectedTimesheetIds = [];
-    } else {
-      this.selectedTimesheetIds = this.getPendingTimesheets().map(t => t.id!);
-    }
-  }
-
-  approveTimesheet(id: number): void {
-    this.payrollService.approveTimesheet(id, {}).subscribe({
-      next: () => {
-        this.loadTimesheets();
-        this.showMessage('Timesheet approved', 'success');
-      },
-      error: (err) => {
-        console.error('Error approving timesheet:', err);
-        this.showMessage('Error approving timesheet', 'error');
-      }
-    });
-  }
-
-  approveSelectedTimesheets(): void {
-    if (this.selectedTimesheetIds.length === 0) {
-      this.showMessage('Please select at least one timesheet', 'error');
-      return;
-    }
-
-    let completed = 0;
-    let errors = 0;
-    const total = this.selectedTimesheetIds.length;
-
-    this.selectedTimesheetIds.forEach(id => {
-      this.payrollService.approveTimesheet(id, {}).subscribe({
-        next: () => {
-          completed++;
-          if (completed === total) {
-            this.selectedTimesheetIds = [];
-            this.loadTimesheets();
-            if (errors === 0) {
-              this.showMessage(`Approved ${total} timesheets successfully`, 'success');
-            } else {
-              this.showMessage(`Approved ${total - errors} timesheets, ${errors} failed`, 'warning');
-            }
-          }
-        },
-        error: () => {
-          completed++;
-          errors++;
-          if (completed === total) {
-            this.selectedTimesheetIds = [];
-            this.loadTimesheets();
-            this.showMessage(`Approved ${total - errors} timesheets, ${errors} failed`, 'warning');
-          }
-        }
-      });
-    });
-  }
-
-  rejectTimesheet(id: number): void {
-    const remarks = prompt('Enter rejection reason:');
-    if (remarks === null) return;
-
-    this.payrollService.rejectTimesheet(id, { approverRemarks: remarks }).subscribe({
-      next: () => {
-        this.loadTimesheets();
-        this.showMessage('Timesheet rejected', 'success');
-      },
-      error: (err) => {
-        console.error('Error rejecting timesheet:', err);
-        this.showMessage('Error rejecting timesheet', 'error');
-      }
-    });
-  }
-
-  selectEmployee(ts: Timesheet): void {
-    this.selectedEmployee = {
-      empId: ts.employee?.employeeCode || `EMP${ts.employeeId}`,
-      name: this.getEmployeeName(ts),
-      status: ts.status
-    };
-  }
-
-  getEmployeeName(ts: Timesheet): string {
-    if (ts.employee) {
-      return `${ts.employee.firstName || ''} ${ts.employee.lastName || ''}`.trim() || 'Unknown';
-    }
-    return 'Unknown';
-  }
-
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'APPROVED': return 'approved';
-      case 'REJECTED': return 'rejected';
-      case 'PENDING_APPROVAL': return 'pending';
-      case 'PRESENT': return 'present';
-      case 'ABSENT': return 'absent';
-      case 'ON_LEAVE': return 'on-leave';
-      case 'HALF_DAY': return 'half-day';
-      case 'WEEKEND': return 'weekend';
-      case 'CALCULATED': return 'calculated';
-      case 'PROCESSED': return 'processed';
-      default: return 'draft';
-    }
-  }
-
-  getCountByStatus(status: string): number {
-    return this.timesheets.filter(t => t.status === status).length;
-  }
-
-  formatDateDisplay(dateStr: string): string {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-  }
-
-  viewTimesheetPdf(ts: Timesheet): void {
-    this.pdfTimesheet = ts;
-    this.pdfAttendanceRecords = [];
-    this.showTimesheetPdfModal = true;
-
-    if (ts.employee && ts.periodStartDate && ts.periodEndDate) {
-      this.attendanceService.getByEmployeeAndDateRange(
-        ts.employee.id!,
-        ts.periodStartDate,
-        ts.periodEndDate
-      ).subscribe({
-        next: (records) => {
-          this.pdfAttendanceRecords = records.sort((a, b) => 
-            new Date(a.attendanceDate).getTime() - new Date(b.attendanceDate).getTime()
-          );
-        },
-        error: (err) => console.error('Error loading attendance for PDF:', err)
-      });
-    }
-  }
-
-  closeTimesheetPdfModal(): void {
-    this.showTimesheetPdfModal = false;
-    this.pdfTimesheet = null;
-    this.pdfAttendanceRecords = [];
-  }
-
-  downloadTimesheetPdf(ts: Timesheet): void {
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    
-    doc.setFillColor(0, 51, 102);
-    doc.rect(0, 0, pageWidth, 35, 'F');
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.text('Single Employee Time Sheet', pageWidth / 2, 15, { align: 'center' });
-    doc.setFontSize(10);
-    doc.text('PayrollPro - Time & Payroll System', pageWidth / 2, 23, { align: 'center' });
-    
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(11);
-    
-    const empCode = ts.employee?.employeeCode || `EMP${ts.employeeId}`;
-    const empName = `${ts.employee?.firstName || ''} ${ts.employee?.lastName || ''}`.trim() || 'Unknown';
-    const periodStart = ts.periodStartDate ? new Date(ts.periodStartDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : '';
-    const periodEnd = ts.periodEndDate ? new Date(ts.periodEndDate).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : '';
-    
-    doc.setFontSize(10);
-    doc.text(`EMP ID:`, 14, 45);
-    doc.setFont('helvetica', 'bold');
-    doc.text(empCode, 40, 45);
-    doc.setFont('helvetica', 'normal');
-    
-    doc.text(`PERIOD:`, 120, 45);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${periodStart} - ${periodEnd}`, 145, 45);
-    doc.setFont('helvetica', 'normal');
-    
-    doc.text(`NAME:`, 14, 52);
-    doc.setFont('helvetica', 'bold');
-    doc.text(empName, 40, 52);
-    doc.setFont('helvetica', 'normal');
-    
-    doc.text(`TOTAL HOURS:`, 120, 52);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${ts.totalHours?.toFixed(1) || '0.0'}h`, 160, 52);
-    doc.setFont('helvetica', 'normal');
-    
-    const tableData = this.pdfAttendanceRecords.map(r => {
-      const date = new Date(r.attendanceDate);
-      const dateStr = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
-      const lunchHours = 1;
-      const regHours = r.regularHours || 0;
-      const otHours = r.overtimeHours || 0;
-      const totalHours = regHours + otHours;
-      
-      return [
-        dateStr,
-        r.clockIn || '-',
-        r.clockOut || '-',
-        lunchHours.toString(),
-        regHours.toFixed(1),
-        otHours.toFixed(1),
-        totalHours.toFixed(1)
-      ];
-    });
-    
-    autoTable(doc, {
-      startY: 60,
-      head: [['DATE', 'CLOCK IN', 'CLOCK OUT', 'LUNCH HOURS', 'REG HOURS', 'OT HOURS', 'TOTAL HOURS']],
-      body: tableData,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [255, 200, 87],
-        textColor: [0, 0, 0],
-        fontStyle: 'bold',
-        halign: 'center'
-      },
-      bodyStyles: {
-        halign: 'center'
-      },
-      alternateRowStyles: {
-        fillColor: [255, 248, 220]
-      },
-      columnStyles: {
-        0: { cellWidth: 28 },
-        1: { cellWidth: 25 },
-        2: { cellWidth: 25 },
-        3: { cellWidth: 25 },
-        4: { cellWidth: 25 },
-        5: { cellWidth: 25 },
-        6: { cellWidth: 28 }
-      }
-    });
-    
-    doc.save(`Timesheet_${empCode}_${periodStart.replace(/\//g, '-')}.pdf`);
-  }
-
   loadPayableEmployees(): void {
     this.payablesLoading = true;
     this.showPayrollSummary = false;
     this.employeeSalaryMap.clear();
+    this.cdr.markForCheck();
     
     if (this.employees.length === 0) {
       this.payablesLoading = false;
+      this.cdr.markForCheck();
       return;
     }
 
@@ -839,6 +459,7 @@ export class TimesheetApprovalComponent implements OnInit {
     
     this.calculatePayableSummary();
     this.payablesLoading = false;
+    this.cdr.markForCheck();
   }
 
   calculatePayableSummary(): void {
@@ -851,16 +472,14 @@ export class TimesheetApprovalComponent implements OnInit {
   togglePayableSelection(emp: PayableEmployee): void {
     emp.selected = !emp.selected;
     this.calculatePayableSummary();
-  }
-
-  isPayableSelected(empId: number): boolean {
-    return this.selectedPayableIds.includes(empId);
+    this.cdr.markForCheck();
   }
 
   selectAllPayables(): void {
     const allSelected = this.payableEmployees.every(e => e.selected);
     this.payableEmployees.forEach(e => e.selected = !allSelected);
     this.calculatePayableSummary();
+    this.cdr.markForCheck();
   }
 
   areAllPayablesSelected(): boolean {
@@ -905,6 +524,7 @@ export class TimesheetApprovalComponent implements OnInit {
     
     this.showPayrollSummary = true;
     this.showMessage(`Calculated payroll for ${selected.length} employees`, 'success');
+    this.cdr.markForCheck();
   }
 
   processPayables(): void {
@@ -924,38 +544,33 @@ export class TimesheetApprovalComponent implements OnInit {
     
     this.showPayrollSummary = false;
     this.calculatePayableSummary();
+    this.cdr.markForCheck();
   }
 
   closeSummary(): void {
     this.showPayrollSummary = false;
+    this.cdr.markForCheck();
+  }
+
+  showMessage(text: string, type: string): void {
+    this.message = text;
+    this.messageType = type;
+    this.cdr.markForCheck();
+    setTimeout(() => {
+      this.message = '';
+      this.messageType = '';
+      this.cdr.markForCheck();
+    }, 5000);
   }
 
   formatCurrency(amount: number): string {
     return '$' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
 
-  getOnTimeRate(): string {
-    if (this.attendanceRecords.length === 0) return '0.0';
-    const onTime = this.attendanceRecords.filter(r => {
-      if (!r.clockIn) return false;
-      const clockInTime = r.clockIn.split(':');
-      const hours = parseInt(clockInTime[0], 10);
-      const minutes = parseInt(clockInTime[1], 10);
-      return hours < 9 || (hours === 9 && minutes <= 0);
-    }).length;
-    return ((onTime / this.attendanceRecords.length) * 100).toFixed(1);
-  }
-
-  getLateArrivals(): string {
-    if (this.attendanceRecords.length === 0) return '0.0';
-    const late = this.attendanceRecords.filter(r => {
-      if (!r.clockIn) return false;
-      const clockInTime = r.clockIn.split(':');
-      const hours = parseInt(clockInTime[0], 10);
-      const minutes = parseInt(clockInTime[1], 10);
-      return hours > 9 || (hours === 9 && minutes > 0);
-    }).length;
-    return ((late / this.attendanceRecords.length) * 100).toFixed(1);
+  formatDateDisplay(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   getPayPeriodTypeLabel(): string {
@@ -968,22 +583,12 @@ export class TimesheetApprovalComponent implements OnInit {
     }
   }
 
-  getTimesheetTotalHours(): string {
-    const total = this.filteredTimesheets.reduce((sum, ts) => sum + (ts.totalHours || 0), 0);
-    return total.toFixed(2);
-  }
-
-  getPayableTotalHours(): string {
-    const total = this.payableEmployees.reduce((sum, emp) => sum + emp.hours, 0);
-    return total.toFixed(2);
-  }
-
-  getApprovalStatusClass(status: string | undefined): string {
-    if (!status) return 'pending';
-    switch (status.toUpperCase()) {
+  getStatusClass(status: string): string {
+    switch (status?.toUpperCase()) {
       case 'APPROVED': return 'approved';
       case 'REJECTED': return 'rejected';
-      case 'PENDING': return 'pending';
+      case 'PENDING': case 'PENDING_APPROVAL': return 'pending';
+      case 'PROCESSED': return 'processed';
       default: return 'pending';
     }
   }
