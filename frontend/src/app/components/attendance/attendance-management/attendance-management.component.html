@@ -1,663 +1,74 @@
-<div class="attendance-management">
+<div class="daily-attendance">
   <div class="page-header">
-    <h1><i class="fas fa-user-clock"></i> Daily Attendance</h1>
-    <p class="subtitle">Track employee attendance, manage rules, and link to payroll</p>
+    <h1>Daily Attendance</h1>
+    <p class="subtitle">View attendance records by date</p>
   </div>
 
   <div class="message-bar" *ngIf="message" [ngClass]="messageType">
     {{ message }}
   </div>
 
-  <div class="tabs">
-    <button [class.active]="activeTab === 'daily'" (click)="activeTab = 'daily'">
-      <i class="fas fa-calendar-day"></i> Daily Attendance
-    </button>
-    <button [class.active]="activeTab === 'rules'" (click)="activeTab = 'rules'">
-      <i class="fas fa-cog"></i> Attendance Rules
-    </button>
-    <button [class.active]="activeTab === 'project'" (click)="activeTab = 'project'; loadProjectTimeEntries()">
-      <i class="fas fa-project-diagram"></i> Project Time
-    </button>
-  </div>
-
-  <div class="tab-content" *ngIf="activeTab === 'daily'">
-    <div class="filters-bar">
-      <div class="filter-group">
-        <label>Date</label>
-        <input type="date" [(ngModel)]="selectedDate" (change)="onDateChange()" />
-      </div>
-      <div class="filter-group">
-        <label>Employee</label>
-        <select [(ngModel)]="selectedEmployeeId">
-          <option [ngValue]="null">All Employees</option>
-          <option *ngFor="let emp of employees" [ngValue]="emp.id">
-            {{ emp.firstName }} {{ emp.lastName }}
-          </option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label>Status</label>
-        <select [(ngModel)]="filterStatus">
-          <option value="">All Status</option>
-          <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
-        </select>
-      </div>
-      <div class="action-buttons">
-        <button class="btn-primary" (click)="openManualEntryModal()">
-          <i class="fas fa-plus"></i> Manual Entry
-        </button>
-        <button class="btn-secondary" (click)="openDirectEntryModal()">
-          <i class="fas fa-check-square"></i> Direct Entry
-        </button>
-        <button class="btn-secondary" (click)="openBulkUploadModal()">
-          <i class="fas fa-file-excel"></i> Bulk Upload
-        </button>
-        <button class="btn-secondary" (click)="openProjectTimeModal()">
-          <i class="fas fa-clock"></i> Project Time
-        </button>
-      </div>
+  <div class="summary-cards">
+    <div class="summary-card total">
+      <span class="card-label">Total Employees</span>
+      <span class="card-value">{{ employees.length }}</span>
     </div>
-
-    <div class="summary-cards">
-      <div class="summary-card present">
-        <div class="card-icon"><i class="fas fa-user-check"></i></div>
-        <div class="card-content">
-          <span class="card-value">{{ countByStatus('PRESENT') }}</span>
-          <span class="card-label">Present</span>
-        </div>
-      </div>
-      <div class="summary-card absent">
-        <div class="card-icon"><i class="fas fa-user-times"></i></div>
-        <div class="card-content">
-          <span class="card-value">{{ countByStatus('ABSENT') }}</span>
-          <span class="card-label">Absent</span>
-        </div>
-      </div>
-      <div class="summary-card on-leave">
-        <div class="card-icon"><i class="fas fa-umbrella-beach"></i></div>
-        <div class="card-content">
-          <span class="card-value">{{ countByStatus('ON_LEAVE') }}</span>
-          <span class="card-label">On Leave</span>
-        </div>
-      </div>
-      <div class="summary-card half-day">
-        <div class="card-icon"><i class="fas fa-hourglass-half"></i></div>
-        <div class="card-content">
-          <span class="card-value">{{ countByStatus('HALF_DAY') }}</span>
-          <span class="card-label">Half Day</span>
-        </div>
-      </div>
+    <div class="summary-card present">
+      <span class="card-label">Present</span>
+      <span class="card-value">{{ countByStatus('PRESENT') + countWorking() }}</span>
     </div>
-
-    <div class="table-container" >
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Employee</th>
-            <th>Date</th>
-            <th>Clock In</th>
-            <th>Clock Out</th>
-            <th>Regular Hrs</th>
-            <th>OT Hrs</th>
-            <th>Status</th>
-            <th>Method</th>
-            <th>Approval</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let record of getFilteredRecords()">
-            <td>
-              <div class="employee-info">
-                <span class="emp-name">{{ getEmployeeName(record.employee) }}</span>
-                <span class="emp-code">{{ record.employee?.employeeCode }}</span>
-              </div>
-            </td>
-            <td>{{ record.attendanceDate }}</td>
-            <td>{{ formatTime(record.clockIn) }}</td>
-            <td>{{ formatTime(record.clockOut) }}</td>
-            <td>{{ record.regularHours || 0 }}</td>
-            <td>{{ record.overtimeHours || 0 }}</td>
-            <td>
-              <span class="status-badge" [ngClass]="getStatusClass(record.status)">
-                {{ record.status }}
-              </span>
-            </td>
-            <td>{{ record.captureMethod }}</td>
-            <td>
-              <span class="approval-badge" [ngClass]="getApprovalClass(record.approvalStatus || 'APPROVED')">
-                {{ record.approvalStatus || 'APPROVED' }}
-              </span>
-            </td>
-            <td>
-              <button class="btn-icon" *ngIf="record.approvalStatus === 'PENDING'" (click)="approveRecord(record)" title="Approve">
-                <i class="fas fa-check"></i>
-              </button>
-            </td>
-          </tr>
-          <tr *ngIf="getFilteredRecords().length === 0">
-            <td colspan="10" class="no-data">No attendance records found for this date</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    </div>
-
-  <div class="tab-content" *ngIf="activeTab === 'rules'">
-    <div class="section-header">
-      <h2>Attendance Rules Configuration</h2>
-      <button class="btn-primary" (click)="openRulesModal()">
-        <i class="fas fa-plus"></i> Add Rule
-      </button>
-    </div>
-
-    <div class="rules-grid">
-      <div class="rule-card" *ngFor="let rule of attendanceRules" [class.default]="rule.isDefault">
-        <div class="rule-header">
-          <h3>{{ rule.ruleName }}</h3>
-          <span class="default-badge" *ngIf="rule.isDefault">Default</span>
-        </div>
-        <p class="rule-description">{{ rule.description }}</p>
-        <div class="rule-details">
-          <div class="detail-row">
-            <span class="label">Work Hours:</span>
-            <span class="value">{{ rule.standardStartTime }} - {{ rule.standardEndTime }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Regular Hours/Day:</span>
-            <span class="value">{{ rule.regularHoursPerDay }} hrs</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Grace Period:</span>
-            <span class="value">{{ rule.graceMinutesIn }} min in / {{ rule.graceMinutesOut }} min out</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Break Duration:</span>
-            <span class="value">{{ rule.breakDurationMinutes }} min ({{ rule.autoDeductBreak ? 'Auto-deduct' : 'Manual' }})</span>
-          </div>
-          <div class="detail-row">
-            <span class="label">Overtime:</span>
-            <span class="value">{{ rule.enableOvertime ? 'Enabled (' + rule.overtimeMultiplier + 'x)' : 'Disabled' }}</span>
-          </div>
-          <div class="detail-row" *ngIf="rule.enableOvertime">
-            <span class="label">Max OT:</span>
-            <span class="value">{{ rule.maxOvertimeHoursDaily }} hrs/day, {{ rule.maxOvertimeHoursWeekly }} hrs/week</span>
-          </div>
-        </div>
-        <div class="rule-actions">
-          <button class="btn-icon" (click)="editRule(rule)" title="Edit">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn-icon delete" (click)="deleteRule(rule)" title="Delete" *ngIf="!rule.isDefault">
-            <i class="fas fa-trash"></i>
-          </button>
-        </div>
-      </div>
-
-      <div class="rule-card add-new" (click)="openRulesModal()" *ngIf="attendanceRules.length === 0">
-        <i class="fas fa-plus-circle"></i>
-        <span>Add Attendance Rule</span>
-      </div>
+    <div class="summary-card absent">
+      <span class="card-label">Absent</span>
+      <span class="card-value">{{ employees.length - (countByStatus('PRESENT') + countWorking()) }}</span>
     </div>
   </div>
 
-  <div class="tab-content" *ngIf="activeTab === 'project'">
-    <div class="section-header">
-      <h2>Project-wise Time Entries</h2>
-      <button class="btn-primary" (click)="openProjectTimeModal()">
-        <i class="fas fa-plus"></i> Add Entry
-      </button>
+  <div class="attendance-table-section">
+    <div class="table-header">
+      <div class="date-label">
+        <i class="fas fa-calendar"></i>
+        <span>Attendance for {{ formatDisplayDate(selectedDate) }}</span>
+      </div>
+      <div class="filters">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search employee..." [(ngModel)]="searchTerm" />
+        </div>
+        <input type="date" [(ngModel)]="selectedDate" (change)="onDateChange()" class="date-picker" />
+      </div>
     </div>
 
-    <div class="table-container">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Employee</th>
-            <th>Project Code</th>
-            <th>Project Name</th>
-            <th>Date</th>
-            <th>Type</th>
-            <th>Hours</th>
-            <th>Billable</th>
-            <th>Task Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let entry of projectTimeEntries">
-            <td>{{ getEmployeeName(entry.employee) }}</td>
-            <td>{{ entry.projectCode }}</td>
-            <td>{{ entry.projectName }}</td>
-            <td>{{ entry.entryDate }}</td>
-            <td>{{ entry.entryType }}</td>
-            <td>{{ entry.hoursWorked || (entry.isPresent ? 'Present' : 'Absent') }}</td>
-            <td>{{ entry.billable ? 'Yes' : 'No' }}</td>
-            <td>{{ entry.taskDescription }}</td>
-          </tr>
-          <tr *ngIf="projectTimeEntries.length === 0">
-            <td colspan="8" class="no-data">No project time entries found</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" *ngIf="showManualEntryModal" (click)="closeManualEntryModal()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Manual Attendance Entry</h2>
-      <button class="close-btn" (click)="closeManualEntryModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Employee *</label>
-          <select [(ngModel)]="manualEntry.employeeId">
-            <option [ngValue]="null">Select Employee</option>
-            <option *ngFor="let emp of employees" [ngValue]="emp.id">
-              {{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})
-            </option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Date *</label>
-          <input type="date" [(ngModel)]="manualEntry.attendanceDate" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Clock In</label>
-          <input type="time" [(ngModel)]="manualEntry.clockIn" (change)="calculateHours()" />
-        </div>
-        <div class="form-group">
-          <label>Clock Out</label>
-          <input type="time" [(ngModel)]="manualEntry.clockOut" (change)="calculateHours()" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Status</label>
-          <select [(ngModel)]="manualEntry.status">
-            <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Break Duration (hrs)</label>
-          <input type="number" [(ngModel)]="manualEntry.breakDuration" step="0.5" (change)="calculateHours()" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Regular Hours</label>
-          <input type="number" [(ngModel)]="manualEntry.regularHours" step="0.25" />
-        </div>
-        <div class="form-group">
-          <label>Overtime Hours</label>
-          <input type="number" [(ngModel)]="manualEntry.overtimeHours" step="0.25" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Remarks</label>
-        <textarea [(ngModel)]="manualEntry.remarks" rows="2"></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" (click)="closeManualEntryModal()">Cancel</button>
-      <button class="btn-primary" (click)="saveManualEntry()" [disabled]="loading">
-        {{ loading ? 'Saving...' : 'Save Entry' }}
-      </button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" *ngIf="showDirectEntryModal" (click)="closeDirectEntryModal()">
-  <div class="modal modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Direct Attendance Entry (No Time)</h2>
-      <button class="close-btn" (click)="closeDirectEntryModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Date</label>
-          <input type="date" [(ngModel)]="directEntryDate" />
-        </div>
-        <div class="form-group">
-          <label>Status</label>
-          <select [(ngModel)]="directEntryStatus">
-            <option value="PRESENT">Present</option>
-            <option value="ABSENT">Absent</option>
-            <option value="HALF_DAY">Half Day</option>
-            <option value="ON_LEAVE">On Leave</option>
-          </select>
-        </div>
-      </div>
-      <div class="employee-selection">
-        <div class="selection-header">
-          <label>Select Employees</label>
-          <button class="btn-link" (click)="selectAllEmployeesForDirect()">
-            {{ directEntryEmployees.length === employees.length ? 'Deselect All' : 'Select All' }}
-          </button>
-        </div>
-        <div class="employee-checkboxes">
-          <label class="checkbox-item" *ngFor="let emp of employees">
-            <input type="checkbox" 
-                   [checked]="isEmployeeSelectedForDirect(emp.id!)"
-                   (change)="toggleDirectEntryEmployee(emp.id!)" />
-            <span>{{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})</span>
-          </label>
-        </div>
-      </div>
-      <p class="selected-count">{{ directEntryEmployees.length }} employee(s) selected</p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" (click)="closeDirectEntryModal()">Cancel</button>
-      <button class="btn-primary" (click)="saveDirectEntries()" [disabled]="loading || directEntryEmployees.length === 0">
-        {{ loading ? 'Saving...' : 'Mark Attendance' }}
-      </button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" *ngIf="showBulkUploadModal" (click)="closeBulkUploadModal()">
-  <div class="modal modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Bulk Upload Attendance (Excel/CSV)</h2>
-      <button class="close-btn" (click)="closeBulkUploadModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="upload-tabs">
-        <button [class.active]="bulkUploadMode === 'file'" (click)="bulkUploadMode = 'file'">
-          <i class="fas fa-file-upload"></i> Upload File
-        </button>
-        <button [class.active]="bulkUploadMode === 'paste'" (click)="bulkUploadMode = 'paste'">
-          <i class="fas fa-paste"></i> Paste Data
-        </button>
-      </div>
-
-      <div class="file-upload-section" *ngIf="bulkUploadMode === 'file'">
-        <div class="upload-instructions">
-          <h4>Upload Excel or CSV File</h4>
-          <p>Columns: EmployeeCode, Date (YYYY-MM-DD), ClockIn, ClockOut, Status, Remarks</p>
-        </div>
-        <div class="file-drop-zone" 
-             (dragover)="onDragOver($event)" 
-             (dragleave)="onDragLeave($event)" 
-             (drop)="onFileDrop($event)"
-             [class.dragover]="isDragOver">
-          <i class="fas fa-cloud-upload-alt"></i>
-          <p>Drag and drop your Excel/CSV file here</p>
-          <span>or</span>
-          <label class="file-select-btn">
-            <input type="file" accept=".xlsx,.xls,.csv" (change)="onFileSelect($event)" hidden />
-            Browse Files
-          </label>
-          <p class="file-types">Supported: .xlsx, .xls, .csv</p>
-        </div>
-        <div class="selected-file" *ngIf="selectedFileName">
-          <i class="fas fa-file-excel"></i>
-          <span>{{ selectedFileName }}</span>
-          <button class="btn-icon" (click)="clearSelectedFile()"><i class="fas fa-times"></i></button>
-        </div>
-        <button class="btn-secondary" (click)="parseFileUpload()" [disabled]="!selectedFileName">
-          <i class="fas fa-check"></i> Parse File
-        </button>
-      </div>
-
-      <div class="paste-section" *ngIf="bulkUploadMode === 'paste'">
-        <div class="upload-instructions">
-          <h4>Paste CSV Data</h4>
-          <p>Columns: EmployeeCode, Date, ClockIn, ClockOut, Status, Remarks</p>
-          <code>EMP001,2024-01-15,09:00,18:00,PRESENT,Regular day</code>
-        </div>
-        <div class="form-group">
-          <label>Paste CSV Data</label>
-          <textarea [(ngModel)]="bulkUploadText" rows="10" placeholder="EmployeeCode,Date,ClockIn,ClockOut,Status,Remarks
-EMP001,2024-01-15,09:00,18:00,PRESENT,
-EMP002,2024-01-15,09:15,17:45,PRESENT,Late arrival"></textarea>
-        </div>
-        <button class="btn-secondary" (click)="parseBulkUpload()">
-          <i class="fas fa-check"></i> Parse Data
-        </button>
-      </div>
-
-      <div class="parsed-preview" *ngIf="bulkEntries.length > 0">
-        <h4>Preview ({{ bulkEntries.length }} entries)</h4>
-        <table class="preview-table">
-          <thead>
-            <tr>
-              <th>Employee</th>
-              <th>Date</th>
-              <th>Clock In</th>
-              <th>Clock Out</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let entry of bulkEntries.slice(0, 5)">
-              <td>{{ entry.employeeCode }}</td>
-              <td>{{ entry.date }}</td>
-              <td>{{ entry.clockIn }}</td>
-              <td>{{ entry.clockOut }}</td>
-              <td>{{ entry.status }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <p *ngIf="bulkEntries.length > 5">...and {{ bulkEntries.length - 5 }} more entries</p>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" (click)="closeBulkUploadModal()">Cancel</button>
-      <button class="btn-primary" (click)="uploadBulkEntries()" [disabled]="loading || bulkEntries.length === 0">
-        {{ loading ? 'Uploading...' : 'Upload ' + bulkEntries.length + ' Entries' }}
-      </button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" *ngIf="showProjectTimeModal" (click)="closeProjectTimeModal()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>Project Time Entry</h2>
-      <button class="close-btn" (click)="closeProjectTimeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Employee *</label>
-          <select [(ngModel)]="projectEntry.employeeId">
-            <option [ngValue]="null">Select Employee</option>
-            <option *ngFor="let emp of employees" [ngValue]="emp.id">
-              {{ emp.firstName }} {{ emp.lastName }}
-            </option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Date *</label>
-          <input type="date" [(ngModel)]="projectEntry.entryDate" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Project Code *</label>
-          <input type="text" [(ngModel)]="projectEntry.projectCode" placeholder="PRJ-001" />
-        </div>
-        <div class="form-group">
-          <label>Project Name *</label>
-          <input type="text" [(ngModel)]="projectEntry.projectName" placeholder="Project Name" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Entry Type</label>
-          <select [(ngModel)]="projectEntry.entryType">
-            <option value="HOURLY">Hour-wise</option>
-            <option value="DAILY">Day-wise</option>
-          </select>
-        </div>
-        <div class="form-group" *ngIf="projectEntry.entryType === 'HOURLY'">
-          <label>Hours Worked</label>
-          <input type="number" [(ngModel)]="projectEntry.hoursWorked" step="0.5" />
-        </div>
-        <div class="form-group" *ngIf="projectEntry.entryType === 'DAILY'">
-          <label>Present</label>
-          <select [(ngModel)]="projectEntry.isPresent">
-            <option [ngValue]="true">Yes</option>
-            <option [ngValue]="false">No</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Billable</label>
-          <select [(ngModel)]="projectEntry.billable">
-            <option [ngValue]="true">Yes</option>
-            <option [ngValue]="false">No</option>
-          </select>
-        </div>
-        <div class="form-group" *ngIf="projectEntry.billable">
-          <label>Billable Rate ($/hr)</label>
-          <input type="number" [(ngModel)]="projectEntry.billableRate" step="0.01" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Task Description</label>
-        <textarea [(ngModel)]="projectEntry.taskDescription" rows="2"></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" (click)="closeProjectTimeModal()">Cancel</button>
-      <button class="btn-primary" (click)="saveProjectTimeEntry()" [disabled]="loading">
-        {{ loading ? 'Saving...' : 'Save Entry' }}
-      </button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" *ngIf="showRulesModal" (click)="closeRulesModal()">
-  <div class="modal modal-lg" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <h2>{{ editingRule ? 'Edit' : 'Add' }} Attendance Rule</h2>
-      <button class="close-btn" (click)="closeRulesModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Rule Name *</label>
-          <input type="text" [(ngModel)]="newRule.ruleName" placeholder="Standard Work Hours" />
-        </div>
-        <div class="form-group">
-          <label>Description</label>
-          <input type="text" [(ngModel)]="newRule.description" placeholder="Default attendance rule" />
-        </div>
-      </div>
-
-      <h4 class="section-title">Work Hours</h4>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Start Time</label>
-          <input type="time" [(ngModel)]="newRule.standardStartTime" />
-        </div>
-        <div class="form-group">
-          <label>End Time</label>
-          <input type="time" [(ngModel)]="newRule.standardEndTime" />
-        </div>
-        <div class="form-group">
-          <label>Regular Hours/Day</label>
-          <input type="number" [(ngModel)]="newRule.regularHoursPerDay" step="0.5" />
-        </div>
-        <div class="form-group">
-          <label>Weekly Hours Limit</label>
-          <input type="number" [(ngModel)]="newRule.weeklyHoursLimit" />
-        </div>
-      </div>
-
-      <h4 class="section-title">Grace Period</h4>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Grace Minutes (In)</label>
-          <input type="number" [(ngModel)]="newRule.graceMinutesIn" />
-        </div>
-        <div class="form-group">
-          <label>Grace Minutes (Out)</label>
-          <input type="number" [(ngModel)]="newRule.graceMinutesOut" />
-        </div>
-      </div>
-
-      <h4 class="section-title">Break Settings</h4>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Break Duration (minutes)</label>
-          <input type="number" [(ngModel)]="newRule.breakDurationMinutes" />
-        </div>
-        <div class="form-group checkbox-group">
-          <label>
-            <input type="checkbox" [(ngModel)]="newRule.autoDeductBreak" />
-            Auto-deduct Break
-          </label>
-        </div>
-      </div>
-
-      <h4 class="section-title">Overtime Settings</h4>
-      <div class="form-row">
-        <div class="form-group checkbox-group">
-          <label>
-            <input type="checkbox" [(ngModel)]="newRule.enableOvertime" />
-            Enable Overtime
-          </label>
-        </div>
-        <div class="form-group" *ngIf="newRule.enableOvertime">
-          <label>OT Multiplier</label>
-          <input type="number" [(ngModel)]="newRule.overtimeMultiplier" step="0.1" />
-        </div>
-      </div>
-      <div class="form-row" *ngIf="newRule.enableOvertime">
-        <div class="form-group">
-          <label>Max OT Hours/Day</label>
-          <input type="number" [(ngModel)]="newRule.maxOvertimeHoursDaily" step="0.5" />
-        </div>
-        <div class="form-group">
-          <label>Max OT Hours/Week</label>
-          <input type="number" [(ngModel)]="newRule.maxOvertimeHoursWeekly" />
-        </div>
-      </div>
-
-      <h4 class="section-title">Half Day Settings</h4>
-      <div class="form-row">
-        <div class="form-group checkbox-group">
-          <label>
-            <input type="checkbox" [(ngModel)]="newRule.halfDayEnabled" />
-            Enable Half Day
-          </label>
-        </div>
-        <div class="form-group" *ngIf="newRule.halfDayEnabled">
-          <label>Half Day Hours</label>
-          <input type="number" [(ngModel)]="newRule.halfDayHours" step="0.5" />
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group checkbox-group">
-          <label>
-            <input type="checkbox" [(ngModel)]="newRule.isActive" />
-            Active
-          </label>
-        </div>
-        <div class="form-group checkbox-group">
-          <label>
-            <input type="checkbox" [(ngModel)]="newRule.isDefault" />
-            Set as Default
-          </label>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" (click)="closeRulesModal()">Cancel</button>
-      <button class="btn-primary" (click)="saveRule()" [disabled]="loading">
-        {{ loading ? 'Saving...' : 'Save Rule' }}
-      </button>
-    </div>
+    <table class="attendance-table">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Clock In</th>
+          <th>Clock Out</th>
+          <th>Hours</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let record of getFilteredRecords()">
+          <td>
+            <div class="employee-cell">
+              <div class="avatar">{{ getInitials(record.employee) }}</div>
+              <span class="name">{{ getEmployeeName(record.employee) }}</span>
+            </div>
+          </td>
+          <td>{{ formatTime(record.clockIn) }}</td>
+          <td>{{ formatTime(record.clockOut) }}</td>
+          <td>{{ calculateHoursDisplay(record) }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusBadgeClass(record)">
+              {{ getDisplayStatus(record) }}
+            </span>
+          </td>
+        </tr>
+        <tr *ngIf="getFilteredRecords().length === 0">
+          <td colspan="5" class="no-data">No attendance records found for this date</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>

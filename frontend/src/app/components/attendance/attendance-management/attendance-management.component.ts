@@ -26,6 +26,7 @@ export class AttendanceManagementComponent implements OnInit {
   selectedDate: string = new Date().toISOString().split('T')[0];
   selectedEmployeeId: number | null = null;
   filterStatus = '';
+  searchTerm = '';
 
   showManualEntryModal = false;
   showBulkUploadModal = false;
@@ -125,7 +126,57 @@ export class AttendanceManagementComponent implements OnInit {
     if (this.selectedEmployeeId) {
       records = records.filter(r => r.employee?.id === this.selectedEmployeeId);
     }
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
+      records = records.filter(r => {
+        const name = this.getEmployeeName(r.employee).toLowerCase();
+        return name.includes(term);
+      });
+    }
     return records;
+  }
+
+  countWorking(): number {
+    return this.attendanceRecords.filter(r => r.clockIn && !r.clockOut).length;
+  }
+
+  formatDisplayDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr + 'T00:00:00');
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  }
+
+  getInitials(emp: any): string {
+    if (!emp) return '??';
+    const first = emp.firstName?.charAt(0) || '';
+    const last = emp.lastName?.charAt(0) || '';
+    return (first + last).toUpperCase() || '??';
+  }
+
+  calculateHoursDisplay(record: AttendanceRecord): string {
+    if (!record.clockIn || !record.clockOut) return '—';
+    const totalHours = (record.regularHours || 0) + (record.overtimeHours || 0);
+    if (totalHours > 0) return totalHours.toFixed(1);
+    return '—';
+  }
+
+  getDisplayStatus(record: AttendanceRecord): string {
+    if (record.clockIn && !record.clockOut) return 'Working';
+    if (record.approvalStatus === 'PENDING') return 'Pending';
+    if (record.approvalStatus === 'APPROVED') return 'Approved';
+    return record.status || 'Present';
+  }
+
+  getStatusBadgeClass(record: AttendanceRecord): string {
+    if (record.clockIn && !record.clockOut) return 'working';
+    if (record.approvalStatus === 'PENDING') return 'pending';
+    if (record.approvalStatus === 'APPROVED') return 'approved';
+    return 'present';
   }
 
   openManualEntryModal(): void {
