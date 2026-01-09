@@ -114,9 +114,12 @@ export class EmployeeDetailComponent implements OnInit {
       this.loading = false;
     }
     
-    // Listen for query param changes (for edit mode toggle)
+    // Listen for query param changes (for edit mode toggle) - only for existing employees
     this.route.queryParamMap.subscribe(params => {
-      this.isEditMode = params.get('edit') === 'true';
+      // Don't override isEditMode for new employees - they should always be in edit mode
+      if (!this.isNewEmployee) {
+        this.isEditMode = params.get('edit') === 'true';
+      }
     });
   }
 
