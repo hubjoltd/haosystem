@@ -76,17 +76,24 @@ export class LeaveRequestsComponent implements OnInit {
   }
 
   loadLeaveTypes(): void {
-    this.leaveService.getActiveLeaveTypes().subscribe({
+    this.leaveService.getActiveLeaveTypes().pipe(
+      finalize(() => this.cdr.markForCheck())
+    ).subscribe({
       next: (data) => {
         this.leaveTypes = data;
-      }
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('Error loading leave types:', err)
     });
   }
 
   loadEmployees(): void {
-    this.employeeService.getActive().subscribe({
+    this.employeeService.getActive().pipe(
+      finalize(() => this.cdr.markForCheck())
+    ).subscribe({
       next: (data) => {
         this.employees = data;
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error loading employees:', err)
     });
@@ -94,16 +101,21 @@ export class LeaveRequestsComponent implements OnInit {
 
   onEmployeeChange(): void {
     if (this.formData.employeeId) {
-      this.leaveService.getEmployeeBalancesByYear(this.formData.employeeId, new Date().getFullYear()).subscribe({
+      this.leaveService.getEmployeeBalancesByYear(this.formData.employeeId, new Date().getFullYear()).pipe(
+        finalize(() => this.cdr.markForCheck())
+      ).subscribe({
         next: (balances) => {
           this.employeeBalances = balances;
+          this.cdr.markForCheck();
         },
         error: () => {
           this.employeeBalances = [];
+          this.cdr.markForCheck();
         }
       });
     } else {
       this.employeeBalances = [];
+      this.cdr.markForCheck();
     }
   }
 
