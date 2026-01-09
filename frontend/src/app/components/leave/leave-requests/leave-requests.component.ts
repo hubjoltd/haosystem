@@ -30,7 +30,12 @@ export class LeaveRequestsComponent implements OnInit {
     endDate: '',
     dayType: 'FULL_DAY',
     reason: '',
-    emergencyContact: ''
+    emergencyContact: '',
+    // Hourly leave fields
+    startTime: '',
+    endTime: '',
+    totalHours: 0,
+    isHourlyLeave: false
   };
 
   showApprovalModal = false;
@@ -118,10 +123,45 @@ export class LeaveRequestsComponent implements OnInit {
       endDate: '',
       dayType: 'FULL_DAY',
       reason: '',
-      emergencyContact: ''
+      emergencyContact: '',
+      startTime: '',
+      endTime: '',
+      totalHours: 0,
+      isHourlyLeave: false
     };
     this.employeeBalances = [];
     this.showModal = true;
+  }
+
+  getSelectedLeaveType(): LeaveType | null {
+    if (!this.formData.leaveTypeId) return null;
+    return this.leaveTypes.find(lt => lt.id === this.formData.leaveTypeId) || null;
+  }
+
+  isHourlyLeaveType(): boolean {
+    const lt = this.getSelectedLeaveType();
+    return lt?.timeUnit === 'HOURS' || lt?.allowHourlyLeave === true;
+  }
+
+  onLeaveTypeChange(): void {
+    this.formData.isHourlyLeave = this.isHourlyLeaveType();
+  }
+
+  calculateHours(): void {
+    if (this.formData.startTime && this.formData.endTime) {
+      const start = this.parseTime(this.formData.startTime);
+      const end = this.parseTime(this.formData.endTime);
+      if (end > start) {
+        this.formData.totalHours = Math.round((end - start) / 60 * 100) / 100;
+      } else {
+        this.formData.totalHours = 0;
+      }
+    }
+  }
+
+  parseTime(time: string): number {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
   }
 
   closeModal(): void {
@@ -132,9 +172,23 @@ export class LeaveRequestsComponent implements OnInit {
   submitRequest(): void {
     if (this.saving) return;
     
-    if (!this.formData.employeeId || !this.formData.leaveTypeId || !this.formData.startDate || !this.formData.endDate) {
-      alert('Please fill in all required fields');
-      return;
+    // Validate based on leave type (hourly vs day-based)
+    if (this.isHourlyLeaveType()) {
+      if (!this.formData.employeeId || !this.formData.leaveTypeId || !this.formData.startDate || !this.formData.startTime || !this.formData.endTime) {
+        alert('Please fill in all required fields');
+        return;
+      }
+      if (this.formData.totalHours <= 0) {
+        alert('Please select valid start and end times');
+        return;
+      }
+      // Set endDate same as startDate for hourly leave
+      this.formData.endDate = this.formData.startDate;
+    } else {
+      if (!this.formData.employeeId || !this.formData.leaveTypeId || !this.formData.startDate || !this.formData.endDate) {
+        alert('Please fill in all required fields');
+        return;
+      }
     }
 
     this.saving = true;

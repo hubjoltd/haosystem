@@ -1,3 +1,10 @@
+.readonly-field {
+  background-color: #f5f5f5 !important;
+  color: #666 !important;
+  cursor: not-allowed;
+  border-color: #ddd !important;
+}
+
 .leave-requests-container {
   padding: 24px;
 
