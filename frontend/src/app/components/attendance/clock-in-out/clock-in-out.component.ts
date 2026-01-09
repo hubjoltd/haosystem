@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
@@ -19,6 +19,7 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
   selectedEmployee: Employee | null = null;
   loading = false;
   loadingRecord = false;
+  loadingEmployees = true;
   message = '';
   messageType = '';
   
@@ -37,7 +38,9 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
 
   constructor(
     private attendanceService: AttendanceService,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -66,16 +69,25 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
   }
 
   loadEmployees(): void {
+    this.loadingEmployees = true;
     this.employeeService.getAll().subscribe({
       next: (data: Employee[]) => {
-        this.employees = data.filter((e: Employee) => e.active);
-        if (this.employees.length > 0 && !this.selectedEmployeeId) {
-          this.selectedEmployeeId = this.employees[0].id!;
-          this.selectedEmployee = this.employees[0];
-          this.loadEmployeeTodayRecord();
-        }
+        this.ngZone.run(() => {
+          this.employees = data.filter((e: Employee) => e.active);
+          if (this.employees.length > 0 && !this.selectedEmployeeId) {
+            this.selectedEmployeeId = this.employees[0].id!;
+            this.selectedEmployee = this.employees[0];
+            this.loadEmployeeTodayRecord();
+          }
+          this.loadingEmployees = false;
+          this.cdr.detectChanges();
+        });
       },
-      error: (err: any) => console.error('Error loading employees:', err)
+      error: (err: any) => {
+        console.error('Error loading employees:', err);
+        this.loadingEmployees = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -83,7 +95,10 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     const today = new Date().toISOString().split('T')[0];
     this.attendanceService.getByDate(today).subscribe({
       next: (records: AttendanceRecord[]) => {
-        this.todayActivities = records.filter(r => r.clockIn || r.clockOut);
+        this.ngZone.run(() => {
+          this.todayActivities = records.filter(r => r.clockIn || r.clockOut);
+          this.cdr.detectChanges();
+        });
       },
       error: (err: any) => console.error('Error loading today activities:', err)
     });
@@ -111,15 +126,19 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     const today = new Date().toISOString().split('T')[0];
     this.attendanceService.getByEmployeeAndDateRange(this.selectedEmployeeId, today, today).subscribe({
       next: (records: AttendanceRecord[]) => {
-        this.todayRecord = records.length > 0 ? records[0] : null;
-        this.loadingRecord = false;
-        if (this.todayRecord && this.todayRecord.clockIn && !this.todayRecord.clockOut) {
-          this.startTimerFromClockIn(this.todayRecord.clockIn);
-        }
+        this.ngZone.run(() => {
+          this.todayRecord = records.length > 0 ? records[0] : null;
+          this.loadingRecord = false;
+          if (this.todayRecord && this.todayRecord.clockIn && !this.todayRecord.clockOut) {
+            this.startTimerFromClockIn(this.todayRecord.clockIn);
+          }
+          this.cdr.detectChanges();
+        });
       },
       error: () => {
         this.todayRecord = null;
         this.loadingRecord = false;
+        this.cdr.detectChanges();
       }
     });
   }

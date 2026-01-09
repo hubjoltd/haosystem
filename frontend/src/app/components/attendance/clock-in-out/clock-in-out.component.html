@@ -23,10 +23,12 @@
         <div class="section-header">
           <i class="fas fa-user"></i>
           <span>Select Employee</span>
+          <i class="fas fa-spinner fa-spin loading-icon" *ngIf="loadingEmployees"></i>
         </div>
         
-        <select [(ngModel)]="selectedEmployeeId" (ngModelChange)="onEmployeeChange()" class="employee-select">
-          <option [ngValue]="null">-- Select Employee --</option>
+        <select [(ngModel)]="selectedEmployeeId" (ngModelChange)="onEmployeeChange()" class="employee-select" [disabled]="loadingEmployees">
+          <option [ngValue]="null" *ngIf="loadingEmployees">Loading employees...</option>
+          <option [ngValue]="null" *ngIf="!loadingEmployees">-- Select Employee --</option>
           <option *ngFor="let emp of employees" [ngValue]="emp.id">
             {{ emp.firstName }} {{ emp.lastName }}
           </option>

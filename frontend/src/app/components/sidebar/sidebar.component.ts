@@ -168,18 +168,17 @@ export class SidebarComponent implements OnInit {
           permissionKey: 'Payroll',
           children: [
             { icon: 'fas fa-clock', label: 'Time Clock', route: '/app/attendance/clock-in-out' },
-            { icon: 'fas fa-calendar-week', label: 'Weekly Attendance', route: '/app/attendance/weekly-timesheet' },
+            { icon: 'fas fa-calendar-week', label: 'Weekly Timesheet', route: '/app/attendance/weekly-timesheet' },
             { icon: 'fas fa-user-clock', label: 'Daily Attendance', route: '/app/attendance/management' },
-            { icon: 'fas fa-check-circle', label: 'Attendance Approval', route: '/app/payroll/timesheets' },
+            { icon: 'fas fa-check-circle', label: 'Attendance Approval', route: '/app/attendance/approval' },
             {
               icon: 'fas fa-tasks',
               label: 'Payroll Workflow',
               expanded: false,
               children: [
-                { icon: 'fas fa-clipboard-check', label: 'Attendance Approval', route: '/app/payroll/timesheets' },
-                { icon: 'fas fa-file-alt', label: 'Generate Timesheet', route: '/app/payroll/timesheets' },
-                { icon: 'fas fa-calculator', label: 'Payroll Calculate', route: '/app/payroll/timesheets' },
-                { icon: 'fas fa-cog', label: 'Process Payroll', route: '/app/payroll/timesheets' },
+                { icon: 'fas fa-clipboard-check', label: 'Timesheet Approval', route: '/app/payroll/timesheets' },
+                { icon: 'fas fa-calculator', label: 'Payroll Calculate', route: '/app/payroll/calculate' },
+                { icon: 'fas fa-cog', label: 'Process Payroll', route: '/app/payroll/process' },
                 { icon: 'fas fa-history', label: 'Payroll History', route: '/app/payroll/history' }
               ]
             }

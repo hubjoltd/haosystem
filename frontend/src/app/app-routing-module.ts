@@ -88,6 +88,7 @@ import { CustomReportBuilderComponent } from './components/mis-dashboards/custom
 import { ClockInOutComponent } from './components/attendance/clock-in-out/clock-in-out.component';
 import { AttendanceManagementComponent } from './components/attendance/attendance-management/attendance-management.component';
 import { WeeklyTimesheetComponent } from './components/attendance/weekly-timesheet/weekly-timesheet.component';
+import { AttendanceApprovalComponent } from './components/attendance/attendance-approval/attendance-approval.component';
 import { LeaveTypesComponent } from './components/leave/leave-types/leave-types.component';
 import { LeaveRequestsComponent } from './components/leave/leave-requests/leave-requests.component';
 import { HolidayCalendarComponent } from './components/leave/holiday-calendar/holiday-calendar.component';
@@ -215,6 +216,7 @@ const routes: Routes = [
       { path: 'attendance/clock-in-out', component: ClockInOutComponent },
       { path: 'attendance/management', component: AttendanceManagementComponent },
       { path: 'attendance/weekly-timesheet', component: WeeklyTimesheetComponent },
+      { path: 'attendance/approval', component: AttendanceApprovalComponent },
       { path: 'leave/types', component: LeaveTypesComponent },
       { path: 'leave/requests', component: LeaveRequestsComponent },
       { path: 'leave/holidays', component: HolidayCalendarComponent },
