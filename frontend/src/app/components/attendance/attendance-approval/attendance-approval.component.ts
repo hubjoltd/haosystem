@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
 import { EmployeeService, Employee } from '../../../services/employee.service';
 import { PayrollService } from '../../../services/payroll.service';
+import { ToastService } from '../../../services/toast.service';
+import { finalize, forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-attendance-approval',
@@ -16,9 +18,7 @@ export class AttendanceApprovalComponent implements OnInit {
   attendanceRecords: AttendanceRecord[] = [];
   filteredRecords: AttendanceRecord[] = [];
   employees: Employee[] = [];
-  loading = false;
-  message = '';
-  messageType = '';
+  loading = true;
 
   selectedIds: number[] = [];
   filterStatus = 'PENDING';
@@ -27,32 +27,31 @@ export class AttendanceApprovalComponent implements OnInit {
   constructor(
     private attendanceService: AttendanceService,
     private employeeService: EmployeeService,
-    private payrollService: PayrollService
+    private payrollService: PayrollService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
-    this.loadEmployees();
-    this.loadAttendanceRecords();
+    this.loadData();
   }
 
-  loadEmployees(): void {
-    this.employeeService.getAll().subscribe({
-      next: (data) => this.employees = data,
-      error: (err) => console.error('Error loading employees:', err)
-    });
-  }
-
-  loadAttendanceRecords(): void {
+  loadData(): void {
     this.loading = true;
-    this.attendanceService.getAllRecords().subscribe({
-      next: (data: AttendanceRecord[]) => {
-        this.attendanceRecords = data;
+    forkJoin({
+      employees: this.employeeService.getAll(),
+      records: this.attendanceService.getAllRecords()
+    }).pipe(
+      finalize(() => this.loading = false)
+    ).subscribe({
+      next: (data) => {
+        this.employees = data.employees;
+        this.attendanceRecords = data.records;
         this.filterRecords();
-        this.loading = false;
+        this.toastService.info('Attendance records loaded');
       },
-      error: (err: any) => {
-        console.error('Error loading attendance:', err);
-        this.loading = false;
+      error: (err) => {
+        console.error('Error loading data:', err);
+        this.toastService.error('Failed to load attendance records');
       }
     });
   }
@@ -111,16 +110,17 @@ export class AttendanceApprovalComponent implements OnInit {
 
   approveRecord(id: number): void {
     this.loading = true;
-    this.attendanceService.approve(id).subscribe({
+    this.attendanceService.approve(id).pipe(
+      finalize(() => this.loading = false)
+    ).subscribe({
       next: () => {
-        this.showMessage('Attendance approved successfully', 'success');
-        this.loadAttendanceRecords();
+        this.toastService.success('Attendance approved successfully');
+        this.loadData();
         this.generateTimesheetForRecord(id);
       },
       error: (err) => {
         console.error('Error approving:', err);
-        this.showMessage('Error approving attendance', 'error');
-        this.loading = false;
+        this.toastService.error('Failed to approve attendance');
       }
     });
   }
@@ -130,15 +130,16 @@ export class AttendanceApprovalComponent implements OnInit {
     if (remarks === null) return;
 
     this.loading = true;
-    this.attendanceService.reject(id, remarks).subscribe({
+    this.attendanceService.reject(id, remarks).pipe(
+      finalize(() => this.loading = false)
+    ).subscribe({
       next: () => {
-        this.showMessage('Attendance rejected', 'success');
-        this.loadAttendanceRecords();
+        this.toastService.success('Attendance rejected');
+        this.loadData();
       },
       error: (err) => {
         console.error('Error rejecting:', err);
-        this.showMessage('Error rejecting attendance', 'error');
-        this.loading = false;
+        this.toastService.error('Failed to reject attendance');
       }
     });
   }
@@ -147,17 +148,18 @@ export class AttendanceApprovalComponent implements OnInit {
     if (this.selectedIds.length === 0) return;
 
     this.loading = true;
-    this.attendanceService.bulkApprove(this.selectedIds).subscribe({
+    this.attendanceService.bulkApprove(this.selectedIds).pipe(
+      finalize(() => this.loading = false)
+    ).subscribe({
       next: () => {
-        this.showMessage(`Approved ${this.selectedIds.length} attendance records`, 'success');
+        this.toastService.success(`Approved ${this.selectedIds.length} attendance records`);
         this.generateTimesheetsForApproved(this.selectedIds);
         this.selectedIds = [];
-        this.loadAttendanceRecords();
+        this.loadData();
       },
       error: (err) => {
         console.error('Error bulk approving:', err);
-        this.showMessage('Error approving attendance records', 'error');
-        this.loading = false;
+        this.toastService.error('Failed to approve attendance records');
       }
     });
   }
@@ -171,30 +173,31 @@ export class AttendanceApprovalComponent implements OnInit {
     this.loading = true;
     let completed = 0;
     let errors = 0;
+    const total = this.selectedIds.length;
 
     this.selectedIds.forEach(id => {
       this.attendanceService.reject(id, remarks).subscribe({
         next: () => {
           completed++;
-          this.checkBulkComplete(completed, errors, this.selectedIds.length, 'rejected');
+          this.checkBulkComplete(completed, errors, total);
         },
         error: () => {
           errors++;
-          this.checkBulkComplete(completed, errors, this.selectedIds.length, 'rejected');
+          this.checkBulkComplete(completed, errors, total);
         }
       });
     });
   }
 
-  checkBulkComplete(completed: number, errors: number, total: number, action: string): void {
+  checkBulkComplete(completed: number, errors: number, total: number): void {
     if (completed + errors === total) {
       this.loading = false;
       this.selectedIds = [];
-      this.loadAttendanceRecords();
+      this.loadData();
       if (errors === 0) {
-        this.showMessage(`${action} ${total} records successfully`, 'success');
+        this.toastService.success(`Rejected ${total} records successfully`);
       } else {
-        this.showMessage(`${action} ${completed} records, ${errors} failed`, 'warning');
+        this.toastService.warning(`Rejected ${completed} records, ${errors} failed`);
       }
     }
   }
@@ -237,6 +240,7 @@ export class AttendanceApprovalComponent implements OnInit {
     }).subscribe({
       next: (result) => {
         console.log('Timesheets auto-generated:', result);
+        this.toastService.success('Timesheets generated automatically');
       },
       error: (err) => {
         console.error('Error auto-generating timesheets:', err);
@@ -273,14 +277,14 @@ export class AttendanceApprovalComponent implements OnInit {
 
   formatDate(date: string): string {
     if (!date) return '-';
-    const d = new Date(date);
+    const d = new Date(date + 'T00:00:00');
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   calculateHours(record: AttendanceRecord): string {
     const total = (record.regularHours || 0) + (record.overtimeHours || 0);
     if (total > 0) return total.toFixed(2);
-    return '-';
+    return '—';
   }
 
   getStatusClass(status: string): string {
@@ -290,11 +294,5 @@ export class AttendanceApprovalComponent implements OnInit {
       case 'REJECTED': return 'rejected';
       default: return '';
     }
-  }
-
-  showMessage(msg: string, type: string): void {
-    this.message = msg;
-    this.messageType = type;
-    setTimeout(() => this.message = '', 4000);
   }
 }
