@@ -607,6 +607,25 @@
         color: #a06800;
         &::before { background: #e09000; }
       }
+      
+      &.released {
+        background: linear-gradient(135deg, #d0e8f5, #b8e0f0);
+        color: #0066a0;
+        &::before { background: #0088cc; }
+      }
+    }
+    
+    tr.processed-row {
+      background: #f5f5f5 !important;
+      opacity: 0.7;
+      
+      td {
+        color: #888;
+      }
+      
+      &:hover {
+        background: #f0f0f0 !important;
+      }
     }
 
     .no-data {

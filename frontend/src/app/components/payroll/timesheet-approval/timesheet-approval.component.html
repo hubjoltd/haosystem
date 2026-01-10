@@ -242,7 +242,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let ts of generatedTimesheets; let i = index">
+            <tr *ngFor="let ts of generatedTimesheets; let i = index" [class.processed-row]="isEmployeeAlreadyProcessed(ts.employeeId)">
               <td>{{ i + 1 }}</td>
               <td class="emp-id">{{ ts.employeeCode }}</td>
               <td class="emp-name">{{ ts.firstName }}</td>
@@ -252,7 +252,13 @@
               <td class="hours">{{ ts.totalOvertimeHours.toFixed(1) }}</td>
               <td class="hours total">{{ ts.totalHours.toFixed(1) }}</td>
               <td>
-                <span class="status-badge approved">{{ ts.status }}</span>
+                <span class="status-badge" [ngClass]="{
+                  'approved': !isEmployeeAlreadyProcessed(ts.employeeId),
+                  'processed': getEmployeePayrollStatus(ts.employeeId) === 'Processed',
+                  'released': getEmployeePayrollStatus(ts.employeeId) === 'Released'
+                }">
+                  {{ isEmployeeAlreadyProcessed(ts.employeeId) ? getEmployeePayrollStatus(ts.employeeId) : ts.status }}
+                </span>
               </td>
               <td class="action-col">
                 <button class="btn btn-sm btn-info" (click)="viewTimesheet(ts)" title="View Timesheet">

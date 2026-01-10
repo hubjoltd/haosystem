@@ -240,11 +240,37 @@ export class TimesheetApprovalComponent implements OnInit {
       return;
     }
     
+    // Get already processed/released employee IDs for this period
+    const processedRecords = this.payrollService.getProcessedPayrollRecords();
+    const alreadyProcessedEmployeeIds = new Set(
+      processedRecords
+        .filter(r => r.periodStart === this.generateStartDate && 
+                    (r.status === 'Processed' || r.status === 'Released'))
+        .map(r => r.employeeId)
+    );
+    
+    // Filter out already processed employees from timesheets
+    const eligibleTimesheets = this.generatedTimesheets.filter(
+      ts => !alreadyProcessedEmployeeIds.has(ts.employeeId)
+    );
+    
+    if (eligibleTimesheets.length === 0) {
+      this.payrollCalcLoading = false;
+      this.step3TotalGross = 0;
+      this.step3TotalTax = 0;
+      this.step3TotalNetPay = 0;
+      this.step3TotalHours = 0;
+      this.step3EmployeeCount = 0;
+      this.showMessage('All employees for this period have already been processed', 'info');
+      this.cdr.markForCheck();
+      return;
+    }
+    
     let completed = 0;
-    const total = this.generatedTimesheets.length;
+    const total = eligibleTimesheets.length;
     const tempRows: PayrollCalculationRow[] = [];
     
-    this.generatedTimesheets.forEach((ts, idx) => {
+    eligibleTimesheets.forEach((ts, idx) => {
       this.employeeService.getCurrentSalary(ts.employeeId).subscribe({
         next: (salary) => {
           const hourlyRate = salary?.hourlyRate || 0;
@@ -318,12 +344,18 @@ export class TimesheetApprovalComponent implements OnInit {
     rows.sort((a, b) => a.empId.localeCompare(b.empId));
     rows.forEach((row, idx) => row.sno = idx + 1);
     
-    this.payrollCalculationRows = rows;
-    this.step3TotalHours = rows.reduce((sum, r) => sum + r.hours, 0);
-    this.step3TotalGross = rows.reduce((sum, r) => sum + r.gross, 0);
-    this.step3TotalTax = rows.reduce((sum, r) => sum + r.totalTax, 0);
-    this.step3TotalNetPay = rows.reduce((sum, r) => sum + r.netPay, 0);
-    this.step3EmployeeCount = rows.length;
+    // Only include rows that are not already in processed/hold tables
+    const processedIds = new Set(this.processedPayrollRows.map(r => r.employeeId));
+    const holdIds = new Set(this.holdPayrollRows.map(r => r.employeeId));
+    const filteredRows = rows.filter(r => !processedIds.has(r.employeeId) && !holdIds.has(r.employeeId));
+    filteredRows.forEach((row, idx) => row.sno = idx + 1);
+    
+    this.payrollCalculationRows = filteredRows;
+    this.step3TotalHours = filteredRows.reduce((sum, r) => sum + r.hours, 0);
+    this.step3TotalGross = filteredRows.reduce((sum, r) => sum + r.gross, 0);
+    this.step3TotalTax = filteredRows.reduce((sum, r) => sum + r.totalTax, 0);
+    this.step3TotalNetPay = filteredRows.reduce((sum, r) => sum + r.netPay, 0);
+    this.step3EmployeeCount = filteredRows.length;
     
     // Also sync to legacy fields for Step 4
     this.totalGrossPay = this.step3TotalGross;
@@ -348,6 +380,24 @@ export class TimesheetApprovalComponent implements OnInit {
   
   getSelectedStep3Count(): number {
     return this.payrollCalculationRows.filter(r => r.selected).length;
+  }
+  
+  isEmployeeAlreadyProcessed(employeeId: number): boolean {
+    const processedRecords = this.payrollService.getProcessedPayrollRecords();
+    return processedRecords.some(r => 
+      r.employeeId === employeeId && 
+      r.periodStart === this.generateStartDate &&
+      (r.status === 'Processed' || r.status === 'Released')
+    );
+  }
+  
+  getEmployeePayrollStatus(employeeId: number): string {
+    const processedRecords = this.payrollService.getProcessedPayrollRecords();
+    const record = processedRecords.find(r => 
+      r.employeeId === employeeId && 
+      r.periodStart === this.generateStartDate
+    );
+    return record?.status || 'Pending';
   }
   
   processSelectedPayroll(): void {
