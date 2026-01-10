@@ -154,7 +154,8 @@ export class PayrollHistoryComponent implements OnInit {
       error: (err) => {
         console.error('Error loading employees:', err);
         this.loading = false;
-        this.generateSampleData();
+        // Use only processed records from service, no sample data
+        this.finalizeWithProcessedRecords();
         this.cdr.markForCheck();
       }
     });
@@ -169,7 +170,8 @@ export class PayrollHistoryComponent implements OnInit {
       error: (err) => {
         console.error('Error loading payroll runs:', err);
         this.loading = false;
-        this.generateSampleData();
+        // Use only processed records from service, no sample data
+        this.finalizeWithProcessedRecords();
         this.cdr.markForCheck();
       }
     });
@@ -178,7 +180,8 @@ export class PayrollHistoryComponent implements OnInit {
   loadPayrollRecords(): void {
     if (this.payrollRuns.length === 0) {
       this.loading = false;
-      this.generateSampleData();
+      // Use only processed records from service, no sample data
+      this.finalizeWithProcessedRecords();
       this.cdr.markForCheck();
       return;
     }
@@ -207,7 +210,8 @@ export class PayrollHistoryComponent implements OnInit {
                 this.processHistoryRecords();
                 this.mergeRecordsFromAllSources();
               } else {
-                this.generateSampleData();
+                // Use only processed records from service, no sample data
+                this.finalizeWithProcessedRecords();
               }
               this.loading = false;
             }
@@ -220,9 +224,22 @@ export class PayrollHistoryComponent implements OnInit {
     
     if (this.payrollRuns.every(r => !r.id)) {
       this.loading = false;
-      this.generateSampleData();
+      // Use only processed records from service, no sample data
+      this.finalizeWithProcessedRecords();
       this.cdr.markForCheck();
     }
+  }
+  
+  finalizeWithProcessedRecords(): void {
+    // Use only the in-memory processed records, no sample data
+    if (this.processedFromService.length > 0) {
+      this.historyRecords = [...this.processedFromService];
+    } else {
+      this.historyRecords = [];
+    }
+    this.extractProjects();
+    this.calculateSummary();
+    this.cdr.markForCheck();
   }
 
   processHistoryRecords(): void {
