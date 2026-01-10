@@ -94,7 +94,6 @@ export class PayrollHistoryComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadData();
-    this.loadProcessedPayrollFromService();
   }
   
   private processedFromService: PayrollHistoryRecord[] = [];
@@ -102,39 +101,38 @@ export class PayrollHistoryComponent implements OnInit {
   loadProcessedPayrollFromService(): void {
     // Only show Released records in payroll history
     const releasedRecords = this.payrollService.getReleasedPayrollRecords();
-    if (releasedRecords.length > 0) {
-      this.processedFromService = releasedRecords.map(r => ({
-        empId: r.empId,
-        name: r.name,
-        employeeType: 'Hourly',
-        project: r.project,
-        subcontractor: '-',
-        payRatePeriod: 'Weekly',
-        periodFrom: r.periodStart,
-        periodTo: r.periodEnd,
-        hours: r.hours,
-        regular: r.gross,
-        bonus: 0,
-        allowances: 0,
-        deductions: 0,
-        gross: r.gross,
-        ytdGross: r.gross * 12,
-        fedTax: r.federal,
-        stateTax: r.state,
-        socSecTax: r.socSec,
-        medicareTax: r.medicare,
-        expenses: 0,
-        totalTax: r.federal + r.state + r.socSec + r.medicare,
-        netPay: r.netPay,
-        payDate: r.processedDate,
-        paymentDate: r.processedDate,
-        payStatus: 'Released'
-      }));
-      this.cdr.markForCheck();
-    }
+    this.processedFromService = releasedRecords.map(r => ({
+      empId: r.empId,
+      name: r.name,
+      employeeType: 'Hourly',
+      project: r.project,
+      subcontractor: '-',
+      payRatePeriod: 'Weekly',
+      periodFrom: r.periodStart,
+      periodTo: r.periodEnd,
+      hours: r.hours,
+      regular: r.gross,
+      bonus: 0,
+      allowances: 0,
+      deductions: 0,
+      gross: r.gross,
+      ytdGross: r.gross * 12,
+      fedTax: r.federal,
+      stateTax: r.state,
+      socSecTax: r.socSec,
+      medicareTax: r.medicare,
+      expenses: 0,
+      totalTax: r.federal + r.state + r.socSec + r.medicare,
+      netPay: r.netPay,
+      payDate: r.processedDate,
+      paymentDate: r.processedDate,
+      payStatus: 'Released'
+    }));
   }
   
   mergeRecordsFromAllSources(): void {
+    // Reload released records from service
+    this.loadProcessedPayrollFromService();
     if (this.processedFromService.length > 0) {
       this.historyRecords = [...this.processedFromService, ...this.historyRecords];
     }
@@ -232,6 +230,8 @@ export class PayrollHistoryComponent implements OnInit {
   }
   
   finalizeWithProcessedRecords(): void {
+    // Load released records from service
+    this.loadProcessedPayrollFromService();
     // Use only the in-memory processed records, no sample data
     if (this.processedFromService.length > 0) {
       this.historyRecords = [...this.processedFromService];
