@@ -41,29 +41,28 @@
           </div>
         </div>
 
-        <div class="time-info" *ngIf="selectedEmployee">
-          <div class="time-row">
-            <span class="label">Clock In:</span>
-            <span class="value">{{ todayRecord?.clockIn?.substring(0, 5) || '--:--' }}</span>
-          </div>
-          <div class="time-row">
-            <span class="label">Clock Out:</span>
-            <span class="value">{{ todayRecord?.clockOut?.substring(0, 5) || '--:--' }}</span>
-          </div>
-          <div class="time-row">
-            <span class="label"><i class="fas fa-clock"></i> Break:</span>
-            <span class="value">30min</span>
-          </div>
-        </div>
-        
+        <!-- Running timer when clocked in -->
         <div class="running-timer" *ngIf="isClockedIn()">
+          <div class="timer-label">Working Time</div>
           <div class="timer-display">
             <i class="fas fa-stopwatch"></i>
             <span class="elapsed-time">{{ elapsedTime }}</span>
           </div>
           <div class="earnings-display" *ngIf="getHourlyRate() > 0">
             <i class="fas fa-dollar-sign"></i>
-            <span class="current-earnings">{{ currentEarnings.toFixed(2) }}</span>
+            <span class="current-earnings">${{ currentEarnings.toFixed(2) }}</span>
+          </div>
+        </div>
+        
+        <!-- Only show time info when NOT clocked in -->
+        <div class="time-info" *ngIf="selectedEmployee && !isClockedIn()">
+          <div class="time-row" *ngIf="todayRecord?.clockIn">
+            <span class="label">Last Clock In:</span>
+            <span class="value">{{ todayRecord?.clockIn?.substring(0, 5) }}</span>
+          </div>
+          <div class="time-row" *ngIf="todayRecord?.clockOut">
+            <span class="label">Last Clock Out:</span>
+            <span class="value">{{ todayRecord?.clockOut?.substring(0, 5) }}</span>
           </div>
         </div>
         

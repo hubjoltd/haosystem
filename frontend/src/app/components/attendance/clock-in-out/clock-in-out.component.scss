@@ -196,7 +196,7 @@
     .running-timer {
       background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
       border-radius: 12px;
-      padding: 20px;
+      padding: 24px;
       margin-bottom: 20px;
       text-align: center;
       border: 2px solid #4caf50;
@@ -207,6 +207,15 @@
         50% { border-color: #81c784; }
       }
       
+      .timer-label {
+        font-size: 14px;
+        color: #2e7d32;
+        font-weight: 500;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      
       .timer-display {
         display: flex;
         align-items: center;
@@ -215,16 +224,22 @@
         margin-bottom: 12px;
         
         i {
-          font-size: 24px;
+          font-size: 28px;
           color: #2e7d32;
+          animation: pulse-icon 1s infinite;
+        }
+        
+        @keyframes pulse-icon {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
         }
         
         .elapsed-time {
-          font-size: 36px;
+          font-size: 42px;
           font-weight: 700;
           color: #1b5e20;
           font-family: 'Consolas', 'Monaco', monospace;
-          letter-spacing: 2px;
+          letter-spacing: 3px;
         }
       }
       
@@ -233,14 +248,18 @@
         align-items: center;
         justify-content: center;
         gap: 6px;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 8px 16px;
+        border-radius: 20px;
+        display: inline-flex;
         
         i {
-          font-size: 16px;
+          font-size: 18px;
           color: #4caf50;
         }
         
         .current-earnings {
-          font-size: 20px;
+          font-size: 22px;
           font-weight: 600;
           color: #2e7d32;
         }
