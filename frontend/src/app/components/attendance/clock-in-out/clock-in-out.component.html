@@ -44,15 +44,38 @@
         <div class="time-info" *ngIf="selectedEmployee">
           <div class="time-row">
             <span class="label">Clock In:</span>
-            <span class="value">{{ todayRecord?.clockIn || '--:--' }}</span>
+            <span class="value">{{ todayRecord?.clockIn?.substring(0, 5) || '--:--' }}</span>
           </div>
           <div class="time-row">
             <span class="label">Clock Out:</span>
-            <span class="value">{{ todayRecord?.clockOut || '—' }}</span>
+            <span class="value">{{ todayRecord?.clockOut?.substring(0, 5) || '--:--' }}</span>
           </div>
           <div class="time-row">
             <span class="label"><i class="fas fa-clock"></i> Break:</span>
             <span class="value">30min</span>
+          </div>
+        </div>
+        
+        <div class="running-timer" *ngIf="isClockedIn()">
+          <div class="timer-display">
+            <i class="fas fa-stopwatch"></i>
+            <span class="elapsed-time">{{ elapsedTime }}</span>
+          </div>
+          <div class="earnings-display" *ngIf="getHourlyRate() > 0">
+            <i class="fas fa-dollar-sign"></i>
+            <span class="current-earnings">{{ currentEarnings.toFixed(2) }}</span>
+          </div>
+        </div>
+        
+        <div class="session-summary" *ngIf="showSessionSummary && !isClockedIn()">
+          <div class="summary-title"><i class="fas fa-check-circle"></i> Session Complete</div>
+          <div class="summary-row">
+            <span>Hours Worked:</span>
+            <span>{{ formatHoursMinutes(lastSessionHours) }}</span>
+          </div>
+          <div class="summary-row" *ngIf="getHourlyRate() > 0">
+            <span>Earnings:</span>
+            <span class="earnings">${{ lastSessionEarnings.toFixed(2) }}</span>
           </div>
         </div>
 
