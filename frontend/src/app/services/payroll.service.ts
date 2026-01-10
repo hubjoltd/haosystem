@@ -241,7 +241,7 @@ export interface ProcessedPayrollRecord {
   socSec: number;
   medicare: number;
   netPay: number;
-  status: string;
+  status: 'Calculated' | 'Processed' | 'Released' | 'Hold';
   periodStart: string;
   periodEnd: string;
   processedDate: string;
@@ -264,6 +264,29 @@ export class PayrollService {
   
   getProcessedPayrollRecords(): ProcessedPayrollRecord[] {
     return [...this.processedPayrollRecords];
+  }
+  
+  getProcessedPayrollRecordsByStatus(status: 'Calculated' | 'Processed' | 'Released' | 'Hold'): ProcessedPayrollRecord[] {
+    return this.processedPayrollRecords.filter(r => r.status === status);
+  }
+  
+  getReleasedPayrollRecords(): ProcessedPayrollRecord[] {
+    return this.processedPayrollRecords.filter(r => r.status === 'Released');
+  }
+  
+  updatePayrollRecordStatus(employeeId: number, periodStart: string, newStatus: 'Calculated' | 'Processed' | 'Released' | 'Hold'): void {
+    const record = this.processedPayrollRecords.find(r => r.employeeId === employeeId && r.periodStart === periodStart);
+    if (record) {
+      record.status = newStatus;
+    }
+  }
+  
+  releasePayrollRecords(employeeIds: number[], periodStart: string): void {
+    this.processedPayrollRecords.forEach(r => {
+      if (employeeIds.includes(r.employeeId!) && r.periodStart === periodStart && r.status === 'Processed') {
+        r.status = 'Released';
+      }
+    });
   }
   
   getProcessedPayrollRecordsByEmployee(employeeId: number): ProcessedPayrollRecord[] {

@@ -100,9 +100,10 @@ export class PayrollHistoryComponent implements OnInit {
   private processedFromService: PayrollHistoryRecord[] = [];
   
   loadProcessedPayrollFromService(): void {
-    const processedRecords = this.payrollService.getProcessedPayrollRecords();
-    if (processedRecords.length > 0) {
-      this.processedFromService = processedRecords.map(r => ({
+    // Only show Released records in payroll history
+    const releasedRecords = this.payrollService.getReleasedPayrollRecords();
+    if (releasedRecords.length > 0) {
+      this.processedFromService = releasedRecords.map(r => ({
         empId: r.empId,
         name: r.name,
         employeeType: 'Hourly',
@@ -127,7 +128,7 @@ export class PayrollHistoryComponent implements OnInit {
         netPay: r.netPay,
         payDate: r.processedDate,
         paymentDate: r.processedDate,
-        payStatus: 'Paid'
+        payStatus: 'Released'
       }));
       this.cdr.markForCheck();
     }

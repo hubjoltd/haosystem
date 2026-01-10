@@ -451,6 +451,18 @@
       align-items: flex-end;
     }
   }
+  
+  .btn-group-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: nowrap;
+    
+    .btn {
+      white-space: nowrap;
+      font-size: 11px;
+      padding: 6px 10px;
+    }
+  }
 
   .btn-generate {
     background: linear-gradient(135deg, #008080, #00a0a0);

@@ -559,9 +559,14 @@
                 <span class="status-badge processed">{{ row.status }}</span>
               </td>
               <td>
-                <button class="btn btn-sm btn-warning" (click)="holdPayroll(row)" title="Hold Payroll">
-                  <i class="fas fa-pause"></i> Hold
-                </button>
+                <div class="btn-group-actions">
+                  <button class="btn btn-sm btn-success" (click)="releasePayroll(row)" title="Release to History">
+                    <i class="fas fa-check-circle"></i> Release
+                  </button>
+                  <button class="btn btn-sm btn-warning" (click)="holdPayroll(row)" title="Hold Payroll">
+                    <i class="fas fa-pause"></i> Hold
+                  </button>
+                </div>
               </td>
             </tr>
             <tr *ngIf="processedPayrollRows.length === 0">
@@ -577,7 +582,11 @@
               <td class="green-text"><strong>{{ formatCurrency(step4TotalProcessedGross) }}</strong></td>
               <td colspan="5"></td>
               <td class="green-text"><strong>{{ formatCurrency(step4TotalProcessedNet) }}</strong></td>
-              <td colspan="2"></td>
+              <td>
+                <button class="btn btn-sm btn-primary" (click)="releaseAllPayroll()" *ngIf="processedPayrollRows.length > 0" title="Release All to History">
+                  <i class="fas fa-paper-plane"></i> Release All
+                </button>
+              </td>
             </tr>
           </tfoot>
         </table>

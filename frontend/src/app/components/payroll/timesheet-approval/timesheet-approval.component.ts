@@ -359,14 +359,14 @@ export class TimesheetApprovalComponent implements OnInit {
     
     const today = new Date().toISOString().split('T')[0];
     
-    // Move selected to processed, update status
+    // Move selected to processed table, update status
     selected.forEach(row => {
       row.status = 'Processed';
       row.selected = false;
       this.processedPayrollRows.push({ ...row });
     });
     
-    // Save to PayrollService for history
+    // Save to PayrollService with 'Processed' status (not yet released to history)
     const processedRecords = selected.map((row, idx) => {
       const emp = this.employees.find(e => e.id === row.employeeId);
       return {
@@ -383,7 +383,7 @@ export class TimesheetApprovalComponent implements OnInit {
         socSec: row.socSec,
         medicare: row.medicare,
         netPay: row.netPay,
-        status: 'Processed',
+        status: 'Processed' as const,
         periodStart: this.generateStartDate,
         periodEnd: this.generateEndDate,
         processedDate: today
@@ -409,7 +409,49 @@ export class TimesheetApprovalComponent implements OnInit {
     this.step3EmployeeCount = this.payrollCalculationRows.length;
     
     this.allStep3Selected = false;
-    this.showMessage(`Payroll processed for ${selected.length} employee(s)!`, 'success');
+    this.showMessage(`Payroll processed for ${selected.length} employee(s)! Use Release to finalize.`, 'success');
+    this.cdr.markForCheck();
+  }
+  
+  releasePayroll(row: PayrollCalculationRow): void {
+    const idx = this.processedPayrollRows.findIndex(r => r.employeeId === row.employeeId);
+    if (idx > -1) {
+      const releasedRow = this.processedPayrollRows.splice(idx, 1)[0];
+      releasedRow.status = 'Released';
+      
+      // Update status in PayrollService to 'Released' for history
+      this.payrollService.updatePayrollRecordStatus(
+        releasedRow.employeeId, 
+        this.generateStartDate, 
+        'Released'
+      );
+      
+      // Renumber processed table
+      this.processedPayrollRows.forEach((r, i) => r.sno = i + 1);
+      
+      this.updateStep4Totals();
+      this.showMessage(`Payroll for ${releasedRow.name} has been released to history`, 'success');
+      this.cdr.markForCheck();
+    }
+  }
+  
+  releaseAllPayroll(): void {
+    if (this.processedPayrollRows.length === 0) {
+      this.showMessage('No processed payroll to release', 'warning');
+      return;
+    }
+    
+    const count = this.processedPayrollRows.length;
+    const employeeIds = this.processedPayrollRows.map(r => r.employeeId);
+    
+    // Update all statuses in PayrollService
+    this.payrollService.releasePayrollRecords(employeeIds, this.generateStartDate);
+    
+    // Clear processed table
+    this.processedPayrollRows = [];
+    this.updateStep4Totals();
+    
+    this.showMessage(`${count} payroll record(s) released to history`, 'success');
     this.cdr.markForCheck();
   }
   
