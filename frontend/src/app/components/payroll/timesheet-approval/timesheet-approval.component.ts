@@ -487,11 +487,17 @@ export class TimesheetApprovalComponent implements OnInit {
         const approved = records.filter(r => r.approvalStatus === 'APPROVED');
         
         this.approvedAttendanceRecords = approved.map(r => {
-          const emp = this.employees.find(e => e.id === r.employeeId);
+          // Get employeeId from either the nested employee object or direct field
+          const empId = r.employee?.id || r.employeeId;
+          // Try to get employee from the nested object first, then from employees list
+          const embeddedEmp = r.employee;
+          const listEmp = this.employees.find(e => e.id === empId);
+          const emp = embeddedEmp || listEmp;
+          
           return {
             id: r.id!,
-            employeeId: r.employeeId!,
-            employeeCode: emp?.employeeCode || `EMP${r.employeeId}`,
+            employeeId: empId || 0,
+            employeeCode: emp?.employeeCode || `EMP${empId || '000'}`,
             employeeName: emp ? `${emp.firstName || ''} ${emp.lastName || ''}`.trim() : 'Unknown',
             department: emp?.department?.name || 'General',
             attendanceDate: r.attendanceDate,
@@ -611,8 +617,14 @@ export class TimesheetApprovalComponent implements OnInit {
         const employeeMap = new Map<number, GeneratedTimesheetSummary>();
         
         approvedRecords.forEach(r => {
-          const empId = r.employeeId!;
-          const emp = this.employees.find(e => e.id === empId);
+          // Get employeeId from either the nested employee object or direct field
+          const empId = r.employee?.id || r.employeeId || 0;
+          // Try to get employee from the nested object first, then from employees list
+          const embeddedEmp = r.employee;
+          const listEmp = this.employees.find(e => e.id === empId);
+          const emp = embeddedEmp || listEmp;
+          
+          if (empId === 0) return; // Skip invalid records
           
           if (!employeeMap.has(empId)) {
             employeeMap.set(empId, {
