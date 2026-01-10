@@ -53,8 +53,10 @@
                      (change)="toggleSelectAll()" />
             </th>
             <th>Employee</th>
+            <th>Department</th>
             <th>Date</th>
-            <th>Time</th>
+            <th>Clock In</th>
+            <th>Clock Out</th>
             <th>Hours</th>
             <th>Status</th>
             <th>Actions</th>
@@ -68,10 +70,12 @@
                      (change)="toggleSelect(record.id!)" />
             </td>
             <td>
-              <span class="employee-name">{{ getEmployeeName(record.employee) }}</span>
+              <span class="employee-name">{{ getEmployeeName(record) }}</span>
             </td>
+            <td>{{ getDepartmentName(record) }}</td>
             <td>{{ formatDate(record.attendanceDate) }}</td>
-            <td>{{ formatTimeRange(record.clockIn, record.clockOut) }}</td>
+            <td>{{ formatTime(record.clockIn) }}</td>
+            <td>{{ formatTime(record.clockOut) }}</td>
             <td>{{ calculateHours(record) }}</td>
             <td>
               <span class="status-badge" [ngClass]="getStatusClass(record.approvalStatus || 'PENDING')">
@@ -94,13 +98,13 @@
             </td>
           </tr>
           <tr *ngIf="filteredRecords.length === 0 && !loading">
-            <td colspan="7" class="no-data">
+            <td colspan="9" class="no-data">
               <i class="fas fa-check-circle"></i>
               <p>No {{ filterStatus ? filterStatus.toLowerCase() : '' }} attendance records found</p>
             </td>
           </tr>
           <tr *ngIf="loading">
-            <td colspan="7" class="loading-row">
+            <td colspan="9" class="loading-row">
               <i class="fas fa-spinner fa-spin"></i> Loading...
             </td>
           </tr>

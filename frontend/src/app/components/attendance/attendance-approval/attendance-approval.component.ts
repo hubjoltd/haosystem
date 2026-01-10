@@ -77,8 +77,9 @@ export class AttendanceApprovalComponent implements OnInit {
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
       records = records.filter(r => {
-        const name = this.getEmployeeName(r.employee).toLowerCase();
-        return name.includes(term);
+        const name = this.getEmployeeName(r).toLowerCase();
+        const dept = this.getDepartmentName(r).toLowerCase();
+        return name.includes(term) || dept.includes(term);
       });
     }
 
@@ -280,19 +281,42 @@ export class AttendanceApprovalComponent implements OnInit {
     });
   }
 
-  getEmployeeName(emp: any): string {
-    if (!emp) return 'Unknown';
-    return `${emp.firstName || ''} ${emp.lastName || ''}`.trim() || 'Unknown';
+  getEmployeeName(record: AttendanceRecord): string {
+    if (record.employee?.firstName || record.employee?.lastName) {
+      return `${record.employee.firstName || ''} ${record.employee.lastName || ''}`.trim();
+    }
+    if (record.employeeId) {
+      const emp = this.employees.find(e => e.id === record.employeeId);
+      if (emp) {
+        return `${emp.firstName || ''} ${emp.lastName || ''}`.trim();
+      }
+    }
+    return 'Unknown';
   }
 
-  getEmployeeInitials(emp: any): string {
-    if (!emp) return '??';
-    return `${(emp.firstName || '?').charAt(0)}${(emp.lastName || '?').charAt(0)}`.toUpperCase();
+  getDepartmentName(record: AttendanceRecord): string {
+    if (record.employee?.department?.name) {
+      return record.employee.department.name;
+    }
+    if (record.employeeId) {
+      const emp = this.employees.find(e => e.id === record.employeeId);
+      if (emp?.department?.name) {
+        return emp.department.name;
+      }
+    }
+    return '-';
   }
 
-  formatTime(clockIn?: string, clockOut?: string): string {
-    if (!clockIn) return '-';
-    return `${clockIn} - ${clockOut || '-'}`;
+  getEmployeeInitials(record: AttendanceRecord): string {
+    const name = this.getEmployeeName(record);
+    if (name === 'Unknown') return '??';
+    const parts = name.split(' ');
+    return `${(parts[0] || '?').charAt(0)}${(parts[1] || '?').charAt(0)}`.toUpperCase();
+  }
+
+  formatTime(time?: string): string {
+    if (!time) return '-';
+    return time.substring(0, 5);
   }
 
   formatTimeRange(clockIn?: string, clockOut?: string): string {
