@@ -84,13 +84,23 @@
             <div class="activity-details">
               <span class="activity-name">{{ getEmployeeName(record) }}</span>
               <div class="activity-times">
-                <span class="time-in"><i class="fas fa-arrow-right"></i> {{ record.clockIn || '-' }}</span>
-                <span class="time-out"><i class="fas fa-arrow-left"></i> {{ record.clockOut || '—' }}</span>
-                <span class="duration"><i class="fas fa-sync-alt"></i> 30min</span>
+                <span class="time-in"><i class="fas fa-arrow-right"></i> {{ record.clockIn ? record.clockIn.substring(0, 5) : '-' }}</span>
+                <span class="time-out"><i class="fas fa-arrow-left"></i> {{ record.clockOut ? record.clockOut.substring(0, 5) : '—' }}</span>
               </div>
             </div>
-            <div class="activity-status" [class.completed]="record.clockOut" [class.active-badge]="record.clockIn && !record.clockOut">
-              {{ record.clockOut ? 'Completed' : 'Active' }}
+            <div class="activity-actions">
+              <button class="quick-clock-out-btn" 
+                      *ngIf="record.clockIn && !record.clockOut"
+                      (click)="quickClockOut(record)" 
+                      [disabled]="loadingClockOut"
+                      title="Clock Out">
+                <i class="fas fa-sign-out-alt" *ngIf="!loadingClockOut"></i>
+                <i class="fas fa-spinner fa-spin" *ngIf="loadingClockOut"></i>
+                <span>Clock Out</span>
+              </button>
+              <div class="activity-status" *ngIf="record.clockOut" [class.completed]="record.clockOut">
+                Completed
+              </div>
             </div>
           </div>
         </div>
