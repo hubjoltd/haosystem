@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { RecruitmentService } from '../../../../services/recruitment.service';
 import { ToastService } from '../../../../services/toast.service';
 
@@ -47,7 +48,7 @@ export interface StageHistory {
 @Component({
   selector: 'app-recruitment-candidates',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './candidates.component.html',
   styleUrls: ['./candidates.component.scss']
 })

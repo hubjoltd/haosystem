@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { PayrollService, PayrollRecord, PayrollRun } from '../../../../services/payroll.service';
 import { ReportExportService } from '../../../../services/report-export.service';
 
@@ -20,7 +21,7 @@ interface LaborCostRow {
 @Component({
   selector: 'app-labor-cost-allocation-report',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './labor-cost-allocation-report.component.html',
   styleUrls: ['./labor-cost-allocation-report.component.scss']
 })

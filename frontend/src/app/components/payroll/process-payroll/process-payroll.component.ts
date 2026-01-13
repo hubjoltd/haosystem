@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { PayrollService, PayrollRun, PayrollRecord } from '../../../services/payroll.service';
 import { Subscription } from 'rxjs';
 import jsPDF from 'jspdf';
@@ -9,7 +10,7 @@ import jsPDF from 'jspdf';
 @Component({
   selector: 'app-process-payroll',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
   templateUrl: './process-payroll.component.html',
   styleUrls: ['./process-payroll.component.scss']
 })

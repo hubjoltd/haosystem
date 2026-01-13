@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { ProjectService } from '../../services/project.service';
 import { Project, ProjectTask, ProjectMilestone, ProjectFile, ProjectNote, ProjectTimeLog, ProjectMember, PROJECT_STATUSES, BILLING_TYPES, TASK_STATUSES, TASK_PRIORITIES } from '../../models/project.model';
 
 @Component({
   selector: 'app-project-management',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './project-management.component.html',
   styleUrl: './project-management.component.scss'
 })

@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 
 export interface PayslipData {
   employeeId: string;
@@ -38,7 +39,7 @@ export interface PayslipData {
 @Component({
   selector: 'app-payslip',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   templateUrl: './payslip.component.html',
   styleUrls: ['./payslip.component.scss']
 })

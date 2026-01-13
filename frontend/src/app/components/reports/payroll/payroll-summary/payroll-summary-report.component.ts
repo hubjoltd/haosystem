@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { PayrollService, PayrollRecord, PayrollRun } from '../../../../services/payroll.service';
 import { ReportExportService } from '../../../../services/report-export.service';
 
@@ -18,7 +19,7 @@ interface PayrollSummaryRow {
 @Component({
   selector: 'app-payroll-summary-report',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './payroll-summary-report.component.html',
   styleUrls: ['./payroll-summary-report.component.scss']
 })

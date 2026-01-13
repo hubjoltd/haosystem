@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { LeaveService, LeaveRequest, LeaveType, LeaveBalance } from '../../../services/leave.service';
 import { EmployeeService } from '../../../services/employee.service';
 import { finalize } from 'rxjs/operators';
@@ -8,7 +9,7 @@ import { finalize } from 'rxjs/operators';
 @Component({
   selector: 'app-leave-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './leave-requests.component.html',
   styleUrls: ['./leave-requests.component.scss']
 })

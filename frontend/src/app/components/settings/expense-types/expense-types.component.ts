@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 
 interface ExpenseType {
   id: number;
@@ -11,7 +12,7 @@ interface ExpenseType {
 @Component({
   selector: 'app-expense-types-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './expense-types.component.html',
   styleUrl: './expense-types.component.scss'
 })

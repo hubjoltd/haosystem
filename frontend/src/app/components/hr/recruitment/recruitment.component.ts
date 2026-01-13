@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { finalize } from 'rxjs/operators';
 import { RecruitmentService } from '../../../services/recruitment.service';
 import { ToastService } from '../../../services/toast.service';
@@ -9,7 +10,7 @@ import { ToastService } from '../../../services/toast.service';
 @Component({
   selector: 'app-recruitment',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './recruitment.component.html',
   styleUrl: './recruitment.component.scss'
 })

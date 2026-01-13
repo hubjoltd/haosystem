@@ -2,9 +2,11 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrateg
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { WebSocketService, ChatMessagePayload } from '../../services/websocket.service';
+import { ToastService } from '../../services/toast.service';
 
 interface ChatMessage {
   id: number;
@@ -30,7 +32,7 @@ interface ChatUser {
 @Component({
   selector: 'app-chat-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule, HttpClientModule, TranslateModule],
   templateUrl: './chat-panel.component.html',
   styleUrls: ['./chat-panel.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -60,7 +62,8 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private websocketService: WebSocketService,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -140,6 +143,7 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
       if (user) {
         user.unreadCount++;
         user.lastMessage = message.message;
+        this.toastService.info(`New message from ${message.senderName}: ${message.message.substring(0, 50)}${message.message.length > 50 ? '...' : ''}`);
         this.cdr.markForCheck();
       }
     }

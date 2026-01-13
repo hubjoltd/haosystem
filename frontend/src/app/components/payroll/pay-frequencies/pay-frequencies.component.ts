@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { PayrollService, PayFrequency } from '../../../services/payroll.service';
 
 @Component({
   selector: 'app-pay-frequencies',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './pay-frequencies.component.html',
   styleUrls: ['./pay-frequencies.component.scss']
 })

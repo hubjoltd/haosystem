@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
 import { EmployeeService, Employee } from '../../../services/employee.service';
 import { finalize } from 'rxjs/operators';
@@ -28,7 +29,7 @@ interface ProjectGroup {
 @Component({
   selector: 'app-weekly-timesheet',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './weekly-timesheet.component.html',
   styleUrls: ['./weekly-timesheet.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

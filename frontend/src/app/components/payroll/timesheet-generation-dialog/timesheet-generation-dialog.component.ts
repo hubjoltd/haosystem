@@ -1,6 +1,7 @@
 import { Component, OnInit, EventEmitter, Output, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { PayrollService } from '../../../services/payroll.service';
 import { EmployeeService } from '../../../services/employee.service';
 
@@ -15,7 +16,7 @@ export interface Employee {
 @Component({
   selector: 'app-timesheet-generation-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './timesheet-generation-dialog.component.html',
   styleUrls: ['./timesheet-generation-dialog.component.scss']
 })

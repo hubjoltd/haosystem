@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
 import { EmployeeService, Employee } from '../../../services/employee.service';
 import { PayrollService } from '../../../services/payroll.service';
@@ -10,7 +11,7 @@ import { finalize, forkJoin } from 'rxjs';
 @Component({
   selector: 'app-attendance-approval',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './attendance-approval.component.html',
   styleUrls: ['./attendance-approval.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

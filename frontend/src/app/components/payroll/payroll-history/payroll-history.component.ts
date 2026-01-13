@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { PayrollService, PayrollRun, PayrollRecord, ProcessedPayrollRecord } from '../../../services/payroll.service';
 import { EmployeeService, Employee } from '../../../services/employee.service';
 import jsPDF from 'jspdf';
@@ -47,7 +48,7 @@ interface PayrollRunSummary {
 @Component({
   selector: 'app-payroll-history',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
   templateUrl: './payroll-history.component.html',
   styleUrls: ['./payroll-history.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

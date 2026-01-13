@@ -2,13 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { PayrollService, PayrollRun, PayFrequency } from '../../../services/payroll.service';
 import { TimesheetGenerationDialogComponent } from '../timesheet-generation-dialog/timesheet-generation-dialog.component';
 
 @Component({
   selector: 'app-payroll-calculation',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, TimesheetGenerationDialogComponent],
+  imports: [CommonModule, FormsModule, RouterModule, TimesheetGenerationDialogComponent, TranslateModule],
   templateUrl: './payroll-calculation.component.html',
   styleUrls: ['./payroll-calculation.component.scss']
 })

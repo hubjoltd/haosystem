@@ -2,6 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { PayrollService, Timesheet, PayFrequency } from '../../../services/payroll.service';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
 import { EmployeeService, Employee, EmployeeSalary } from '../../../services/employee.service';
@@ -95,7 +96,7 @@ interface PayrollCalculationRow {
 @Component({
   selector: 'app-timesheet-approval',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, TranslateModule],
   templateUrl: './timesheet-approval.component.html',
   styleUrls: ['./timesheet-approval.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

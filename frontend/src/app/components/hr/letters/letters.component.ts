@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { HRLetterService, HRLetter } from '../../../services/hr-letter.service';
 import { EmployeeService } from '../../../services/employee.service';
 import { ToastService } from '../../../services/toast.service';
@@ -8,7 +9,7 @@ import { ToastService } from '../../../services/toast.service';
 @Component({
   selector: 'app-letters',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './letters.component.html',
   styleUrl: './letters.component.scss'
 })

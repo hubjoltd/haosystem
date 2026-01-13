@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { PayrollService, OvertimeRule } from '../../../services/payroll.service';
 
 @Component({
   selector: 'app-overtime-rules',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './overtime-rules.component.html',
   styleUrls: ['./overtime-rules.component.scss']
 })

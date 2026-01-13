@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { PayrollService, PayrollRecord } from '../../../services/payroll.service';
 import { LeaveService, LeaveBalance, LeaveRequest } from '../../../services/leave.service';
 import { LoanService } from '../../../services/loan.service';
@@ -15,7 +16,7 @@ import { PayslipComponent, PayslipData } from '../payslip/payslip.component';
 @Component({
   selector: 'app-employee-self-service',
   standalone: true,
-  imports: [CommonModule, FormsModule, PayslipComponent],
+  imports: [CommonModule, FormsModule, PayslipComponent, TranslateModule],
   templateUrl: './employee-self-service.component.html',
   styleUrls: ['./employee-self-service.component.scss']
 })

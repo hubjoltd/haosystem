@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import { ToastService, Toast } from '../../../services/toast.service';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-toast',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   template: `
     <div class="toast-container">
       <div *ngFor="let toast of toasts" class="toast" [ngClass]="'toast-' + toast.type" (click)="remove(toast.id)">

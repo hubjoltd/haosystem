@@ -2,13 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import { ExpenseService } from '../../../services/expense.service';
 import { ExpenseRequest, EXPENSE_STATUSES, REIMBURSEMENT_STATUSES } from '../../../models/expense.model';
 
 @Component({
   selector: 'app-expense-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './expense-list.html',
   styleUrl: './expense-list.scss'
 })

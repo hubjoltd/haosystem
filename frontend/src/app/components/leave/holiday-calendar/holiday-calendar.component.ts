@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { LeaveService, Holiday } from '../../../services/leave.service';
 
 @Component({
   selector: 'app-holiday-calendar',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe],
+  imports: [CommonModule, FormsModule, DatePipe, TranslateModule],
   templateUrl: './holiday-calendar.component.html',
   styleUrls: ['./holiday-calendar.component.scss']
 })
