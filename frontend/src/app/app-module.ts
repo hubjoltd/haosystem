@@ -4,6 +4,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { TranslateModule } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { AuthInterceptor } from './services/auth-interceptor.service';
 
 import { AppRoutingModule } from './app-routing-module';
@@ -198,6 +200,10 @@ import { ChatPanelComponent } from './components/chat/chat-panel.component';
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
+    TranslateModule.forRoot({
+      loader: provideTranslateHttpLoader({ prefix: './assets/i18n/', suffix: '.json' }),
+      fallbackLang: 'en'
+    }),
     AppRoutingModule,
     ClockInOutComponent,
     LeaveTypesComponent,
@@ -210,7 +216,8 @@ import { ChatPanelComponent } from './components/chat/chat-panel.component';
     RecruitmentInterviewsComponent,
     RecruitmentOffersComponent,
     ToastComponent,
-    ChatPanelComponent
+    ChatPanelComponent,
+    TranslateModule
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }

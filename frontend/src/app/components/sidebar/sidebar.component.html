@@ -2,7 +2,7 @@
   <div class="sidebar-header">
     <div class="logo">
       <i class="fas fa-cube"></i>
-      <span class="logo-text">Hao System</span>
+      <span class="logo-text">{{ 'app.title' | translate }}</span>
     </div>
   </div>
 
@@ -15,9 +15,9 @@
   </nav>
 
   <div class="sidebar-footer">
-    <a class="logout-btn" (click)="logout()" [title]="'Logout'">
+    <a class="logout-btn" (click)="logout()" [title]="'app.logout' | translate">
       <i class="fas fa-sign-out-alt"></i>
-      <span class="logout-text">Logout</span>
+      <span class="logout-text">{{ 'app.logout' | translate }}</span>
     </a>
   </div>
 </aside>

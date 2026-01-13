@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { UserNotificationService, UserNotification } from '../../services/user-notification.service';
 import { AuthService } from '../../services/auth.service';
 import { Subscription } from 'rxjs';
@@ -36,20 +37,19 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   availableLanguages: Language[] = [
     { code: 'en', name: 'English', flag: '🇺🇸', enabled: true },
-    { code: 'es', name: 'Spanish', flag: '🇪🇸', enabled: true },
-    { code: 'fr', name: 'French', flag: '🇫🇷', enabled: false },
-    { code: 'de', name: 'German', flag: '🇩🇪', enabled: false },
-    { code: 'zh', name: 'Chinese', flag: '🇨🇳', enabled: false },
-    { code: 'ja', name: 'Japanese', flag: '🇯🇵', enabled: false },
-    { code: 'ar', name: 'Arabic', flag: '🇸🇦', enabled: false },
-    { code: 'hi', name: 'Hindi', flag: '🇮🇳', enabled: false }
+    { code: 'ko', name: '한국어', flag: '🇰🇷', enabled: true },
+    { code: 'es', name: 'Español', flag: '🇪🇸', enabled: true }
   ];
 
   constructor(
     private userNotificationService: UserNotificationService,
     private authService: AuthService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private translate: TranslateService
+  ) {
+    this.translate.addLangs(['en', 'ko', 'es']);
+    this.translate.setFallbackLang('en');
+  }
 
   ngOnInit(): void {
     const user = this.authService.getCurrentUser();
@@ -78,8 +78,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   loadLanguageSettings(): void {
     const savedLang = localStorage.getItem('selectedLanguage');
-    if (savedLang) {
+    if (savedLang && ['en', 'ko', 'es'].includes(savedLang)) {
       this.currentLanguage = savedLang;
+      this.translate.use(savedLang);
+    } else {
+      this.translate.use('en');
     }
     
     const enabledLangs = localStorage.getItem('enabledLanguages');
@@ -134,6 +137,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const lang = this.availableLanguages.find(l => l.code === langCode);
     if (lang && lang.enabled) {
       this.currentLanguage = langCode;
+      this.translate.use(langCode);
       localStorage.setItem('selectedLanguage', langCode);
       this.showLanguageMenu = false;
     }

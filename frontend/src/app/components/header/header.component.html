@@ -5,7 +5,7 @@
     </button>
     <div class="search-box">
       <i class="fas fa-search"></i>
-      <input type="text" [(ngModel)]="searchQuery" placeholder="Search..." />
+      <input type="text" [(ngModel)]="searchQuery" [placeholder]="'header.search' | translate" />
     </div>
   </div>
 
@@ -18,7 +18,7 @@
         </button>
         <div class="dropdown language-dropdown" *ngIf="showLanguageMenu">
           <div class="dropdown-header">
-            <h4>Language Settings</h4>
+            <h4>{{ 'header.languageSettings' | translate }}</h4>
           </div>
           <div class="dropdown-body">
             <div class="language-item" *ngFor="let lang of availableLanguages" 
@@ -50,8 +50,8 @@
         </button>
         <div class="dropdown notification-dropdown" *ngIf="showNotifications">
           <div class="dropdown-header">
-            <h4>Notifications</h4>
-            <a href="javascript:void(0)" (click)="markAllAsRead()">Mark all as read</a>
+            <h4>{{ 'header.notifications' | translate }}</h4>
+            <a href="javascript:void(0)" (click)="markAllAsRead()">{{ 'header.markAllRead' | translate }}</a>
           </div>
           <div class="dropdown-body">
             <div class="notification-item" 
@@ -69,11 +69,11 @@
             </div>
             <div class="notification-empty" *ngIf="notifications.length === 0">
               <i class="fas fa-bell-slash"></i>
-              <p>No notifications</p>
+              <p>{{ 'header.noNotifications' | translate }}</p>
             </div>
           </div>
           <div class="dropdown-footer" *ngIf="notifications.length > 0">
-            <a href="javascript:void(0)">View all notifications</a>
+            <a href="javascript:void(0)">{{ 'header.viewAll' | translate }}</a>
           </div>
         </div>
       </div>
@@ -94,16 +94,16 @@
       <div class="dropdown profile-dropdown" *ngIf="showProfile">
         <a href="javascript:void(0)" class="dropdown-item">
           <i class="fas fa-user"></i>
-          My Profile
+          {{ 'header.myProfile' | translate }}
         </a>
         <a href="javascript:void(0)" class="dropdown-item">
           <i class="fas fa-cog"></i>
-          Account Settings
+          {{ 'header.accountSettings' | translate }}
         </a>
         <div class="dropdown-divider"></div>
         <a href="javascript:void(0)" (click)="logout()" class="dropdown-item text-danger">
           <i class="fas fa-sign-out-alt"></i>
-          Logout
+          {{ 'header.logout' | translate }}
         </a>
       </div>
     </div>
