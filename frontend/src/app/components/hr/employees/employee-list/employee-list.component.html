@@ -103,7 +103,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let emp of filteredEmployees">
-          <td>{{ emp.employeeCode }}</td>
+          <td><a class="employee-code-link" (click)="viewEmployee(emp.id!)">{{ emp.employeeCode }}</a></td>
           <td>
             <div class="employee-name">
               <div class="avatar">{{ emp.firstName?.charAt(0) }}{{ emp.lastName?.charAt(0) }}</div>

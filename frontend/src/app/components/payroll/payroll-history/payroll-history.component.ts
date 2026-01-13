@@ -443,6 +443,11 @@ export class PayrollHistoryComponent implements OnInit {
     }
   }
 
+  getEmployeeIdByCode(empCode: string): number | null {
+    const employee = this.employees.find(e => e.employeeCode === empCode);
+    return employee?.id || null;
+  }
+
   exportToPDF(): void {
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     

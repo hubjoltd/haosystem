@@ -4,6 +4,13 @@ import { UserNotificationService, UserNotification } from '../../services/user-n
 import { AuthService } from '../../services/auth.service';
 import { Subscription } from 'rxjs';
 
+interface Language {
+  code: string;
+  name: string;
+  flag: string;
+  enabled: boolean;
+}
+
 @Component({
   selector: 'app-header',
   standalone: false,
@@ -12,15 +19,31 @@ import { Subscription } from 'rxjs';
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   @Output() toggleSidebar = new EventEmitter<void>();
+  @Output() openChatPanel = new EventEmitter<void>();
 
   searchQuery: string = '';
   showNotifications: boolean = false;
   showProfile: boolean = false;
+  showLanguageMenu: boolean = false;
+  showChat: boolean = false;
 
   notifications: UserNotification[] = [];
   unreadCount: number = 0;
+  unreadChatCount: number = 0;
   currentUserName: string = 'User';
+  currentLanguage: string = 'en';
   private pollSubscription?: Subscription;
+
+  availableLanguages: Language[] = [
+    { code: 'en', name: 'English', flag: '🇺🇸', enabled: true },
+    { code: 'es', name: 'Spanish', flag: '🇪🇸', enabled: true },
+    { code: 'fr', name: 'French', flag: '🇫🇷', enabled: false },
+    { code: 'de', name: 'German', flag: '🇩🇪', enabled: false },
+    { code: 'zh', name: 'Chinese', flag: '🇨🇳', enabled: false },
+    { code: 'ja', name: 'Japanese', flag: '🇯🇵', enabled: false },
+    { code: 'ar', name: 'Arabic', flag: '🇸🇦', enabled: false },
+    { code: 'hi', name: 'Hindi', flag: '🇮🇳', enabled: false }
+  ];
 
   constructor(
     private userNotificationService: UserNotificationService,
@@ -36,6 +59,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         : user.username;
     }
     
+    this.loadLanguageSettings();
     this.loadNotifications();
     this.pollSubscription = this.userNotificationService.startPolling(30000).subscribe({
       next: (result) => {
@@ -49,6 +73,23 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.pollSubscription) {
       this.pollSubscription.unsubscribe();
+    }
+  }
+
+  loadLanguageSettings(): void {
+    const savedLang = localStorage.getItem('selectedLanguage');
+    if (savedLang) {
+      this.currentLanguage = savedLang;
+    }
+    
+    const enabledLangs = localStorage.getItem('enabledLanguages');
+    if (enabledLangs) {
+      try {
+        const enabled = JSON.parse(enabledLangs);
+        this.availableLanguages.forEach(lang => {
+          lang.enabled = enabled.includes(lang.code);
+        });
+      } catch (e) {}
     }
   }
 
@@ -80,6 +121,38 @@ export class HeaderComponent implements OnInit, OnDestroy {
   toggleProfile() {
     this.showProfile = !this.showProfile;
     this.showNotifications = false;
+    this.showLanguageMenu = false;
+  }
+
+  toggleLanguageMenu() {
+    this.showLanguageMenu = !this.showLanguageMenu;
+    this.showNotifications = false;
+    this.showProfile = false;
+  }
+
+  setLanguage(langCode: string) {
+    const lang = this.availableLanguages.find(l => l.code === langCode);
+    if (lang && lang.enabled) {
+      this.currentLanguage = langCode;
+      localStorage.setItem('selectedLanguage', langCode);
+      this.showLanguageMenu = false;
+    }
+  }
+
+  toggleLanguageEnabled(lang: Language, event: Event) {
+    event.stopPropagation();
+    lang.enabled = !lang.enabled;
+    localStorage.setItem('enabledLanguages', JSON.stringify(
+      this.availableLanguages.filter(l => l.enabled).map(l => l.code)
+    ));
+  }
+
+  toggleChat() {
+    this.showChat = !this.showChat;
+    this.showNotifications = false;
+    this.showProfile = false;
+    this.showLanguageMenu = false;
+    this.openChatPanel.emit();
   }
 
   getUnreadCount(): number {

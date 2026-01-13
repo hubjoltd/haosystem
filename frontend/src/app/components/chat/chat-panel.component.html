@@ -1,0 +1,92 @@
+<div class="chat-panel" [class.open]="isOpen">
+  <div class="chat-header">
+    <div class="header-left">
+      <button class="back-btn" *ngIf="selectedUser" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h3 *ngIf="!selectedUser">Messages</h3>
+      <div class="selected-user-info" *ngIf="selectedUser">
+        <div class="user-avatar">{{ selectedUser.avatar }}</div>
+        <div class="user-details">
+          <span class="user-name">{{ selectedUser.name }}</span>
+          <span class="user-status" [class.online]="selectedUser.online">
+            {{ selectedUser.online ? 'Online' : 'Offline' }}
+          </span>
+        </div>
+      </div>
+    </div>
+    <button class="close-btn" (click)="closePanel()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <!-- Users List View -->
+  <div class="chat-body" *ngIf="!selectedUser">
+    <div class="search-section">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Search conversations..." />
+      </div>
+    </div>
+
+    <div class="tabs-section">
+      <button class="tab-btn" [class.active]="activeTab === 'chats'" (click)="activeTab = 'chats'">
+        Chats
+        <span class="badge" *ngIf="totalUnread > 0">{{ totalUnread }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'contacts'" (click)="activeTab = 'contacts'">
+        Contacts
+      </button>
+    </div>
+
+    <div class="users-list">
+      <div class="user-item" *ngFor="let user of filteredUsers" (click)="selectUser(user)">
+        <div class="user-avatar" [class.online]="user.online">
+          {{ user.avatar }}
+        </div>
+        <div class="user-info">
+          <span class="user-name">{{ user.name }}</span>
+          <span class="last-message">{{ user.lastMessage }}</span>
+        </div>
+        <div class="user-meta">
+          <span class="unread-badge" *ngIf="user.unreadCount > 0">{{ user.unreadCount }}</span>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="filteredUsers.length === 0">
+        <i class="fas fa-comments"></i>
+        <p>No conversations found</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat View -->
+  <div class="chat-view" *ngIf="selectedUser">
+    <div class="messages-container">
+      <div class="loading" *ngIf="loading">
+        <i class="fas fa-spinner fa-spin"></i> Loading messages...
+      </div>
+
+      <div class="messages-list" *ngIf="!loading">
+        <div class="message-group" *ngFor="let msg of messages" [class.own]="msg.isOwn">
+          <div class="message-bubble">
+            <p class="message-text">{{ msg.message }}</p>
+            <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="message-input">
+      <input 
+        type="text" 
+        [(ngModel)]="newMessage" 
+        placeholder="Type a message..." 
+        (keyup.enter)="sendMessage()"
+      />
+      <button class="send-btn" (click)="sendMessage()" [disabled]="!newMessage.trim()">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>

@@ -148,7 +148,7 @@
           <tbody>
             <tr *ngFor="let record of approvedAttendanceRecords; let i = index">
               <td>{{ i + 1 }}</td>
-              <td class="emp-id">{{ record.employeeCode }}</td>
+              <td class="emp-id"><a class="employee-code-link" [routerLink]="['/app/hr/employees', record.employeeId]">{{ record.employeeCode }}</a></td>
               <td class="emp-name">{{ record.employeeName }}</td>
               <td>{{ record.department }}</td>
               <td>{{ formatDateDisplay(record.attendanceDate) }}</td>

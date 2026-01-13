@@ -195,7 +195,7 @@
           <tbody>
             <tr *ngFor="let record of filteredRecords; let i = index">
               <td>{{ i + 1 }}</td>
-              <td class="emp-id">{{ record.empId }}</td>
+              <td class="emp-id"><a class="employee-code-link" [routerLink]="['/app/hr/employees', getEmployeeIdByCode(record.empId)]">{{ record.empId }}</a></td>
               <td class="emp-name">{{ record.name }}</td>
               <td>{{ record.employeeType }}</td>
               <td>{{ record.project || '-' }}</td>

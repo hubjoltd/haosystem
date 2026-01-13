@@ -109,6 +109,7 @@ import { LeaveTypesComponent } from './components/leave/leave-types/leave-types.
 import { LeaveRequestsComponent } from './components/leave/leave-requests/leave-requests.component';
 import { HolidayCalendarComponent } from './components/leave/holiday-calendar/holiday-calendar.component';
 import { ToastComponent } from './components/shared/toast/toast.component';
+import { ChatPanelComponent } from './components/chat/chat-panel.component';
 
 @NgModule({
   declarations: [
@@ -208,7 +209,8 @@ import { ToastComponent } from './components/shared/toast/toast.component';
     RecruitmentCandidatesComponent,
     RecruitmentInterviewsComponent,
     RecruitmentOffersComponent,
-    ToastComponent
+    ToastComponent,
+    ChatPanelComponent
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }

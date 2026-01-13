@@ -10,6 +10,7 @@ export class LayoutComponent {
   sidebarCollapsed: boolean = false;
   mobileMenuOpen: boolean = false;
   isMobile: boolean = false;
+  chatPanelOpen: boolean = false;
 
   constructor() {
     this.checkScreenSize();
@@ -39,5 +40,13 @@ export class LayoutComponent {
     if (this.isMobile) {
       this.mobileMenuOpen = false;
     }
+  }
+
+  toggleChatPanel() {
+    this.chatPanelOpen = !this.chatPanelOpen;
+  }
+
+  closeChatPanel() {
+    this.chatPanelOpen = false;
   }
 }

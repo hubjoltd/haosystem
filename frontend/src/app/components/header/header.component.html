@@ -11,6 +11,38 @@
 
   <div class="header-right">
     <div class="header-actions">
+      <!-- Language Toggle -->
+      <div class="language-wrapper">
+        <button class="action-btn" (click)="toggleLanguageMenu()">
+          <i class="fas fa-globe"></i>
+        </button>
+        <div class="dropdown language-dropdown" *ngIf="showLanguageMenu">
+          <div class="dropdown-header">
+            <h4>Language Settings</h4>
+          </div>
+          <div class="dropdown-body">
+            <div class="language-item" *ngFor="let lang of availableLanguages" 
+                 [class.active]="lang.code === currentLanguage"
+                 [class.disabled]="!lang.enabled"
+                 (click)="lang.enabled ? setLanguage(lang.code) : null">
+              <span class="lang-flag">{{ lang.flag }}</span>
+              <span class="lang-name">{{ lang.name }}</span>
+              <div class="lang-toggle">
+                <input type="checkbox" [checked]="lang.enabled" (click)="toggleLanguageEnabled(lang, $event)" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Button -->
+      <div class="chat-wrapper">
+        <button class="action-btn" (click)="toggleChat()">
+          <i class="fas fa-comments"></i>
+          <span class="badge" *ngIf="unreadChatCount > 0">{{ unreadChatCount }}</span>
+        </button>
+      </div>
+
       <div class="notification-wrapper">
         <button class="action-btn" (click)="toggleNotifications()">
           <i class="fas fa-bell"></i>
