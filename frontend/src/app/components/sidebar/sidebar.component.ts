@@ -366,6 +366,11 @@ export class SidebarComponent implements OnInit {
 
   constructor(private router: Router, private authService: AuthService) {}
 
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
   ngOnInit(): void {
     this.filterMenuByPermissions();
     this.authService.currentUser$.subscribe(() => {
@@ -383,7 +388,7 @@ export class SidebarComponent implements OnInit {
 
   private filterItems(items: MenuItem[]): MenuItem[] {
     return items.filter(item => {
-      if (!item.permissionKey || this.authService.hasPermission(item.permissionKey)) {
+      if (!item.permissionKey || this.authService.hasFeatureAccess(item.permissionKey)) {
         if (item.children) {
           item.children = this.filterItems(item.children);
         }
