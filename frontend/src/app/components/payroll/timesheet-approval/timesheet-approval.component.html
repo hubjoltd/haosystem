@@ -344,8 +344,8 @@
               <td>{{ row.sno }}</td>
               <td>{{ row.date }}</td>
               <td>{{ row.day }}</td>
-              <td>{{ row.clockIn }}</td>
-              <td>{{ row.clockOut }}</td>
+              <td>{{ row.clockIn?.substring(0, 5) || '-' }}</td>
+              <td>{{ row.clockOut?.substring(0, 5) || '-' }}</td>
               <td>1:00</td>
               <td class="hours">{{ row.regHours.toFixed(1) }}</td>
               <td class="hours">{{ row.otHours.toFixed(1) }}</td>

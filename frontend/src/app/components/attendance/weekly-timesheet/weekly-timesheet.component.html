@@ -81,8 +81,8 @@
             <tr *ngFor="let record of group.records">
               <td class="emp-name">{{ record.employeeName }}</td>
               <td>{{ formatDisplayDate(record.date) }}</td>
-              <td>{{ record.clockIn || '—' }}</td>
-              <td>{{ record.clockOut || '—' }}</td>
+              <td>{{ record.clockIn?.substring(0, 5) || '—' }}</td>
+              <td>{{ record.clockOut?.substring(0, 5) || '—' }}</td>
               <td>{{ record.hours > 0 ? record.hours.toFixed(2) : '—' }}</td>
               <td>{{ record.overtime > 0 ? record.overtime.toFixed(2) : '—' }}</td>
               <td>
