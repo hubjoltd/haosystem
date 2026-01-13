@@ -275,7 +275,7 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
   }
 
   formatTime(date: Date): string {
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
   }
 
   formatDate(date: Date): string {

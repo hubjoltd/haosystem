@@ -208,8 +208,8 @@
         <tbody>
           <tr *ngFor="let record of attendanceRecords">
             <td>{{ record.attendanceDate | date:'MMM d, yyyy' }}</td>
-            <td>{{ record.clockIn || 'N/A' }}</td>
-            <td>{{ record.clockOut || 'N/A' }}</td>
+            <td>{{ record.clockIn?.substring(0, 5) || 'N/A' }}</td>
+            <td>{{ record.clockOut?.substring(0, 5) || 'N/A' }}</td>
             <td>{{ record.regularHours || 0 }}h</td>
             <td>
               <span class="status-badge" [ngClass]="getStatusClass(getAttendanceStatusBadge(record))">

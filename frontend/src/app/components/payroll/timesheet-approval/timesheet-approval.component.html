@@ -152,8 +152,8 @@
               <td class="emp-name">{{ record.employeeName }}</td>
               <td>{{ record.department }}</td>
               <td>{{ formatDateDisplay(record.attendanceDate) }}</td>
-              <td>{{ record.clockIn }}</td>
-              <td>{{ record.clockOut }}</td>
+              <td>{{ record.clockIn?.substring(0, 5) || '-' }}</td>
+              <td>{{ record.clockOut?.substring(0, 5) || '-' }}</td>
               <td class="hours">{{ record.regularHours.toFixed(1) }}</td>
               <td class="hours">{{ record.overtimeHours.toFixed(1) }}</td>
               <td>
