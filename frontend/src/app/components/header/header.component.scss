@@ -107,7 +107,12 @@
 }
 
 .language-dropdown {
-  min-width: 280px;
+  min-width: 220px;
+}
+
+.current-lang-flag {
+  font-size: 0.9rem;
+  margin-left: 4px;
 }
 
 .language-item {
@@ -131,19 +136,6 @@
     }
   }
 
-  &.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    
-    &:hover {
-      background: transparent;
-    }
-    
-    .lang-name {
-      color: #999;
-    }
-  }
-
   .lang-flag {
     font-size: 1.25rem;
   }
@@ -154,13 +146,9 @@
     color: #2c3e50;
   }
 
-  .lang-toggle {
-    input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      accent-color: #00796b;
-      cursor: pointer;
-    }
+  .check-icon {
+    color: #00796b;
+    font-size: 0.85rem;
   }
 }
 

@@ -13,8 +13,9 @@
     <div class="header-actions">
       <!-- Language Toggle -->
       <div class="language-wrapper">
-        <button class="action-btn" (click)="toggleLanguageMenu()">
+        <button class="action-btn" (click)="toggleLanguageMenu()" [title]="'header.languageSettings' | translate">
           <i class="fas fa-globe"></i>
+          <span class="current-lang-flag">{{ getCurrentLanguageFlag() }}</span>
         </button>
         <div class="dropdown language-dropdown" *ngIf="showLanguageMenu">
           <div class="dropdown-header">
@@ -23,13 +24,10 @@
           <div class="dropdown-body">
             <div class="language-item" *ngFor="let lang of availableLanguages" 
                  [class.active]="lang.code === currentLanguage"
-                 [class.disabled]="!lang.enabled"
-                 (click)="lang.enabled ? setLanguage(lang.code) : null">
+                 (click)="setLanguage(lang.code)">
               <span class="lang-flag">{{ lang.flag }}</span>
               <span class="lang-name">{{ lang.name }}</span>
-              <div class="lang-toggle">
-                <input type="checkbox" [checked]="lang.enabled" (click)="toggleLanguageEnabled(lang, $event)" />
-              </div>
+              <i class="fas fa-check check-icon" *ngIf="lang.code === currentLanguage"></i>
             </div>
           </div>
         </div>

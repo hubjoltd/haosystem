@@ -9,7 +9,6 @@ interface Language {
   code: string;
   name: string;
   flag: string;
-  enabled: boolean;
 }
 
 @Component({
@@ -36,9 +35,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private pollSubscription?: Subscription;
 
   availableLanguages: Language[] = [
-    { code: 'en', name: 'English', flag: '🇺🇸', enabled: true },
-    { code: 'ko', name: '한국어', flag: '🇰🇷', enabled: true },
-    { code: 'es', name: 'Español', flag: '🇪🇸', enabled: true }
+    { code: 'en', name: 'English', flag: '🇺🇸' },
+    { code: 'ko', name: '한국어', flag: '🇰🇷' },
+    { code: 'es', name: 'Español', flag: '🇪🇸' }
   ];
 
   constructor(
@@ -82,18 +81,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.currentLanguage = savedLang;
       this.translate.use(savedLang);
     } else {
+      this.currentLanguage = 'en';
       this.translate.use('en');
     }
-    
-    const enabledLangs = localStorage.getItem('enabledLanguages');
-    if (enabledLangs) {
-      try {
-        const enabled = JSON.parse(enabledLangs);
-        this.availableLanguages.forEach(lang => {
-          lang.enabled = enabled.includes(lang.code);
-        });
-      } catch (e) {}
-    }
+  }
+
+  getCurrentLanguageFlag(): string {
+    const lang = this.availableLanguages.find(l => l.code === this.currentLanguage);
+    return lang ? lang.flag : '🇺🇸';
   }
 
   loadNotifications(): void {
@@ -135,20 +130,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   setLanguage(langCode: string) {
     const lang = this.availableLanguages.find(l => l.code === langCode);
-    if (lang && lang.enabled) {
+    if (lang) {
       this.currentLanguage = langCode;
       this.translate.use(langCode);
       localStorage.setItem('selectedLanguage', langCode);
       this.showLanguageMenu = false;
     }
-  }
-
-  toggleLanguageEnabled(lang: Language, event: Event) {
-    event.stopPropagation();
-    lang.enabled = !lang.enabled;
-    localStorage.setItem('enabledLanguages', JSON.stringify(
-      this.availableLanguages.filter(l => l.enabled).map(l => l.code)
-    ));
   }
 
   toggleChat() {
