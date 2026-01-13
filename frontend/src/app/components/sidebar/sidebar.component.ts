@@ -1,10 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { TranslateService } from '@ngx-translate/core';
 
 interface MenuItem {
   icon: string;
   label: string;
+  labelKey?: string;
   route?: string;
   children?: MenuItem[];
   expanded?: boolean;
@@ -22,8 +24,8 @@ export class SidebarComponent implements OnInit {
   @Input() mobileOpen: boolean = false;
 
   allMenuItems: MenuItem[] = [
-    { icon: 'fas fa-home', label: 'Dashboard', route: '/app/dashboard', permissionKey: 'Dashboard' },
-    { icon: 'fas fa-building', label: 'Companies', route: '/app/settings/branches', permissionKey: 'Settings' },
+    { icon: 'fas fa-home', label: 'Dashboard', labelKey: 'nav.dashboard', route: '/app/dashboard', permissionKey: 'Dashboard' },
+    { icon: 'fas fa-building', label: 'Companies', labelKey: 'nav.branchManagement', route: '/app/settings/branches', permissionKey: 'Settings' },
     {
       icon: 'fas fa-project-diagram',
       label: 'Project Management',

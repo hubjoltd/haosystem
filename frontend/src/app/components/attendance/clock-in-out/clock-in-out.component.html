@@ -29,7 +29,7 @@
           <option [ngValue]="null" *ngIf="loadingEmployees">Loading employees...</option>
           <option [ngValue]="null" *ngIf="!loadingEmployees">-- Select Employee --</option>
           <option *ngFor="let emp of employees" [ngValue]="emp.id">
-            {{ emp.firstName }} {{ emp.lastName }}
+            {{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})
           </option>
         </select>
 

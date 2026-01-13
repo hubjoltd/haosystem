@@ -234,7 +234,7 @@
       <div class="enroll-form">
         <select [(ngModel)]="enrollmentData.employeeId" class="enroll-select">
           <option value="">Select Employee to Enroll</option>
-          <option *ngFor="let emp of employees" [value]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+          <option *ngFor="let emp of employees" [value]="emp.id">{{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})</option>
         </select>
         <button class="btn btn-primary" (click)="enrollEmployee()" [disabled]="!enrollmentData.employeeId">Enroll</button>
       </div>

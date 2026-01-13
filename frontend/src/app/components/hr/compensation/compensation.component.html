@@ -351,7 +351,7 @@
             <label>Employee <span class="required">*</span></label>
             <select [(ngModel)]="formData.employeeId" name="employeeId" required (change)="onEmployeeChange()">
               <option [ngValue]="null">Select Employee</option>
-              <option *ngFor="let emp of employees" [ngValue]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+              <option *ngFor="let emp of employees" [ngValue]="emp.id">{{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})</option>
             </select>
           </div>
           <div class="form-group">
@@ -581,7 +581,7 @@
             <label>Employee <span class="required">*</span></label>
             <select [(ngModel)]="formData.employeeId" name="employeeId" required>
               <option [ngValue]="null">Select Employee</option>
-              <option *ngFor="let emp of employees" [ngValue]="emp.id">{{ emp.firstName }} {{ emp.lastName }}</option>
+              <option *ngFor="let emp of employees" [ngValue]="emp.id">{{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})</option>
             </select>
           </div>
           <div class="form-group">

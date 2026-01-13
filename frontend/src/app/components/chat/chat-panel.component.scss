@@ -407,6 +407,57 @@
   }
 }
 
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+
+  i {
+    font-size: 0.5rem;
+  }
+
+  &.status-connected {
+    i { color: #4caf50; }
+  }
+
+  &.status-connecting {
+    i { color: #ffc107; }
+  }
+
+  &.status-disconnected {
+    i { color: #dc3545; }
+  }
+}
+
+.user-code {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin-left: 4px;
+}
+
+.typing-indicator {
+  padding: 8px 16px;
+  background: #f5f7fa;
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-style: italic;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.user-info small {
+  color: #6c757d;
+  font-weight: normal;
+}
+
 @media (max-width: 480px) {
   .chat-panel {
     width: 100%;
