@@ -24,12 +24,14 @@ Preferred communication style: Simple, everyday language.
 -   **Customer & Contract Management**: Standard CRUD operations with search and filtering.
 -   **Purchase Order Management**: Manages Purchase Requisition (PR), PR Fulfillment, Direct Purchase, and Purchase Invoice with workflow tracking.
 -   **HR Management**: Comprehensive module including Organization Structure, Employee Master, Document Management, Recruitment, Training & Development, Onboarding.
--   **Time, Attendance & Leave Management**: Features web-based clock in/out, multi-method attendance tracking, overtime calculation, leave types with approval workflows, holiday calendars, daily attendance tracking, and project-wise weekly timesheets. Includes real-time running timer for clock-in/out and hourly pay calculation.
+-   **Attendance Module** (Separate menu section): Time Clock with real-time running timer, Weekly Timesheet, Daily Attendance tracking, Attendance Approval workflow, and Attendance Dashboard.
+-   **Payroll Module** (Separate menu section): Process Payroll (5-step wizard), Payroll History with PDF/CSV export, Pay Slips (ESS), and Payroll Dashboard.
+-   **Leave Management**: Leave types with approval workflows, holiday calendars, and leave requests.
 -   **Expense & Reimbursement Management**: Manages expense categories, request workflows, manager approval, and payroll integration.
 -   **Loans & Advances Management**: Handles loan applications, approval workflows, EMI configuration, auto-deduction, ledger, and repayment history.
 -   **Compensation & Benefits**: Sets up salary bands, revisions, bonus, health insurance, and allowances.
 -   **F&F Settlement**: Processes Final and Full Settlements for employee separations.
--   **Payroll Management**: A 5-phase workflow including Rules Configuration, Attendance Approval & Timesheets, Payroll Calculation, Process Payroll, and Employee Self-Service (ESS), with comprehensive history. Features consistent employee selection with checkboxes across payroll steps. Payroll History includes PDF/CSV export and OnPush change detection for performance.
+-   **Payroll Workflow**: 5-phase workflow including Rules Configuration, Attendance Approval & Timesheets, Payroll Calculation, Process Payroll, and Employee Self-Service (ESS). Features consistent employee selection with checkboxes across payroll steps and OnPush change detection for performance.
 -   **Employee Payroll Tab**: Employee detail page includes a dedicated Payroll tab showing payroll records and timesheets history for each employee.
 -   **Employee Self-Service (ESS) Portal**: Allows employees to view pay stubs, attendance summaries, manage leave/expense/loan requests, access HR policies & documents, and view assigned assets. Features auto-initialization and carry-forward of leave balances.
 -   **Project Management Module**: Full-featured module with tabs for Overview, Members, Client Permissions, Billing, Tasks, Milestones, Timesheets, Files, and Notes.

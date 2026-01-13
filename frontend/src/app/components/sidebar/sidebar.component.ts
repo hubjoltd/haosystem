@@ -162,27 +162,6 @@ export class SidebarComponent implements OnInit {
           ]
         },
         {
-          icon: 'fas fa-money-check-alt',
-          label: 'Payroll Management',
-          expanded: false,
-          permissionKey: 'Payroll',
-          children: [
-            { icon: 'fas fa-clock', label: 'Time Clock', route: '/app/attendance/clock-in-out' },
-            { icon: 'fas fa-calendar-week', label: 'Weekly Timesheet', route: '/app/attendance/weekly-timesheet' },
-            { icon: 'fas fa-user-clock', label: 'Daily Attendance', route: '/app/attendance/management' },
-            { icon: 'fas fa-check-circle', label: 'Attendance Approval', route: '/app/attendance/approval' },
-            {
-              icon: 'fas fa-tasks',
-              label: 'Payroll Workflow',
-              expanded: false,
-              children: [
-                { icon: 'fas fa-cog', label: 'Process Payroll', route: '/app/payroll/timesheets' },
-                { icon: 'fas fa-history', label: 'Payroll History', route: '/app/payroll/history' }
-              ]
-            }
-          ]
-        },
-        {
           icon: 'fas fa-dollar-sign',
           label: 'Loans & Advances',
           route: '/app/hr/loans',
@@ -224,12 +203,35 @@ export class SidebarComponent implements OnInit {
           permissionKey: 'MIS Dashboards',
           children: [
             { icon: 'fas fa-users', label: 'HR Dashboard', route: '/app/mis/hr-dashboard' },
-            { icon: 'fas fa-money-bill-wave', label: 'Payroll Dashboard', route: '/app/mis/payroll-dashboard' },
-            { icon: 'fas fa-calendar-check', label: 'Attendance Dashboard', route: '/app/mis/attendance-dashboard' },
             { icon: 'fas fa-chart-line', label: 'Performance Dashboard', route: '/app/mis/performance-dashboard' },
             { icon: 'fas fa-file-alt', label: 'Custom Report Builder', route: '/app/mis/report-builder' }
           ]
         }
+      ]
+    },
+    {
+      icon: 'fas fa-user-clock',
+      label: 'Attendance',
+      expanded: false,
+      permissionKey: 'Attendance',
+      children: [
+        { icon: 'fas fa-clock', label: 'Time Clock', route: '/app/attendance/clock-in-out' },
+        { icon: 'fas fa-calendar-week', label: 'Weekly Timesheet', route: '/app/attendance/weekly-timesheet' },
+        { icon: 'fas fa-calendar-day', label: 'Daily Attendance', route: '/app/attendance/management' },
+        { icon: 'fas fa-check-circle', label: 'Attendance Approval', route: '/app/attendance/approval' },
+        { icon: 'fas fa-chart-bar', label: 'Attendance Dashboard', route: '/app/mis/attendance-dashboard' }
+      ]
+    },
+    {
+      icon: 'fas fa-money-check-alt',
+      label: 'Payroll',
+      expanded: false,
+      permissionKey: 'Payroll',
+      children: [
+        { icon: 'fas fa-cog', label: 'Process Payroll', route: '/app/payroll/timesheets' },
+        { icon: 'fas fa-history', label: 'Payroll History', route: '/app/payroll/history' },
+        { icon: 'fas fa-file-invoice-dollar', label: 'Pay Slips (ESS)', route: '/app/payroll/self-service' },
+        { icon: 'fas fa-chart-pie', label: 'Payroll Dashboard', route: '/app/mis/payroll-dashboard' }
       ]
     },
     {
