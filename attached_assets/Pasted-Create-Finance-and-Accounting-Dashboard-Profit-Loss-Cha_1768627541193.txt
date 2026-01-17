@@ -1,0 +1,44 @@
+Create Finance and Accounting 
+Dashboard: Profit & Loss Chart, Income Chart, Expense Chart, Cashflow Chart and Bank Accounts Overview
+Banking:
+Bank Accounts Management
+Banking Feeds: Download Transactions, Import Transactions, Add/Edit/Delete Transactions, Match/Ignore Transactions, Verify Account
+Transactions Management:
+Mapping Bank Statements to Accounting
+Mapping Invoices to Accounting
+Mapping Payments to Accounting
+Mapping Expenses to Accounting
+Mapping Purchase to Accounting (need to integrate with Purchase Management module)
+Mapping Inventory to Accounting (need to integrate with Inventory Management module)
+Mapping Payroll to Accounting (need to integrate with HR Payroll module)
+Bills Management
+Checks Management
+Register is where you quickly enter money you have received from your customers and payments you have made to your suppliers or vendors
+Banking Rules: to automatically categorize transactions
+Journal Entry: to record transactions in the general ledger
+Transfer: to transfers of amounts between accounts
+Chart of Accounts: is a list of the account numbers and names relevant to your company. Typically, a chart of accounts will have four categories (Asset accounts, Liability accounts, Income accounts and Expense accounts).
+Reconcile: is the process of matching transactions entered into module against your bank or credit card statements
+Budgets Management: supports preparing budgets, which help you monitor, track, and compare expected income and expenses with actual income and expenses. When you prepare a budget, you typically prepare it for a fiscal year, and you can opt to supply budget amounts or use historical amounts
+Mapping Setup:
+General Mapping Setup
+Payslips Mapping Setup
+Purchase Mapping Setup
+Inventory Mapping Setup
+Manufacturing Mapping Setup
+Omni-channel Sales Mapping Setup
+Fixed Equipment Mapping Setup
+Business Overview Reports:
+Balance Sheet Comparison: what you own (assets), what you owe (liabilities), and what you invested (equity) compared to last year.
+Balance Sheet Detail: a detailed view of what you own (assets), what you owe (liabilities), and what you invested (equity).
+Balance Sheet Summary: a summary of what you own (assets), what you owe (liabilities), and what you invested (equity).
+Balance Sheet: what you own (assets), what you owe (liabilities), and what you invested (equity).
+Custom Summary Report: a report you build from scratch. With more options to customise.
+Profit and Loss as % of total income: your expenses as a percentage of your total income.
+Profit and Loss Comparison: your income, expenses, and net income (profit or loss) compared to last year.
+Profit and Loss Detail: profit and Loss Detail
+Profit and Loss year-to-date comparison: Your income, expenses, and net income (profit or loss) compared to this year so far
+Monthly Profit and Loss: Your income, expenses, and net income (profit or loss). Statistics by month.
+Profit and Loss: your income, expenses, and net income (profit or loss). Also called an income statement.
+Statement of Cash Flows: cash flowing in and out from sales and expenses (operating activities), investments, and financing.
+Statement of Changes in Equity: statement of changes in equity.
