@@ -1,21 +1,36 @@
-<div class="bank-accounts">
+<div class="inventory-page">
   <div class="page-header">
-    <h1>Bank Accounts</h1>
+    <div>
+      <h1>Bank Accounts</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Accounting</span>
+        <span>/</span>
+        <span>Bank Accounts</span>
+      </div>
+    </div>
     <button class="btn btn-primary" (click)="openNewDialog()">
       <i class="fas fa-plus"></i> Add Bank Account
     </button>
   </div>
 
-  <div class="summary-section">
+  <div class="summary-cards">
     <div class="summary-card">
+      <div class="card-icon blue">
+        <i class="fas fa-university"></i>
+      </div>
       <div class="card-content">
-        <span class="label">Total Balance (All Accounts)</span>
+        <span class="label">Total Balance</span>
         <span class="value" [ngClass]="getTotalBalance() >= 0 ? 'positive' : 'negative'">
           {{ formatCurrency(getTotalBalance()) }}
         </span>
       </div>
     </div>
     <div class="summary-card">
+      <div class="card-icon green">
+        <i class="fas fa-check-circle"></i>
+      </div>
       <div class="card-content">
         <span class="label">Active Accounts</span>
         <span class="value">{{ bankAccounts.length }}</span>
@@ -23,142 +38,159 @@
     </div>
   </div>
 
-  <div class="loading-spinner" *ngIf="loading">
-    <i class="fas fa-spinner fa-spin"></i> Loading...
-  </div>
-
-  <div class="accounts-grid" *ngIf="!loading">
-    <div class="bank-account-card" *ngFor="let account of bankAccounts" 
-         [ngClass]="{'primary': account.isPrimary, 'inactive': !account.isActive}">
-      <div class="card-header">
-        <div class="account-info">
-          <i class="fas fa-university"></i>
-          <div class="account-details">
-            <span class="account-name">{{ account.accountName }}</span>
-            <span class="bank-name">{{ account.bankName }}</span>
-          </div>
-        </div>
-        <div class="account-badges">
-          <span class="type-badge">{{ account.accountType }}</span>
-          <span class="primary-badge" *ngIf="account.isPrimary">Primary</span>
-        </div>
-      </div>
-
-      <div class="card-body">
-        <div class="detail-row">
-          <span class="label">Account Number</span>
-          <span class="value">{{ account.accountNumber ? '****' + account.accountNumber.slice(-4) : 'N/A' }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">Branch</span>
-          <span class="value">{{ account.bankBranch || 'N/A' }}</span>
-        </div>
-        <div class="detail-row">
-          <span class="label">Currency</span>
-          <span class="value">{{ account.currencyCode }}</span>
-        </div>
-      </div>
-
-      <div class="card-balance">
-        <span class="label">Current Balance</span>
-        <span class="value" [ngClass]="(account.currentBalance || 0) >= 0 ? 'positive' : 'negative'">
-          {{ formatCurrency(account.currentBalance || 0) }}
-        </span>
-      </div>
-
-      <div class="card-actions">
-        <button class="btn-icon" (click)="viewTransactions(account)" title="View Transactions">
-          <i class="fas fa-list"></i>
-        </button>
-        <button class="btn-icon" (click)="editAccount(account)" title="Edit">
-          <i class="fas fa-pencil-alt"></i>
-        </button>
-        <button class="btn-icon danger" (click)="confirmDelete(account)" title="Delete">
-          <i class="fas fa-trash"></i>
-        </button>
-      </div>
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Account Name</th>
+            <th>Bank</th>
+            <th>Account Number</th>
+            <th>Type</th>
+            <th>Currency</th>
+            <th class="text-right">Balance</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading">
+            <td colspan="8" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+            </td>
+          </tr>
+          <tr *ngIf="!loading && bankAccounts.length === 0">
+            <td colspan="8" class="empty-state">
+              <i class="fas fa-university"></i>
+              <p>No bank accounts found. Click "Add Bank Account" to create one.</p>
+            </td>
+          </tr>
+          <tr *ngFor="let account of bankAccounts">
+            <td>
+              <strong>{{ account.accountName }}</strong>
+              <span class="badge badge-warning" *ngIf="account.isPrimary" style="margin-left: 8px;">Primary</span>
+            </td>
+            <td>{{ account.bankName || '-' }}</td>
+            <td>{{ account.accountNumber ? '****' + account.accountNumber.slice(-4) : '-' }}</td>
+            <td>
+              <span class="badge badge-info">{{ account.accountType }}</span>
+            </td>
+            <td>{{ account.currencyCode }}</td>
+            <td class="text-right">
+              <span [ngClass]="(account.currentBalance || 0) >= 0 ? 'text-success' : 'text-danger'">
+                {{ formatCurrency(account.currentBalance || 0) }}
+              </span>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="account.isActive ? 'badge-success' : 'badge-danger'">
+                {{ account.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary" (click)="editAccount(account)" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="confirmDelete(account)" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-
-    <div class="bank-account-card add-new" (click)="openNewDialog()">
-      <i class="fas fa-plus-circle"></i>
-      <span>Add Bank Account</span>
-    </div>
   </div>
+</div>
 
-  <div class="modal-overlay" *ngIf="displayDialog" (click)="displayDialog = false"></div>
-  <div class="modal modal-wide" *ngIf="displayDialog">
+<div class="modal-overlay" *ngIf="displayDialog" (click)="displayDialog = false">
+  <div class="modal modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>{{ isEdit ? 'Edit Bank Account' : 'New Bank Account' }}</h3>
-      <button class="btn-close" (click)="displayDialog = false">&times;</button>
+      <h2>{{ isEdit ? 'Edit Bank Account' : 'Add Bank Account' }}</h2>
+      <button class="close-btn" (click)="displayDialog = false"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
-      <div class="form-grid">
-        <div class="form-row">
-          <label for="accountName">Account Name *</label>
-          <input type="text" id="accountName" [(ngModel)]="newAccount.accountName" required />
+      <div class="form-row">
+        <div class="form-group">
+          <label>Account Name <span class="required">*</span></label>
+          <input type="text" class="form-control" [(ngModel)]="newAccount.accountName" placeholder="e.g., Main Checking" />
         </div>
-        <div class="form-row">
-          <label for="accountNumber">Account Number</label>
-          <input type="text" id="accountNumber" [(ngModel)]="newAccount.accountNumber" />
+        <div class="form-group">
+          <label>Account Number</label>
+          <input type="text" class="form-control" [(ngModel)]="newAccount.accountNumber" placeholder="Account number" />
         </div>
-        <div class="form-row">
-          <label for="bankName">Bank Name</label>
-          <input type="text" id="bankName" [(ngModel)]="newAccount.bankName" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Bank Name</label>
+          <input type="text" class="form-control" [(ngModel)]="newAccount.bankName" placeholder="e.g., Chase Bank" />
         </div>
-        <div class="form-row">
-          <label for="bankBranch">Branch</label>
-          <input type="text" id="bankBranch" [(ngModel)]="newAccount.bankBranch" />
+        <div class="form-group">
+          <label>Branch</label>
+          <input type="text" class="form-control" [(ngModel)]="newAccount.bankBranch" placeholder="Branch name" />
         </div>
-        <div class="form-row">
-          <label for="accountType">Account Type</label>
-          <select id="accountType" [(ngModel)]="newAccount.accountType">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Account Type</label>
+          <select class="form-control" [(ngModel)]="newAccount.accountType">
             <option *ngFor="let type of accountTypes" [value]="type.value">{{ type.label }}</option>
           </select>
         </div>
-        <div class="form-row">
-          <label for="currency">Currency</label>
-          <select id="currency" [(ngModel)]="newAccount.currencyCode">
+        <div class="form-group">
+          <label>Currency</label>
+          <select class="form-control" [(ngModel)]="newAccount.currencyCode">
             <option *ngFor="let curr of currencies" [value]="curr.value">{{ curr.label }}</option>
           </select>
         </div>
-        <div class="form-row">
-          <label for="openingBalance">Opening Balance</label>
-          <input type="number" id="openingBalance" [(ngModel)]="newAccount.openingBalance" step="0.01" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Opening Balance</label>
+          <input type="number" class="form-control" [(ngModel)]="newAccount.openingBalance" step="0.01" />
         </div>
-        <div class="form-row">
-          <label for="glAccount">GL Account</label>
-          <select id="glAccount" [(ngModel)]="newAccount.glAccount">
+        <div class="form-group">
+          <label>GL Account</label>
+          <select class="form-control" [(ngModel)]="newAccount.glAccount">
             <option [ngValue]="null">Select GL Account</option>
             <option *ngFor="let acc of glAccounts" [ngValue]="acc">{{ acc.accountCode }} - {{ acc.accountName }}</option>
           </select>
         </div>
-        <div class="form-row full-width">
-          <label for="description">Description</label>
-          <textarea id="description" [(ngModel)]="newAccount.description" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" [(ngModel)]="newAccount.description" rows="2" placeholder="Optional description"></textarea>
+      </div>
+      <div class="form-row checkbox-row">
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="newAccount.isPrimary" />
+            <span>Primary Account</span>
+          </label>
         </div>
-        <div class="form-row checkbox-row">
-          <input type="checkbox" id="isPrimary" [(ngModel)]="newAccount.isPrimary" />
-          <label for="isPrimary">Primary Account</label>
-        </div>
-        <div class="form-row checkbox-row">
-          <input type="checkbox" id="isActive" [(ngModel)]="newAccount.isActive" />
-          <label for="isActive">Active</label>
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="newAccount.isActive" />
+            <span>Active</span>
+          </label>
         </div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="displayDialog = false">Cancel</button>
-      <button class="btn btn-primary" (click)="saveAccount()">Save</button>
+      <button class="btn btn-primary" (click)="saveAccount()">{{ isEdit ? 'Update' : 'Save' }}</button>
     </div>
   </div>
+</div>
 
-  <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()"></div>
-  <div class="modal confirm-modal" *ngIf="showDeleteConfirm">
+<div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>Confirm Delete</h3>
+      <h2>Confirm Delete</h2>
+      <button class="close-btn" (click)="cancelDelete()"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
-      <p>Are you sure you want to delete bank account "{{ accountToDelete?.accountName }}"?</p>
+      <p>Are you sure you want to delete "{{ accountToDelete?.accountName }}"?</p>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="cancelDelete()">Cancel</button>

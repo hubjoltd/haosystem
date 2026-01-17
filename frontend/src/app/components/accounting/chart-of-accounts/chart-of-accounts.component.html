@@ -1,150 +1,159 @@
-<div class="chart-of-accounts">
+<div class="inventory-page">
   <div class="page-header">
-    <h1>Chart of Accounts</h1>
+    <div>
+      <h1>Chart of Accounts</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Accounting</span>
+        <span>/</span>
+        <span>Chart of Accounts</span>
+      </div>
+    </div>
     <button class="btn btn-primary" (click)="openNewDialog()">
       <i class="fas fa-plus"></i> Add Account
     </button>
   </div>
 
-  <div class="filters-section">
-    <div class="filter-group">
-      <div class="search-input">
+  <div class="card">
+    <div class="card-header-row">
+      <div class="search-box">
         <i class="fas fa-search"></i>
         <input type="text" [(ngModel)]="searchText" (input)="applyFilters()" placeholder="Search accounts..." />
       </div>
-    </div>
-    <div class="filter-group">
-      <select [(ngModel)]="selectedType" (change)="applyFilters()">
-        <option [ngValue]="null">All Account Types</option>
-        <option *ngFor="let type of accountTypes" [value]="type.value">{{ type.label }}</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="accounts-table">
-    <div class="loading-spinner" *ngIf="loading">
-      <i class="fas fa-spinner fa-spin"></i> Loading...
-    </div>
-    
-    <table *ngIf="!loading">
-      <thead>
-        <tr>
-          <th style="width: 120px">Code</th>
-          <th>Account Name</th>
-          <th style="width: 120px">Type</th>
-          <th style="width: 100px">Balance Type</th>
-          <th style="width: 130px" class="text-right">Current Balance</th>
-          <th style="width: 100px">Status</th>
-          <th style="width: 100px">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let account of filteredAccounts">
-          <td>
-            <span class="account-code">{{ account.accountCode }}</span>
-          </td>
-          <td>
-            <div class="account-name-cell">
-              <i [class]="getTypeIcon(account.accountType)" [style.color]="getTypeColor(account.accountType)"></i>
-              <span>{{ account.accountName }}</span>
-              <span class="system-badge" *ngIf="account.isSystem">System</span>
-            </div>
-          </td>
-          <td>
-            <span class="type-badge" [style.background-color]="getTypeColor(account.accountType) + '20'" 
-                  [style.color]="getTypeColor(account.accountType)">
-              {{ account.accountType }}
-            </span>
-          </td>
-          <td>{{ account.balanceType }}</td>
-          <td class="text-right" [ngClass]="(account.currentBalance || 0) >= 0 ? 'positive' : 'negative'">
-            {{ formatCurrency(account.currentBalance || 0) }}
-          </td>
-          <td>
-            <span class="status-badge" [ngClass]="account.status === 'Active' ? 'active' : 'inactive'">
-              {{ account.status }}
-            </span>
-          </td>
-          <td>
-            <div class="action-buttons">
-              <button class="btn-icon" (click)="editAccount(account)" title="Edit">
-                <i class="fas fa-pencil-alt"></i>
-              </button>
-              <button class="btn-icon danger" (click)="confirmDelete(account)" title="Delete" [disabled]="account.isSystem">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-        <tr *ngIf="filteredAccounts.length === 0">
-          <td colspan="7" class="text-center">
-            <div class="empty-state">
-              <i class="fas fa-folder-open"></i>
-              <p>No accounts found</p>
-              <button class="btn btn-outline" (click)="openNewDialog()">Add First Account</button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="modal-overlay" *ngIf="displayDialog" (click)="displayDialog = false"></div>
-  <div class="modal" *ngIf="displayDialog">
-    <div class="modal-header">
-      <h3>{{ isEdit ? 'Edit Account' : 'New Account' }}</h3>
-      <button class="btn-close" (click)="displayDialog = false">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-row">
-        <label for="accountCode">Account Code *</label>
-        <input type="text" id="accountCode" [(ngModel)]="newAccount.accountCode" required />
-      </div>
-      <div class="form-row">
-        <label for="accountName">Account Name *</label>
-        <input type="text" id="accountName" [(ngModel)]="newAccount.accountName" required />
-      </div>
-      <div class="form-row">
-        <label for="accountType">Account Type *</label>
-        <select id="accountType" [(ngModel)]="newAccount.accountType">
+      <div class="filters">
+        <select class="form-control filter-select" [(ngModel)]="selectedType" (change)="applyFilters()">
+          <option [ngValue]="null">All Types</option>
           <option *ngFor="let type of accountTypes" [value]="type.value">{{ type.label }}</option>
         </select>
       </div>
-      <div class="form-row">
-        <label for="balanceType">Balance Type *</label>
-        <select id="balanceType" [(ngModel)]="newAccount.balanceType">
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Account Name</th>
+            <th>Type</th>
+            <th>Balance Type</th>
+            <th class="text-right">Current Balance</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading">
+            <td colspan="7" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+            </td>
+          </tr>
+          <tr *ngIf="!loading && filteredAccounts.length === 0">
+            <td colspan="7" class="empty-state">
+              <i class="fas fa-folder-open"></i>
+              <p>No accounts found. Click "Add Account" to create one.</p>
+            </td>
+          </tr>
+          <tr *ngFor="let account of filteredAccounts">
+            <td><strong class="account-code">{{ account.accountCode }}</strong></td>
+            <td>
+              <i [class]="getTypeIcon(account.accountType)" class="account-type-icon" [style.color]="getTypeColor(account.accountType)"></i>
+              {{ account.accountName }}
+              <span class="system-badge" *ngIf="account.isSystem">System</span>
+            </td>
+            <td>
+              <span class="badge" [style.background-color]="getTypeColor(account.accountType)" style="color: white;">
+                {{ account.accountType }}
+              </span>
+            </td>
+            <td>{{ account.balanceType }}</td>
+            <td class="text-right">
+              <span [ngClass]="(account.currentBalance || 0) >= 0 ? 'text-success' : 'text-danger'">
+                {{ formatCurrency(account.currentBalance || 0) }}
+              </span>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="account.status === 'Active' ? 'badge-success' : 'badge-danger'">
+                {{ account.status }}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary" (click)="editAccount(account)" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="confirmDelete(account)" title="Delete" [disabled]="account.isSystem">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="displayDialog" (click)="displayDialog = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEdit ? 'Edit Account' : 'Add Account' }}</h2>
+      <button class="close-btn" (click)="displayDialog = false"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Account Code <span class="required">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="newAccount.accountCode" placeholder="e.g., 1000" />
+      </div>
+      <div class="form-group">
+        <label>Account Name <span class="required">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="newAccount.accountName" placeholder="Enter account name" />
+      </div>
+      <div class="form-group">
+        <label>Account Type <span class="required">*</span></label>
+        <select class="form-control" [(ngModel)]="newAccount.accountType">
+          <option *ngFor="let type of accountTypes" [value]="type.value">{{ type.label }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Balance Type <span class="required">*</span></label>
+        <select class="form-control" [(ngModel)]="newAccount.balanceType">
           <option *ngFor="let type of balanceTypes" [value]="type.value">{{ type.label }}</option>
         </select>
       </div>
-      <div class="form-row">
-        <label for="description">Description</label>
-        <textarea id="description" [(ngModel)]="newAccount.description" rows="3"></textarea>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" [(ngModel)]="newAccount.description" placeholder="Optional description" rows="3"></textarea>
       </div>
-      <div class="form-row">
-        <label for="openingBalance">Opening Balance</label>
-        <input type="number" id="openingBalance" [(ngModel)]="newAccount.openingBalance" step="0.01" />
+      <div class="form-group">
+        <label>Opening Balance</label>
+        <input type="number" class="form-control" [(ngModel)]="newAccount.openingBalance" step="0.01" />
       </div>
-      <div class="form-row">
-        <label for="status">Status</label>
-        <select id="status" [(ngModel)]="newAccount.status">
+      <div class="form-group">
+        <label>Status</label>
+        <select class="form-control" [(ngModel)]="newAccount.status">
           <option *ngFor="let status of statusOptions" [value]="status.value">{{ status.label }}</option>
         </select>
       </div>
-      <div class="form-row checkbox-row">
-        <input type="checkbox" id="taxApplicable" [(ngModel)]="newAccount.taxApplicable" />
-        <label for="taxApplicable">Tax Applicable</label>
+      <div class="form-group checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="newAccount.taxApplicable" />
+          <span>Tax Applicable</span>
+        </label>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="displayDialog = false">Cancel</button>
-      <button class="btn btn-primary" (click)="saveAccount()">Save</button>
+      <button class="btn btn-primary" (click)="saveAccount()">{{ isEdit ? 'Update' : 'Save' }}</button>
     </div>
   </div>
+</div>
 
-  <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()"></div>
-  <div class="modal confirm-modal" *ngIf="showDeleteConfirm">
+<div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+  <div class="modal modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>Confirm Delete</h3>
+      <h2>Confirm Delete</h2>
+      <button class="close-btn" (click)="cancelDelete()"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
       <p>Are you sure you want to delete account "{{ accountToDelete?.accountName }}"?</p>

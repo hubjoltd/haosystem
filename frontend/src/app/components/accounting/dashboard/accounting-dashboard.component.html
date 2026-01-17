@@ -1,16 +1,28 @@
-<div class="accounting-dashboard">
+<div class="inventory-page">
   <div class="page-header">
-    <h1>Finance & Accounting</h1>
-    <div class="header-actions">
-      <button class="btn btn-outline" (click)="initializeAccounts()">
-        <i class="fas fa-cog"></i> Initialize Chart of Accounts
-      </button>
+    <div>
+      <h1>Finance & Accounting</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Accounting</span>
+        <span>/</span>
+        <span>Dashboard</span>
+      </div>
     </div>
+    <button class="btn btn-primary" (click)="initializeAccounts()">
+      <i class="fas fa-cog"></i> Initialize Chart of Accounts
+    </button>
   </div>
 
-  <div class="dashboard-grid" *ngIf="dashboard">
+  <div class="loading-state" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin fa-2x"></i>
+    <p>Loading dashboard...</p>
+  </div>
+
+  <div class="dashboard-content" *ngIf="!loading && dashboard">
     <div class="summary-cards">
-      <div class="summary-card assets">
+      <div class="summary-card blue">
         <div class="card-icon">
           <i class="fas fa-building"></i>
         </div>
@@ -20,7 +32,7 @@
         </div>
       </div>
 
-      <div class="summary-card liabilities">
+      <div class="summary-card orange">
         <div class="card-icon">
           <i class="fas fa-credit-card"></i>
         </div>
@@ -30,7 +42,7 @@
         </div>
       </div>
 
-      <div class="summary-card equity">
+      <div class="summary-card purple">
         <div class="card-icon">
           <i class="fas fa-balance-scale"></i>
         </div>
@@ -40,7 +52,7 @@
         </div>
       </div>
 
-      <div class="summary-card" [ngClass]="dashboard.profitLoss >= 0 ? 'profit' : 'loss'">
+      <div class="summary-card" [ngClass]="dashboard.profitLoss >= 0 ? 'green' : 'red'">
         <div class="card-icon">
           <i class="fas" [ngClass]="dashboard.profitLoss >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'"></i>
         </div>
@@ -51,108 +63,104 @@
       </div>
     </div>
 
-    <div class="charts-section">
-      <div class="chart-card">
+    <div class="charts-row">
+      <div class="card chart-card">
         <h3>Profit & Loss Overview</h3>
-        <div class="simple-chart">
-          <div class="chart-bar-container">
-            <div class="chart-bar-item">
-              <div class="bar-label">Income</div>
-              <div class="bar-track">
-                <div class="bar-fill income" [style.width.%]="getBarWidth('income')"></div>
-              </div>
-              <div class="bar-value">{{ formatCurrency(dashboard.accountBalances.income || 0) }}</div>
+        <div class="chart-bars">
+          <div class="chart-bar-item">
+            <div class="bar-label">Income</div>
+            <div class="bar-track">
+              <div class="bar-fill green" [style.width.%]="getBarWidth('income')"></div>
             </div>
-            <div class="chart-bar-item">
-              <div class="bar-label">Expenses</div>
-              <div class="bar-track">
-                <div class="bar-fill expense" [style.width.%]="getBarWidth('expenses')"></div>
-              </div>
-              <div class="bar-value">{{ formatCurrency(dashboard.accountBalances.expenses || 0) }}</div>
+            <div class="bar-value">{{ formatCurrency(dashboard.accountBalances.income || 0) }}</div>
+          </div>
+          <div class="chart-bar-item">
+            <div class="bar-label">Expenses</div>
+            <div class="bar-track">
+              <div class="bar-fill red" [style.width.%]="getBarWidth('expenses')"></div>
             </div>
-            <div class="chart-bar-item">
-              <div class="bar-label">Net P/L</div>
-              <div class="bar-track">
-                <div class="bar-fill" [ngClass]="dashboard.profitLoss >= 0 ? 'profit' : 'loss'" 
-                     [style.width.%]="getBarWidth('profitLoss')"></div>
-              </div>
-              <div class="bar-value" [ngClass]="dashboard.profitLoss >= 0 ? 'positive' : 'negative'">
-                {{ formatCurrency(dashboard.profitLoss) }}
-              </div>
+            <div class="bar-value">{{ formatCurrency(dashboard.accountBalances.expenses || 0) }}</div>
+          </div>
+          <div class="chart-bar-item">
+            <div class="bar-label">Net P/L</div>
+            <div class="bar-track">
+              <div class="bar-fill" [ngClass]="dashboard.profitLoss >= 0 ? 'green' : 'red'" [style.width.%]="getBarWidth('profitLoss')"></div>
+            </div>
+            <div class="bar-value" [ngClass]="dashboard.profitLoss >= 0 ? 'text-success' : 'text-danger'">
+              {{ formatCurrency(dashboard.profitLoss) }}
             </div>
           </div>
         </div>
       </div>
 
-      <div class="chart-card">
+      <div class="card chart-card">
         <h3>Income vs Expenses</h3>
-        <div class="donut-chart-container">
+        <div class="donut-container">
           <div class="donut-chart">
             <svg viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" stroke-width="20"/>
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#22c55e" stroke-width="20"
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" stroke-width="15"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#22c55e" stroke-width="15"
                       [attr.stroke-dasharray]="getDonutSegment('income')"
                       stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#ef4444" stroke-width="20"
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#ef4444" stroke-width="15"
                       [attr.stroke-dasharray]="getDonutSegment('expenses')"
                       [attr.stroke-dashoffset]="getDonutOffset()" transform="rotate(-90 50 50)"/>
             </svg>
           </div>
           <div class="donut-legend">
             <div class="legend-item">
-              <span class="legend-color income"></span>
-              <span class="legend-label">Income: {{ formatCurrency(dashboard.accountBalances.income || 0) }}</span>
+              <span class="legend-color green"></span>
+              <span>Income: {{ formatCurrency(dashboard.accountBalances.income || 0) }}</span>
             </div>
             <div class="legend-item">
-              <span class="legend-color expense"></span>
-              <span class="legend-label">Expenses: {{ formatCurrency(dashboard.accountBalances.expenses || 0) }}</span>
+              <span class="legend-color red"></span>
+              <span>Expenses: {{ formatCurrency(dashboard.accountBalances.expenses || 0) }}</span>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="banking-section">
-      <div class="section-header">
-        <h3>Bank Accounts Overview</h3>
-        <a routerLink="/app/accounting/bank-accounts" class="view-all">View All</a>
+    <div class="card">
+      <div class="card-header-row">
+        <h3>Bank Accounts</h3>
+        <a routerLink="/app/accounting/bank-accounts" class="btn btn-sm btn-secondary">View All</a>
       </div>
-      
-      <div class="bank-accounts-grid">
-        <div class="bank-account-card" *ngFor="let account of bankAccounts">
-          <div class="account-header">
-            <i class="fas fa-university"></i>
-            <span class="account-name">{{ account.accountName }}</span>
-            <span class="account-type" *ngIf="account.accountType">{{ account.accountType }}</span>
-          </div>
-          <div class="account-details">
-            <div class="detail">
-              <span class="label">Bank</span>
-              <span class="value">{{ account.bankName || 'N/A' }}</span>
-            </div>
-            <div class="detail">
-              <span class="label">Account #</span>
-              <span class="value">{{ account.accountNumber ? '****' + account.accountNumber.slice(-4) : 'N/A' }}</span>
-            </div>
-          </div>
-          <div class="account-balance">
-            <span class="label">Current Balance</span>
-            <span class="value" [ngClass]="(account.currentBalance || 0) >= 0 ? 'positive' : 'negative'">
-              {{ formatCurrency(account.currentBalance || 0) }}
-            </span>
-          </div>
-        </div>
-
-        <div class="bank-account-card add-new" routerLink="/app/accounting/bank-accounts">
-          <i class="fas fa-plus-circle"></i>
-          <span>Add Bank Account</span>
-        </div>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Account Name</th>
+              <th>Bank</th>
+              <th>Type</th>
+              <th class="text-right">Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="bankAccounts.length === 0">
+              <td colspan="4" class="empty-state">
+                <i class="fas fa-university"></i>
+                <p>No bank accounts configured</p>
+              </td>
+            </tr>
+            <tr *ngFor="let account of bankAccounts">
+              <td><strong>{{ account.accountName }}</strong></td>
+              <td>{{ account.bankName || '-' }}</td>
+              <td><span class="badge badge-info">{{ account.accountType }}</span></td>
+              <td class="text-right">
+                <span [ngClass]="(account.currentBalance || 0) >= 0 ? 'text-success' : 'text-danger'">
+                  {{ formatCurrency(account.currentBalance || 0) }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <div class="quick-actions">
+    <div class="card">
       <h3>Quick Actions</h3>
-      <div class="actions-grid">
+      <div class="quick-actions">
         <a routerLink="/app/accounting/journal-entries" class="action-item">
           <i class="fas fa-book"></i>
           <span>Journal Entry</span>
@@ -172,24 +180,11 @@
       </div>
     </div>
 
-    <div class="payables-section" *ngIf="dashboard.outstandingPayables > 0">
-      <div class="payables-card">
-        <div class="payables-icon">
-          <i class="fas fa-exclamation-triangle"></i>
-        </div>
-        <div class="payables-content">
-          <span class="label">Outstanding Payables</span>
-          <span class="value">{{ formatCurrency(dashboard.outstandingPayables) }}</span>
-        </div>
-        <a class="view-bills">View Bills</a>
+    <div class="alert alert-warning" *ngIf="dashboard.outstandingPayables > 0">
+      <i class="fas fa-exclamation-triangle"></i>
+      <div class="alert-content">
+        <strong>Outstanding Payables:</strong> {{ formatCurrency(dashboard.outstandingPayables) }}
       </div>
-    </div>
-  </div>
-
-  <div class="loading-overlay" *ngIf="loading">
-    <div class="loading-spinner">
-      <i class="fas fa-spinner fa-spin fa-2x"></i>
-      <span>Loading...</span>
     </div>
   </div>
 </div>
