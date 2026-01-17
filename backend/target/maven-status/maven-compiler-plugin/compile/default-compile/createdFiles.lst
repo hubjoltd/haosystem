@@ -16,6 +16,7 @@ com/erp/controller/RecruitmentController.class
 com/erp/controller/UserNotificationController.class
 com/erp/model/JobRole.class
 com/erp/model/Contract.class
+com/erp/service/FLSAOvertimeService.class
 com/erp/model/AccountCategory.class
 com/erp/repository/FinalSettlementRepository.class
 com/erp/repository/PurchaseRequisitionItemRepository.class
@@ -113,8 +114,10 @@ com/erp/repository/LeaveBalanceRepository.class
 com/erp/model/ProjectTimeEntry.class
 com/erp/service/JournalEntryService.class
 com/erp/controller/TrainingController.class
+com/erp/service/FLSAOvertimeService$OvertimeCalculationType.class
 com/erp/model/Designation.class
 com/erp/service/IntegrationService.class
+com/erp/service/FLSAOvertimeService$WeeklyOvertimeResult.class
 com/erp/service/SettingsService.class
 com/erp/model/PrefixSettings.class
 com/erp/repository/DocumentCategoryRepository.class
@@ -228,6 +231,7 @@ com/erp/repository/WarehouseRepository.class
 com/erp/model/PayrollRun.class
 com/erp/model/StockAdjustment.class
 com/erp/model/FinanceSettings.class
+com/erp/service/FLSAOvertimeService$DailyBreakdown.class
 com/erp/repository/StatutoryRuleRepository.class
 com/erp/service/GoodsReceiptService.class
 com/erp/dto/RegisterRequest.class

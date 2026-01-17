@@ -21,6 +21,7 @@ public class PayrollCalculationService {
     private static final BigDecimal MEDICARE_RATE = new BigDecimal("0.0145");
     private static final BigDecimal DISABILITY_RATE = new BigDecimal("0.009");
     private static final BigDecimal SOCIAL_SECURITY_WAGE_BASE = new BigDecimal("168600"); // 2024
+    private static final BigDecimal FLSA_OVERTIME_MULTIPLIER = new BigDecimal("1.5");
 
     @Autowired
     private PayrollRunRepository payrollRunRepository;
@@ -48,6 +49,9 @@ public class PayrollCalculationService {
 
     @Autowired
     private PayFrequencyRepository payFrequencyRepository;
+
+    @Autowired
+    private FLSAOvertimeService flsaOvertimeService;
 
     @Transactional
     public List<Timesheet> generateTimesheets(LocalDate startDate, LocalDate endDate) {
@@ -157,25 +161,38 @@ public class PayrollCalculationService {
         }
         record.setHourlyRate(hourlyRate);
         
-        BigDecimal regularHours = timesheet != null ? timesheet.getTotalRegularHours() : BigDecimal.ZERO;
-        BigDecimal overtimeHours = timesheet != null ? timesheet.getTotalOvertimeHours() : BigDecimal.ZERO;
+        BigDecimal regularHours;
+        BigDecimal overtimeHours;
+        BigDecimal doubleTimeHours = BigDecimal.ZERO;
+        
+        FLSAOvertimeService.WeeklyOvertimeResult flsaResult = flsaOvertimeService.aggregatePeriodOvertime(
+            employee.getId(), run.getPeriodStartDate(), run.getPeriodEndDate());
+        
+        regularHours = flsaResult.getRegularHours();
+        overtimeHours = flsaResult.getOvertimeHours();
+        doubleTimeHours = flsaResult.getDoubleTimeHours();
+        
+        if (regularHours.compareTo(BigDecimal.ZERO) == 0 && timesheet != null) {
+            regularHours = timesheet.getTotalRegularHours() != null ? timesheet.getTotalRegularHours() : BigDecimal.ZERO;
+            overtimeHours = timesheet.getTotalOvertimeHours() != null ? timesheet.getTotalOvertimeHours() : BigDecimal.ZERO;
+        }
+        
         record.setRegularHours(regularHours);
         record.setOvertimeHours(overtimeHours);
         
         int periodsPerYear = getPeriodsPerYear(run.getPayFrequency());
         
-        // Always calculate base pay based on hours worked × hourly rate
         BigDecimal basePay = regularHours.multiply(hourlyRate).setScale(2, RoundingMode.HALF_UP);
         record.setBasePay(basePay);
         
-        BigDecimal otMultiplier = getOvertimeMultiplier();
-        BigDecimal overtimePay = overtimeHours.multiply(hourlyRate).multiply(otMultiplier);
-        record.setOvertimePay(overtimePay);
+        BigDecimal overtimePay = overtimeHours.multiply(hourlyRate).multiply(FLSA_OVERTIME_MULTIPLIER).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal doubleTimePay = doubleTimeHours.multiply(hourlyRate).multiply(new BigDecimal("2.0")).setScale(2, RoundingMode.HALF_UP);
+        record.setOvertimePay(overtimePay.add(doubleTimePay));
         
         record.setBonuses(BigDecimal.ZERO);
         record.setReimbursements(BigDecimal.ZERO);
         
-        BigDecimal grossPay = basePay.add(overtimePay).add(record.getBonuses()).add(record.getReimbursements());
+        BigDecimal grossPay = basePay.add(overtimePay).add(doubleTimePay).add(record.getBonuses()).add(record.getReimbursements());
         record.setGrossPay(grossPay);
         
         calculatePreTaxDeductions(record, employee);
