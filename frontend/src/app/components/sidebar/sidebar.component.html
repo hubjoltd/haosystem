@@ -27,9 +27,9 @@
       [class.active]="isActive(item.route)" 
       [class.has-active-child]="hasActiveChild(item)"
       [style.padding-left.px]="level > 0 ? level * 12 : 0">
-    <a class="nav-link" (click)="toggleMenu(item, parentItems)" [title]="item.labelKey ? (item.labelKey | translate) : item.label">
+    <a class="nav-link" (click)="toggleMenu(item, parentItems)" [title]="item.label">
       <i [class]="item.icon"></i>
-      <span class="nav-text">{{ item.labelKey ? (item.labelKey | translate) : item.label }}</span>
+      <span class="nav-text">{{ item.label }}</span>
       <i *ngIf="item.children && item.children.length > 0" 
          class="fas fa-chevron-down expand-icon" 
          [class.rotated]="item.expanded"></i>
