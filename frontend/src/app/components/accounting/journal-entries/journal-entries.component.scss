@@ -1,0 +1,149 @@
+.journal-entries {
+  padding: 1.5rem;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+    }
+  }
+
+  .filters-section {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+
+    .filter-group {
+      .p-inputtext {
+        width: 300px;
+      }
+
+      .p-dropdown {
+        width: 180px;
+      }
+    }
+  }
+
+  .entries-table {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+
+    .entry-number {
+      font-family: monospace;
+      font-weight: 600;
+      color: #3b82f6;
+    }
+
+    .description-cell {
+      display: flex;
+      flex-direction: column;
+
+      .reference {
+        font-size: 0.75rem;
+        color: #64748b;
+      }
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .empty-state {
+      padding: 3rem;
+      text-align: center;
+
+      i {
+        font-size: 3rem;
+        color: #94a3b8;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        color: #64748b;
+        margin-bottom: 1rem;
+      }
+    }
+  }
+
+  .dialog-content {
+    .entry-header {
+      display: grid;
+      grid-template-columns: 150px 1fr 150px;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+
+      .form-row {
+        label {
+          display: block;
+          margin-bottom: 0.5rem;
+          font-weight: 500;
+          color: #334155;
+        }
+
+        input, .p-calendar {
+          width: 100%;
+        }
+
+        &.description-row {
+          grid-column: span 1;
+        }
+      }
+    }
+
+    .lines-section {
+      .lines-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        h4 {
+          margin: 0;
+          color: #334155;
+        }
+      }
+
+      .totals-row {
+        background: #f8fafc;
+        font-weight: 600;
+      }
+
+      .balance-row {
+        .error-message {
+          color: #dc2626;
+          padding: 0.75rem;
+          background: #fef2f2;
+
+          i {
+            margin-right: 0.5rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .journal-entries {
+    .dialog-content .entry-header {
+      grid-template-columns: 1fr;
+    }
+  }
+}

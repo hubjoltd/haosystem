@@ -113,6 +113,11 @@ import { HolidayCalendarComponent } from './components/leave/holiday-calendar/ho
 import { ToastComponent } from './components/shared/toast/toast.component';
 import { ChatPanelComponent } from './components/chat/chat-panel.component';
 
+import { AccountingDashboardComponent } from './components/accounting/dashboard/accounting-dashboard.component';
+import { ChartOfAccountsComponent } from './components/accounting/chart-of-accounts/chart-of-accounts.component';
+import { BankAccountsComponent } from './components/accounting/bank-accounts/bank-accounts.component';
+import { JournalEntriesComponent } from './components/accounting/journal-entries/journal-entries.component';
+
 @NgModule({
   declarations: [
     App,
@@ -191,7 +196,11 @@ import { ChatPanelComponent } from './components/chat/chat-panel.component';
     PayrollDashboardComponent,
     AttendanceDashboardComponent,
     PerformanceDashboardComponent,
-    CustomReportBuilderComponent
+    CustomReportBuilderComponent,
+    AccountingDashboardComponent,
+    ChartOfAccountsComponent,
+    BankAccountsComponent,
+    JournalEntriesComponent
   ],
   imports: [
     BrowserModule,

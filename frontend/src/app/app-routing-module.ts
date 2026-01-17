@@ -132,6 +132,11 @@ import { LoanRepaymentsComponent } from './components/loans/repayments/repayment
 import { ProjectManagementComponent } from './components/projects/project-management.component';
 import { ExpenseTypesSettingsComponent } from './components/settings/expense-types/expense-types.component';
 
+import { AccountingDashboardComponent } from './components/accounting/dashboard/accounting-dashboard.component';
+import { ChartOfAccountsComponent } from './components/accounting/chart-of-accounts/chart-of-accounts.component';
+import { BankAccountsComponent } from './components/accounting/bank-accounts/bank-accounts.component';
+import { JournalEntriesComponent } from './components/accounting/journal-entries/journal-entries.component';
+
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
@@ -262,7 +267,18 @@ const routes: Routes = [
       { path: 'loans/ledger', component: LoanLedgerComponent },
       { path: 'loans/repayments', component: LoanRepaymentsComponent },
       { path: 'projects', component: ProjectManagementComponent },
-      { path: 'settings/expense-types', component: ExpenseTypesSettingsComponent }
+      { path: 'settings/expense-types', component: ExpenseTypesSettingsComponent },
+      { path: 'accounting', component: AccountingDashboardComponent },
+      { path: 'accounting/dashboard', component: AccountingDashboardComponent },
+      { path: 'accounting/chart-of-accounts', component: ChartOfAccountsComponent },
+      { path: 'accounting/bank-accounts', component: BankAccountsComponent },
+      { path: 'accounting/journal-entries', component: JournalEntriesComponent },
+      { path: 'accounting/transactions', component: AccountingDashboardComponent },
+      { path: 'accounting/bills', component: AccountingDashboardComponent },
+      { path: 'accounting/transfers', component: AccountingDashboardComponent },
+      { path: 'accounting/reconciliation', component: AccountingDashboardComponent },
+      { path: 'accounting/budgets', component: AccountingDashboardComponent },
+      { path: 'accounting/reports', component: AccountingDashboardComponent }
     ]
   }
 ];

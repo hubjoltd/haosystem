@@ -108,6 +108,33 @@ export class SidebarComponent implements OnInit {
       ]
     },
     {
+      icon: 'fas fa-calculator',
+      label: 'Finance & Accounting',
+      labelKey: 'nav.accounting',
+      expanded: false,
+      permissionKey: 'Accounting',
+      children: [
+        { icon: 'fas fa-chart-pie', label: 'Dashboard', labelKey: 'nav.accountingDashboard', route: '/app/accounting/dashboard' },
+        { icon: 'fas fa-book', label: 'Chart of Accounts', labelKey: 'nav.chartOfAccounts', route: '/app/accounting/chart-of-accounts' },
+        { icon: 'fas fa-university', label: 'Bank Accounts', labelKey: 'nav.bankAccounts', route: '/app/accounting/bank-accounts' },
+        { icon: 'fas fa-pen', label: 'Journal Entries', labelKey: 'nav.journalEntries', route: '/app/accounting/journal-entries' },
+        {
+          icon: 'fas fa-exchange-alt',
+          label: 'Banking',
+          labelKey: 'nav.banking',
+          expanded: false,
+          children: [
+            { icon: 'fas fa-list', label: 'Transactions', labelKey: 'nav.transactions', route: '/app/accounting/transactions' },
+            { icon: 'fas fa-random', label: 'Transfers', labelKey: 'nav.transfers', route: '/app/accounting/transfers' },
+            { icon: 'fas fa-check-double', label: 'Reconciliation', labelKey: 'nav.reconciliation', route: '/app/accounting/reconciliation' }
+          ]
+        },
+        { icon: 'fas fa-file-invoice-dollar', label: 'Bills', labelKey: 'nav.bills', route: '/app/accounting/bills' },
+        { icon: 'fas fa-balance-scale', label: 'Budgets', labelKey: 'nav.budgets', route: '/app/accounting/budgets' },
+        { icon: 'fas fa-file-alt', label: 'Financial Reports', labelKey: 'nav.financialReports', route: '/app/accounting/reports' }
+      ]
+    },
+    {
       icon: 'fas fa-user-tie',
       label: 'HR Management',
       labelKey: 'nav.hr',
