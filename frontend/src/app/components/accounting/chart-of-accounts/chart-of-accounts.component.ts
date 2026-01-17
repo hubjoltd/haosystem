@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { AccountingService, ChartOfAccount, AccountCategory } from '../../../services/accounting.service';
 import { NotificationService } from '../../../services/notification.service';
 
@@ -46,7 +46,8 @@ export class ChartOfAccountsComponent implements OnInit {
 
   constructor(
     private accountingService: AccountingService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -60,16 +61,19 @@ export class ChartOfAccountsComponent implements OnInit {
         this.accounts = accounts;
         this.applyFilters();
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading accounts:', err);
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
 
     this.accountingService.getAllCategories().subscribe({
       next: (categories) => {
         this.categories = categories;
+        this.cdr.detectChanges();
       }
     });
   }

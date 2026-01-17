@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { AccountingService, BankAccount, ChartOfAccount } from '../../../services/accounting.service';
 import { NotificationService } from '../../../services/notification.service';
 
@@ -38,7 +38,8 @@ export class BankAccountsComponent implements OnInit {
 
   constructor(
     private accountingService: AccountingService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -51,16 +52,19 @@ export class BankAccountsComponent implements OnInit {
       next: (accounts) => {
         this.bankAccounts = accounts;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading bank accounts:', err);
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
 
     this.accountingService.getAccountsByType('Asset').subscribe({
       next: (accounts) => {
         this.glAccounts = accounts;
+        this.cdr.detectChanges();
       }
     });
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { AccountingService, Budget } from '../../../services/accounting.service';
 import { NotificationService } from '../../../services/notification.service';
 
@@ -18,7 +18,8 @@ export class BudgetsComponent implements OnInit {
 
   constructor(
     private accountingService: AccountingService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -31,10 +32,12 @@ export class BudgetsComponent implements OnInit {
       next: (data) => {
         this.budgets = data;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: () => {
         this.loading = false;
         this.notificationService.error('Failed to load budgets');
+        this.cdr.detectChanges();
       }
     });
   }
@@ -65,6 +68,7 @@ export class BudgetsComponent implements OnInit {
       },
       error: () => {
         this.notificationService.error('Failed to save budget');
+        this.cdr.detectChanges();
       }
     });
   }

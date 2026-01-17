@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { AccountingService } from '../../../services/accounting.service';
 import { NotificationService } from '../../../services/notification.service';
 
@@ -26,7 +26,8 @@ export class FinancialReportsComponent implements OnInit {
 
   constructor(
     private accountingService: AccountingService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -34,11 +35,13 @@ export class FinancialReportsComponent implements OnInit {
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
     this.startDate = firstDay.toISOString().split('T')[0];
     this.endDate = today.toISOString().split('T')[0];
+    this.cdr.detectChanges();
   }
 
   selectReport(reportId: string): void {
     this.selectedReport = reportId;
     this.reportData = null;
+    this.cdr.detectChanges();
   }
 
   generateReport(): void {
@@ -52,10 +55,12 @@ export class FinancialReportsComponent implements OnInit {
           next: (data) => {
             this.reportData = data;
             this.loading = false;
+            this.cdr.detectChanges();
           },
           error: () => {
             this.loading = false;
             this.notificationService.error('Failed to generate report');
+            this.cdr.detectChanges();
           }
         });
         break;
@@ -64,10 +69,12 @@ export class FinancialReportsComponent implements OnInit {
           next: (data) => {
             this.reportData = data;
             this.loading = false;
+            this.cdr.detectChanges();
           },
           error: () => {
             this.loading = false;
             this.notificationService.error('Failed to generate report');
+            this.cdr.detectChanges();
           }
         });
         break;
@@ -76,16 +83,19 @@ export class FinancialReportsComponent implements OnInit {
           next: (data) => {
             this.reportData = data;
             this.loading = false;
+            this.cdr.detectChanges();
           },
           error: () => {
             this.loading = false;
             this.notificationService.error('Failed to generate report');
+            this.cdr.detectChanges();
           }
         });
         break;
       default:
         this.loading = false;
         this.notificationService.info('Report coming soon');
+        this.cdr.detectChanges();
     }
   }
 
@@ -101,5 +111,6 @@ export class FinancialReportsComponent implements OnInit {
   backToList(): void {
     this.selectedReport = null;
     this.reportData = null;
+    this.cdr.detectChanges();
   }
 }

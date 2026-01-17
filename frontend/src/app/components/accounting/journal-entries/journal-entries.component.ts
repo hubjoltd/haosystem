@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { AccountingService, JournalEntry, JournalLine, ChartOfAccount } from '../../../services/accounting.service';
 import { NotificationService } from '../../../services/notification.service';
 
@@ -34,7 +34,8 @@ export class JournalEntriesComponent implements OnInit {
 
   constructor(
     private accountingService: AccountingService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -47,16 +48,19 @@ export class JournalEntriesComponent implements OnInit {
       next: (entries) => {
         this.entries = entries;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading journal entries:', err);
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
 
     this.accountingService.getPostableAccounts().subscribe({
       next: (accounts) => {
         this.accounts = accounts;
+        this.cdr.detectChanges();
       }
     });
   }
