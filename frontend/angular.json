@@ -77,7 +77,9 @@
             "host": "0.0.0.0",
             "port": 5000,
             "allowedHosts": true,
-            "proxyConfig": "proxy.conf.json"
+            "proxyConfig": "proxy.conf.json",
+            "liveReload": false,
+            "hmr": false
           },
           "configurations": {
             "production": {
