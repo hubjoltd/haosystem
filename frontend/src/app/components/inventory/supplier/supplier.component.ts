@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { SupplierService, Supplier } from '../../../services/supplier.service';
 import { SettingsService } from '../../../services/settings.service';
 
@@ -18,7 +18,8 @@ export class SupplierComponent implements OnInit {
 
   constructor(
     private supplierService: SupplierService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -31,10 +32,12 @@ export class SupplierComponent implements OnInit {
       next: (data) => {
         this.suppliers = data;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading suppliers', err);
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { UnitOfMeasureService, UnitOfMeasure } from '../../../services/unit-of-measure.service';
 import { SettingsService } from '../../../services/settings.service';
 import { NotificationService } from '../../../services/notification.service';
@@ -23,7 +23,8 @@ export class UnitsOfMeasureComponent implements OnInit {
   constructor(
     private unitService: UnitOfMeasureService,
     private settingsService: SettingsService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -36,15 +37,20 @@ export class UnitsOfMeasureComponent implements OnInit {
       next: (data) => {
         this.units = data;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading units', err);
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
 
     this.unitService.getBaseUnits().subscribe({
-      next: (data) => this.baseUnits = data,
+      next: (data) => {
+        this.baseUnits = data;
+        this.cdr.detectChanges();
+      },
       error: (err) => console.error('Error loading base units', err)
     });
   }

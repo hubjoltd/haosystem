@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { InventoryLedgerService, InventoryLedger, LedgerFilter } from '../../../services/inventory-ledger.service';
 import { ItemService, Item } from '../../../services/item.service';
@@ -25,7 +25,8 @@ export class InventoryLedgerComponent implements OnInit {
     private ledgerService: InventoryLedgerService,
     private itemService: ItemService,
     private warehouseService: WarehouseService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -36,20 +37,26 @@ export class InventoryLedgerComponent implements OnInit {
 
   loadItems(): void {
     this.itemService.getAll().subscribe({
-      next: (data) => this.items = data,
+      next: (data) => {
+        this.items = data;
+        this.cdr.detectChanges();
+      },
       error: (err) => console.error('Error loading items', err)
     });
   }
 
   loadWarehouses(): void {
     this.warehouseService.getAll().subscribe({
-      next: (data) => this.warehouses = data,
+      next: (data) => {
+        this.warehouses = data;
+        this.cdr.detectChanges();
+      },
       error: (err) => console.error('Error loading warehouses', err)
     });
   }
 
   loadLedger(): void {
-    this.loading = false;
+    this.loading = true;
     const filter: LedgerFilter = {};
     if (this.selectedItemId) filter.itemId = this.selectedItemId;
     if (this.selectedWarehouseId) filter.warehouseId = this.selectedWarehouseId;
@@ -60,10 +67,12 @@ export class InventoryLedgerComponent implements OnInit {
       next: (data) => {
         this.ledgerEntries = data;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading ledger', err);
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { WarehouseService, Warehouse, Bin } from '../../../services/warehouse.service';
 import { SettingsService } from '../../../services/settings.service';
 import { NotificationService } from '../../../services/notification.service';
@@ -24,7 +24,8 @@ export class WarehouseBinComponent implements OnInit {
   constructor(
     private warehouseService: WarehouseService,
     private settingsService: SettingsService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -37,10 +38,12 @@ export class WarehouseBinComponent implements OnInit {
       next: (data) => {
         this.warehouses = data;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading warehouses', err);
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -49,6 +52,7 @@ export class WarehouseBinComponent implements OnInit {
     this.warehouseService.getBinsByWarehouse(warehouseId).subscribe({
       next: (data) => {
         this.warehouseBins[warehouseId] = data;
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error loading bins', err)
     });

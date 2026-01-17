@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ItemService, Item } from '../../../services/item.service';
 import { ItemGroupService, ItemGroup } from '../../../services/item-group.service';
 import { UnitOfMeasureService, UnitOfMeasure } from '../../../services/unit-of-measure.service';
@@ -37,7 +37,8 @@ export class ItemMasterComponent implements OnInit {
     private unitOfMeasureService: UnitOfMeasureService,
     private supplierService: SupplierService,
     private settingsService: SettingsService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -49,6 +50,7 @@ export class ItemMasterComponent implements OnInit {
     if (this.subscriptionCount >= this.expectedSubscriptions) {
       this.loading = false;
       this.dataReady = true;
+      this.cdr.detectChanges();
     }
   }
 

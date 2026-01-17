@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ItemGroupService, ItemGroup } from '../../../services/item-group.service';
 import { SettingsService } from '../../../services/settings.service';
 import { NotificationService } from '../../../services/notification.service';
@@ -22,7 +22,8 @@ export class GroupMasterComponent implements OnInit {
   constructor(
     private groupService: ItemGroupService,
     private settingsService: SettingsService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -35,10 +36,12 @@ export class GroupMasterComponent implements OnInit {
       next: (data) => {
         this.groups = data;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading groups', err);
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
