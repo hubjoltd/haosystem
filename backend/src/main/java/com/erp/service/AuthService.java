@@ -2,7 +2,9 @@ package com.erp.service;
 
 import com.erp.dto.*;
 import com.erp.model.*;
+import com.erp.model.Branch;
 import com.erp.repository.*;
+import com.erp.repository.BranchRepository;
 import com.erp.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,6 +27,9 @@ public class AuthService {
     @Autowired
     private JwtUtil jwtUtil;
     
+    @Autowired
+    private BranchRepository branchRepository;
+    
     public AuthResponse login(LoginRequest request) {
         Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
         
@@ -42,13 +47,41 @@ public class AuthService {
             throw new RuntimeException("Account is disabled");
         }
         
-        user.setLastLogin(LocalDateTime.now());
-        userRepository.save(user);
-        
         Long branchId = user.getBranch() != null ? user.getBranch().getId() : null;
         String branchName = user.getBranch() != null ? user.getBranch().getName() : null;
         String branchCode = user.getBranch() != null ? user.getBranch().getCode() : null;
         Boolean isSuperAdmin = user.getIsSuperAdmin();
+        
+        if (request.getBranchId() != null) {
+            if (isSuperAdmin) {
+                Optional<Branch> selectedBranch = branchRepository.findById(request.getBranchId());
+                if (selectedBranch.isPresent()) {
+                    Branch branch = selectedBranch.get();
+                    if (!branch.getActive()) {
+                        throw new RuntimeException("Selected company is inactive");
+                    }
+                    branchId = branch.getId();
+                    branchName = branch.getName();
+                    branchCode = branch.getCode();
+                } else {
+                    throw new RuntimeException("Selected company not found");
+                }
+            } else if (user.getBranch() != null) {
+                if (!user.getBranch().getId().equals(request.getBranchId())) {
+                    throw new RuntimeException("You do not have access to the selected company");
+                }
+                if (!user.getBranch().getActive()) {
+                    throw new RuntimeException("Your company is currently inactive");
+                }
+            } else {
+                throw new RuntimeException("You are not assigned to any company");
+            }
+        } else if (!isSuperAdmin && user.getBranch() == null) {
+            throw new RuntimeException("You are not assigned to any company. Please contact administrator.");
+        }
+        
+        user.setLastLogin(LocalDateTime.now());
+        userRepository.save(user);
         
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().getName(), branchId, isSuperAdmin);
         

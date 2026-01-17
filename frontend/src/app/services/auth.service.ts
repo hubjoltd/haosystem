@@ -6,6 +6,7 @@ import { tap } from 'rxjs/operators';
 export interface LoginRequest {
   username: string;
   password: string;
+  branchId?: number;
 }
 
 export interface RegisterRequest {

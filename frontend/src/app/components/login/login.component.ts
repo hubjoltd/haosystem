@@ -69,7 +69,8 @@ export class LoginComponent implements OnInit {
 
     const request: LoginRequest = {
       username: this.username,
-      password: this.password
+      password: this.password,
+      branchId: this.selectedBranch?.id
     };
 
     this.authService.login(request).subscribe({
