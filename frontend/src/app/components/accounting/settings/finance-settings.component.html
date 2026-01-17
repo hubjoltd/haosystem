@@ -1,0 +1,325 @@
+<div class="inventory-page">
+  <div class="page-header">
+    <div>
+      <h1>Finance Settings</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Accounting</span>
+        <span>/</span>
+        <span>Settings</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-layout">
+    <div class="settings-sidebar">
+      <nav class="settings-nav">
+        <a *ngFor="let tab of tabs" 
+           class="settings-nav-item" 
+           [class.active]="activeTab === tab.id"
+           (click)="selectTab(tab.id)">
+          <i [class]="tab.icon"></i>
+          <span>{{ tab.name }}</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="settings-content">
+      <div class="card">
+        <div class="loading-overlay" *ngIf="loading">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
+
+        <div class="settings-panel" *ngIf="activeTab === 'general'">
+          <h2>General Settings</h2>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Fiscal Year Start</label>
+              <select class="form-control" [(ngModel)]="generalSettings.fiscalYearStart">
+                <option value="January">January</option>
+                <option value="April">April</option>
+                <option value="July">July</option>
+                <option value="October">October</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Accounting Method</label>
+              <select class="form-control" [(ngModel)]="generalSettings.accountingMethod">
+                <option value="Accrual">Accrual</option>
+                <option value="Cash">Cash</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Base Currency</label>
+              <select class="form-control" [(ngModel)]="generalSettings.baseCurrency">
+                <option value="USD">USD - US Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="GBP">GBP - British Pound</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Default Payment Terms</label>
+              <select class="form-control" [(ngModel)]="generalSettings.defaultPaymentTerms">
+                <option value="Net 15">Net 15</option>
+                <option value="Net 30">Net 30</option>
+                <option value="Net 45">Net 45</option>
+                <option value="Net 60">Net 60</option>
+                <option value="Due on Receipt">Due on Receipt</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="generalSettings.multiCurrencyEnabled" />
+              Enable Multi-Currency
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="generalSettings.autoJournalEntryNumbering" />
+              Auto-generate Journal Entry Numbers
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="generalSettings.trackBillableExpenses" />
+              Track Billable Expenses
+            </label>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" (click)="saveGeneralSettings()">
+              <i class="fas fa-save"></i> Save Settings
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-panel" *ngIf="activeTab === 'account-types'">
+          <div class="panel-header">
+            <h2>Account Detail Types</h2>
+            <button class="btn btn-primary" (click)="showAddDetailType = true">
+              <i class="fas fa-plus"></i> Add Type
+            </button>
+          </div>
+          
+          <div class="modal-overlay" *ngIf="showAddDetailType" (click)="showAddDetailType = false">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+              <h3>Add Account Detail Type</h3>
+              <div class="form-group">
+                <label>Account Type</label>
+                <select class="form-control" [(ngModel)]="newDetailType.accountType">
+                  <option value="ASSET">Asset</option>
+                  <option value="LIABILITY">Liability</option>
+                  <option value="EQUITY">Equity</option>
+                  <option value="INCOME">Income</option>
+                  <option value="EXPENSE">Expense</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Name</label>
+                <input type="text" class="form-control" [(ngModel)]="newDetailType.name" />
+              </div>
+              <div class="form-group">
+                <label>Description</label>
+                <textarea class="form-control" [(ngModel)]="newDetailType.description"></textarea>
+              </div>
+              <div class="modal-actions">
+                <button class="btn btn-secondary" (click)="showAddDetailType = false">Cancel</button>
+                <button class="btn btn-primary" (click)="addAccountDetailType()">Add</button>
+              </div>
+            </div>
+          </div>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Account Type</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>System</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let type of accountDetailTypes">
+                <td><span class="badge">{{ type.accountType }}</span></td>
+                <td>{{ type.name }}</td>
+                <td>{{ type.description }}</td>
+                <td><i class="fas" [ngClass]="type.isSystem ? 'fa-check text-success' : 'fa-times text-muted'"></i></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="settings-panel" *ngIf="activeTab === 'plaid'">
+          <h2>Plaid Environment Setup</h2>
+          <p class="settings-description">Configure your Plaid integration for automatic bank transaction imports.</p>
+          
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Environment</label>
+              <select class="form-control" [(ngModel)]="plaidSettings.environment">
+                <option value="sandbox">Sandbox (Testing)</option>
+                <option value="development">Development</option>
+                <option value="production">Production</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Client ID</label>
+              <input type="text" class="form-control" [(ngModel)]="plaidSettings.clientId" placeholder="Enter Plaid Client ID" />
+            </div>
+            <div class="form-group">
+              <label>Sync Frequency</label>
+              <select class="form-control" [(ngModel)]="plaidSettings.syncFrequency">
+                <option value="hourly">Hourly</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Language</label>
+              <select class="form-control" [(ngModel)]="plaidSettings.language">
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="plaidSettings.autoImportTransactions" />
+              Auto-import Transactions
+            </label>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" (click)="savePlaidSettings()">
+              <i class="fas fa-save"></i> Save Plaid Settings
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-panel" *ngIf="activeTab === 'income-statement'">
+          <h2>Income Statement Modification</h2>
+          <p class="settings-description">Customize how your income statement report is generated and displayed.</p>
+          
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="incomeStatementSettings.showSubtotals" />
+              Show Section Subtotals
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="incomeStatementSettings.showPercentages" />
+              Show Percentages
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="incomeStatementSettings.comparePeriods" />
+              Enable Period Comparison
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="incomeStatementSettings.showZeroBalanceAccounts" />
+              Show Zero Balance Accounts
+            </label>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Default Date Range</label>
+              <select class="form-control" [(ngModel)]="incomeStatementSettings.defaultDateRange">
+                <option value="This Month">This Month</option>
+                <option value="Last Month">Last Month</option>
+                <option value="This Quarter">This Quarter</option>
+                <option value="This Fiscal Year">This Fiscal Year</option>
+                <option value="Last Fiscal Year">Last Fiscal Year</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Accounting Basis</label>
+              <select class="form-control" [(ngModel)]="incomeStatementSettings.accountingBasis">
+                <option value="Accrual">Accrual</option>
+                <option value="Cash">Cash</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" (click)="saveIncomeStatementSettings()">
+              <i class="fas fa-save"></i> Save Settings
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-panel" *ngIf="activeTab === 'currency-rates'">
+          <div class="panel-header">
+            <h2>Currency Exchange Rates</h2>
+            <div class="header-actions">
+              <button class="btn btn-secondary" (click)="fetchLatestRates()">
+                <i class="fas fa-sync"></i> Fetch Latest Rates
+              </button>
+              <button class="btn btn-primary" (click)="showAddCurrency = true">
+                <i class="fas fa-plus"></i> Add Currency
+              </button>
+            </div>
+          </div>
+
+          <div class="modal-overlay" *ngIf="showAddCurrency" (click)="showAddCurrency = false">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+              <h3>Add Currency Rate</h3>
+              <div class="form-group">
+                <label>Currency Code</label>
+                <input type="text" class="form-control" [(ngModel)]="newCurrencyRate.currencyCode" placeholder="e.g., EUR" maxlength="3" />
+              </div>
+              <div class="form-group">
+                <label>Currency Name</label>
+                <input type="text" class="form-control" [(ngModel)]="newCurrencyRate.currencyName" placeholder="e.g., Euro" />
+              </div>
+              <div class="form-group">
+                <label>Exchange Rate (to USD)</label>
+                <input type="number" class="form-control" [(ngModel)]="newCurrencyRate.exchangeRate" step="0.0001" />
+              </div>
+              <div class="form-group">
+                <label>Effective Date</label>
+                <input type="date" class="form-control" [(ngModel)]="newCurrencyRate.effectiveDate" />
+              </div>
+              <div class="modal-actions">
+                <button class="btn btn-secondary" (click)="showAddCurrency = false">Cancel</button>
+                <button class="btn btn-primary" (click)="addCurrencyRate()">Add</button>
+              </div>
+            </div>
+          </div>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Currency Name</th>
+                <th>Base</th>
+                <th class="text-right">Exchange Rate</th>
+                <th>Effective Date</th>
+                <th>Source</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let rate of currencyRates">
+                <td><strong>{{ rate.currencyCode }}</strong></td>
+                <td>{{ rate.currencyName }}</td>
+                <td>{{ rate.baseCurrency }}</td>
+                <td class="text-right">{{ rate.exchangeRate }}</td>
+                <td>{{ rate.effectiveDate }}</td>
+                <td><span class="badge">{{ rate.source }}</span></td>
+                <td>
+                  <button class="btn btn-icon btn-danger" (click)="deleteCurrencyRate(rate)" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

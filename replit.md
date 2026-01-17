@@ -45,7 +45,8 @@ Preferred communication style: Simple, everyday language.
     - Bills Management with supplier tracking and payment status
     - Budget Management with fiscal year tracking
     - Bank Reconciliation workflow
-    - Financial Reports (Trial Balance, Income Statement, Balance Sheet, Cash Flow)
+    - Financial Reports (Trial Balance, Income Statement, Balance Sheet, Cash Flow, Deposit Detail, Income by Customer, Cheque Detail, Budget Overview/Performance/vs Actual, A/R Aging Summary/Detail, A/P Aging Summary/Detail)
+    - Finance Settings (General, Account Detail Types, Plaid Environment, Income Statement Modification, Currency Rates)
 -   **Admin Notifications**: Real-time system notifications with approval workflows.
 -   **Audit Trails & Logging**: Tracks system, inventory, and purchase actions.
 -   **Reports**: Generates detailed reports across modules.

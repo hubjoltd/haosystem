@@ -20,4 +20,13 @@ public interface JournalLineRepository extends JpaRepository<JournalLine, Long> 
     
     @Query("SELECT jl FROM JournalLine jl WHERE jl.account.id = :accountId AND jl.journalEntry.entryDate BETWEEN :startDate AND :endDate ORDER BY jl.journalEntry.entryDate")
     List<JournalLine> findByAccountIdAndDateRange(@Param("accountId") Long accountId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    
+    @Query("SELECT jl FROM JournalLine jl WHERE jl.customerId = :customerId AND jl.journalEntry.entryDate BETWEEN :startDate AND :endDate ORDER BY jl.journalEntry.entryDate DESC")
+    List<JournalLine> findByCustomerIdAndDateRange(@Param("customerId") Long customerId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    
+    @Query("SELECT jl FROM JournalLine jl WHERE jl.customerId = :customerId AND jl.account.accountType = 'ASSET' AND jl.debitAmount > 0 AND jl.journalEntry.status = 'Posted' ORDER BY jl.journalEntry.entryDate DESC")
+    List<JournalLine> findUnpaidReceivablesByCustomer(@Param("customerId") Long customerId);
+    
+    @Query("SELECT jl FROM JournalLine jl WHERE jl.account.accountType = 'ASSET' AND jl.debitAmount > 0 AND jl.journalEntry.status = 'Posted' ORDER BY jl.journalEntry.entryDate DESC")
+    List<JournalLine> findAllUnpaidReceivables();
 }

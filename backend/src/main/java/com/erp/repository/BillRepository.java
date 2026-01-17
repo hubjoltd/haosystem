@@ -23,4 +23,7 @@ public interface BillRepository extends JpaRepository<Bill, Long> {
     
     @Query("SELECT COALESCE(MAX(CAST(SUBSTRING(b.billNumber, 6) AS integer)), 0) FROM Bill b WHERE b.billNumber LIKE 'BILL-%'")
     Integer findMaxBillNumber();
+    
+    @Query("SELECT b FROM Bill b WHERE b.supplier.id = :supplierId AND b.balanceDue > 0 ORDER BY b.dueDate")
+    List<Bill> findUnpaidBillsBySupplierId(@Param("supplierId") Long supplierId);
 }

@@ -142,6 +142,7 @@ import { BillsComponent } from './components/accounting/bills/bills.component';
 import { BudgetsComponent } from './components/accounting/budgets/budgets.component';
 import { ReconciliationComponent } from './components/accounting/reconciliation/reconciliation.component';
 import { FinancialReportsComponent } from './components/accounting/reports/financial-reports.component';
+import { FinanceSettingsComponent as AccountingSettingsComponent } from './components/accounting/settings/finance-settings.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -284,7 +285,8 @@ const routes: Routes = [
       { path: 'accounting/transfers', component: TransfersComponent },
       { path: 'accounting/reconciliation', component: ReconciliationComponent },
       { path: 'accounting/budgets', component: BudgetsComponent },
-      { path: 'accounting/reports', component: FinancialReportsComponent }
+      { path: 'accounting/reports', component: FinancialReportsComponent },
+      { path: 'accounting/settings', component: AccountingSettingsComponent }
     ]
   }
 ];

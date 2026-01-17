@@ -123,6 +123,7 @@ import { BillsComponent } from './components/accounting/bills/bills.component';
 import { BudgetsComponent } from './components/accounting/budgets/budgets.component';
 import { ReconciliationComponent } from './components/accounting/reconciliation/reconciliation.component';
 import { FinancialReportsComponent } from './components/accounting/reports/financial-reports.component';
+import { FinanceSettingsComponent as AccountingSettingsComponent } from './components/accounting/settings/finance-settings.component';
 
 @NgModule({
   declarations: [
@@ -212,7 +213,8 @@ import { FinancialReportsComponent } from './components/accounting/reports/finan
     BillsComponent,
     BudgetsComponent,
     ReconciliationComponent,
-    FinancialReportsComponent
+    FinancialReportsComponent,
+    AccountingSettingsComponent
   ],
   imports: [
     BrowserModule,

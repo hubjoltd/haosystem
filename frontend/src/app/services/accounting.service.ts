@@ -391,4 +391,109 @@ export class AccountingService {
     const params = new HttpParams().set('asOfDate', asOfDate);
     return this.http.get<any>(`${this.baseUrl}/reports/balance-sheet`, { params });
   }
+
+  getDepositDetail(startDate?: string, endDate?: string): Observable<any[]> {
+    let params = new HttpParams();
+    if (startDate) params = params.set('startDate', startDate);
+    if (endDate) params = params.set('endDate', endDate);
+    return this.http.get<any[]>(`${this.baseUrl}/reports/deposit-detail`, { params });
+  }
+
+  getIncomeByCustomer(startDate?: string, endDate?: string): Observable<any[]> {
+    let params = new HttpParams();
+    if (startDate) params = params.set('startDate', startDate);
+    if (endDate) params = params.set('endDate', endDate);
+    return this.http.get<any[]>(`${this.baseUrl}/reports/income-by-customer`, { params });
+  }
+
+  getChequeDetail(startDate?: string, endDate?: string): Observable<any[]> {
+    let params = new HttpParams();
+    if (startDate) params = params.set('startDate', startDate);
+    if (endDate) params = params.set('endDate', endDate);
+    return this.http.get<any[]>(`${this.baseUrl}/reports/cheque-detail`, { params });
+  }
+
+  getBudgetOverview(fiscalYear?: number): Observable<any[]> {
+    let params = new HttpParams();
+    if (fiscalYear) params = params.set('fiscalYear', fiscalYear.toString());
+    return this.http.get<any[]>(`${this.baseUrl}/reports/budget-overview`, { params });
+  }
+
+  getBudgetVsActual(budgetId: number): Observable<any[]> {
+    const params = new HttpParams().set('budgetId', budgetId.toString());
+    return this.http.get<any[]>(`${this.baseUrl}/reports/budget-vs-actual`, { params });
+  }
+
+  getBudgetPerformance(budgetId: number): Observable<any> {
+    const params = new HttpParams().set('budgetId', budgetId.toString());
+    return this.http.get<any>(`${this.baseUrl}/reports/budget-performance`, { params });
+  }
+
+  getARAgingSummary(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/reports/ar-aging-summary`);
+  }
+
+  getARAgingDetail(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/reports/ar-aging-detail`);
+  }
+
+  getAPAgingSummary(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/reports/ap-aging-summary`);
+  }
+
+  getAPAgingDetail(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/reports/ap-aging-detail`);
+  }
+
+  getGeneralSettings(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/settings/general`);
+  }
+
+  updateGeneralSettings(settings: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/settings/general`, settings);
+  }
+
+  getAccountDetailTypes(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/settings/account-detail-types`);
+  }
+
+  createAccountDetailType(detailType: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/settings/account-detail-types`, detailType);
+  }
+
+  getPlaidSettings(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/settings/plaid`);
+  }
+
+  updatePlaidSettings(settings: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/settings/plaid`, settings);
+  }
+
+  getIncomeStatementSettings(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/settings/income-statement`);
+  }
+
+  updateIncomeStatementSettings(settings: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/settings/income-statement`, settings);
+  }
+
+  getCurrencyRates(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/settings/currency-rates`);
+  }
+
+  createCurrencyRate(rate: any): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/settings/currency-rates`, rate);
+  }
+
+  updateCurrencyRate(id: number, rate: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/settings/currency-rates/${id}`, rate);
+  }
+
+  deleteCurrencyRate(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/settings/currency-rates/${id}`);
+  }
+
+  fetchLatestCurrencyRates(): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/settings/currency-rates/fetch`, {});
+  }
 }

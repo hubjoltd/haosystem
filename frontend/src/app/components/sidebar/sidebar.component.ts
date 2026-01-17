@@ -131,7 +131,8 @@ export class SidebarComponent implements OnInit {
         },
         { icon: 'fas fa-file-invoice-dollar', label: 'Bills', labelKey: 'nav.bills', route: '/app/accounting/bills' },
         { icon: 'fas fa-balance-scale', label: 'Budgets', labelKey: 'nav.budgets', route: '/app/accounting/budgets' },
-        { icon: 'fas fa-file-alt', label: 'Financial Reports', labelKey: 'nav.financialReports', route: '/app/accounting/reports' }
+        { icon: 'fas fa-file-alt', label: 'Financial Reports', labelKey: 'nav.financialReports', route: '/app/accounting/reports' },
+        { icon: 'fas fa-cog', label: 'Settings', labelKey: 'nav.accountingSettings', route: '/app/accounting/settings' }
       ]
     },
     {

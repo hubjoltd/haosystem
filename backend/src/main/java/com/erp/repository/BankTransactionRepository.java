@@ -23,4 +23,6 @@ public interface BankTransactionRepository extends JpaRepository<BankTransaction
     
     @Query("SELECT t FROM BankTransaction t WHERE t.bankAccount.id = :bankAccountId AND t.matched = false ORDER BY t.transactionDate DESC")
     List<BankTransaction> findUnmatchedTransactions(@Param("bankAccountId") Long bankAccountId);
+    
+    List<BankTransaction> findByTransactionDateBetweenOrderByTransactionDateDesc(LocalDate startDate, LocalDate endDate);
 }

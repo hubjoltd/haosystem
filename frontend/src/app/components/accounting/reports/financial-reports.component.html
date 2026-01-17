@@ -15,16 +15,21 @@
     </button>
   </div>
 
-  <div class="reports-grid" *ngIf="!selectedReport">
-    <div class="report-card" *ngFor="let report of reports" (click)="selectReport(report.id)">
-      <div class="report-icon">
-        <i [class]="report.icon"></i>
+  <div class="reports-categories" *ngIf="!selectedReport">
+    <div class="category-section" *ngFor="let category of reportCategories">
+      <h2 class="category-title">{{ category }}</h2>
+      <div class="reports-grid">
+        <div class="report-card" *ngFor="let report of getReportsByCategory(category)" (click)="selectReport(report.id)">
+          <div class="report-icon">
+            <i [class]="report.icon"></i>
+          </div>
+          <div class="report-info">
+            <h3>{{ report.name }}</h3>
+            <p>{{ report.description }}</p>
+          </div>
+          <i class="fas fa-chevron-right"></i>
+        </div>
       </div>
-      <div class="report-info">
-        <h3>{{ report.name }}</h3>
-        <p>{{ report.description }}</p>
-      </div>
-      <i class="fas fa-chevron-right"></i>
     </div>
   </div>
 
@@ -88,9 +93,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr class="section-header">
-                <td colspan="2"><strong>Revenue</strong></td>
-              </tr>
+              <tr class="section-header"><td colspan="2"><strong>Revenue</strong></td></tr>
               <tr *ngFor="let item of reportData.revenue">
                 <td>{{ item.accountName }}</td>
                 <td class="text-right">{{ formatCurrency(item.amount) }}</td>
@@ -99,9 +102,7 @@
                 <td><strong>Total Revenue</strong></td>
                 <td class="text-right"><strong>{{ formatCurrency(reportData.totalRevenue) }}</strong></td>
               </tr>
-              <tr class="section-header">
-                <td colspan="2"><strong>Expenses</strong></td>
-              </tr>
+              <tr class="section-header"><td colspan="2"><strong>Expenses</strong></td></tr>
               <tr *ngFor="let item of reportData.expenses">
                 <td>{{ item.accountName }}</td>
                 <td class="text-right">{{ formatCurrency(item.amount) }}</td>
@@ -122,9 +123,160 @@
           </table>
         </div>
 
-        <div class="report-placeholder" *ngIf="selectedReport !== 'trial-balance' && selectedReport !== 'income-statement'">
+        <div class="table-container" *ngIf="selectedReport === 'deposit-detail'">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Reference</th>
+                <th>Customer/Supplier</th>
+                <th>Bank Account</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of reportData">
+                <td>{{ item.date }}</td>
+                <td>{{ item.reference }}</td>
+                <td>{{ item.customerSupplier }}</td>
+                <td>{{ item.bankAccount }}</td>
+                <td class="text-right">{{ formatCurrency(item.amount) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-container" *ngIf="selectedReport === 'income-by-customer'">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th class="text-right">Income</th>
+                <th class="text-right">Expenses</th>
+                <th class="text-right">Net Income</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of reportData">
+                <td>{{ item.customerName }}</td>
+                <td class="text-right">{{ formatCurrency(item.income) }}</td>
+                <td class="text-right">{{ formatCurrency(item.expenses) }}</td>
+                <td class="text-right" [ngClass]="item.netIncome >= 0 ? 'text-success' : 'text-danger'">
+                  {{ formatCurrency(item.netIncome) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-container" *ngIf="selectedReport === 'cheque-detail'">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Cheque #</th>
+                <th>Payee</th>
+                <th>Bank Account</th>
+                <th>Status</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of reportData">
+                <td>{{ item.date }}</td>
+                <td>{{ item.chequeNumber }}</td>
+                <td>{{ item.payee }}</td>
+                <td>{{ item.bankAccount }}</td>
+                <td><span class="badge">{{ item.status }}</span></td>
+                <td class="text-right">{{ formatCurrency(item.amount) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-container" *ngIf="selectedReport === 'budget-overview'">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Budget Name</th>
+                <th>Fiscal Year</th>
+                <th class="text-right">Total Budgeted</th>
+                <th class="text-right">Total Actual</th>
+                <th class="text-right">Variance</th>
+                <th class="text-right">% Used</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of reportData">
+                <td>{{ item.budgetName }}</td>
+                <td>{{ item.fiscalYear }}</td>
+                <td class="text-right">{{ formatCurrency(item.totalBudgeted) }}</td>
+                <td class="text-right">{{ formatCurrency(item.totalActual) }}</td>
+                <td class="text-right" [ngClass]="item.variance >= 0 ? 'text-success' : 'text-danger'">
+                  {{ formatCurrency(item.variance) }}
+                </td>
+                <td class="text-right">{{ item.variancePercent | number:'1.1-1' }}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-container" *ngIf="selectedReport === 'ar-aging-summary' || selectedReport === 'ap-aging-summary'">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>{{ selectedReport === 'ar-aging-summary' ? 'Customer' : 'Supplier' }}</th>
+                <th class="text-right">Current</th>
+                <th class="text-right">1-30 Days</th>
+                <th class="text-right">31-60 Days</th>
+                <th class="text-right">61-90 Days</th>
+                <th class="text-right">Over 90</th>
+                <th class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of reportData">
+                <td>{{ item.customerName || item.supplierName }}</td>
+                <td class="text-right">{{ formatCurrency(item.current) }}</td>
+                <td class="text-right">{{ formatCurrency(item.days1to30) }}</td>
+                <td class="text-right">{{ formatCurrency(item.days31to60) }}</td>
+                <td class="text-right">{{ formatCurrency(item.days61to90) }}</td>
+                <td class="text-right text-danger">{{ formatCurrency(item.over90) }}</td>
+                <td class="text-right"><strong>{{ formatCurrency(item.total) }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-container" *ngIf="selectedReport === 'ar-aging-detail' || selectedReport === 'ap-aging-detail'">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>{{ selectedReport === 'ar-aging-detail' ? 'Invoice #' : 'Bill #' }}</th>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Aging</th>
+                <th class="text-right">Days Past Due</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of reportData">
+                <td>{{ item.invoiceNumber || item.billNumber }}</td>
+                <td>{{ item.invoiceDate || item.billDate }}</td>
+                <td>{{ item.description }}</td>
+                <td><span class="badge" [ngClass]="{'badge-danger': item.agingBucket === 'Over 90 Days'}">{{ item.agingBucket }}</span></td>
+                <td class="text-right">{{ item.daysPastDue }}</td>
+                <td class="text-right">{{ formatCurrency(item.amount || item.balanceDue) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="report-placeholder" *ngIf="!['trial-balance', 'income-statement', 'deposit-detail', 'income-by-customer', 'cheque-detail', 'budget-overview', 'ar-aging-summary', 'ar-aging-detail', 'ap-aging-summary', 'ap-aging-detail'].includes(selectedReport!)">
           <i class="fas fa-file-alt"></i>
           <p>Report data displayed here</p>
+          <pre>{{ reportData | json }}</pre>
         </div>
       </div>
 
