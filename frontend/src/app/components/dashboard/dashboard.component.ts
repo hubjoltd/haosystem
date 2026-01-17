@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { DashboardService, DashboardStats } from '../../services/dashboard.service';
 import { ItemService, Item } from '../../services/item.service';
 
@@ -17,6 +17,13 @@ export class DashboardComponent implements OnInit {
   private subscriptionCount = 0;
   private expectedSubscriptions = 2;
 
+  // Calendar properties
+  currentDate = new Date();
+  daysInMonth: number[] = [];
+  monthName = '';
+  year = 0;
+  events: any[] = [];
+
   constructor(
     private dashboardService: DashboardService,
     private itemService: ItemService
@@ -24,6 +31,41 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadDashboardData();
+    this.initCalendar();
+  }
+
+  initCalendar(): void {
+    const date = new Date();
+    this.year = date.getFullYear();
+    const month = date.getMonth();
+    this.monthName = date.toLocaleString('default', { month: 'long' });
+    
+    const firstDay = new Date(this.year, month, 1).getDay();
+    const totalDays = new Date(this.year, month + 1, 0).getDate();
+    
+    this.daysInMonth = [];
+    for (let i = 0; i < firstDay; i++) {
+      this.daysInMonth.push(0);
+    }
+    for (let i = 1; i <= totalDays; i++) {
+      this.daysInMonth.push(i);
+    }
+
+    // Sample events
+    this.events = [
+      { day: 15, title: 'Payroll Process', type: 'warning' },
+      { day: 20, title: 'Tax Due', type: 'danger' },
+      { day: 25, title: 'Inventory Audit', type: 'info' }
+    ];
+  }
+
+  getEventsForDay(day: number): any[] {
+    return this.events.filter(e => e.day === day);
+  }
+
+  isToday(day: number): boolean {
+    const today = new Date();
+    return today.getDate() === day && today.getMonth() === this.currentDate.getMonth() && today.getFullYear() === this.currentDate.getFullYear();
   }
 
   private incrementAndCheck(): void {

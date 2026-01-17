@@ -41,20 +41,23 @@
       </div>
     </div>
 
-    <div class="side-stats">
-      <div class="card earnings-card">
-        <h4>Inventory Summary</h4>
-        <div class="amount">
-          <h3>{{ dashboardStats?.totalItems || 0 }}</h3>
-          <span class="label">Total Items</span>
-        </div>
+    <div class="card calendar-card">
+      <div class="card-header">
+        <h3><i class="fas fa-calendar-alt"></i> {{ monthName }} {{ year }}</h3>
       </div>
-
-      <div class="card customers-card">
-        <h4>Active Contracts</h4>
-        <div class="amount">
-          <h3>{{ dashboardStats?.totalContracts || 0 }}</h3>
-          <span class="label">Contracts</span>
+      <div class="calendar-container">
+        <div class="calendar-days-header">
+          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        <div class="calendar-grid">
+          <div *ngFor="let day of daysInMonth" class="calendar-day" [class.empty]="day === 0" [class.today]="isToday(day)">
+            <span class="day-number" *ngIf="day !== 0">{{ day }}</span>
+            <div class="day-events" *ngIf="day !== 0">
+              <div *ngFor="let event of getEventsForDay(day)" class="event-pill" [ngClass]="event.type">
+                {{ event.title }}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
