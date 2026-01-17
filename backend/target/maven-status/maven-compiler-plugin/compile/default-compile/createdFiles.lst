@@ -1,6 +1,7 @@
 com/erp/model/ContractType.class
 com/erp/service/SupplierService.class
 com/erp/repository/PRMaterialTransferRepository.class
+com/erp/repository/BudgetLineRepository.class
 com/erp/model/LoanApplication.class
 com/erp/repository/DocumentTypeRepository.class
 com/erp/model/Holiday.class
@@ -70,6 +71,7 @@ com/erp/model/JobRequisition.class
 com/erp/service/FinalSettlementService.class
 com/erp/model/IntegrationSyncLog.class
 com/erp/repository/ReconciliationRepository.class
+com/erp/controller/AccountingReportsController.class
 com/erp/model/InventoryLedger.class
 com/erp/repository/ProjectTaskRepository.class
 com/erp/repository/ContractStatusRepository.class
@@ -232,6 +234,7 @@ com/erp/model/PayrollRun.class
 com/erp/model/StockAdjustment.class
 com/erp/model/FinanceSettings.class
 com/erp/service/FLSAOvertimeService$DailyBreakdown.class
+com/erp/controller/FinanceSettingsController.class
 com/erp/repository/StatutoryRuleRepository.class
 com/erp/service/GoodsReceiptService.class
 com/erp/dto/RegisterRequest.class

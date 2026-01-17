@@ -170,4 +170,12 @@ public class Bill {
 
     public List<BillLine> getLines() { return lines; }
     public void setLines(List<BillLine> lines) { this.lines = lines; }
+
+    public String getDescription() {
+        return memo;
+    }
+
+    public void setDescription(String description) {
+        this.memo = description;
+    }
 }

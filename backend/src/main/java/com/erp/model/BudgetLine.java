@@ -109,4 +109,16 @@ public class BudgetLine {
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+
+    public BigDecimal getBudgetedAmount() {
+        return annualAmount;
+    }
+
+    public void setBudgetedAmount(BigDecimal amount) {
+        this.annualAmount = amount;
+    }
+
+    public BigDecimal getActualAmount() {
+        return BigDecimal.ZERO;
+    }
 }

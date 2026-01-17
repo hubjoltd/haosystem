@@ -119,4 +119,8 @@ public class Budget {
 
     public List<BudgetLine> getLines() { return lines; }
     public void setLines(List<BudgetLine> lines) { this.lines = lines; }
+
+    public BigDecimal getTotalAmount() {
+        return totalIncome != null ? totalIncome.add(totalExpense != null ? totalExpense : BigDecimal.ZERO) : (totalExpense != null ? totalExpense : BigDecimal.ZERO);
+    }
 }

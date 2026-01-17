@@ -17,6 +17,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/IntegrationSyncLogRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/UnitOfMeasureService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/EmployeeAsset.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/BudgetLineRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/StaffService.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/StockAdjustmentService.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/AccountCategory.java
@@ -141,6 +142,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/model/BankAccount.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/PayFrequencyRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/LeaveController.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/FinanceSettingsController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Designation.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/RecruitmentController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Department.java
@@ -205,6 +207,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/TrainingEnrollmentRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Location.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/JournalEntryService.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/AccountingReportsController.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/EmployeeBenefitRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/EmployeeDocument.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/ExpenseCenter.java
