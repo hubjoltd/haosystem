@@ -136,6 +136,12 @@ import { AccountingDashboardComponent } from './components/accounting/dashboard/
 import { ChartOfAccountsComponent } from './components/accounting/chart-of-accounts/chart-of-accounts.component';
 import { BankAccountsComponent } from './components/accounting/bank-accounts/bank-accounts.component';
 import { JournalEntriesComponent } from './components/accounting/journal-entries/journal-entries.component';
+import { TransactionsComponent } from './components/accounting/transactions/transactions.component';
+import { TransfersComponent } from './components/accounting/transfers/transfers.component';
+import { BillsComponent } from './components/accounting/bills/bills.component';
+import { BudgetsComponent } from './components/accounting/budgets/budgets.component';
+import { ReconciliationComponent } from './components/accounting/reconciliation/reconciliation.component';
+import { FinancialReportsComponent } from './components/accounting/reports/financial-reports.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -273,12 +279,12 @@ const routes: Routes = [
       { path: 'accounting/chart-of-accounts', component: ChartOfAccountsComponent },
       { path: 'accounting/bank-accounts', component: BankAccountsComponent },
       { path: 'accounting/journal-entries', component: JournalEntriesComponent },
-      { path: 'accounting/transactions', component: AccountingDashboardComponent },
-      { path: 'accounting/bills', component: AccountingDashboardComponent },
-      { path: 'accounting/transfers', component: AccountingDashboardComponent },
-      { path: 'accounting/reconciliation', component: AccountingDashboardComponent },
-      { path: 'accounting/budgets', component: AccountingDashboardComponent },
-      { path: 'accounting/reports', component: AccountingDashboardComponent }
+      { path: 'accounting/transactions', component: TransactionsComponent },
+      { path: 'accounting/bills', component: BillsComponent },
+      { path: 'accounting/transfers', component: TransfersComponent },
+      { path: 'accounting/reconciliation', component: ReconciliationComponent },
+      { path: 'accounting/budgets', component: BudgetsComponent },
+      { path: 'accounting/reports', component: FinancialReportsComponent }
     ]
   }
 ];

@@ -1,0 +1,122 @@
+<div class="inventory-page">
+  <div class="page-header">
+    <div>
+      <h1>Bills Management</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Accounting</span>
+        <span>/</span>
+        <span>Bills</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openNewDialog()">
+      <i class="fas fa-plus"></i> New Bill
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" [(ngModel)]="searchText" placeholder="Search bills..." />
+      </div>
+      <div class="filters">
+        <select class="form-control filter-select" [(ngModel)]="selectedStatus">
+          <option *ngFor="let status of statusOptions" [ngValue]="status.value">{{ status.label }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Bill #</th>
+            <th>Supplier</th>
+            <th>Bill Date</th>
+            <th>Due Date</th>
+            <th class="text-right">Amount</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading">
+            <td colspan="7" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+            </td>
+          </tr>
+          <tr *ngIf="!loading && bills.length === 0">
+            <td colspan="7" class="empty-state">
+              <i class="fas fa-file-invoice-dollar"></i>
+              <p>No bills found. Click "New Bill" to create one.</p>
+            </td>
+          </tr>
+          <tr *ngFor="let bill of bills">
+            <td><strong>{{ bill.billNumber }}</strong></td>
+            <td>{{ bill.supplier?.name || bill.vendorInvoiceNumber || '-' }}</td>
+            <td>{{ bill.billDate }}</td>
+            <td>{{ bill.dueDate || '-' }}</td>
+            <td class="text-right">{{ formatCurrency(bill.totalAmount || 0) }}</td>
+            <td>
+              <span class="badge" [ngClass]="getStatusClass(bill.status || 'Draft')">{{ bill.status || 'Draft' }}</span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary" (click)="editBill(bill)" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="displayDialog" (click)="displayDialog = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEdit ? 'Edit Bill' : 'New Bill' }}</h2>
+      <button class="close-btn" (click)="displayDialog = false"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Bill Number <span class="required">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="newBill.billNumber" />
+      </div>
+      <div class="form-group">
+        <label>Vendor Invoice Number</label>
+        <input type="text" class="form-control" [(ngModel)]="newBill.vendorInvoiceNumber" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Bill Date</label>
+          <input type="date" class="form-control" [(ngModel)]="newBill.billDate" />
+        </div>
+        <div class="form-group">
+          <label>Due Date</label>
+          <input type="date" class="form-control" [(ngModel)]="newBill.dueDate" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Total Amount</label>
+        <input type="number" class="form-control" [(ngModel)]="newBill.totalAmount" step="0.01" />
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select class="form-control" [(ngModel)]="newBill.status">
+          <option value="Draft">Draft</option>
+          <option value="Pending">Pending</option>
+          <option value="Paid">Paid</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="displayDialog = false">Cancel</button>
+      <button class="btn btn-primary" (click)="saveBill()">{{ isEdit ? 'Update' : 'Save' }}</button>
+    </div>
+  </div>
+</div>

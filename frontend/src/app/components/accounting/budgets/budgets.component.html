@@ -1,0 +1,116 @@
+<div class="inventory-page">
+  <div class="page-header">
+    <div>
+      <h1>Budget Management</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Accounting</span>
+        <span>/</span>
+        <span>Budgets</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="openNewDialog()">
+      <i class="fas fa-plus"></i> New Budget
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Fiscal Year</th>
+            <th>Type</th>
+            <th class="text-right">Income</th>
+            <th class="text-right">Expense</th>
+            <th class="text-right">Net</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading">
+            <td colspan="8" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+            </td>
+          </tr>
+          <tr *ngIf="!loading && budgets.length === 0">
+            <td colspan="8" class="empty-state">
+              <i class="fas fa-balance-scale"></i>
+              <p>No budgets found. Click "New Budget" to create one.</p>
+            </td>
+          </tr>
+          <tr *ngFor="let budget of budgets">
+            <td><strong>{{ budget.name }}</strong></td>
+            <td>{{ budget.fiscalYear }}</td>
+            <td>{{ budget.budgetType || 'Annual' }}</td>
+            <td class="text-right">{{ formatCurrency(budget.totalIncome || 0) }}</td>
+            <td class="text-right">{{ formatCurrency(budget.totalExpense || 0) }}</td>
+            <td class="text-right">
+              <span [ngClass]="calculateVariance(budget) >= 0 ? 'text-success' : 'text-danger'">
+                {{ formatCurrency(calculateVariance(budget)) }}
+              </span>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="budget.status === 'Active' ? 'badge-success' : 'badge-secondary'">
+                {{ budget.status }}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-secondary" (click)="editBudget(budget)" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="displayDialog" (click)="displayDialog = false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEdit ? 'Edit Budget' : 'New Budget' }}</h2>
+      <button class="close-btn" (click)="displayDialog = false"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Budget Name <span class="required">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="newBudget.name" />
+      </div>
+      <div class="form-group">
+        <label>Fiscal Year</label>
+        <input type="number" class="form-control" [(ngModel)]="newBudget.fiscalYear" />
+      </div>
+      <div class="form-group">
+        <label>Budget Type</label>
+        <select class="form-control" [(ngModel)]="newBudget.budgetType">
+          <option value="Annual">Annual</option>
+          <option value="Quarterly">Quarterly</option>
+          <option value="Monthly">Monthly</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea class="form-control" [(ngModel)]="newBudget.description" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select class="form-control" [(ngModel)]="newBudget.status">
+          <option value="Draft">Draft</option>
+          <option value="Active">Active</option>
+          <option value="Closed">Closed</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="displayDialog = false">Cancel</button>
+      <button class="btn btn-primary" (click)="saveBudget()">{{ isEdit ? 'Update' : 'Save' }}</button>
+    </div>
+  </div>
+</div>

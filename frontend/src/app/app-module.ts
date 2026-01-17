@@ -117,6 +117,12 @@ import { AccountingDashboardComponent } from './components/accounting/dashboard/
 import { ChartOfAccountsComponent } from './components/accounting/chart-of-accounts/chart-of-accounts.component';
 import { BankAccountsComponent } from './components/accounting/bank-accounts/bank-accounts.component';
 import { JournalEntriesComponent } from './components/accounting/journal-entries/journal-entries.component';
+import { TransactionsComponent } from './components/accounting/transactions/transactions.component';
+import { TransfersComponent } from './components/accounting/transfers/transfers.component';
+import { BillsComponent } from './components/accounting/bills/bills.component';
+import { BudgetsComponent } from './components/accounting/budgets/budgets.component';
+import { ReconciliationComponent } from './components/accounting/reconciliation/reconciliation.component';
+import { FinancialReportsComponent } from './components/accounting/reports/financial-reports.component';
 
 @NgModule({
   declarations: [
@@ -200,7 +206,13 @@ import { JournalEntriesComponent } from './components/accounting/journal-entries
     AccountingDashboardComponent,
     ChartOfAccountsComponent,
     BankAccountsComponent,
-    JournalEntriesComponent
+    JournalEntriesComponent,
+    TransactionsComponent,
+    TransfersComponent,
+    BillsComponent,
+    BudgetsComponent,
+    ReconciliationComponent,
+    FinancialReportsComponent
   ],
   imports: [
     BrowserModule,

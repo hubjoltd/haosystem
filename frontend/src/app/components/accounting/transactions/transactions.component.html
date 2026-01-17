@@ -1,0 +1,83 @@
+<div class="inventory-page">
+  <div class="page-header">
+    <div>
+      <h1>Bank Transactions</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Accounting</span>
+        <span>/</span>
+        <span>Transactions</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="loadTransactions()">
+      <i class="fas fa-sync"></i> Refresh
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" [(ngModel)]="searchText" placeholder="Search transactions..." />
+      </div>
+      <div class="filters">
+        <select class="form-control filter-select" [(ngModel)]="selectedAccountId" (change)="onAccountChange()">
+          <option *ngFor="let acc of bankAccounts" [ngValue]="acc.id">{{ acc.accountName }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Account</th>
+            <th>Type</th>
+            <th class="text-right">Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loading">
+            <td colspan="6" class="empty-state">
+              <i class="fas fa-spinner fa-spin"></i>
+            </td>
+          </tr>
+          <tr *ngIf="!loading && transactions.length === 0">
+            <td colspan="6" class="empty-state">
+              <i class="fas fa-exchange-alt"></i>
+              <p>No transactions found.</p>
+            </td>
+          </tr>
+          <tr *ngFor="let txn of transactions">
+            <td>{{ formatDate(txn.transactionDate) }}</td>
+            <td>{{ txn.description }}</td>
+            <td>{{ txn.bankAccount?.accountName || '-' }}</td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'badge-success': txn.transactionType === 'Deposit',
+                'badge-danger': txn.transactionType === 'Withdrawal',
+                'badge-info': txn.transactionType === 'Transfer'
+              }">
+                {{ txn.transactionType }}
+              </span>
+            </td>
+            <td class="text-right">
+              <span [ngClass]="txn.amount >= 0 ? 'text-success' : 'text-danger'">
+                {{ formatCurrency(txn.amount) }}
+              </span>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="txn.isReconciled ? 'badge-success' : 'badge-warning'">
+                {{ txn.isReconciled ? 'Reconciled' : 'Pending' }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -35,6 +35,17 @@ Preferred communication style: Simple, everyday language.
 -   **Employee Payroll Tab**: Employee detail page includes a dedicated Payroll tab showing payroll records and timesheets history for each employee.
 -   **Employee Self-Service (ESS) Portal**: Allows employees to view pay stubs, attendance summaries, manage leave/expense/loan requests, access HR policies & documents, and view assigned assets. Features auto-initialization and carry-forward of leave balances.
 -   **Project Management Module**: Full-featured module with tabs for Overview, Members, Client Permissions, Billing, Tasks, Milestones, Timesheets, Files, and Notes.
+-   **Finance & Accounting Module** (Separate menu section): Comprehensive accounting system with:
+    - Accounting Dashboard with key financial metrics
+    - Chart of Accounts management (ASSET, LIABILITY, EQUITY, INCOME, EXPENSE types)
+    - Bank Accounts with balance tracking and GL account linking
+    - Journal Entries with double-entry bookkeeping (DRAFT, POSTED, REVERSED status)
+    - Bank Transactions with categorization and reconciliation
+    - Account Transfers between bank accounts
+    - Bills Management with supplier tracking and payment status
+    - Budget Management with fiscal year tracking
+    - Bank Reconciliation workflow
+    - Financial Reports (Trial Balance, Income Statement, Balance Sheet, Cash Flow)
 -   **Admin Notifications**: Real-time system notifications with approval workflows.
 -   **Audit Trails & Logging**: Tracks system, inventory, and purchase actions.
 -   **Reports**: Generates detailed reports across modules.

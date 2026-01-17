@@ -376,4 +376,19 @@ export class AccountingService {
   createReconciliation(reconciliation: Reconciliation): Observable<Reconciliation> {
     return this.http.post<Reconciliation>(`${this.baseUrl}/reconciliations`, reconciliation);
   }
+
+  getTrialBalance(asOfDate: string): Observable<any> {
+    const params = new HttpParams().set('asOfDate', asOfDate);
+    return this.http.get<any>(`${this.baseUrl}/reports/trial-balance`, { params });
+  }
+
+  getIncomeStatement(startDate: string, endDate: string): Observable<any> {
+    const params = new HttpParams().set('startDate', startDate).set('endDate', endDate);
+    return this.http.get<any>(`${this.baseUrl}/reports/income-statement`, { params });
+  }
+
+  getBalanceSheet(asOfDate: string): Observable<any> {
+    const params = new HttpParams().set('asOfDate', asOfDate);
+    return this.http.get<any>(`${this.baseUrl}/reports/balance-sheet`, { params });
+  }
 }

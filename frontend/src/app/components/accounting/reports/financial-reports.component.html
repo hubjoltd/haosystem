@@ -1,0 +1,137 @@
+<div class="inventory-page">
+  <div class="page-header">
+    <div>
+      <h1>Financial Reports</h1>
+      <div class="breadcrumb">
+        <a routerLink="/app">Home</a>
+        <span>/</span>
+        <span>Accounting</span>
+        <span>/</span>
+        <span>Reports</span>
+      </div>
+    </div>
+    <button class="btn btn-secondary" *ngIf="selectedReport" (click)="backToList()">
+      <i class="fas fa-arrow-left"></i> Back to Reports
+    </button>
+  </div>
+
+  <div class="reports-grid" *ngIf="!selectedReport">
+    <div class="report-card" *ngFor="let report of reports" (click)="selectReport(report.id)">
+      <div class="report-icon">
+        <i [class]="report.icon"></i>
+      </div>
+      <div class="report-info">
+        <h3>{{ report.name }}</h3>
+        <p>{{ report.description }}</p>
+      </div>
+      <i class="fas fa-chevron-right"></i>
+    </div>
+  </div>
+
+  <div class="report-view" *ngIf="selectedReport">
+    <div class="card">
+      <div class="report-filters">
+        <div class="form-group">
+          <label>Start Date</label>
+          <input type="date" class="form-control" [(ngModel)]="startDate" />
+        </div>
+        <div class="form-group">
+          <label>End Date</label>
+          <input type="date" class="form-control" [(ngModel)]="endDate" />
+        </div>
+        <button class="btn btn-primary" (click)="generateReport()" [disabled]="loading">
+          <i class="fas" [ngClass]="loading ? 'fa-spinner fa-spin' : 'fa-play'"></i>
+          Generate Report
+        </button>
+      </div>
+
+      <div class="report-content" *ngIf="reportData">
+        <div class="report-header">
+          <h2>{{ getSelectedReportName() }}</h2>
+          <p>Period: {{ startDate }} to {{ endDate }}</p>
+        </div>
+
+        <div class="table-container" *ngIf="selectedReport === 'trial-balance'">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Account Code</th>
+                <th>Account Name</th>
+                <th class="text-right">Debit</th>
+                <th class="text-right">Credit</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let line of reportData.lines">
+                <td>{{ line.accountCode }}</td>
+                <td>{{ line.accountName }}</td>
+                <td class="text-right">{{ line.debitBalance > 0 ? formatCurrency(line.debitBalance) : '-' }}</td>
+                <td class="text-right">{{ line.creditBalance > 0 ? formatCurrency(line.creditBalance) : '-' }}</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="totals-row">
+                <td colspan="2"><strong>Total</strong></td>
+                <td class="text-right"><strong>{{ formatCurrency(reportData.totalDebits) }}</strong></td>
+                <td class="text-right"><strong>{{ formatCurrency(reportData.totalCredits) }}</strong></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="table-container" *ngIf="selectedReport === 'income-statement'">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Account</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="section-header">
+                <td colspan="2"><strong>Revenue</strong></td>
+              </tr>
+              <tr *ngFor="let item of reportData.revenue">
+                <td>{{ item.accountName }}</td>
+                <td class="text-right">{{ formatCurrency(item.amount) }}</td>
+              </tr>
+              <tr class="subtotal-row">
+                <td><strong>Total Revenue</strong></td>
+                <td class="text-right"><strong>{{ formatCurrency(reportData.totalRevenue) }}</strong></td>
+              </tr>
+              <tr class="section-header">
+                <td colspan="2"><strong>Expenses</strong></td>
+              </tr>
+              <tr *ngFor="let item of reportData.expenses">
+                <td>{{ item.accountName }}</td>
+                <td class="text-right">{{ formatCurrency(item.amount) }}</td>
+              </tr>
+              <tr class="subtotal-row">
+                <td><strong>Total Expenses</strong></td>
+                <td class="text-right"><strong>{{ formatCurrency(reportData.totalExpenses) }}</strong></td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="totals-row">
+                <td><strong>Net Income</strong></td>
+                <td class="text-right" [ngClass]="reportData.netIncome >= 0 ? 'text-success' : 'text-danger'">
+                  <strong>{{ formatCurrency(reportData.netIncome) }}</strong>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="report-placeholder" *ngIf="selectedReport !== 'trial-balance' && selectedReport !== 'income-statement'">
+          <i class="fas fa-file-alt"></i>
+          <p>Report data displayed here</p>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!reportData && !loading">
+        <i class="fas fa-chart-bar"></i>
+        <p>Select date range and click "Generate Report" to view data</p>
+      </div>
+    </div>
+  </div>
+</div>
