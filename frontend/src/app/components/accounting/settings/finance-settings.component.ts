@@ -40,11 +40,11 @@ export class FinanceSettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadGeneralSettings();
-    this.cdr.detectChanges();
   }
 
   selectTab(tabId: string): void {
     this.activeTab = tabId;
+    this.cdr.detectChanges();
     switch (tabId) {
       case 'general': this.loadGeneralSettings(); break;
       case 'account-types': this.loadAccountDetailTypes(); break;
@@ -52,7 +52,6 @@ export class FinanceSettingsComponent implements OnInit {
       case 'income-statement': this.loadIncomeStatementSettings(); break;
       case 'currency-rates': this.loadCurrencyRates(); break;
     }
-    this.cdr.detectChanges();
   }
 
   loadGeneralSettings(): void {
