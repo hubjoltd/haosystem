@@ -96,6 +96,7 @@ com/erp/model/EmployeeSalary.class
 com/erp/model/GoodsReceipt.class
 com/erp/controller/CustomerSettingsController.class
 com/erp/model/ProjectTimesheet.class
+com/erp/model/AccountMapping.class
 com/erp/repository/BranchRepository.class
 com/erp/controller/ProjectController.class
 com/erp/model/EmployeeBankDetail.class
@@ -200,11 +201,13 @@ com/erp/model/UserNotification.class
 com/erp/model/PurchaseRequisition.class
 com/erp/repository/BillRepository.class
 com/erp/repository/PrefixSettingsRepository.class
+com/erp/repository/AccountMappingRepository.class
 com/erp/service/ValuationService$ConsumptionResult.class
 com/erp/repository/ExpenseCenterRepository.class
 com/erp/model/Role.class
 com/erp/repository/JobRequisitionRepository.class
 com/erp/repository/FinanceSettingsRepository.class
+com/erp/model/MappingType.class
 com/erp/controller/AccountingController.class
 com/erp/repository/EmployeeDocumentRepository.class
 com/erp/repository/ProjectTimeEntryRepository.class
