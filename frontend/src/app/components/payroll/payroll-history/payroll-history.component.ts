@@ -164,17 +164,52 @@ export class PayrollHistoryComponent implements OnInit {
   loadPayrollRuns(): void {
     this.payrollService.getPayrollRuns().subscribe({
       next: (runs) => {
-        this.payrollRuns = runs.filter(r => r.status === 'PROCESSED' || r.status === 'COMPLETED');
+        this.payrollRuns = runs.filter(r => 
+          r.status === 'PROCESSED' || 
+          r.status === 'COMPLETED' ||
+          r.status === 'FULLY_PROCESSED' ||
+          r.status === 'PARTIALLY_PROCESSED'
+        );
+        this.completedRuns = this.payrollRuns.length;
+        this.countRunsByPeriod();
         this.loadPayrollRecords();
       },
       error: (err) => {
         console.error('Error loading payroll runs:', err);
         this.loading = false;
-        // Use only processed records from service, no sample data
         this.finalizeWithProcessedRecords();
         this.cdr.markForCheck();
       }
     });
+  }
+
+  countRunsByPeriod(): void {
+    this.weeklyRunsCount = 0;
+    this.biWeeklyRunsCount = 0;
+    this.semiMonthlyRunsCount = 0;
+    this.monthlyRunsCount = 0;
+    
+    this.payrollRuns.forEach(run => {
+      const freq = run.payFrequency?.name?.toLowerCase() || '';
+      if (freq.includes('weekly') && !freq.includes('bi')) {
+        this.weeklyRunsCount++;
+      } else if (freq.includes('bi-weekly') || freq.includes('biweekly')) {
+        this.biWeeklyRunsCount++;
+      } else if (freq.includes('semi')) {
+        this.semiMonthlyRunsCount++;
+      } else if (freq.includes('monthly')) {
+        this.monthlyRunsCount++;
+      }
+    });
+    
+    this.payrollRunsList = this.payrollRuns.map(run => ({
+      periodType: run.payFrequency?.name || 'Monthly',
+      periodRange: `${run.periodStartDate} - ${run.periodEndDate}`,
+      payDate: run.payDate || '',
+      gross: run.totalGrossPay || 0,
+      netPay: run.totalNetPay || 0,
+      status: run.status === 'PROCESSED' || run.status === 'FULLY_PROCESSED' ? 'Paid' : run.status || 'Pending'
+    }));
   }
 
   loadPayrollRecords(): void {

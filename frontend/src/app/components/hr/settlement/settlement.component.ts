@@ -37,22 +37,37 @@ export class SettlementComponent implements OnInit {
 
   loadDashboard(): void {
     this.settlementService.getDashboard().subscribe({
-      next: (data) => this.dashboard = data,
+      next: (data) => {
+        this.dashboard = data;
+        this.cdr.markForCheck();
+      },
       error: (err) => console.error('Error loading dashboard:', err)
     });
   }
 
   loadSettlements(): void {
     this.loading = true;
+    this.cdr.markForCheck();
     this.settlementService.getAll().subscribe({
-      next: (data) => { this.settlements = data; this.loading = false; },
-      error: (err) => { console.error(err); this.loading = false; }
+      next: (data) => { 
+        this.settlements = data; 
+        this.loading = false; 
+        this.cdr.markForCheck();
+      },
+      error: (err) => { 
+        console.error(err); 
+        this.loading = false; 
+        this.cdr.markForCheck();
+      }
     });
   }
 
   loadEmployees(): void {
     this.employeeService.getAll().subscribe({
-      next: (data) => this.employees = data,
+      next: (data) => {
+        this.employees = data;
+        this.cdr.markForCheck();
+      },
       error: (err) => console.error('Error loading employees:', err)
     });
   }
