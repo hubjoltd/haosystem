@@ -1418,3 +1418,139 @@ tr.expired {
     font-size: 14px;
   }
 }
+
+// Clock In/Out Section
+.clock-section {
+  background: linear-gradient(135deg, #008080 0%, #006666 100%);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  color: white;
+  text-align: center;
+
+  .clock-display {
+    margin-bottom: 20px;
+
+    .current-time {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+
+      i {
+        font-size: 24px;
+        margin-bottom: 8px;
+        opacity: 0.9;
+      }
+
+      .time {
+        font-size: 48px;
+        font-weight: 700;
+        font-family: 'Poppins', monospace;
+        letter-spacing: 2px;
+      }
+
+      .date {
+        font-size: 14px;
+        opacity: 0.9;
+      }
+    }
+
+    .clock-status {
+      margin-top: 12px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+
+      .elapsed-label {
+        font-size: 13px;
+        opacity: 0.9;
+      }
+
+      .elapsed-time {
+        font-size: 20px;
+        font-weight: 600;
+        font-family: 'Poppins', monospace;
+      }
+    }
+  }
+
+  .clock-actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    .clock-btn {
+      min-width: 160px;
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      &:not(:disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      }
+    }
+  }
+
+  .today-status {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    flex-wrap: wrap;
+
+    .status-label {
+      opacity: 0.9;
+    }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .clock-times {
+      opacity: 0.9;
+    }
+  }
+}
+
+.btn-lg {
+  padding: 12px 24px;
+  font-size: 15px;
+
+  &.btn-success {
+    background: #28a745;
+    color: white;
+    border: none;
+
+    &:hover:not(:disabled) {
+      background: #218838;
+    }
+  }
+
+  &.btn-danger {
+    background: #dc3545;
+    color: white;
+    border: none;
+
+    &:hover:not(:disabled) {
+      background: #c82333;
+    }
+  }
+}

@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { ExpenseService } from '../../../services/expense.service';
+import { ProjectService } from '../../../services/project.service';
+import { Project } from '../../../models/project.model';
 import { ExpenseRequest, ExpenseItem, ExpenseCategory, EXPENSE_TYPES, PAYMENT_METHODS } from '../../../models/expense.model';
 
 interface ExpenseItemForm extends Partial<ExpenseItem> {
@@ -32,6 +34,7 @@ export class ExpenseFormComponent implements OnInit {
   paymentMethods = PAYMENT_METHODS;
   
   expenseTypesList: { id: number; name: string; active: boolean }[] = [];
+  projects: Project[] = [];
   
   isEditing = false;
   expenseId: number | null = null;
@@ -44,6 +47,7 @@ export class ExpenseFormComponent implements OnInit {
 
   constructor(
     private expenseService: ExpenseService,
+    private projectService: ProjectService,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -51,6 +55,7 @@ export class ExpenseFormComponent implements OnInit {
   ngOnInit(): void {
     this.loadCategories();
     this.loadExpenseTypes();
+    this.loadProjects();
     
     // Subscribe to route params for proper data loading on navigation
     this.route.paramMap.subscribe(params => {
@@ -60,6 +65,13 @@ export class ExpenseFormComponent implements OnInit {
         this.isEditing = true;
         this.loadExpense();
       }
+    });
+  }
+
+  loadProjects(): void {
+    this.projectService.getAll().subscribe({
+      next: (data) => this.projects = data.filter(p => p.status === 'ACTIVE' || p.status === 'IN_PROGRESS'),
+      error: (err) => console.error('Error loading projects:', err)
     });
   }
 

@@ -17,9 +17,20 @@
         <textarea [(ngModel)]="expenseRequest.description" rows="3" placeholder="Describe the expense"></textarea>
       </div>
       
-      <div class="form-group">
-        <label>Expense Date</label>
-        <input type="date" [(ngModel)]="expenseRequest.expenseDate">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Expense Date</label>
+          <input type="date" [(ngModel)]="expenseRequest.expenseDate">
+        </div>
+        <div class="form-group">
+          <label>Project (Optional)</label>
+          <select [(ngModel)]="expenseRequest.projectCode">
+            <option value="">-- No Project --</option>
+            <option *ngFor="let project of projects" [value]="project.projectCode">
+              {{ project.projectCode }} - {{ project.name }}
+            </option>
+          </select>
+        </div>
       </div>
       
       <div class="form-group checkbox-group">

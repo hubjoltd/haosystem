@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -23,7 +23,7 @@ import { ToastService } from '../../../services/toast.service';
   styleUrls: ['./employee-self-service.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EmployeeSelfServiceComponent implements OnInit {
+export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
   activeTab = 'paystubs';
   paystubs: PayrollRecord[] = [];
   leaveBalances: LeaveBalance[] = [];
@@ -95,6 +95,15 @@ export class EmployeeSelfServiceComponent implements OnInit {
     currentMonth: ''
   };
 
+  // Clock In/Out
+  currentTime: Date = new Date();
+  todayRecord: AttendanceRecord | null = null;
+  isClockedIn = false;
+  loadingClockIn = false;
+  loadingClockOut = false;
+  clockInterval: any = null;
+  elapsedTime = '';
+
   companyName = 'Hao System Corporation';
   companyAddress = '123 Business Park, Suite 500, New York, NY 10001';
 
@@ -143,6 +152,20 @@ export class EmployeeSelfServiceComponent implements OnInit {
     this.loadDocuments();
     this.loadAssets();
     this.loadPolicies();
+    this.loadTodayClockRecord();
+    
+    // Start clock timer
+    this.clockInterval = setInterval(() => {
+      this.currentTime = new Date();
+      this.updateElapsedTime();
+      this.cdr.markForCheck();
+    }, 1000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.clockInterval) {
+      clearInterval(this.clockInterval);
+    }
   }
 
   loadCurrentEmployee(): void {
@@ -362,6 +385,96 @@ export class EmployeeSelfServiceComponent implements OnInit {
     this.attendanceSummary.lateDays = currentMonthRecords.filter(r => r.status === 'LATE').length;
     this.attendanceSummary.overtimeHours = currentMonthRecords.reduce((sum, r) => sum + (r.overtimeHours || 0), 0);
     this.attendanceSummary.totalWorkingHours = currentMonthRecords.reduce((sum, r) => sum + (r.regularHours || 0), 0);
+  }
+
+  // Clock In/Out Methods
+  loadTodayClockRecord(): void {
+    const today = new Date().toISOString().split('T')[0];
+    this.attendanceService.getByEmployeeAndDateRange(this.currentEmployeeId, today, today).subscribe({
+      next: (records: AttendanceRecord[]) => {
+        this.todayRecord = records.length > 0 ? records[0] : null;
+        this.isClockedIn = !!(this.todayRecord && this.todayRecord.clockIn && !this.todayRecord.clockOut);
+        this.updateElapsedTime();
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.todayRecord = null;
+        this.isClockedIn = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  updateElapsedTime(): void {
+    if (this.todayRecord?.clockIn && !this.todayRecord?.clockOut) {
+      const clockInTime = this.parseTimeToDate(this.todayRecord.clockIn);
+      const now = new Date();
+      const diffMs = now.getTime() - clockInTime.getTime();
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+      this.elapsedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    } else {
+      this.elapsedTime = '';
+    }
+  }
+
+  parseTimeToDate(timeStr: string): Date {
+    const today = new Date();
+    const [hours, minutes, seconds] = timeStr.split(':').map(Number);
+    today.setHours(hours || 0, minutes || 0, seconds || 0, 0);
+    return today;
+  }
+
+  clockIn(): void {
+    if (this.loadingClockIn || this.isClockedIn) return;
+    
+    this.loadingClockIn = true;
+    this.cdr.markForCheck();
+    
+    this.attendanceService.clockIn(this.currentEmployeeId).subscribe({
+      next: (record) => {
+        this.todayRecord = record;
+        this.isClockedIn = true;
+        this.loadingClockIn = false;
+        this.loadAttendance();
+        this.loadTodayClockRecord();
+        this.toastService.success('Clocked in successfully!');
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.loadingClockIn = false;
+        const message = err.error?.message || err.message || 'Error clocking in';
+        this.toastService.error(message);
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  clockOut(): void {
+    if (this.loadingClockOut || !this.isClockedIn) return;
+    
+    this.loadingClockOut = true;
+    this.cdr.markForCheck();
+    
+    this.attendanceService.clockOut(this.currentEmployeeId).subscribe({
+      next: (record) => {
+        this.todayRecord = record;
+        this.isClockedIn = false;
+        this.loadingClockOut = false;
+        this.elapsedTime = '';
+        this.loadAttendance();
+        this.loadTodayClockRecord();
+        this.toastService.success('Clocked out successfully!');
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.loadingClockOut = false;
+        const message = err.error?.message || err.message || 'Error clocking out';
+        this.toastService.error(message);
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   loadExpenseCategories(): void {
