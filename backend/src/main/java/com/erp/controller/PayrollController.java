@@ -120,10 +120,14 @@ public class PayrollController {
     }
 
     @PostMapping("/timesheets")
-    public ResponseEntity<Timesheet> createTimesheet(@RequestBody Map<String, Object> data) {
-        Timesheet timesheet = new Timesheet();
-        
+    public ResponseEntity<?> createTimesheet(HttpServletRequest request, @RequestBody Map<String, Object> data) {
         Long employeeId = Long.valueOf(data.get("employeeId").toString());
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        if (!branchEmployeeIds.contains(employeeId)) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Timesheet timesheet = new Timesheet();
         employeeRepository.findById(employeeId).ifPresent(timesheet::setEmployee);
         
         timesheet.setTimesheetNumber(generateTimesheetNumber());
@@ -150,8 +154,10 @@ public class PayrollController {
     }
 
     @PutMapping("/timesheets/{id}/approve")
-    public ResponseEntity<Timesheet> approveTimesheet(@PathVariable Long id, @RequestBody Map<String, Object> data) {
+    public ResponseEntity<Timesheet> approveTimesheet(HttpServletRequest request, @PathVariable Long id, @RequestBody Map<String, Object> data) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
         return timesheetRepository.findById(id)
+            .filter(t -> t.getEmployee() != null && branchEmployeeIds.contains(t.getEmployee().getId()))
             .map(timesheet -> {
                 timesheet.setStatus("APPROVED");
                 timesheet.setApprovedAt(LocalDateTime.now());
@@ -168,8 +174,10 @@ public class PayrollController {
     }
 
     @PutMapping("/timesheets/{id}/reject")
-    public ResponseEntity<Timesheet> rejectTimesheet(@PathVariable Long id, @RequestBody Map<String, Object> data) {
+    public ResponseEntity<Timesheet> rejectTimesheet(HttpServletRequest request, @PathVariable Long id, @RequestBody Map<String, Object> data) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
         return timesheetRepository.findById(id)
+            .filter(t -> t.getEmployee() != null && branchEmployeeIds.contains(t.getEmployee().getId()))
             .map(timesheet -> {
                 timesheet.setStatus("REJECTED");
                 if (data.containsKey("approverRemarks")) {
@@ -487,8 +495,10 @@ public class PayrollController {
     }
 
     @PutMapping("/project-timesheets/{id}/approve")
-    public ResponseEntity<ProjectTimesheet> approveProjectTimesheet(@PathVariable Long id, @RequestBody Map<String, Object> data) {
+    public ResponseEntity<ProjectTimesheet> approveProjectTimesheet(HttpServletRequest request, @PathVariable Long id, @RequestBody Map<String, Object> data) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
         return projectTimesheetRepository.findById(id)
+            .filter(t -> t.getEmployee() != null && branchEmployeeIds.contains(t.getEmployee().getId()))
             .map(timesheet -> {
                 timesheet.setStatus("APPROVED");
                 timesheet.setApprovedAt(LocalDateTime.now());

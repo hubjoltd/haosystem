@@ -151,8 +151,12 @@ public class AttendanceController {
     }
 
     @PostMapping("/clock-in")
-    public ResponseEntity<?> clockIn(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<?> clockIn(HttpServletRequest httpRequest, @RequestBody Map<String, Object> request) {
         Long employeeId = Long.valueOf(request.get("employeeId").toString());
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(httpRequest);
+        if (!branchEmployeeIds.contains(employeeId)) {
+            return ResponseEntity.notFound().build();
+        }
         String captureMethod = (String) request.getOrDefault("captureMethod", "WEB");
         String clientTime = (String) request.get("clientTime");
         String clientDate = (String) request.get("clientDate");
@@ -193,8 +197,12 @@ public class AttendanceController {
     }
 
     @PostMapping("/clock-out")
-    public ResponseEntity<?> clockOut(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<?> clockOut(HttpServletRequest httpRequest, @RequestBody Map<String, Object> request) {
         Long employeeId = Long.valueOf(request.get("employeeId").toString());
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(httpRequest);
+        if (!branchEmployeeIds.contains(employeeId)) {
+            return ResponseEntity.notFound().build();
+        }
         String clientTime = (String) request.get("clientTime");
         String clientDate = (String) request.get("clientDate");
 
@@ -250,9 +258,13 @@ public class AttendanceController {
     }
 
     @PostMapping("/manual-entry")
-    public ResponseEntity<?> manualEntry(@RequestBody AttendanceRecord record) {
+    public ResponseEntity<?> manualEntry(HttpServletRequest httpRequest, @RequestBody AttendanceRecord record) {
         if (record.getEmployee() == null || record.getEmployee().getId() == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Employee ID is required"));
+        }
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(httpRequest);
+        if (!branchEmployeeIds.contains(record.getEmployee().getId())) {
+            return ResponseEntity.notFound().build();
         }
 
         Employee employee = employeeRepository.findById(record.getEmployee().getId()).orElse(null);

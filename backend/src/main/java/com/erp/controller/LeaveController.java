@@ -152,8 +152,12 @@ public class LeaveController {
     }
 
     @PostMapping("/requests")
-    public ResponseEntity<?> createRequest(@RequestBody Map<String, Object> requestData) {
+    public ResponseEntity<?> createRequest(HttpServletRequest httpRequest, @RequestBody Map<String, Object> requestData) {
         Long employeeId = Long.valueOf(requestData.get("employeeId").toString());
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(httpRequest);
+        if (!branchEmployeeIds.contains(employeeId)) {
+            return ResponseEntity.notFound().build();
+        }
         Long leaveTypeId = Long.valueOf(requestData.get("leaveTypeId").toString());
 
         Employee employee = employeeRepository.findById(employeeId).orElse(null);
