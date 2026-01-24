@@ -16,7 +16,7 @@
       <div class="run-card" *ngFor="let run of payrollRuns" (click)="selectRun(run)">
         <div class="run-header">
           <span class="run-number">{{ run.payrollRunNumber }}</span>
-          <span class="run-status" [ngClass]="getStatusClass(run.status)">{{ run.status }}</span>
+          <span class="run-status" [ngClass]="getStatusClass(run.status)">{{ getStatusLabel(run.status) }}</span>
         </div>
         <div class="run-details">
           <div class="detail-row">

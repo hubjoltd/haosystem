@@ -164,13 +164,20 @@ export class PayrollHistoryComponent implements OnInit {
   loadPayrollRuns(): void {
     this.payrollService.getPayrollRuns().subscribe({
       next: (runs) => {
-        this.payrollRuns = runs.filter(r => 
-          r.status === 'PROCESSED' || 
-          r.status === 'COMPLETED' ||
-          r.status === 'FULLY_PROCESSED' ||
-          r.status === 'PARTIALLY_PROCESSED'
-        );
-        this.completedRuns = this.payrollRuns.length;
+        // Include all runs that have been processed at least partially
+        this.payrollRuns = runs.filter(r => {
+          const status = r.status?.toUpperCase();
+          return status === 'PROCESSED' || 
+                 status === 'COMPLETED' ||
+                 status === 'FULLY_PROCESSED' ||
+                 status === 'PARTIALLY_PROCESSED' ||
+                 status === 'CALCULATED' ||
+                 status === 'APPROVED';
+        });
+        this.completedRuns = this.payrollRuns.filter(r => {
+          const status = r.status?.toUpperCase();
+          return status === 'PROCESSED' || status === 'FULLY_PROCESSED' || status === 'COMPLETED';
+        }).length;
         this.countRunsByPeriod();
         this.loadPayrollRecords();
       },
@@ -202,14 +209,25 @@ export class PayrollHistoryComponent implements OnInit {
       }
     });
     
-    this.payrollRunsList = this.payrollRuns.map(run => ({
-      periodType: run.payFrequency?.name || 'Monthly',
-      periodRange: `${run.periodStartDate} - ${run.periodEndDate}`,
-      payDate: run.payDate || '',
-      gross: run.totalGrossPay || 0,
-      netPay: run.totalNetPay || 0,
-      status: run.status === 'PROCESSED' || run.status === 'FULLY_PROCESSED' ? 'Paid' : run.status || 'Pending'
-    }));
+    this.payrollRunsList = this.payrollRuns.map(run => {
+      const status = run.status?.toUpperCase();
+      let displayStatus = 'Pending';
+      if (status === 'PROCESSED' || status === 'FULLY_PROCESSED' || status === 'COMPLETED') {
+        displayStatus = 'Processed';
+      } else if (status === 'PARTIALLY_PROCESSED') {
+        displayStatus = 'Partial';
+      } else if (status === 'CALCULATED' || status === 'APPROVED') {
+        displayStatus = 'On Hold';
+      }
+      return {
+        periodType: run.payFrequency?.name || 'Monthly',
+        periodRange: `${run.periodStartDate} - ${run.periodEndDate}`,
+        payDate: run.payDate || '',
+        gross: run.totalGrossPay || 0,
+        netPay: run.totalNetPay || 0,
+        status: displayStatus
+      };
+    });
   }
 
   loadPayrollRecords(): void {
@@ -313,11 +331,21 @@ export class PayrollHistoryComponent implements OnInit {
         netPay: record.netPay || 0,
         payDate: run?.payDate || new Date().toISOString().split('T')[0],
         paymentDate: run?.payDate || new Date().toISOString().split('T')[0],
-        payStatus: run?.status === 'COMPLETED' ? 'Paid' : run?.status || 'Pending'
+        payStatus: this.getDisplayPayStatus(run?.status, record.status)
       };
     });
-    
-    this.extractProjects();
+  }
+  
+  getDisplayPayStatus(runStatus?: string, recordStatus?: string): string {
+    const status = (recordStatus || runStatus || '').toUpperCase();
+    if (status === 'PROCESSED' || status === 'FULLY_PROCESSED' || status === 'COMPLETED' || status === 'RELEASED' || status === 'PAID') {
+      return 'Processed';
+    } else if (status === 'HOLD' || status === 'ON_HOLD' || status === 'ONHOLD') {
+      return 'On Hold';
+    } else if (status === 'CALCULATED' || status === 'APPROVED' || status === 'PARTIALLY_PROCESSED') {
+      return 'Pending';
+    }
+    return 'Pending';
   }
 
   generateSampleData(): void {
@@ -400,11 +428,11 @@ export class PayrollHistoryComponent implements OnInit {
       let matchesStatus = true;
       if (this.selectedStatus !== 'ALL') {
         if (this.selectedStatus === 'PROCESSED') {
-          matchesStatus = record.payStatus === 'Paid' || record.payStatus === 'Released' || record.payStatus === 'PROCESSED';
+          matchesStatus = record.payStatus === 'Processed';
         } else if (this.selectedStatus === 'ON_HOLD') {
-          matchesStatus = record.payStatus === 'On Hold' || record.payStatus === 'HOLD';
+          matchesStatus = record.payStatus === 'On Hold';
         } else if (this.selectedStatus === 'PENDING') {
-          matchesStatus = record.payStatus === 'Pending' || record.payStatus === 'PENDING';
+          matchesStatus = record.payStatus === 'Pending';
         }
       }
       
@@ -425,21 +453,15 @@ export class PayrollHistoryComponent implements OnInit {
   }
 
   get processedRecords(): PayrollHistoryRecord[] {
-    return this.historyRecords.filter(r => 
-      r.payStatus === 'Paid' || r.payStatus === 'Released' || r.payStatus === 'PROCESSED'
-    );
+    return this.historyRecords.filter(r => r.payStatus === 'Processed');
   }
 
   get onHoldRecords(): PayrollHistoryRecord[] {
-    return this.historyRecords.filter(r => 
-      r.payStatus === 'On Hold' || r.payStatus === 'HOLD'
-    );
+    return this.historyRecords.filter(r => r.payStatus === 'On Hold');
   }
 
   get pendingRecords(): PayrollHistoryRecord[] {
-    return this.historyRecords.filter(r => 
-      r.payStatus === 'Pending' || r.payStatus === 'PENDING'
-    );
+    return this.historyRecords.filter(r => r.payStatus === 'Pending');
   }
 
   getProcessedTotal(): number {

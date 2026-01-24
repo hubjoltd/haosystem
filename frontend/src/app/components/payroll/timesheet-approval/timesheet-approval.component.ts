@@ -3,9 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { PayrollService, Timesheet, PayFrequency } from '../../../services/payroll.service';
+import { PayrollService, Timesheet, PayFrequency, PayrollRecord } from '../../../services/payroll.service';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
 import { EmployeeService, Employee, EmployeeSalary } from '../../../services/employee.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -704,6 +706,71 @@ export class TimesheetApprovalComponent implements OnInit {
     this.generatedTimesheets = [];
     this.cdr.markForCheck();
     
+    // First, fetch existing payroll runs to filter out already calculated employees
+    this.payrollService.getPayrollRuns().subscribe({
+      next: (runs) => {
+        // Get runs that overlap with the selected period and have relevant status
+        const overlappingRuns = runs.filter(run => {
+          const status = run.status?.toUpperCase();
+          if (!(status === 'CALCULATED' || status === 'APPROVED' || status === 'PROCESSED' || 
+                status === 'PARTIALLY_PROCESSED' || status === 'FULLY_PROCESSED' || status === 'COMPLETED')) {
+            return false;
+          }
+          
+          // Check date overlap using Date objects for proper comparison
+          const runStart = new Date(run.periodStartDate);
+          const runEnd = new Date(run.periodEndDate);
+          const genStart = new Date(this.generateStartDate);
+          const genEnd = new Date(this.generateEndDate);
+          
+          return runStart <= genEnd && runEnd >= genStart;
+        });
+        
+        if (overlappingRuns.length === 0) {
+          // No overlapping runs, proceed without filtering
+          this.generateTimesheetsFromAttendance(new Set<number>());
+          return;
+        }
+        
+        // Fetch all payroll records for overlapping runs in parallel using forkJoin
+        const recordRequests = overlappingRuns
+          .filter(run => run.id)
+          .map(run => 
+            this.payrollService.getPayrollRecordsByRun(run.id!).pipe(
+              catchError(() => of([] as PayrollRecord[]))
+            )
+          );
+        
+        if (recordRequests.length === 0) {
+          this.generateTimesheetsFromAttendance(new Set<number>());
+          return;
+        }
+        
+        forkJoin(recordRequests).subscribe({
+          next: (allRecords) => {
+            const calculatedEmployeeIds = new Set<number>();
+            allRecords.flat().forEach(rec => {
+              if (rec.employee?.id) {
+                calculatedEmployeeIds.add(rec.employee.id);
+              }
+            });
+            
+            // Now generate timesheets excluding already calculated employees
+            this.generateTimesheetsFromAttendance(calculatedEmployeeIds);
+          },
+          error: () => {
+            this.generateTimesheetsFromAttendance(new Set<number>());
+          }
+        });
+      },
+      error: () => {
+        // If error, proceed without filtering
+        this.generateTimesheetsFromAttendance(new Set<number>());
+      }
+    });
+  }
+  
+  private generateTimesheetsFromAttendance(excludeEmployeeIds: Set<number>): void {
     this.attendanceService.getByDateRange(this.generateStartDate, this.generateEndDate).subscribe({
       next: (records) => {
         const approvedRecords = records.filter(r => r.approvalStatus === 'APPROVED');
@@ -719,6 +786,9 @@ export class TimesheetApprovalComponent implements OnInit {
           const emp = embeddedEmp || listEmp;
           
           if (empId === 0) return; // Skip invalid records
+          
+          // Skip employees already in calculated payroll runs
+          if (excludeEmployeeIds.has(empId)) return;
           
           if (!employeeMap.has(empId)) {
             employeeMap.set(empId, {
@@ -763,7 +833,11 @@ export class TimesheetApprovalComponent implements OnInit {
         
         this.timesheetsGenerated = true;
         this.generating = false;
-        this.showMessage(`Generated ${this.generatedTimesheets.length} timesheets from approved attendance!`, 'success');
+        const excludedCount = excludeEmployeeIds.size;
+        const msg = excludedCount > 0 
+          ? `Generated ${this.generatedTimesheets.length} timesheets (${excludedCount} already calculated)`
+          : `Generated ${this.generatedTimesheets.length} timesheets from approved attendance!`;
+        this.showMessage(msg, 'success');
         this.cdr.markForCheck();
       },
       error: (err) => {

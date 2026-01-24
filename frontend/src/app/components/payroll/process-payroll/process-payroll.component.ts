@@ -72,7 +72,10 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.payrollService.getPayrollRuns().subscribe({
       next: (runs) => {
-        this.payrollRuns = runs.filter(r => r.status === 'APPROVED' || r.status === 'CALCULATED');
+        this.payrollRuns = runs.filter(r => {
+          const status = r.status?.toUpperCase();
+          return status === 'APPROVED' || status === 'CALCULATED' || status === 'PARTIALLY_PROCESSED';
+        });
         this.loading = false;
       },
       error: (err) => {
@@ -269,11 +272,26 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
   }
 
   getStatusClass(status: string): string {
-    switch (status) {
+    switch (status?.toUpperCase()) {
       case 'CALCULATED': return 'status-calculated';
       case 'APPROVED': return 'status-approved';
-      case 'PROCESSED': return 'status-processed';
+      case 'PROCESSED': 
+      case 'FULLY_PROCESSED': 
+      case 'COMPLETED': return 'status-processed';
+      case 'PARTIALLY_PROCESSED': return 'status-partial';
       default: return 'status-draft';
+    }
+  }
+  
+  getStatusLabel(status: string): string {
+    switch (status?.toUpperCase()) {
+      case 'CALCULATED': 
+      case 'APPROVED': return 'Ready to Process';
+      case 'PROCESSED': 
+      case 'FULLY_PROCESSED': 
+      case 'COMPLETED': return 'Processed';
+      case 'PARTIALLY_PROCESSED': return 'Partially Processed';
+      default: return status || 'Draft';
     }
   }
 
