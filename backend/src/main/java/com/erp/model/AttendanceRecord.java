@@ -23,10 +23,10 @@ public class AttendanceRecord {
     @Column(nullable = false)
     private LocalDate attendanceDate;
 
-    @JsonFormat(pattern = "HH:mm:ss")
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime clockIn;
     
-    @JsonFormat(pattern = "HH:mm:ss")
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime clockOut;
 
     @Column(length = 20)

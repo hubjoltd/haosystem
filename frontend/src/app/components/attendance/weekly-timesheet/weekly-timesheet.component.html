@@ -85,6 +85,7 @@
               <th>Hours</th>
               <th>OT</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -100,9 +101,17 @@
                   {{ record.status }}
                 </span>
               </td>
+              <td class="actions-cell">
+                <button class="btn-action view" (click)="viewEmployeeTimesheet(record)" title="View Employee Timesheet">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn-action pdf" (click)="downloadEmployeePDF(record)" title="Download PDF">
+                  <i class="fas fa-file-pdf"></i>
+                </button>
+              </td>
             </tr>
             <tr *ngIf="group.records.length === 0">
-              <td colspan="7" class="no-records">No attendance records for this period</td>
+              <td colspan="8" class="no-records">No attendance records for this period</td>
             </tr>
           </tbody>
         </table>
@@ -117,5 +126,82 @@
 
   <div class="loading-indicator" *ngIf="loading">
     <i class="fas fa-spinner fa-spin"></i> Loading timesheet data...
+  </div>
+</div>
+
+<!-- Employee Timesheet Modal -->
+<div class="modal-overlay" *ngIf="showEmployeeModal" (click)="closeEmployeeModal()">
+  <div class="modal-content employee-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Employee Weekly Timesheet</h2>
+      <button class="btn-close" (click)="closeEmployeeModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="employee-info" *ngIf="selectedEmployee">
+        <h3>{{ selectedEmployee.employeeName }}</h3>
+        <p class="period">{{ getWeekRangeDisplay() }}</p>
+      </div>
+      
+      <div class="summary-row">
+        <div class="summary-item">
+          <span class="label">Total Hours</span>
+          <span class="value">{{ getEmployeeTotalHours().toFixed(2) }}h</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Overtime</span>
+          <span class="value">{{ getEmployeeTotalOT().toFixed(2) }}h</span>
+        </div>
+        <div class="summary-item">
+          <span class="label">Days Worked</span>
+          <span class="value">{{ employeeWeekRecords.length }}</span>
+        </div>
+      </div>
+
+      <table class="employee-records-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Clock In</th>
+            <th>Clock Out</th>
+            <th>Hours</th>
+            <th>OT</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of employeeWeekRecords">
+            <td>{{ formatDisplayDate(record.date) }}</td>
+            <td>{{ record.clockIn?.substring(0, 5) || '—' }}</td>
+            <td>{{ record.clockOut?.substring(0, 5) || '—' }}</td>
+            <td>{{ record.hours > 0 ? record.hours.toFixed(2) : '—' }}</td>
+            <td>{{ record.overtime > 0 ? record.overtime.toFixed(2) : '—' }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="record.status.toLowerCase()">
+                {{ record.status }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="employeeWeekRecords.length === 0">
+            <td colspan="6" class="no-records">No records for this period</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3"><strong>Total</strong></td>
+            <td><strong>{{ getEmployeeTotalHours().toFixed(2) }}h</strong></td>
+            <td><strong>{{ getEmployeeTotalOT().toFixed(2) }}h</strong></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-download" (click)="downloadEmployeePDF(selectedEmployee!)">
+        <i class="fas fa-file-pdf"></i> Download PDF
+      </button>
+      <button class="btn-secondary" (click)="closeEmployeeModal()">Close</button>
+    </div>
   </div>
 </div>

@@ -218,13 +218,31 @@ export class EmployeeDetailComponent implements OnInit {
   loadAllTabData() {
     if (!this.employeeId) return;
     
-    // Load all tab data at once
-    this.employeeService.getBankDetails(this.employeeId).subscribe(data => this.bankDetails = data);
-    this.employeeService.getSalaryHistory(this.employeeId).subscribe(data => this.salaryHistory = data);
-    this.employeeService.getEducation(this.employeeId).subscribe(data => this.education = data);
-    this.employeeService.getExperience(this.employeeId).subscribe(data => this.experience = data);
-    this.employeeService.getAssets(this.employeeId).subscribe(data => this.assets = data);
-    this.documentService.getEmployeeDocuments(this.employeeId).subscribe(data => this.documents = data);
+    // Load all tab data at once with markForCheck for OnPush change detection
+    this.employeeService.getBankDetails(this.employeeId).subscribe(data => {
+      this.bankDetails = data;
+      this.cdr.markForCheck();
+    });
+    this.employeeService.getSalaryHistory(this.employeeId).subscribe(data => {
+      this.salaryHistory = data;
+      this.cdr.markForCheck();
+    });
+    this.employeeService.getEducation(this.employeeId).subscribe(data => {
+      this.education = data;
+      this.cdr.markForCheck();
+    });
+    this.employeeService.getExperience(this.employeeId).subscribe(data => {
+      this.experience = data;
+      this.cdr.markForCheck();
+    });
+    this.employeeService.getAssets(this.employeeId).subscribe(data => {
+      this.assets = data;
+      this.cdr.markForCheck();
+    });
+    this.documentService.getEmployeeDocuments(this.employeeId).subscribe(data => {
+      this.documents = data;
+      this.cdr.markForCheck();
+    });
     this.loadDocumentChecklist();
     this.loadLeaveBalances();
     this.loadRecruitmentHistory();
@@ -233,12 +251,30 @@ export class EmployeeDetailComponent implements OnInit {
   loadSubData() {
     if (!this.employeeId) return;
     
-    this.employeeService.getBankDetails(this.employeeId).subscribe(data => this.bankDetails = data);
-    this.employeeService.getSalaryHistory(this.employeeId).subscribe(data => this.salaryHistory = data);
-    this.employeeService.getEducation(this.employeeId).subscribe(data => this.education = data);
-    this.employeeService.getExperience(this.employeeId).subscribe(data => this.experience = data);
-    this.employeeService.getAssets(this.employeeId).subscribe(data => this.assets = data);
-    this.documentService.getEmployeeDocuments(this.employeeId).subscribe(data => this.documents = data);
+    this.employeeService.getBankDetails(this.employeeId).subscribe(data => {
+      this.bankDetails = data;
+      this.cdr.markForCheck();
+    });
+    this.employeeService.getSalaryHistory(this.employeeId).subscribe(data => {
+      this.salaryHistory = data;
+      this.cdr.markForCheck();
+    });
+    this.employeeService.getEducation(this.employeeId).subscribe(data => {
+      this.education = data;
+      this.cdr.markForCheck();
+    });
+    this.employeeService.getExperience(this.employeeId).subscribe(data => {
+      this.experience = data;
+      this.cdr.markForCheck();
+    });
+    this.employeeService.getAssets(this.employeeId).subscribe(data => {
+      this.assets = data;
+      this.cdr.markForCheck();
+    });
+    this.documentService.getEmployeeDocuments(this.employeeId).subscribe(data => {
+      this.documents = data;
+      this.cdr.markForCheck();
+    });
   }
 
   getEmptyEmployee(): Employee {
@@ -1159,14 +1195,17 @@ export class EmployeeDetailComponent implements OnInit {
     if (!this.employeeId) return;
     
     this.loadingLeaveBalances = true;
+    this.cdr.markForCheck();
     this.leaveService.getEmployeeBalancesByYear(this.employeeId, this.leaveYear).subscribe({
       next: (data) => {
         this.leaveBalances = data;
         this.loadingLeaveBalances = false;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error loading leave balances:', err);
         this.loadingLeaveBalances = false;
+        this.cdr.markForCheck();
       }
     });
   }

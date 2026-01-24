@@ -61,6 +61,11 @@ export class WeeklyTimesheetComponent implements OnInit {
   totalHours = 0;
   totalOvertime = 0;
 
+  // Employee timesheet modal
+  showEmployeeModal = false;
+  selectedEmployee: TimesheetRecord | null = null;
+  employeeWeekRecords: TimesheetRecord[] = [];
+
   constructor(
     private attendanceService: AttendanceService,
     private employeeService: EmployeeService,
@@ -339,5 +344,89 @@ export class WeeklyTimesheetComponent implements OnInit {
     document.body.removeChild(link);
     
     this.toastService.success('CSV downloaded');
+  }
+
+  viewEmployeeTimesheet(record: TimesheetRecord): void {
+    this.selectedEmployee = record;
+    this.employeeWeekRecords = [];
+    
+    // Get all records for this employee in the current period
+    this.projectGroups.forEach(group => {
+      const empRecords = group.records.filter(r => r.employeeId === record.employeeId);
+      this.employeeWeekRecords.push(...empRecords);
+    });
+    
+    // Sort by date
+    this.employeeWeekRecords.sort((a, b) => a.date.localeCompare(b.date));
+    
+    this.showEmployeeModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeEmployeeModal(): void {
+    this.showEmployeeModal = false;
+    this.selectedEmployee = null;
+    this.employeeWeekRecords = [];
+    this.cdr.markForCheck();
+  }
+
+  getEmployeeTotalHours(): number {
+    return this.employeeWeekRecords.reduce((sum, r) => sum + r.hours, 0);
+  }
+
+  getEmployeeTotalOT(): number {
+    return this.employeeWeekRecords.reduce((sum, r) => sum + r.overtime, 0);
+  }
+
+  downloadEmployeePDF(record: TimesheetRecord): void {
+    // Get all records for this employee
+    const empRecords: TimesheetRecord[] = [];
+    this.projectGroups.forEach(group => {
+      const records = group.records.filter(r => r.employeeId === record.employeeId);
+      empRecords.push(...records);
+    });
+    empRecords.sort((a, b) => a.date.localeCompare(b.date));
+
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text('Employee Weekly Timesheet', 14, 22);
+    
+    doc.setFontSize(12);
+    doc.text(`Employee: ${record.employeeName}`, 14, 32);
+    doc.text(`Period: ${this.getWeekRangeDisplay()}`, 14, 40);
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 48);
+
+    const totalHours = empRecords.reduce((sum, r) => sum + r.hours, 0);
+    const totalOT = empRecords.reduce((sum, r) => sum + r.overtime, 0);
+
+    doc.setFontSize(10);
+    doc.text(`Total Hours: ${totalHours.toFixed(2)}h`, 14, 58);
+    doc.text(`Total Overtime: ${totalOT.toFixed(2)}h`, 80, 58);
+    doc.text(`Total: ${(totalHours + totalOT).toFixed(2)}h`, 140, 58);
+
+    const tableData = empRecords.map(r => [
+      this.formatDisplayDate(r.date),
+      r.clockIn?.substring(0, 5) || '-',
+      r.clockOut?.substring(0, 5) || '-',
+      r.hours > 0 ? r.hours.toFixed(2) : '-',
+      r.overtime > 0 ? r.overtime.toFixed(2) : '-',
+      r.status
+    ]);
+
+    doc.autoTable({
+      startY: 68,
+      head: [['Date', 'Clock In', 'Clock Out', 'Hours', 'OT', 'Status']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [0, 128, 128] },
+      margin: { left: 14 },
+      foot: [['Total', '', '', totalHours.toFixed(2), totalOT.toFixed(2), '']],
+      footStyles: { fillColor: [0, 128, 128], textColor: [255, 255, 255], fontStyle: 'bold' }
+    });
+
+    const fileName = `Timesheet_${record.employeeName.replace(/\s+/g, '_')}_${this.periodStartDate}_${this.periodEndDate}.pdf`;
+    doc.save(fileName);
+    this.toastService.success('PDF downloaded');
   }
 }

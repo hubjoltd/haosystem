@@ -163,13 +163,19 @@ export class EmployeeSelfServiceComponent implements OnInit {
     this.leaveService.initializeBalances(this.currentEmployeeId).subscribe({
       next: () => {
         this.leaveService.getEmployeeBalances(this.currentEmployeeId).subscribe({
-          next: (data: LeaveBalance[]) => this.leaveBalances = data,
+          next: (data: LeaveBalance[]) => {
+            this.leaveBalances = data;
+            this.cdr.markForCheck();
+          },
           error: (err: Error) => console.error('Error loading leave balances:', err)
         });
       },
       error: () => {
         this.leaveService.getEmployeeBalances(this.currentEmployeeId).subscribe({
-          next: (data: LeaveBalance[]) => this.leaveBalances = data,
+          next: (data: LeaveBalance[]) => {
+            this.leaveBalances = data;
+            this.cdr.markForCheck();
+          },
           error: (err: Error) => console.error('Error loading leave balances:', err)
         });
       }
@@ -258,6 +264,7 @@ export class EmployeeSelfServiceComponent implements OnInit {
     }
 
     this.submittingLeave = true;
+    this.cdr.markForCheck();
     const request = {
       employeeId: this.currentEmployeeId,
       leaveTypeId: this.newLeaveRequest.leaveTypeId,
@@ -269,16 +276,18 @@ export class EmployeeSelfServiceComponent implements OnInit {
     this.leaveService.createRequest(request).subscribe({
       next: () => {
         this.submittingLeave = false;
+        this.cdr.markForCheck();
         this.closeLeaveRequestModal();
         this.loadLeaveRequests();
         this.loadLeaveBalances();
-        alert('Leave request submitted successfully!');
+        this.toastService.success('Leave request submitted successfully!');
       },
       error: (err: any) => {
         this.submittingLeave = false;
+        this.cdr.markForCheck();
         console.error('Error submitting leave request:', err);
         const message = err.error?.message || err.message || 'Error submitting leave request';
-        alert(message);
+        this.toastService.error(message);
       }
     });
   }
@@ -439,6 +448,7 @@ export class EmployeeSelfServiceComponent implements OnInit {
     }
 
     this.submittingExpense = true;
+    this.cdr.markForCheck();
     
     let receiptUrl = '';
     if (this.newExpenseRequest.receiptPreview) {
@@ -461,13 +471,15 @@ export class EmployeeSelfServiceComponent implements OnInit {
         this.submittingExpense = false;
         this.closeExpenseRequestModal();
         this.loadExpenses();
-        alert('Expense request submitted successfully!');
+        this.cdr.markForCheck();
+        this.toastService.success('Expense request submitted successfully!');
       },
       error: (err: any) => {
         this.submittingExpense = false;
+        this.cdr.markForCheck();
         console.error('Error submitting expense request:', err);
         const message = err.error?.message || err.message || 'Error submitting expense request';
-        alert(message);
+        this.toastService.error(message);
       }
     });
   }
@@ -495,6 +507,7 @@ export class EmployeeSelfServiceComponent implements OnInit {
     }
 
     this.submittingLoan = true;
+    this.cdr.markForCheck();
     const request = {
       employeeId: this.currentEmployeeId,
       loanType: this.newLoanRequest.loanType,
@@ -507,15 +520,17 @@ export class EmployeeSelfServiceComponent implements OnInit {
     this.loanService.createApplication(request).subscribe({
       next: () => {
         this.submittingLoan = false;
+        this.cdr.markForCheck();
         this.closeLoanRequestModal();
         this.loadLoans();
-        alert('Loan application submitted successfully!');
+        this.toastService.success('Loan application submitted successfully!');
       },
       error: (err: any) => {
         this.submittingLoan = false;
+        this.cdr.markForCheck();
         console.error('Error submitting loan application:', err);
         const message = err.error?.message || err.message || 'Error submitting loan application';
-        alert(message);
+        this.toastService.error(message);
       }
     });
   }
