@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, Branch } from '../../services/auth.service';
+import { BranchService } from '../../services/branch.service';
 import { TranslateService } from '@ngx-translate/core';
 
 interface MenuItem {
@@ -22,6 +23,8 @@ interface MenuItem {
 export class SidebarComponent implements OnInit {
   @Input() collapsed: boolean = false;
   @Input() mobileOpen: boolean = false;
+
+  currentBranch: Branch | null = null;
 
   allMenuItems: MenuItem[] = [
     { icon: 'fas fa-home', label: 'Dashboard', labelKey: 'nav.dashboard', route: '/app/dashboard', permissionKey: 'Dashboard' },
@@ -392,7 +395,11 @@ export class SidebarComponent implements OnInit {
 
   menuItems: MenuItem[] = [];
 
-  constructor(private router: Router, private authService: AuthService) {}
+  constructor(
+    private router: Router, 
+    private authService: AuthService,
+    private branchService: BranchService
+  ) {}
 
   logout(): void {
     this.authService.logout();
@@ -401,9 +408,27 @@ export class SidebarComponent implements OnInit {
 
   ngOnInit(): void {
     this.filterMenuByPermissions();
+    this.loadCurrentBranch();
     this.authService.currentUser$.subscribe(() => {
       this.filterMenuByPermissions();
+      this.loadCurrentBranch();
     });
+  }
+
+  loadCurrentBranch(): void {
+    const user = this.authService.getCurrentUser();
+    if (user?.branchId) {
+      this.branchService.getMyBranch().subscribe({
+        next: (branch) => {
+          this.currentBranch = branch;
+        },
+        error: () => {
+          this.currentBranch = null;
+        }
+      });
+    } else {
+      this.currentBranch = null;
+    }
   }
 
   filterMenuByPermissions(): void {

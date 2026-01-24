@@ -107,6 +107,7 @@ export class BranchManagementComponent implements OnInit {
     this.editMode = false;
     this.branchForm = {
       code: '',
+      slug: '',
       name: '',
       address: '',
       city: '',
@@ -118,6 +119,8 @@ export class BranchManagementComponent implements OnInit {
       website: '',
       currency: 'USD',
       timezone: 'UTC',
+      primaryColor: '#0d7377',
+      secondaryColor: '#14919b',
       active: true
     };
     this.showBranchModal = true;

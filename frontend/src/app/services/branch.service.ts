@@ -50,6 +50,14 @@ export class BranchService {
     return this.http.get<Branch>(`${this.baseUrl}/${id}`);
   }
 
+  getBranchBySlug(slug: string): Observable<Branch> {
+    return this.http.get<Branch>(`${this.baseUrl}/by-slug/${slug}`);
+  }
+
+  getMyBranch(): Observable<Branch> {
+    return this.http.get<Branch>(`${this.baseUrl}/my-branch`);
+  }
+
   createBranch(branch: Partial<Branch>): Observable<Branch> {
     return this.http.post<Branch>(this.baseUrl, branch);
   }

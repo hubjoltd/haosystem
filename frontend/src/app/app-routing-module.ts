@@ -4,6 +4,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
 import { LayoutComponent } from './components/layout/layout.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { CompanySelectorComponent } from './components/company-selector/company-selector.component';
+import { CompanyLoginComponent } from './components/company-login/company-login.component';
 
 import { GeneralSettingsComponent } from './components/settings/general-settings/general-settings.component';
 import { FinanceSettingsComponent } from './components/settings/finance-settings/finance-settings.component';
@@ -145,7 +147,8 @@ import { FinancialReportsComponent } from './components/accounting/reports/finan
 import { FinanceSettingsComponent as AccountingSettingsComponent } from './components/accounting/settings/finance-settings.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  { path: '', redirectTo: '/companies', pathMatch: 'full' },
+  { path: 'companies', component: CompanySelectorComponent },
   { path: 'login', component: LoginComponent },
   {
     path: 'app',
@@ -288,7 +291,8 @@ const routes: Routes = [
       { path: 'accounting/reports', component: FinancialReportsComponent },
       { path: 'accounting/settings', component: AccountingSettingsComponent }
     ]
-  }
+  },
+  { path: ':companySlug', component: CompanyLoginComponent }
 ];
 
 @NgModule({

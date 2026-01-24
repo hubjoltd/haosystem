@@ -13,8 +13,14 @@ public class Branch {
     @Column(unique = true, nullable = false)
     private String code;
     
+    @Column(unique = true)
+    private String slug;
+    
     @Column(nullable = false)
     private String name;
+    
+    private String primaryColor;
+    private String secondaryColor;
     
     private String address;
     private String city;
@@ -50,7 +56,13 @@ public class Branch {
     public void setId(Long id) { this.id = id; }
     public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }
+    public String getSlug() { return slug; }
+    public void setSlug(String slug) { this.slug = slug; }
     public String getName() { return name; }
+    public String getPrimaryColor() { return primaryColor; }
+    public void setPrimaryColor(String primaryColor) { this.primaryColor = primaryColor; }
+    public String getSecondaryColor() { return secondaryColor; }
+    public void setSecondaryColor(String secondaryColor) { this.secondaryColor = secondaryColor; }
     public void setName(String name) { this.name = name; }
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }

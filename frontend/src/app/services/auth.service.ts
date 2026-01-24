@@ -51,6 +51,7 @@ export interface CurrentUser {
 export interface Branch {
   id: number;
   code: string;
+  slug?: string;
   name: string;
   address?: string;
   city?: string;
@@ -64,6 +65,8 @@ export interface Branch {
   currency?: string;
   dateFormat?: string;
   timezone?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
   active: boolean;
 }
 

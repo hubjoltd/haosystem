@@ -76,6 +76,39 @@ public class BranchController {
         return ResponseEntity.ok(branchRepository.findByActiveTrue());
     }
     
+    @GetMapping("/by-slug/{slug}")
+    public ResponseEntity<?> getBranchBySlug(@PathVariable String slug) {
+        return branchRepository.findBySlug(slug)
+            .filter(Branch::getActive)
+            .map(branch -> ResponseEntity.ok((Object) branch))
+            .orElse(ResponseEntity.notFound().build());
+    }
+    
+    @GetMapping("/my-branch")
+    public ResponseEntity<?> getMyBranch(HttpServletRequest request) {
+        String token = extractToken(request);
+        if (token == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Authentication required");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
+        try {
+            Long branchId = jwtUtil.extractBranchId(token);
+            if (branchId == null) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "No branch assigned to user");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+            }
+            return branchRepository.findById(branchId)
+                .map(branch -> ResponseEntity.ok((Object) branch))
+                .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to retrieve branch");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+    
     @GetMapping("/{id}")
     public ResponseEntity<?> getBranchById(@PathVariable Long id, HttpServletRequest request) {
         if (!isSuperAdmin(request)) {
@@ -94,6 +127,14 @@ public class BranchController {
         if (branchRepository.existsByCode(branch.getCode())) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Branch code already exists");
+            return ResponseEntity.badRequest().body(error);
+        }
+        if (branch.getSlug() == null || branch.getSlug().isEmpty()) {
+            branch.setSlug(branch.getCode().toLowerCase().replaceAll("[^a-z0-9]", "-"));
+        }
+        if (branchRepository.existsBySlug(branch.getSlug())) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "URL slug already exists");
             return ResponseEntity.badRequest().body(error);
         }
         branch.setCreatedAt(LocalDateTime.now());
@@ -122,6 +163,14 @@ public class BranchController {
                 existing.setDateFormat(branch.getDateFormat());
                 existing.setTimezone(branch.getTimezone());
                 existing.setActive(branch.getActive());
+                existing.setPrimaryColor(branch.getPrimaryColor());
+                existing.setSecondaryColor(branch.getSecondaryColor());
+                if (branch.getSlug() != null && !branch.getSlug().isEmpty() && !branch.getSlug().equals(existing.getSlug())) {
+                    if (branchRepository.existsBySlug(branch.getSlug())) {
+                        return ResponseEntity.badRequest().body((Object) java.util.Map.of("error", "URL slug already exists"));
+                    }
+                    existing.setSlug(branch.getSlug());
+                }
                 existing.setUpdatedAt(LocalDateTime.now());
                 return ResponseEntity.ok((Object) branchRepository.save(existing));
             })

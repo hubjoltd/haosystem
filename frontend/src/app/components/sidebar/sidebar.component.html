@@ -1,8 +1,13 @@
 <aside class="sidebar" [class.collapsed]="collapsed" [class.mobile-open]="mobileOpen">
   <div class="sidebar-header">
-    <div class="logo">
+    <div class="logo" *ngIf="!currentBranch">
       <i class="fas fa-cube"></i>
       <span class="logo-text">{{ 'app.title' | translate }}</span>
+    </div>
+    <div class="logo company-logo" *ngIf="currentBranch">
+      <img *ngIf="currentBranch.logoPath" [src]="currentBranch.logoPath" [alt]="currentBranch.name" class="logo-img" />
+      <i *ngIf="!currentBranch.logoPath" class="fas fa-building"></i>
+      <span class="logo-text">{{ currentBranch.name }}</span>
     </div>
   </div>
 

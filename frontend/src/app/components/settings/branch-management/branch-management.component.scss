@@ -689,6 +689,50 @@
   margin-top: 20px;
 }
 
+.input-with-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  }
+
+  .hint {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin: 0;
+  }
+}
+
+.color-picker-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  .color-input {
+    width: 50px;
+    height: 40px;
+    padding: 2px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    background: none;
+  }
+
+  .color-text {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 0.9rem;
+  }
+}
+
 @media (max-width: 768px) {
   .page-header {
     flex-direction: column;

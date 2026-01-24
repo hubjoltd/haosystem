@@ -11,6 +11,8 @@ import java.util.Optional;
 public interface BranchRepository extends JpaRepository<Branch, Long> {
     Optional<Branch> findByCode(String code);
     Optional<Branch> findByName(String name);
+    Optional<Branch> findBySlug(String slug);
     List<Branch> findByActiveTrue();
     boolean existsByCode(String code);
+    boolean existsBySlug(String slug);
 }

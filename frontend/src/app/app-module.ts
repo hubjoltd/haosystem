@@ -79,6 +79,8 @@ import { AddRoleComponent } from './components/settings/roles-settings/add-role/
 import { AddStaffComponent } from './components/settings/staff-management/add-staff/add-staff.component';
 import { NotificationComponent } from './components/notification/notification.component';
 import { BranchManagementComponent } from './components/settings/branch-management/branch-management.component';
+import { CompanySelectorComponent } from './components/company-selector/company-selector.component';
+import { CompanyLoginComponent } from './components/company-login/company-login.component';
 
 import { DepartmentsComponent } from './components/hr/organization/departments/departments.component';
 import { LocationsComponent } from './components/hr/organization/locations/locations.component';
@@ -187,6 +189,8 @@ import { FinanceSettingsComponent as AccountingSettingsComponent } from './compo
     AddStaffComponent,
     NotificationComponent,
     BranchManagementComponent,
+    CompanySelectorComponent,
+    CompanyLoginComponent,
     DepartmentsComponent,
     LocationsComponent,
     JobRolesComponent,
