@@ -182,20 +182,24 @@ export class AddStaffComponent implements OnInit {
       return;
     }
 
-    if (!this.selectedBranchId) {
+    if (!this.editMode && !this.selectedBranchId) {
       this.notificationService.error('Please select a company');
       return;
     }
 
     this.saving = true;
+    this.cdr.markForCheck();
 
     const staffData: any = { ...this.staff };
-    if (!this.editMode && this.password) {
+    if (this.selectedBranchId) {
+      staffData.branchId = this.selectedBranchId;
+    }
+    if (this.password && this.password.length >= 6) {
       staffData.password = this.password;
     }
 
     if (this.editMode && this.staffId) {
-      this.staffService.update(this.staffId, this.staff).subscribe({
+      this.staffService.update(this.staffId, staffData).subscribe({
         next: () => {
           this.notificationService.success('Staff updated successfully');
           this.router.navigate(['/app/settings/staff']);
