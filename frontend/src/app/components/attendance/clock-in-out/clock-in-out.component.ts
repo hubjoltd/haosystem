@@ -48,7 +48,10 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.clockInterval = setInterval(() => {
-      this.currentTime = new Date();
+      this.ngZone.run(() => {
+        this.currentTime = new Date();
+        this.cdr.markForCheck();
+      });
     }, 1000);
     
     this.loadEmployees();
@@ -162,9 +165,12 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     }
     
     this.timerInterval = setInterval(() => {
-      this.elapsedSeconds++;
-      this.updateElapsedDisplay();
-      this.calculateCurrentEarnings();
+      this.ngZone.run(() => {
+        this.elapsedSeconds++;
+        this.updateElapsedDisplay();
+        this.calculateCurrentEarnings();
+        this.cdr.markForCheck();
+      });
     }, 1000);
   }
 

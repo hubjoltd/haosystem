@@ -6,7 +6,16 @@ import { DocumentService, DocumentCategory, DocumentType, EmployeeDocument, Chec
 import { RecruitmentService } from '../../../../services/recruitment.service';
 import { LeaveService, LeaveBalance } from '../../../../services/leave.service';
 import { PayrollService, PayrollRecord, Timesheet } from '../../../../services/payroll.service';
+import { AttendanceService, AttendanceRecord } from '../../../../services/attendance.service';
 import { ToastService } from '../../../../services/toast.service';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 
 export interface RecruitmentHistory {
   requisition?: any;
@@ -58,6 +67,13 @@ export class EmployeeDetailComponent implements OnInit {
   timesheets: Timesheet[] = [];
   loadingPayroll = false;
   
+  // Weekly Timesheet
+  attendanceRecords: AttendanceRecord[] = [];
+  loadingAttendance = false;
+  weekStartDate: string = '';
+  weekEndDate: string = '';
+  downloadingPdf = false;
+  
   departments: Department[] = [];
   designations: Designation[] = [];
   grades: Grade[] = [];
@@ -100,6 +116,7 @@ export class EmployeeDetailComponent implements OnInit {
     private recruitmentService: RecruitmentService,
     private leaveService: LeaveService,
     private payrollService: PayrollService,
+    private attendanceService: AttendanceService,
     private cdr: ChangeDetectorRef,
     private toastService: ToastService
   ) {
@@ -261,13 +278,18 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   setTab(tab: string) {
-    if (this.isNewEmployee && ['bank', 'salary', 'ctcHistory', 'assets', 'documents', 'leave', 'recruitment', 'payroll'].includes(tab)) {
+    if (this.isNewEmployee && ['bank', 'salary', 'ctcHistory', 'assets', 'documents', 'leave', 'recruitment', 'payroll', 'timesheet'].includes(tab)) {
       return;
     }
     this.activeTab = tab;
     
     if (tab === 'payroll' && this.payrollRecords.length === 0) {
       this.loadPayrollData();
+    }
+    
+    if (tab === 'timesheet' && this.attendanceRecords.length === 0) {
+      this.initializeWeekDates();
+      this.loadAttendanceRecords();
     }
   }
   
@@ -300,6 +322,135 @@ export class EmployeeDetailComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  initializeWeekDates(): void {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    // Use Monday as week start (1 = Monday, adjust for Sunday = 0)
+    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - daysToMonday);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    
+    this.weekStartDate = startOfWeek.toISOString().split('T')[0];
+    this.weekEndDate = endOfWeek.toISOString().split('T')[0];
+  }
+
+  loadAttendanceRecords(): void {
+    if (!this.employeeId || !this.weekStartDate || !this.weekEndDate) return;
+    
+    // Validate date range
+    if (new Date(this.weekStartDate) > new Date(this.weekEndDate)) {
+      this.toastService.error('Start date must be before end date');
+      return;
+    }
+    
+    this.loadingAttendance = true;
+    this.cdr.detectChanges();
+    
+    this.attendanceService.getByEmployeeAndDateRange(this.employeeId, this.weekStartDate, this.weekEndDate).subscribe({
+      next: (records) => {
+        this.attendanceRecords = records;
+        this.loadingAttendance = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.attendanceRecords = [];
+        this.loadingAttendance = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onWeekChange(): void {
+    this.loadAttendanceRecords();
+  }
+
+  getTotalHours(): number {
+    return this.attendanceRecords.reduce((sum, record) => {
+      return sum + (record.regularHours || 0) + (record.overtimeHours || 0);
+    }, 0);
+  }
+
+  getTotalOvertimeHours(): number {
+    return this.attendanceRecords.reduce((sum, record) => sum + (record.overtimeHours || 0), 0);
+  }
+
+  formatAttendanceTime(time: string | undefined): string {
+    if (!time) return '-';
+    return time.substring(0, 5);
+  }
+
+  canDownloadPdf(): boolean {
+    return !!(this.attendanceRecords.length > 0 && this.employee && this.employee.firstName);
+  }
+
+  downloadTimesheetPdf(): void {
+    if (this.attendanceRecords.length === 0) {
+      this.toastService.error('No records to download');
+      return;
+    }
+    
+    if (!this.employee || !this.employee.firstName) {
+      this.toastService.error('Employee data not loaded');
+      return;
+    }
+    
+    this.downloadingPdf = true;
+    this.cdr.detectChanges();
+    
+    try {
+      const doc = new jsPDF();
+      
+      // Header
+      doc.setFontSize(18);
+      doc.text('Weekly Timesheet Report', 14, 22);
+      
+      const employeeName = `${this.employee.firstName || ''} ${this.employee.lastName || ''}`.trim() || 'Unknown';
+      const employeeCode = this.employee.employeeCode || 'N/A';
+      
+      doc.setFontSize(11);
+      doc.text(`Employee: ${employeeName}`, 14, 32);
+      doc.text(`Code: ${employeeCode}`, 14, 38);
+      doc.text(`Period: ${this.weekStartDate} to ${this.weekEndDate}`, 14, 44);
+      
+      // Table data
+      const tableData = this.attendanceRecords.map(record => [
+        record.attendanceDate,
+        this.formatAttendanceTime(record.clockIn),
+        this.formatAttendanceTime(record.clockOut),
+        (record.regularHours || 0).toFixed(2),
+        (record.overtimeHours || 0).toFixed(2),
+        record.status || '-'
+      ]);
+      
+      doc.autoTable({
+        startY: 52,
+        head: [['Date', 'Clock In', 'Clock Out', 'Regular Hours', 'Overtime', 'Status']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [0, 128, 128] },
+        foot: [[
+          'TOTAL',
+          '',
+          '',
+          (this.getTotalHours() - this.getTotalOvertimeHours()).toFixed(2),
+          this.getTotalOvertimeHours().toFixed(2),
+          ''
+        ]],
+        footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
+      });
+      
+      doc.save(`timesheet_${this.employee.employeeCode}_${this.weekStartDate}.pdf`);
+      this.toastService.success('PDF downloaded successfully');
+    } catch (error) {
+      this.toastService.error('Failed to generate PDF');
+    } finally {
+      this.downloadingPdf = false;
+      this.cdr.detectChanges();
+    }
   }
 
   loadDocumentChecklist() {

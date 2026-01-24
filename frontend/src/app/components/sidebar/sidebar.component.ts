@@ -432,21 +432,27 @@ export class SidebarComponent implements OnInit {
   }
 
   filterMenuByPermissions(): void {
-    if (this.authService.isAdmin()) {
-      this.menuItems = this.allMenuItems;
+    // Only super admin sees all items without filtering
+    if (this.authService.isSuperAdmin()) {
+      this.menuItems = JSON.parse(JSON.stringify(this.allMenuItems));
     } else {
-      this.menuItems = this.filterItems(this.allMenuItems);
+      // All other users (including company admins) get filtered menu
+      this.menuItems = this.filterItems(JSON.parse(JSON.stringify(this.allMenuItems)));
     }
   }
 
   private filterItems(items: MenuItem[]): MenuItem[] {
     return items.filter(item => {
       if (item.permissionKey === 'SuperAdminOnly') {
-        return this.authService.isSuperAdmin();
+        return false; // Only super admin can see this
       }
       if (!item.permissionKey || this.authService.hasFeatureAccess(item.permissionKey)) {
         if (item.children) {
           item.children = this.filterItems(item.children);
+          // Remove parent if no children after filtering
+          if (item.children.length === 0 && !item.route) {
+            return false;
+          }
         }
         return true;
       }

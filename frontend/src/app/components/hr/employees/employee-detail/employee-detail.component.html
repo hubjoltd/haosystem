@@ -44,6 +44,7 @@
     <button [class.active]="activeTab === 'leave'" (click)="setTab('leave')" [class.disabled]="isNewEmployee">Leave</button>
     <button [class.active]="activeTab === 'recruitment'" (click)="setTab('recruitment')" [class.disabled]="isNewEmployee">Recruitment History</button>
     <button [class.active]="activeTab === 'payroll'" (click)="setTab('payroll')" [class.disabled]="isNewEmployee">Payroll</button>
+    <button [class.active]="activeTab === 'timesheet'" (click)="setTab('timesheet')" [class.disabled]="isNewEmployee">Timesheet</button>
   </div>
 
   <div class="tab-content" *ngIf="activeTab === 'personal' && !loading">
@@ -1024,6 +1025,78 @@
             <td>{{ ts.approvedBy?.firstName || '-' }} {{ ts.approvedBy?.lastName || '' }}</td>
           </tr>
         </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Timesheet Tab -->
+<div class="employee-detail-container" *ngIf="activeTab === 'timesheet' && !loading">
+  <div class="tab-content">
+    <div class="form-section">
+      <div class="section-header">
+        <h3>Weekly Timesheet</h3>
+        <div class="header-actions">
+          <button class="btn-primary" (click)="downloadTimesheetPdf()" [disabled]="downloadingPdf || !canDownloadPdf()">
+            <i class="fas" [ngClass]="downloadingPdf ? 'fa-spinner fa-spin' : 'fa-file-pdf'"></i> Download PDF
+          </button>
+        </div>
+      </div>
+      
+      <div class="filter-row">
+        <div class="form-group">
+          <label>Week Start</label>
+          <input type="date" [(ngModel)]="weekStartDate" (change)="onWeekChange()" />
+        </div>
+        <div class="form-group">
+          <label>Week End</label>
+          <input type="date" [(ngModel)]="weekEndDate" (change)="onWeekChange()" />
+        </div>
+      </div>
+      
+      <div class="loading-container" *ngIf="loadingAttendance">
+        <i class="fas fa-spinner fa-spin"></i> Loading timesheet data...
+      </div>
+      
+      <div *ngIf="!loadingAttendance && attendanceRecords.length === 0">
+        <p class="no-data">No attendance records found for this period.</p>
+      </div>
+      
+      <table class="data-table" *ngIf="!loadingAttendance && attendanceRecords.length > 0">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Clock In</th>
+            <th>Clock Out</th>
+            <th>Regular Hours</th>
+            <th>Overtime</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of attendanceRecords">
+            <td>{{ record.attendanceDate }}</td>
+            <td>{{ formatAttendanceTime(record.clockIn) }}</td>
+            <td>{{ formatAttendanceTime(record.clockOut) }}</td>
+            <td>{{ (record.regularHours || 0) | number:'1.2-2' }}h</td>
+            <td>{{ (record.overtimeHours || 0) | number:'1.2-2' }}h</td>
+            <td>
+              <span class="badge" [ngClass]="{
+                'badge-success': record.status === 'PRESENT',
+                'badge-warning': record.status === 'HALF_DAY',
+                'badge-danger': record.status === 'ABSENT'
+              }">{{ record.status || '-' }}</span>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td colspan="3"><strong>TOTAL</strong></td>
+            <td><strong>{{ (getTotalHours() - getTotalOvertimeHours()) | number:'1.2-2' }}h</strong></td>
+            <td><strong>{{ getTotalOvertimeHours() | number:'1.2-2' }}h</strong></td>
+            <td></td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   </div>
