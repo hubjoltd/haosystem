@@ -179,9 +179,16 @@ public class PayrollController {
     public ResponseEntity<?> processPayroll(@PathVariable Long id, @RequestBody Map<String, Object> data) {
         return payrollRunRepository.findById(id)
             .map(run -> {
-                if (!"CALCULATED".equals(run.getStatus()) && !"APPROVED".equals(run.getStatus())) {
+                if (!"CALCULATED".equals(run.getStatus()) && !"APPROVED".equals(run.getStatus()) && 
+                    !"PARTIALLY_PROCESSED".equals(run.getStatus())) {
                     return ResponseEntity.badRequest().body(Map.of("error", "Payroll must be calculated or approved before processing"));
                 }
+                
+                if (!data.containsKey("payDate") || data.get("payDate") == null || data.get("payDate").toString().isEmpty()) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Pay date is required before processing payroll"));
+                }
+                
+                run.setPayDate(LocalDate.parse(data.get("payDate").toString()));
                 
                 List<Long> selectedRecordIds = new ArrayList<>();
                 if (data.containsKey("recordIds")) {
@@ -196,6 +203,14 @@ public class PayrollController {
                     records = payrollRecordRepository.findAllById(selectedRecordIds);
                 } else {
                     records = payrollRecordRepository.findByPayrollRunId(id);
+                }
+                
+                records = records.stream()
+                    .filter(r -> !"PROCESSED".equals(r.getStatus()))
+                    .toList();
+                
+                if (records.isEmpty()) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "No unprocessed records to process. All records have already been processed."));
                 }
                 
                 BigDecimal totalGross = BigDecimal.ZERO;

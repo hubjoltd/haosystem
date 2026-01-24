@@ -56,13 +56,21 @@
           <span class="run-info" *ngIf="payrollRun">{{ payrollRun.payrollRunNumber }}</span>
         </div>
       </div>
+      <div class="process-status-info" *ngIf="payrollRun?.status !== 'PROCESSED'">
+        <span class="status-count processed" *ngIf="getProcessedRecordsCount() > 0">
+          <i class="fas fa-check"></i> {{ getProcessedRecordsCount() }} Processed
+        </span>
+        <span class="status-count pending" *ngIf="getUnprocessedRecordsCount() > 0">
+          <i class="fas fa-clock"></i> {{ getUnprocessedRecordsCount() }} Pending
+        </span>
+      </div>
       <button class="btn btn-success" (click)="processPayroll()" 
               [disabled]="processing || !canProcess()"
-              *ngIf="payrollRun?.status !== 'PROCESSED'">
+              *ngIf="payrollRun?.status !== 'PROCESSED' && payrollRun?.status !== 'FULLY_PROCESSED'">
         <i class="fas fa-check-circle"></i> 
-        {{ processing ? 'Processing...' : (selectedRecordIds.size > 0 ? 'Process Selected (' + selectedRecordIds.size + ')' : 'Process All') }}
+        {{ processing ? 'Processing...' : (selectedRecordIds.size > 0 ? 'Process Selected (' + selectedRecordIds.size + ')' : 'Process All (' + getUnprocessedRecordsCount() + ')') }}
       </button>
-      <span class="processed-badge" *ngIf="payrollRun?.status === 'PROCESSED'">
+      <span class="processed-badge" *ngIf="payrollRun?.status === 'PROCESSED' || payrollRun?.status === 'FULLY_PROCESSED'">
         <i class="fas fa-check-circle"></i> Fully Processed
       </span>
     </div>
@@ -72,9 +80,12 @@
       <span class="label">Pay Period</span>
       <span class="value">{{ payrollRun.periodStartDate }} - {{ payrollRun.periodEndDate }}</span>
     </div>
-    <div class="summary-card">
-      <span class="label">Pay Date</span>
-      <span class="value">{{ payrollRun.payDate }}</span>
+    <div class="summary-card pay-date-card" [class.error]="showPayDateError">
+      <span class="label">Pay Date <span class="required">*</span></span>
+      <input type="date" [(ngModel)]="payDate" class="pay-date-input" 
+             [class.error-border]="showPayDateError"
+             [disabled]="payrollRun?.status === 'PROCESSED' || payrollRun?.status === 'FULLY_PROCESSED'">
+      <span class="error-message" *ngIf="showPayDateError">Pay date is required</span>
     </div>
     <div class="summary-card">
       <span class="label">Employees</span>

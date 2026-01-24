@@ -397,6 +397,17 @@ export class PayrollHistoryComponent implements OnInit {
         record.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         record.empId.toLowerCase().includes(this.searchTerm.toLowerCase());
       
+      let matchesStatus = true;
+      if (this.selectedStatus !== 'ALL') {
+        if (this.selectedStatus === 'PROCESSED') {
+          matchesStatus = record.payStatus === 'Paid' || record.payStatus === 'Released' || record.payStatus === 'PROCESSED';
+        } else if (this.selectedStatus === 'ON_HOLD') {
+          matchesStatus = record.payStatus === 'On Hold' || record.payStatus === 'HOLD';
+        } else if (this.selectedStatus === 'PENDING') {
+          matchesStatus = record.payStatus === 'Pending' || record.payStatus === 'PENDING';
+        }
+      }
+      
       let matchesDateRange = true;
       if (this.dateFrom) {
         const fromDate = new Date(this.dateFrom);
@@ -409,8 +420,38 @@ export class PayrollHistoryComponent implements OnInit {
         matchesDateRange = matchesDateRange && recordDate <= toDate;
       }
       
-      return matchesProject && matchesSearch && matchesDateRange;
+      return matchesProject && matchesSearch && matchesDateRange && matchesStatus;
     });
+  }
+
+  get processedRecords(): PayrollHistoryRecord[] {
+    return this.historyRecords.filter(r => 
+      r.payStatus === 'Paid' || r.payStatus === 'Released' || r.payStatus === 'PROCESSED'
+    );
+  }
+
+  get onHoldRecords(): PayrollHistoryRecord[] {
+    return this.historyRecords.filter(r => 
+      r.payStatus === 'On Hold' || r.payStatus === 'HOLD'
+    );
+  }
+
+  get pendingRecords(): PayrollHistoryRecord[] {
+    return this.historyRecords.filter(r => 
+      r.payStatus === 'Pending' || r.payStatus === 'PENDING'
+    );
+  }
+
+  getProcessedTotal(): number {
+    return this.processedRecords.reduce((sum, r) => sum + r.netPay, 0);
+  }
+
+  getOnHoldTotal(): number {
+    return this.onHoldRecords.reduce((sum, r) => sum + r.netPay, 0);
+  }
+
+  getPendingTotal(): number {
+    return this.pendingRecords.reduce((sum, r) => sum + r.netPay, 0);
   }
 
   get totalGrossFiltered(): number {
@@ -455,6 +496,7 @@ export class PayrollHistoryComponent implements OnInit {
 
   clearFilters(): void {
     this.selectedProject = '';
+    this.selectedStatus = 'ALL';
     this.dateFrom = '';
     this.dateTo = '';
     this.searchTerm = '';

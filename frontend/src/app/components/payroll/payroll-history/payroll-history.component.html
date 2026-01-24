@@ -107,6 +107,15 @@
       <h4><i class="fas fa-filter"></i> Filter Payroll History</h4>
       <div class="filter-row">
         <div class="filter-group">
+          <label>Status</label>
+          <select [(ngModel)]="selectedStatus">
+            <option value="ALL">All Statuses</option>
+            <option value="PROCESSED">Processed/Paid</option>
+            <option value="ON_HOLD">On Hold</option>
+            <option value="PENDING">Pending</option>
+          </select>
+        </div>
+        <div class="filter-group">
           <label>Project</label>
           <select [(ngModel)]="selectedProject">
             <option value="">All Projects</option>
@@ -133,20 +142,20 @@
         <span class="card-label">Total Records</span>
         <span class="card-value">{{ filteredRecords.length }}</span>
       </div>
-      <div class="summary-card total-paid">
+      <div class="summary-card total-paid" [class.active]="selectedStatus === 'PROCESSED'" (click)="selectedStatus = 'PROCESSED'">
         <i class="fas fa-check-circle card-icon"></i>
-        <span class="card-label">Total Paid</span>
-        <span class="card-value">{{ formatCurrency(totalNetFiltered) }}</span>
+        <span class="card-label">Processed ({{ processedRecords.length }})</span>
+        <span class="card-value">{{ formatCurrency(getProcessedTotal()) }}</span>
       </div>
-      <div class="summary-card pending">
+      <div class="summary-card pending" [class.active]="selectedStatus === 'PENDING'" (click)="selectedStatus = 'PENDING'">
         <i class="fas fa-clock card-icon"></i>
-        <span class="card-label">Pending Payment</span>
-        <span class="card-value">{{ formatCurrency(pendingAmount) }}</span>
+        <span class="card-label">Pending ({{ pendingRecords.length }})</span>
+        <span class="card-value">{{ formatCurrency(getPendingTotal()) }}</span>
       </div>
-      <div class="summary-card on-hold">
+      <div class="summary-card on-hold" [class.active]="selectedStatus === 'ON_HOLD'" (click)="selectedStatus = 'ON_HOLD'">
         <i class="fas fa-pause-circle card-icon"></i>
-        <span class="card-label">On Hold</span>
-        <span class="card-value">{{ formatCurrency(onHoldAmount) }}</span>
+        <span class="card-label">On Hold ({{ onHoldRecords.length }})</span>
+        <span class="card-value">{{ formatCurrency(getOnHoldTotal()) }}</span>
       </div>
     </div>
 

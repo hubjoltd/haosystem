@@ -445,10 +445,17 @@
         &:hover {
           transform: translateY(-6px);
           box-shadow: 0 12px 28px rgba(0, 128, 128, 0.35);
+          cursor: pointer;
 
           &::before {
             transform: translate(20%, -20%) scale(1.2);
           }
+        }
+        
+        &.active {
+          transform: translateY(-6px);
+          box-shadow: 0 12px 28px rgba(0, 128, 128, 0.5);
+          border: 3px solid white;
         }
 
         .card-icon {
