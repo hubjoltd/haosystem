@@ -49,6 +49,10 @@ public class Employee {
     private String profilePhoto;
     
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "branch_id")
+    private Branch branch;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
     private Department department;
     
@@ -187,6 +191,8 @@ public class Employee {
     public void setEmergencyContactPhone(String emergencyContactPhone) { this.emergencyContactPhone = emergencyContactPhone; }
     public String getProfilePhoto() { return profilePhoto; }
     public void setProfilePhoto(String profilePhoto) { this.profilePhoto = profilePhoto; }
+    public Branch getBranch() { return branch; }
+    public void setBranch(Branch branch) { this.branch = branch; }
     public Department getDepartment() { return department; }
     public void setDepartment(Department department) { this.department = department; }
     public Designation getDesignation() { return designation; }

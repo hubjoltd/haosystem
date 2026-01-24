@@ -2,10 +2,12 @@ package com.erp.controller;
 
 import com.erp.model.*;
 import com.erp.repository.*;
+import com.erp.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,42 +34,115 @@ public class EmployeeController {
     
     @Autowired
     private EmployeeAssetRepository assetRepository;
+    
+    @Autowired
+    private BranchRepository branchRepository;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
+    
+    private Long extractBranchId(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return jwtUtil.extractBranchId(token);
+        }
+        return null;
+    }
+    
+    private boolean isSuperAdmin(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return jwtUtil.extractIsSuperAdmin(token);
+        }
+        return false;
+    }
+    
+    private boolean canAccessEmployee(Long employeeId, HttpServletRequest request) {
+        if (isSuperAdmin(request)) return true;
+        Long branchId = extractBranchId(request);
+        if (branchId == null) return true;
+        return employeeRepository.findById(employeeId)
+                .map(emp -> emp.getBranch() != null && emp.getBranch().getId().equals(branchId))
+                .orElse(false);
+    }
 
     @GetMapping
-    public List<Employee> getAll() {
+    public List<Employee> getAll(HttpServletRequest request) {
+        if (isSuperAdmin(request)) {
+            return employeeRepository.findAllByOrderByIdDesc();
+        }
+        Long branchId = extractBranchId(request);
+        if (branchId != null) {
+            return employeeRepository.findByBranchIdOrderByIdDesc(branchId);
+        }
         return employeeRepository.findAllByOrderByIdDesc();
     }
     
     @GetMapping("/active")
-    public List<Employee> getActiveEmployees() {
+    public List<Employee> getActiveEmployees(HttpServletRequest request) {
+        if (isSuperAdmin(request)) {
+            return employeeRepository.findByActiveTrue();
+        }
+        Long branchId = extractBranchId(request);
+        if (branchId != null) {
+            return employeeRepository.findByBranchIdAndActiveTrue(branchId);
+        }
         return employeeRepository.findByActiveTrue();
     }
     
     @GetMapping("/search")
-    public List<Employee> search(@RequestParam String query) {
+    public List<Employee> search(@RequestParam String query, HttpServletRequest request) {
+        if (isSuperAdmin(request)) {
+            return employeeRepository.searchEmployees(query);
+        }
+        Long branchId = extractBranchId(request);
+        if (branchId != null) {
+            return employeeRepository.searchEmployeesByBranch(branchId, query);
+        }
         return employeeRepository.searchEmployees(query);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Employee> getById(@PathVariable Long id) {
+    public ResponseEntity<Employee> getById(@PathVariable Long id, HttpServletRequest request) {
+        if (isSuperAdmin(request)) {
+            return employeeRepository.findById(id)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        }
+        Long branchId = extractBranchId(request);
+        if (branchId != null) {
+            return employeeRepository.findByIdAndBranchId(id, branchId)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        }
         return employeeRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public Employee create(@RequestBody Employee employee, Authentication auth) {
+    public Employee create(@RequestBody Employee employee, Authentication auth, HttpServletRequest request) {
         employee.setCreatedBy(auth != null ? auth.getName() : "system");
+        Long branchId = extractBranchId(request);
+        if (branchId != null && employee.getBranch() == null) {
+            branchRepository.findById(branchId).ifPresent(employee::setBranch);
+        }
         return employeeRepository.save(employee);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Employee> update(@PathVariable Long id, @RequestBody Employee employee, Authentication auth) {
+    public ResponseEntity<Employee> update(@PathVariable Long id, @RequestBody Employee employee, Authentication auth, HttpServletRequest request) {
+        Long branchId = extractBranchId(request);
         return employeeRepository.findById(id)
+                .filter(existing -> isSuperAdmin(request) || branchId == null || 
+                       (existing.getBranch() != null && existing.getBranch().getId().equals(branchId)))
                 .map(existing -> {
                     employee.setId(id);
                     employee.setCreatedAt(existing.getCreatedAt());
                     employee.setCreatedBy(existing.getCreatedBy());
+                    employee.setBranch(existing.getBranch());
                     employee.setUpdatedBy(auth != null ? auth.getName() : "system");
                     return ResponseEntity.ok(employeeRepository.save(employee));
                 })
@@ -75,8 +150,11 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id, HttpServletRequest request) {
+        Long branchId = extractBranchId(request);
         return employeeRepository.findById(id)
+                .filter(existing -> isSuperAdmin(request) || branchId == null || 
+                       (existing.getBranch() != null && existing.getBranch().getId().equals(branchId)))
                 .map(employee -> {
                     employeeRepository.delete(employee);
                     return ResponseEntity.ok().<Void>build();
@@ -85,18 +163,24 @@ public class EmployeeController {
     }
     
     @GetMapping("/{employeeId}/bank-details")
-    public List<EmployeeBankDetail> getBankDetails(@PathVariable Long employeeId) {
-        return bankDetailRepository.findByEmployeeId(employeeId);
+    public ResponseEntity<List<EmployeeBankDetail>> getBankDetails(@PathVariable Long employeeId, HttpServletRequest request) {
+        if (!canAccessEmployee(employeeId, request)) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(bankDetailRepository.findByEmployeeId(employeeId));
     }
     
     @PostMapping("/{employeeId}/bank-details")
-    public EmployeeBankDetail createBankDetail(@PathVariable Long employeeId, @RequestBody EmployeeBankDetail detail) {
+    public ResponseEntity<EmployeeBankDetail> createBankDetail(@PathVariable Long employeeId, @RequestBody EmployeeBankDetail detail, HttpServletRequest request) {
+        if (!canAccessEmployee(employeeId, request)) {
+            return ResponseEntity.notFound().build();
+        }
         return employeeRepository.findById(employeeId)
                 .map(emp -> {
                     detail.setEmployee(emp);
-                    return bankDetailRepository.save(detail);
+                    return ResponseEntity.ok(bankDetailRepository.save(detail));
                 })
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElse(ResponseEntity.notFound().build());
     }
     
     @PutMapping("/bank-details/{id}")
@@ -122,19 +206,28 @@ public class EmployeeController {
     }
     
     @GetMapping("/{employeeId}/salary")
-    public List<EmployeeSalary> getSalaryHistory(@PathVariable Long employeeId) {
-        return salaryRepository.findByEmployeeIdOrderByEffectiveFromDesc(employeeId);
+    public ResponseEntity<List<EmployeeSalary>> getSalaryHistory(@PathVariable Long employeeId, HttpServletRequest request) {
+        if (!canAccessEmployee(employeeId, request)) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(salaryRepository.findByEmployeeIdOrderByEffectiveFromDesc(employeeId));
     }
     
     @GetMapping("/{employeeId}/salary/current")
-    public ResponseEntity<EmployeeSalary> getCurrentSalary(@PathVariable Long employeeId) {
+    public ResponseEntity<EmployeeSalary> getCurrentSalary(@PathVariable Long employeeId, HttpServletRequest request) {
+        if (!canAccessEmployee(employeeId, request)) {
+            return ResponseEntity.notFound().build();
+        }
         return salaryRepository.findByEmployeeIdAndIsCurrentTrue(employeeId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
     
     @PostMapping("/{employeeId}/salary")
-    public EmployeeSalary createSalary(@PathVariable Long employeeId, @RequestBody EmployeeSalary salary, Authentication auth) {
+    public ResponseEntity<EmployeeSalary> createSalary(@PathVariable Long employeeId, @RequestBody EmployeeSalary salary, Authentication auth, HttpServletRequest request) {
+        if (!canAccessEmployee(employeeId, request)) {
+            return ResponseEntity.notFound().build();
+        }
         return employeeRepository.findById(employeeId)
                 .map(emp -> {
                     salaryRepository.findByEmployeeIdAndIsCurrentTrue(employeeId)
@@ -146,24 +239,30 @@ public class EmployeeController {
                     salary.setEmployee(emp);
                     salary.setIsCurrent(true);
                     salary.setCreatedBy(auth != null ? auth.getName() : "system");
-                    return salaryRepository.save(salary);
+                    return ResponseEntity.ok(salaryRepository.save(salary));
                 })
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElse(ResponseEntity.notFound().build());
     }
     
     @GetMapping("/{employeeId}/education")
-    public List<EmployeeEducation> getEducation(@PathVariable Long employeeId) {
-        return educationRepository.findByEmployeeId(employeeId);
+    public ResponseEntity<List<EmployeeEducation>> getEducation(@PathVariable Long employeeId, HttpServletRequest request) {
+        if (!canAccessEmployee(employeeId, request)) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(educationRepository.findByEmployeeId(employeeId));
     }
     
     @PostMapping("/{employeeId}/education")
-    public EmployeeEducation createEducation(@PathVariable Long employeeId, @RequestBody EmployeeEducation education) {
+    public ResponseEntity<EmployeeEducation> createEducation(@PathVariable Long employeeId, @RequestBody EmployeeEducation education, HttpServletRequest request) {
+        if (!canAccessEmployee(employeeId, request)) {
+            return ResponseEntity.notFound().build();
+        }
         return employeeRepository.findById(employeeId)
                 .map(emp -> {
                     education.setEmployee(emp);
-                    return educationRepository.save(education);
+                    return ResponseEntity.ok(educationRepository.save(education));
                 })
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElse(ResponseEntity.notFound().build());
     }
     
     @PutMapping("/education/{id}")
@@ -189,18 +288,24 @@ public class EmployeeController {
     }
     
     @GetMapping("/{employeeId}/experience")
-    public List<EmployeeExperience> getExperience(@PathVariable Long employeeId) {
-        return experienceRepository.findByEmployeeIdOrderByFromDateDesc(employeeId);
+    public ResponseEntity<List<EmployeeExperience>> getExperience(@PathVariable Long employeeId, HttpServletRequest request) {
+        if (!canAccessEmployee(employeeId, request)) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(experienceRepository.findByEmployeeIdOrderByFromDateDesc(employeeId));
     }
     
     @PostMapping("/{employeeId}/experience")
-    public EmployeeExperience createExperience(@PathVariable Long employeeId, @RequestBody EmployeeExperience experience) {
+    public ResponseEntity<EmployeeExperience> createExperience(@PathVariable Long employeeId, @RequestBody EmployeeExperience experience, HttpServletRequest request) {
+        if (!canAccessEmployee(employeeId, request)) {
+            return ResponseEntity.notFound().build();
+        }
         return employeeRepository.findById(employeeId)
                 .map(emp -> {
                     experience.setEmployee(emp);
-                    return experienceRepository.save(experience);
+                    return ResponseEntity.ok(experienceRepository.save(experience));
                 })
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElse(ResponseEntity.notFound().build());
     }
     
     @PutMapping("/experience/{id}")
@@ -226,19 +331,25 @@ public class EmployeeController {
     }
     
     @GetMapping("/{employeeId}/assets")
-    public List<EmployeeAsset> getAssets(@PathVariable Long employeeId) {
-        return assetRepository.findByEmployeeId(employeeId);
+    public ResponseEntity<List<EmployeeAsset>> getAssets(@PathVariable Long employeeId, HttpServletRequest request) {
+        if (!canAccessEmployee(employeeId, request)) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(assetRepository.findByEmployeeId(employeeId));
     }
     
     @PostMapping("/{employeeId}/assets")
-    public EmployeeAsset createAsset(@PathVariable Long employeeId, @RequestBody EmployeeAsset asset, Authentication auth) {
+    public ResponseEntity<EmployeeAsset> createAsset(@PathVariable Long employeeId, @RequestBody EmployeeAsset asset, Authentication auth, HttpServletRequest request) {
+        if (!canAccessEmployee(employeeId, request)) {
+            return ResponseEntity.notFound().build();
+        }
         return employeeRepository.findById(employeeId)
                 .map(emp -> {
                     asset.setEmployee(emp);
                     asset.setCreatedBy(auth != null ? auth.getName() : "system");
-                    return assetRepository.save(asset);
+                    return ResponseEntity.ok(assetRepository.save(asset));
                 })
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+                .orElse(ResponseEntity.notFound().build());
     }
     
     @PutMapping("/assets/{id}")

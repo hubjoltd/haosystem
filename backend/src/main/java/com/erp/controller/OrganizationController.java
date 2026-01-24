@@ -2,9 +2,11 @@ package com.erp.controller;
 
 import com.erp.model.*;
 import com.erp.repository.*;
+import com.erp.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
@@ -33,28 +35,76 @@ public class OrganizationController {
 
     @Autowired
     private ExpenseCenterRepository expenseCenterRepository;
+    
+    @Autowired
+    private BranchRepository branchRepository;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
+    
+    private Long extractBranchId(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return jwtUtil.extractBranchId(token);
+        }
+        return null;
+    }
+    
+    private boolean isSuperAdmin(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return jwtUtil.extractIsSuperAdmin(token);
+        }
+        return false;
+    }
 
-    // Department endpoints
     @GetMapping("/departments")
-    public ResponseEntity<List<Department>> getAllDepartments() {
+    public ResponseEntity<List<Department>> getAllDepartments(HttpServletRequest request) {
+        if (isSuperAdmin(request)) {
+            return ResponseEntity.ok(departmentRepository.findAll());
+        }
+        Long branchId = extractBranchId(request);
+        if (branchId != null) {
+            return ResponseEntity.ok(departmentRepository.findByBranchId(branchId));
+        }
         return ResponseEntity.ok(departmentRepository.findAll());
     }
 
     @GetMapping("/departments/{id}")
-    public ResponseEntity<Department> getDepartmentById(@PathVariable Long id) {
+    public ResponseEntity<Department> getDepartmentById(@PathVariable Long id, HttpServletRequest request) {
+        if (isSuperAdmin(request)) {
+            return departmentRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+        }
+        Long branchId = extractBranchId(request);
+        if (branchId != null) {
+            return departmentRepository.findByIdAndBranchId(id, branchId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+        }
         return departmentRepository.findById(id)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/departments")
-    public ResponseEntity<Department> createDepartment(@RequestBody Department department) {
+    public ResponseEntity<Department> createDepartment(@RequestBody Department department, HttpServletRequest request) {
+        Long branchId = extractBranchId(request);
+        if (branchId != null && department.getBranch() == null) {
+            branchRepository.findById(branchId).ifPresent(department::setBranch);
+        }
         return ResponseEntity.ok(departmentRepository.save(department));
     }
 
     @PutMapping("/departments/{id}")
-    public ResponseEntity<Department> updateDepartment(@PathVariable Long id, @RequestBody Department department) {
+    public ResponseEntity<Department> updateDepartment(@PathVariable Long id, @RequestBody Department department, HttpServletRequest request) {
+        Long branchId = extractBranchId(request);
         return departmentRepository.findById(id)
+            .filter(existing -> isSuperAdmin(request) || branchId == null || 
+                   (existing.getBranch() != null && existing.getBranch().getId().equals(branchId)))
             .map(existing -> {
                 existing.setCode(department.getCode());
                 existing.setName(department.getName());
@@ -69,15 +119,18 @@ public class OrganizationController {
     }
 
     @DeleteMapping("/departments/{id}")
-    public ResponseEntity<Void> deleteDepartment(@PathVariable Long id) {
-        if (departmentRepository.existsById(id)) {
-            departmentRepository.deleteById(id);
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<Void> deleteDepartment(@PathVariable Long id, HttpServletRequest request) {
+        Long branchId = extractBranchId(request);
+        return departmentRepository.findById(id)
+            .filter(existing -> isSuperAdmin(request) || branchId == null || 
+                   (existing.getBranch() != null && existing.getBranch().getId().equals(branchId)))
+            .map(dept -> {
+                departmentRepository.delete(dept);
+                return ResponseEntity.ok().<Void>build();
+            })
+            .orElse(ResponseEntity.notFound().build());
     }
 
-    // Location endpoints
     @GetMapping("/locations")
     public ResponseEntity<List<Location>> getAllLocations() {
         return ResponseEntity.ok(locationRepository.findAll());
@@ -124,7 +177,6 @@ public class OrganizationController {
         return ResponseEntity.notFound().build();
     }
 
-    // JobRole endpoints
     @GetMapping("/job-roles")
     public ResponseEntity<List<JobRole>> getAllJobRoles() {
         return ResponseEntity.ok(jobRoleRepository.findAll());
@@ -166,7 +218,6 @@ public class OrganizationController {
         return ResponseEntity.notFound().build();
     }
 
-    // Grade endpoints
     @GetMapping("/grades")
     public ResponseEntity<List<Grade>> getAllGrades() {
         return ResponseEntity.ok(gradeRepository.findAll());
@@ -209,7 +260,6 @@ public class OrganizationController {
         return ResponseEntity.notFound().build();
     }
 
-    // Designation endpoints
     @GetMapping("/designations")
     public ResponseEntity<List<Designation>> getAllDesignations() {
         return ResponseEntity.ok(designationRepository.findAll());
@@ -250,7 +300,6 @@ public class OrganizationController {
         return ResponseEntity.notFound().build();
     }
 
-    // CostCenter endpoints
     @GetMapping("/cost-centers")
     public ResponseEntity<List<CostCenter>> getAllCostCenters() {
         return ResponseEntity.ok(costCenterRepository.findAll());
@@ -291,7 +340,6 @@ public class OrganizationController {
         return ResponseEntity.notFound().build();
     }
 
-    // ExpenseCenter endpoints
     @GetMapping("/expense-centers")
     public ResponseEntity<List<ExpenseCenter>> getAllExpenseCenters() {
         return ResponseEntity.ok(expenseCenterRepository.findAll());

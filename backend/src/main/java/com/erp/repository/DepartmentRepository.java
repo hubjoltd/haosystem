@@ -13,4 +13,8 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     Optional<Department> findByName(String name);
     List<Department> findByActiveTrue();
     List<Department> findByParentIsNull();
+    
+    List<Department> findByBranchId(Long branchId);
+    List<Department> findByBranchIdAndActiveTrue(Long branchId);
+    Optional<Department> findByIdAndBranchId(Long id, Long branchId);
 }

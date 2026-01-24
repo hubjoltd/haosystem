@@ -22,6 +22,6 @@ public interface PayrollRecordRepository extends JpaRepository<PayrollRecord, Lo
     @Query("SELECT pr FROM PayrollRecord pr WHERE pr.employee.id = :employeeId ORDER BY pr.createdAt DESC")
     List<PayrollRecord> findByEmployeeIdOrderByCreatedAtDesc(@Param("employeeId") Long employeeId);
     
-    @Query("SELECT pr FROM PayrollRecord pr JOIN pr.payrollRun p WHERE pr.employee.id = :employeeId AND (p.status = 'PROCESSED' OR p.status = 'FULLY_PROCESSED' OR p.status = 'PARTIALLY_PROCESSED' OR p.status = 'COMPLETED' OR pr.payStatus = 'PAID') ORDER BY p.payDate DESC")
+    @Query("SELECT pr FROM PayrollRecord pr JOIN pr.payrollRun p WHERE pr.employee.id = :employeeId AND (p.status = 'PROCESSED' OR p.status = 'FULLY_PROCESSED' OR p.status = 'PARTIALLY_PROCESSED' OR p.status = 'COMPLETED' OR pr.status = 'PAID') ORDER BY p.payDate DESC")
     List<PayrollRecord> findProcessedPayrollRecordsByEmployee(@Param("employeeId") Long employeeId);
 }

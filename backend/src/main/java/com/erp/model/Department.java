@@ -29,6 +29,10 @@ public class Department {
     
     private Boolean active = true;
     
+    @ManyToOne
+    @JoinColumn(name = "branch_id")
+    private Branch branch;
+    
     public Department() {}
     
     public Long getId() { return id; }
@@ -47,4 +51,6 @@ public class Department {
     public void setLocation(Location location) { this.location = location; }
     public Boolean getActive() { return active; }
     public void setActive(Boolean active) { this.active = active; }
+    public Branch getBranch() { return branch; }
+    public void setBranch(Branch branch) { this.branch = branch; }
 }
