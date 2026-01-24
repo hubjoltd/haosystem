@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { RoleService, Role } from '../../../services/role.service';
+import { BranchService, Branch } from '../../../services/branch.service';
 import { NotificationService } from '../../../services/notification.service';
 
 @Component({
@@ -11,37 +12,59 @@ import { NotificationService } from '../../../services/notification.service';
 })
 export class RolesSettingsComponent implements OnInit {
   roles: Role[] = [];
-  loading: boolean = false;
+  branches: Branch[] = [];
+  loading = false;
+  deletingRoleId: number | null = null;
+  
+  searchQuery = '';
+  selectedBranchId: number | null = null;
+  pageSize = 25;
+  currentPage = 1;
 
-  searchQuery: string = '';
-  pageSize: number = 25;
-  currentPage: number = 1;
-
-  constructor(private router: Router, private roleService: RoleService, private notificationService: NotificationService) {}
+  constructor(
+    private router: Router,
+    private roleService: RoleService,
+    private branchService: BranchService,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
+    this.loadBranches();
     this.loadRoles();
   }
 
-  loadRoles(): void {
-    this.loading = true;
-    this.roleService.getAll().subscribe({
-      next: (data) => {
-        this.roles = data;
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error loading roles:', err);
-        this.loading = false;
-      }
+  loadBranches(): void {
+    this.branchService.getAllBranches().subscribe({
+      next: (data: Branch[]) => this.branches = data,
+      error: () => {}
     });
+  }
+
+  loadRoles(): void {
+    this.roleService.getAll().subscribe({
+      next: (data) => this.roles = data,
+      error: (err) => console.error('Error loading roles:', err)
+    });
+  }
+
+  getBranchName(branchId: number | undefined): string {
+    if (!branchId) return 'System';
+    const branch = this.branches.find(b => b.id === branchId);
+    return branch?.name || 'Unknown';
   }
 
   get filteredRoles(): Role[] {
     let filtered = this.roles;
+    
+    if (this.selectedBranchId) {
+      filtered = filtered.filter(r => r.branchId === this.selectedBranchId);
+    }
+    
     if (this.searchQuery) {
+      const query = this.searchQuery.toLowerCase();
       filtered = filtered.filter(r => 
-        r.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        r.name.toLowerCase().includes(query) ||
+        (r.description && r.description.toLowerCase().includes(query))
       );
     }
     return filtered;
@@ -73,17 +96,27 @@ export class RolesSettingsComponent implements OnInit {
   }
 
   deleteRole(role: Role): void {
-    if (confirm(`Are you sure you want to delete the role "${role.name}"?`)) {
-      this.roleService.delete(role.id!).subscribe({
-        next: () => {
-          this.notificationService.success('Role deleted successfully');
-          this.loadRoles();
-        },
-        error: (err) => {
-          this.notificationService.error(err.error?.error || 'Error deleting role');
-        }
-      });
+    if (role.isSystemRole) {
+      this.notificationService.error('System roles cannot be deleted');
+      return;
     }
+    
+    if (!confirm(`Are you sure you want to delete the role "${role.name}"?`)) {
+      return;
+    }
+
+    this.deletingRoleId = role.id!;
+    this.roleService.delete(role.id!).subscribe({
+      next: () => {
+        this.notificationService.success('Role deleted successfully');
+        this.roles = this.roles.filter(r => r.id !== role.id);
+        this.deletingRoleId = null;
+      },
+      error: (err) => {
+        this.notificationService.error(err.error?.error || 'Error deleting role');
+        this.deletingRoleId = null;
+      }
+    });
   }
 
   exportData(): void {

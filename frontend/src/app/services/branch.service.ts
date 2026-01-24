@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Branch } from './auth.service';
 
+export type { Branch } from './auth.service';
+
 export interface BranchUser {
   id: number;
   username: string;

@@ -1,12 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { RoleService, Role } from '../../../../services/role.service';
+import { RoleService, Role, MainModule, RolePermissions } from '../../../../services/role.service';
+import { BranchService, Branch } from '../../../../services/branch.service';
 import { NotificationService } from '../../../../services/notification.service';
-
-interface Permission {
-  feature: string;
-  capabilities: { name: string; checked: boolean }[];
-}
 
 @Component({
   selector: 'app-add-role',
@@ -15,198 +11,163 @@ interface Permission {
   styleUrls: ['./add-role.component.scss']
 })
 export class AddRoleComponent implements OnInit {
-  roleName: string = '';
-  roleDescription: string = '';
-  editMode: boolean = false;
+  roleName = '';
+  roleDescription = '';
+  roleType: 'system' | 'custom' = 'custom';
+  selectedBranchId: number | null = null;
+  editMode = false;
   roleId: number | null = null;
-  saving: boolean = false;
+  saving = false;
 
-  featurePermissions: Permission[] = [
-    { feature: 'Dashboard', capabilities: [
-      { name: 'View', checked: false }
-    ]},
-    { feature: 'Settings', capabilities: [
-      { name: 'View', checked: false },
-      { name: 'Edit', checked: false }
-    ]},
-    { feature: 'Customer Management', capabilities: [
-      { name: 'View (Own)', checked: false },
-      { name: 'View (Global)', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false }
-    ]},
-    { feature: 'Contract Management', capabilities: [
-      { name: 'View (Own)', checked: false },
-      { name: 'View (Global)', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false }
-    ]},
-    { feature: 'Inventory - Group Master', capabilities: [
-      { name: 'View', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false }
-    ]},
-    { feature: 'Inventory - Item Master', capabilities: [
-      { name: 'View', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false }
-    ]},
-    { feature: 'Inventory - Units of Measure', capabilities: [
-      { name: 'View', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false }
-    ]},
-    { feature: 'Inventory - Warehouse & Bin', capabilities: [
-      { name: 'View', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false }
-    ]},
-    { feature: 'Inventory - Supplier', capabilities: [
-      { name: 'View', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false }
-    ]},
-    { feature: 'Inventory - Valuation', capabilities: [
-      { name: 'View', checked: false }
-    ]},
-    { feature: 'Inventory - Ledger', capabilities: [
-      { name: 'View', checked: false }
-    ]},
-    { feature: 'Stock Movement - Goods Receipt (GRN)', capabilities: [
-      { name: 'View (Own)', checked: false },
-      { name: 'View (Global)', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false }
-    ]},
-    { feature: 'Stock Movement - Goods Issue', capabilities: [
-      { name: 'View (Own)', checked: false },
-      { name: 'View (Global)', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false }
-    ]},
-    { feature: 'Stock Movement - Stock Transfer', capabilities: [
-      { name: 'View (Own)', checked: false },
-      { name: 'View (Global)', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false }
-    ]},
-    { feature: 'Stock Movement - Stock Adjustments', capabilities: [
-      { name: 'View (Own)', checked: false },
-      { name: 'View (Global)', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false },
-      { name: 'Approve', checked: false }
-    ]},
-    { feature: 'Purchase - Requisition', capabilities: [
-      { name: 'View (Own)', checked: false },
-      { name: 'View (Global)', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false },
-      { name: 'Approve', checked: false }
-    ]},
-    { feature: 'Purchase - PR Fulfillment', capabilities: [
-      { name: 'View', checked: false },
-      { name: 'Convert to PO', checked: false },
-      { name: 'Stock Issue', checked: false },
-      { name: 'Material Transfer', checked: false }
-    ]},
-    { feature: 'Purchase - Direct Purchase', capabilities: [
-      { name: 'View (Own)', checked: false },
-      { name: 'View (Global)', checked: false },
-      { name: 'Create', checked: false },
-      { name: 'Edit', checked: false },
-      { name: 'Delete', checked: false }
-    ]},
-    { feature: 'Reports - Inventory', capabilities: [
-      { name: 'View', checked: false },
-      { name: 'Export', checked: false }
-    ]},
-    { feature: 'Reports - Purchase', capabilities: [
-      { name: 'View', checked: false },
-      { name: 'Export', checked: false }
-    ]},
-    { feature: 'Audit Trails', capabilities: [
-      { name: 'View System Audits', checked: false },
-      { name: 'View Inventory Audits', checked: false },
-      { name: 'View Purchase Audits', checked: false }
-    ]}
-  ];
+  branches: Branch[] = [];
+  moduleHierarchy: MainModule[] = [];
+  permissions: RolePermissions = {};
 
   constructor(
-    private router: Router, 
+    private router: Router,
     private route: ActivatedRoute,
     private roleService: RoleService,
+    private branchService: BranchService,
     private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
-    // Subscribe to route params for proper data loading on navigation
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (id) {
-        this.editMode = true;
-        this.roleId = parseInt(id);
-        this.loadRole();
+    this.moduleHierarchy = this.roleService.getModuleHierarchy();
+    this.permissions = this.roleService.getDefaultPermissions();
+    this.loadBranches();
+
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.editMode = true;
+      this.roleId = parseInt(id, 10);
+      this.loadRole(this.roleId);
+    }
+  }
+
+  loadBranches(): void {
+    this.branchService.getAllBranches().subscribe({
+      next: (data: Branch[]) => this.branches = data,
+      error: () => this.notificationService.error('Failed to load companies')
+    });
+  }
+
+  loadRole(id: number): void {
+    this.roleService.getById(id).subscribe({
+      next: (role) => {
+        this.roleName = role.name;
+        this.roleDescription = role.description || '';
+        this.selectedBranchId = role.branchId || null;
+        this.roleType = role.isSystemRole ? 'system' : 'custom';
+        if (role.permissions) {
+          const parsed = this.roleService.parsePermissions(role.permissions);
+          this.permissions = { ...this.roleService.getDefaultPermissions(), ...parsed };
+        }
+      },
+      error: () => {
+        this.notificationService.error('Failed to load role');
+        this.router.navigate(['/app/settings/roles']);
       }
     });
   }
 
-  loadRole(): void {
-    if (this.roleId) {
-      this.roleService.getById(this.roleId).subscribe({
-        next: (role) => {
-          this.roleName = role.name;
-          this.roleDescription = role.description || '';
-          if (role.permissions) {
-            this.parsePermissions(role.permissions);
-          }
-        },
-        error: (err) => {
-          console.error('Error loading role:', err);
+  toggleModule(module: MainModule): void {
+    module.expanded = !module.expanded;
+  }
+
+  toggleMainModulePermission(moduleKey: string, permission: 'view' | 'add' | 'edit' | 'delete'): void {
+    if (!this.permissions[moduleKey]) {
+      this.permissions[moduleKey] = { view: false, add: false, edit: false, delete: false };
+    }
+    this.permissions[moduleKey][permission] = !this.permissions[moduleKey][permission];
+
+    const module = this.moduleHierarchy.find(m => m.key === moduleKey);
+    if (module) {
+      module.subModules.forEach(sub => {
+        if (!this.permissions[sub.key]) {
+          this.permissions[sub.key] = { view: false, add: false, edit: false, delete: false };
         }
+        this.permissions[sub.key][permission] = this.permissions[moduleKey][permission];
       });
     }
   }
 
-  parsePermissions(permissionsStr: string): void {
-    try {
-      const permissions = JSON.parse(permissionsStr);
-      for (const perm of this.featurePermissions) {
-        const featurePerms = permissions[perm.feature];
-        if (featurePerms) {
-          for (const cap of perm.capabilities) {
-            cap.checked = featurePerms.includes(cap.name);
-          }
-        }
-      }
-    } catch (e) {
-      console.error('Error parsing permissions:', e);
+  toggleSubModulePermission(subKey: string, permission: 'view' | 'add' | 'edit' | 'delete'): void {
+    if (!this.permissions[subKey]) {
+      this.permissions[subKey] = { view: false, add: false, edit: false, delete: false };
     }
+    this.permissions[subKey][permission] = !this.permissions[subKey][permission];
   }
 
-  getPermissionsJson(): string {
-    const permissions: { [key: string]: string[] } = {};
-    for (const perm of this.featurePermissions) {
-      const checkedCaps = perm.capabilities
-        .filter(c => c.checked)
-        .map(c => c.name);
-      if (checkedCaps.length > 0) {
-        permissions[perm.feature] = checkedCaps;
-      }
+  selectAllForModule(moduleKey: string): void {
+    const module = this.moduleHierarchy.find(m => m.key === moduleKey);
+    if (!module) return;
+
+    this.permissions[moduleKey] = { view: true, add: true, edit: true, delete: true };
+    module.subModules.forEach(sub => {
+      this.permissions[sub.key] = { view: true, add: true, edit: true, delete: true };
+    });
+  }
+
+  clearAllForModule(moduleKey: string): void {
+    const module = this.moduleHierarchy.find(m => m.key === moduleKey);
+    if (!module) return;
+
+    this.permissions[moduleKey] = { view: false, add: false, edit: false, delete: false };
+    module.subModules.forEach(sub => {
+      this.permissions[sub.key] = { view: false, add: false, edit: false, delete: false };
+    });
+  }
+
+  selectAll(): void {
+    this.permissions = this.roleService.getFullPermissions();
+  }
+
+  clearAll(): void {
+    this.permissions = this.roleService.getDefaultPermissions();
+  }
+
+  isMainModuleChecked(moduleKey: string, permission: 'view' | 'add' | 'edit' | 'delete'): boolean {
+    return this.permissions[moduleKey]?.[permission] || false;
+  }
+
+  isSubModuleChecked(subKey: string, permission: 'view' | 'add' | 'edit' | 'delete'): boolean {
+    return this.permissions[subKey]?.[permission] || false;
+  }
+
+  hasAnySubModulePermission(moduleKey: string): boolean {
+    const module = this.moduleHierarchy.find(m => m.key === moduleKey);
+    if (!module || module.subModules.length === 0) return false;
+    
+    return module.subModules.some(sub => {
+      const perm = this.permissions[sub.key];
+      return perm && (perm.view || perm.add || perm.edit || perm.delete);
+    });
+  }
+
+  countModulePermissions(moduleKey: string): number {
+    const module = this.moduleHierarchy.find(m => m.key === moduleKey);
+    if (!module) return 0;
+    
+    let count = 0;
+    const mainPerm = this.permissions[moduleKey];
+    if (mainPerm) {
+      if (mainPerm.view) count++;
+      if (mainPerm.add) count++;
+      if (mainPerm.edit) count++;
+      if (mainPerm.delete) count++;
     }
-    return JSON.stringify(permissions);
+    
+    module.subModules.forEach(sub => {
+      const perm = this.permissions[sub.key];
+      if (perm) {
+        if (perm.view) count++;
+        if (perm.add) count++;
+        if (perm.edit) count++;
+        if (perm.delete) count++;
+      }
+    });
+    
+    return count;
   }
 
   saveRole(): void {
@@ -215,11 +176,19 @@ export class AddRoleComponent implements OnInit {
       return;
     }
 
+    if (!this.selectedBranchId) {
+      this.notificationService.error('Please select a company');
+      return;
+    }
+
     this.saving = true;
+
     const role: Role = {
-      name: this.roleName,
-      description: this.roleDescription,
-      permissions: this.getPermissionsJson()
+      name: this.roleName.trim(),
+      description: this.roleDescription.trim(),
+      permissions: this.roleService.stringifyPermissions(this.permissions),
+      branchId: this.selectedBranchId,
+      isSystemRole: this.roleType === 'system'
     };
 
     if (this.editMode && this.roleId) {
@@ -229,7 +198,7 @@ export class AddRoleComponent implements OnInit {
           this.router.navigate(['/app/settings/roles']);
         },
         error: (err) => {
-          this.notificationService.error(err.error?.error || 'Error updating role');
+          this.notificationService.error(err.error?.error || 'Failed to update role');
           this.saving = false;
         }
       });
@@ -240,7 +209,7 @@ export class AddRoleComponent implements OnInit {
           this.router.navigate(['/app/settings/roles']);
         },
         error: (err) => {
-          this.notificationService.error(err.error?.error || 'Error creating role');
+          this.notificationService.error(err.error?.error || 'Failed to create role');
           this.saving = false;
         }
       });

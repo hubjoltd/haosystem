@@ -1,52 +1,152 @@
-<div class="settings-page">
+<div class="add-role-container">
   <div class="page-header">
-    <div>
-      <h1>{{ editMode ? 'Edit Role' : 'Add New Role' }}</h1>
-      <div class="breadcrumb">
-        <a routerLink="/app">Home</a>
-        <span>/</span>
-        <a routerLink="/app/settings/roles">Roles</a>
-        <span>/</span>
-        <span>{{ editMode ? 'Edit' : 'Add New' }}</span>
-      </div>
+    <div class="header-left">
+      <button class="btn-back" (click)="cancel()">
+        <i class="fas fa-arrow-left"></i>
+        Back
+      </button>
+      <h1><i class="fas fa-user-shield"></i> {{ editMode ? 'Edit Role' : 'Add New Role' }}</h1>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="cancel()">Cancel</button>
+      <button class="btn btn-primary" (click)="saveRole()" [disabled]="saving">
+        <i *ngIf="saving" class="fas fa-spinner fa-spin"></i>
+        {{ editMode ? 'Update Role' : 'Create Role' }}
+      </button>
     </div>
   </div>
 
-  <div class="card">
-    <div class="form-group">
-      <label class="required">Role Name</label>
-      <input type="text" [(ngModel)]="roleName" class="form-control" placeholder="Enter role name">
+  <div class="form-container">
+    <div class="form-section">
+      <h3><i class="fas fa-info-circle"></i> Role Information</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Company *</label>
+          <select [(ngModel)]="selectedBranchId" [disabled]="editMode">
+            <option [ngValue]="null">-- Select Company --</option>
+            <option *ngFor="let branch of branches" [ngValue]="branch.id">{{ branch.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Role Type</label>
+          <select [(ngModel)]="roleType">
+            <option value="custom">Custom Role</option>
+            <option value="system">System Role</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Role Name *</label>
+          <input type="text" [(ngModel)]="roleName" placeholder="Enter role name" />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" [(ngModel)]="roleDescription" placeholder="Brief description of this role" />
+        </div>
+      </div>
     </div>
 
-    <div class="permissions-section">
-      <table class="permissions-table">
-        <thead>
-          <tr>
-            <th>features</th>
-            <th>Capabilities</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let perm of featurePermissions">
-            <td class="feature-name">{{ perm.feature }}</td>
-            <td class="capabilities-cell">
-              <div class="capability-list">
-                <label *ngFor="let cap of perm.capabilities" class="checkbox-label">
-                  <input type="checkbox" [(ngModel)]="cap.checked">
-                  <span>{{ cap.name }}</span>
+    <div class="form-section permissions-section">
+      <div class="section-header">
+        <h3><i class="fas fa-lock"></i> Module Permissions</h3>
+        <div class="bulk-actions">
+          <button class="btn btn-sm btn-secondary" (click)="selectAll()">
+            <i class="fas fa-check-double"></i> Select All
+          </button>
+          <button class="btn btn-sm btn-outline" (click)="clearAll()">
+            <i class="fas fa-times"></i> Clear All
+          </button>
+        </div>
+      </div>
+
+      <div class="permissions-grid">
+        <div class="module-card" *ngFor="let module of moduleHierarchy">
+          <div class="module-header" (click)="toggleModule(module)">
+            <div class="module-info">
+              <i [class]="module.icon"></i>
+              <span class="module-name">{{ module.label }}</span>
+              <span class="permission-count" *ngIf="countModulePermissions(module.key) > 0">
+                {{ countModulePermissions(module.key) }} permissions
+              </span>
+            </div>
+            <div class="module-actions">
+              <button class="btn-icon" (click)="selectAllForModule(module.key); $event.stopPropagation()" title="Select All">
+                <i class="fas fa-check-square"></i>
+              </button>
+              <button class="btn-icon" (click)="clearAllForModule(module.key); $event.stopPropagation()" title="Clear All">
+                <i class="fas fa-square"></i>
+              </button>
+              <i class="fas" [class.fa-chevron-down]="!module.expanded" [class.fa-chevron-up]="module.expanded"></i>
+            </div>
+          </div>
+
+          <div class="module-permissions" [class.expanded]="module.expanded">
+            <div class="permission-row main-permission">
+              <span class="permission-label">{{ module.label }} (Main)</span>
+              <div class="permission-checkboxes">
+                <label class="checkbox-item">
+                  <input type="checkbox" 
+                         [checked]="isMainModuleChecked(module.key, 'view')"
+                         (change)="toggleMainModulePermission(module.key, 'view')" />
+                  <span>View</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox"
+                         [checked]="isMainModuleChecked(module.key, 'add')"
+                         (change)="toggleMainModulePermission(module.key, 'add')" />
+                  <span>Add</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox"
+                         [checked]="isMainModuleChecked(module.key, 'edit')"
+                         (change)="toggleMainModulePermission(module.key, 'edit')" />
+                  <span>Edit</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox"
+                         [checked]="isMainModuleChecked(module.key, 'delete')"
+                         (change)="toggleMainModulePermission(module.key, 'delete')" />
+                  <span>Delete</span>
                 </label>
               </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            </div>
 
-    <div class="form-actions">
-      <button class="btn btn-secondary" (click)="cancel()">Cancel</button>
-      <button class="btn btn-primary" (click)="saveRole()">
-        {{ editMode ? 'Update Role' : 'Save Role' }}
-      </button>
+            <div class="sub-modules" *ngIf="module.subModules.length > 0">
+              <div class="sub-module-divider">Sub-modules</div>
+              <div class="permission-row sub-permission" *ngFor="let sub of module.subModules">
+                <span class="permission-label">{{ sub.label }}</span>
+                <div class="permission-checkboxes">
+                  <label class="checkbox-item">
+                    <input type="checkbox"
+                           [checked]="isSubModuleChecked(sub.key, 'view')"
+                           (change)="toggleSubModulePermission(sub.key, 'view')" />
+                    <span>View</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox"
+                           [checked]="isSubModuleChecked(sub.key, 'add')"
+                           (change)="toggleSubModulePermission(sub.key, 'add')" />
+                    <span>Add</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox"
+                           [checked]="isSubModuleChecked(sub.key, 'edit')"
+                           (change)="toggleSubModulePermission(sub.key, 'edit')" />
+                    <span>Edit</span>
+                  </label>
+                  <label class="checkbox-item">
+                    <input type="checkbox"
+                           [checked]="isSubModuleChecked(sub.key, 'delete')"
+                           (change)="toggleSubModulePermission(sub.key, 'delete')" />
+                    <span>Delete</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

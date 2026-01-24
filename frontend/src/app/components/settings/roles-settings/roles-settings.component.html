@@ -1,28 +1,36 @@
-<div class="settings-page">
-  <div class="page-header-simple">
-    <button class="btn btn-primary" (click)="addRole()">
-      <i class="fas fa-plus"></i> New Role
-    </button>
+<div class="roles-page">
+  <div class="page-header">
+    <div class="header-left">
+      <h1><i class="fas fa-user-shield"></i> Role Management</h1>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="addRole()">
+        <i class="fas fa-plus"></i> Add New Role
+      </button>
+    </div>
   </div>
 
   <div class="card">
     <div class="table-toolbar">
       <div class="toolbar-left">
+        <select [(ngModel)]="selectedBranchId" class="company-filter">
+          <option [ngValue]="null">All Companies</option>
+          <option *ngFor="let branch of branches" [ngValue]="branch.id">{{ branch.name }}</option>
+        </select>
         <select [(ngModel)]="pageSize" class="page-size-select">
           <option [value]="10">10</option>
           <option [value]="25">25</option>
           <option [value]="50">50</option>
           <option [value]="100">100</option>
         </select>
-        <button class="btn btn-sm btn-outline" (click)="exportData()">Export</button>
-        <button class="btn btn-sm btn-icon" (click)="refresh()">
+        <button class="btn btn-sm btn-icon" (click)="refresh()" title="Refresh">
           <i class="fas fa-sync-alt"></i>
         </button>
       </div>
       <div class="toolbar-right">
         <div class="search-box">
           <i class="fas fa-search"></i>
-          <input type="text" [(ngModel)]="searchQuery" placeholder="Search..." />
+          <input type="text" [(ngModel)]="searchQuery" placeholder="Search roles..." />
         </div>
       </div>
     </div>
@@ -31,28 +39,48 @@
       <table class="table">
         <thead>
           <tr>
-            <th class="sortable">Role Name <i class="fas fa-sort-up"></i></th>
-            <th>Options</th>
+            <th>Role Name</th>
+            <th>Company</th>
+            <th>Type</th>
+            <th>Users</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngIf="paginatedRoles.length === 0">
-            <td colspan="2" class="empty-state">No roles found</td>
+            <td colspan="5" class="empty-state">
+              <i class="fas fa-user-shield"></i>
+              <p>No roles found</p>
+            </td>
           </tr>
           <tr *ngFor="let role of paginatedRoles">
             <td>
-              <div class="role-name-cell">
+              <div class="role-info">
                 <strong>{{ role.name }}</strong>
-                <span class="total-users">Total Users: {{ role.totalUsers }}</span>
+                <span class="role-description" *ngIf="role.description">{{ role.description }}</span>
               </div>
             </td>
             <td>
+              <span class="company-badge">{{ getBranchName(role.branchId) }}</span>
+            </td>
+            <td>
+              <span class="role-type" [class.system]="role.isSystemRole" [class.custom]="!role.isSystemRole">
+                {{ role.isSystemRole ? 'System' : 'Custom' }}
+              </span>
+            </td>
+            <td>
+              <span class="user-count">{{ role.totalUsers || 0 }}</span>
+            </td>
+            <td>
               <div class="action-buttons">
-                <button class="btn btn-sm btn-icon" (click)="editRole(role)" title="Edit">
+                <button class="btn btn-sm btn-icon" (click)="editRole(role)" title="Edit Role">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn btn-sm btn-icon btn-danger-icon" (click)="deleteRole(role)" title="Delete">
-                  <i class="fas fa-trash"></i>
+                <button class="btn btn-sm btn-icon btn-danger-icon" 
+                        (click)="deleteRole(role)" 
+                        [disabled]="deletingRoleId === role.id || role.isSystemRole"
+                        [title]="role.isSystemRole ? 'System roles cannot be deleted' : 'Delete Role'">
+                  <i [class]="deletingRoleId === role.id ? 'fas fa-spinner fa-spin' : 'fas fa-trash'"></i>
                 </button>
               </div>
             </td>
@@ -66,9 +94,13 @@
         Showing {{ startEntry }} to {{ endEntry }} of {{ filteredRoles.length }} entries
       </div>
       <div class="pagination">
-        <button class="btn btn-sm btn-outline" (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
-        <span class="page-number">{{ currentPage }}</span>
-        <button class="btn btn-sm btn-outline" (click)="nextPage()" [disabled]="currentPage >= totalPages">Next</button>
+        <button class="btn btn-sm btn-outline" (click)="previousPage()" [disabled]="currentPage === 1">
+          <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
+        <button class="btn btn-sm btn-outline" (click)="nextPage()" [disabled]="currentPage >= totalPages">
+          Next <i class="fas fa-chevron-right"></i>
+        </button>
       </div>
     </div>
   </div>
