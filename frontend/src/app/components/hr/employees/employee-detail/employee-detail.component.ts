@@ -569,14 +569,17 @@ export class EmployeeDetailComponent implements OnInit {
     if (!this.employeeId) return;
     
     this.loadingRecruitmentHistory = true;
+    this.cdr.markForCheck();
     this.recruitmentService.getRecruitmentHistoryByEmployee(this.employeeId).subscribe({
       next: (data) => {
         this.recruitmentHistory = data;
         this.loadingRecruitmentHistory = false;
+        this.cdr.markForCheck();
       },
       error: () => {
-        this.recruitmentHistory = this.getMockRecruitmentHistory();
+        this.recruitmentHistory = null;
         this.loadingRecruitmentHistory = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -1214,21 +1217,25 @@ export class EmployeeDetailComponent implements OnInit {
     if (!this.employeeId) return;
     
     this.initializingLeave = true;
+    this.cdr.markForCheck();
     this.leaveService.initializeBalances(this.employeeId).subscribe({
       next: (response) => {
         this.leaveService.getEmployeeBalancesByYear(this.employeeId!, this.leaveYear).subscribe({
           next: (data) => {
             this.leaveBalances = data;
             this.initializingLeave = false;
+            this.cdr.markForCheck();
           },
           error: () => {
             this.initializingLeave = false;
+            this.cdr.markForCheck();
           }
         });
       },
       error: (err) => {
         console.error('Error initializing leave balances:', err);
         this.initializingLeave = false;
+        this.cdr.markForCheck();
         this.toastService.error('Error initializing leave balances. Please try again.');
       }
     });

@@ -89,13 +89,15 @@ public class AttendanceController {
     public ResponseEntity<?> clockIn(@RequestBody Map<String, Object> request) {
         Long employeeId = Long.valueOf(request.get("employeeId").toString());
         String captureMethod = (String) request.getOrDefault("captureMethod", "WEB");
+        String clientTime = (String) request.get("clientTime");
+        String clientDate = (String) request.get("clientDate");
 
         Employee employee = employeeRepository.findById(employeeId).orElse(null);
         if (employee == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Employee not found"));
         }
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = clientDate != null ? LocalDate.parse(clientDate) : LocalDate.now();
         Optional<AttendanceRecord> existing = attendanceRecordRepository.findByEmployeeIdAndAttendanceDate(employeeId, today);
         if (existing.isPresent() && existing.get().getClockIn() != null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Already clocked in today"));
@@ -104,7 +106,8 @@ public class AttendanceController {
         AttendanceRecord record = existing.orElse(new AttendanceRecord());
         record.setEmployee(employee);
         record.setAttendanceDate(today);
-        record.setClockIn(LocalTime.now());
+        LocalTime clockInTime = clientTime != null ? LocalTime.parse(clientTime) : LocalTime.now();
+        record.setClockIn(clockInTime);
         record.setCaptureMethod(captureMethod);
         record.setStatus("PRESENT");
         record.setApprovalStatus("APPROVED");
@@ -127,8 +130,10 @@ public class AttendanceController {
     @PostMapping("/clock-out")
     public ResponseEntity<?> clockOut(@RequestBody Map<String, Object> request) {
         Long employeeId = Long.valueOf(request.get("employeeId").toString());
+        String clientTime = (String) request.get("clientTime");
+        String clientDate = (String) request.get("clientDate");
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = clientDate != null ? LocalDate.parse(clientDate) : LocalDate.now();
         Optional<AttendanceRecord> existing = attendanceRecordRepository.findByEmployeeIdAndAttendanceDate(employeeId, today);
         if (existing.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "No clock-in record found for today"));
@@ -139,7 +144,8 @@ public class AttendanceController {
             return ResponseEntity.badRequest().body(Map.of("error", "Already clocked out today"));
         }
 
-        record.setClockOut(LocalTime.now());
+        LocalTime clockOutTime = clientTime != null ? LocalTime.parse(clientTime) : LocalTime.now();
+        record.setClockOut(clockOutTime);
 
         if (record.getClockIn() != null) {
             long minutesWorked = ChronoUnit.MINUTES.between(record.getClockIn(), record.getClockOut());

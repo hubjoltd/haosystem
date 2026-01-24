@@ -107,11 +107,26 @@ export class AttendanceService {
   }
 
   clockIn(employeeId: number, captureMethod: string = 'WEB'): Observable<AttendanceRecord> {
-    return this.http.post<AttendanceRecord>(`${this.baseUrl}/clock-in`, { employeeId, captureMethod });
+    const now = new Date();
+    const clientTime = now.toTimeString().substring(0, 5);
+    const clientDate = now.toISOString().split('T')[0];
+    return this.http.post<AttendanceRecord>(`${this.baseUrl}/clock-in`, { 
+      employeeId, 
+      captureMethod,
+      clientTime,
+      clientDate
+    });
   }
 
   clockOut(employeeId: number): Observable<AttendanceRecord> {
-    return this.http.post<AttendanceRecord>(`${this.baseUrl}/clock-out`, { employeeId });
+    const now = new Date();
+    const clientTime = now.toTimeString().substring(0, 5);
+    const clientDate = now.toISOString().split('T')[0];
+    return this.http.post<AttendanceRecord>(`${this.baseUrl}/clock-out`, { 
+      employeeId,
+      clientTime,
+      clientDate
+    });
   }
 
   manualEntry(record: AttendanceRecord): Observable<AttendanceRecord> {
