@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { RoleService, Role } from '../../../services/role.service';
 import { BranchService, Branch } from '../../../services/branch.service';
@@ -8,7 +8,8 @@ import { NotificationService } from '../../../services/notification.service';
   selector: 'app-roles-settings',
   standalone: false,
   templateUrl: './roles-settings.component.html',
-  styleUrls: ['./roles-settings.component.scss']
+  styleUrls: ['./roles-settings.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RolesSettingsComponent implements OnInit {
   roles: Role[] = [];
@@ -25,7 +26,8 @@ export class RolesSettingsComponent implements OnInit {
     private router: Router,
     private roleService: RoleService,
     private branchService: BranchService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -35,15 +37,26 @@ export class RolesSettingsComponent implements OnInit {
 
   loadBranches(): void {
     this.branchService.getAllBranches().subscribe({
-      next: (data: Branch[]) => this.branches = data,
-      error: () => {}
+      next: (data: Branch[]) => {
+        this.branches = data;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.cdr.markForCheck();
+      }
     });
   }
 
   loadRoles(): void {
     this.roleService.getAll().subscribe({
-      next: (data) => this.roles = data,
-      error: (err) => console.error('Error loading roles:', err)
+      next: (data) => {
+        this.roles = data;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Error loading roles:', err);
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -106,15 +119,18 @@ export class RolesSettingsComponent implements OnInit {
     }
 
     this.deletingRoleId = role.id!;
+    this.cdr.markForCheck();
     this.roleService.delete(role.id!).subscribe({
       next: () => {
         this.notificationService.success('Role deleted successfully');
         this.roles = this.roles.filter(r => r.id !== role.id);
         this.deletingRoleId = null;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.notificationService.error(err.error?.error || 'Error deleting role');
         this.deletingRoleId = null;
+        this.cdr.markForCheck();
       }
     });
   }

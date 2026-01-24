@@ -28,7 +28,7 @@ export class SidebarComponent implements OnInit {
 
   allMenuItems: MenuItem[] = [
     { icon: 'fas fa-home', label: 'Dashboard', labelKey: 'nav.dashboard', route: '/app/dashboard', permissionKey: 'Dashboard' },
-    { icon: 'fas fa-building', label: 'Companies', labelKey: 'nav.branchManagement', route: '/app/settings/branches', permissionKey: 'Settings' },
+    { icon: 'fas fa-building', label: 'Companies', labelKey: 'nav.branchManagement', route: '/app/settings/branches', permissionKey: 'SuperAdminOnly' },
     {
       icon: 'fas fa-project-diagram',
       label: 'Project Management',
@@ -441,6 +441,9 @@ export class SidebarComponent implements OnInit {
 
   private filterItems(items: MenuItem[]): MenuItem[] {
     return items.filter(item => {
+      if (item.permissionKey === 'SuperAdminOnly') {
+        return this.authService.isSuperAdmin();
+      }
       if (!item.permissionKey || this.authService.hasFeatureAccess(item.permissionKey)) {
         if (item.children) {
           item.children = this.filterItems(item.children);

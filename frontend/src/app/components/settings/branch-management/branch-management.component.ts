@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { BranchService, BranchUser, CreateBranchUserRequest, BranchSettings } from '../../../services/branch.service';
 import { Branch, AuthService } from '../../../services/auth.service';
 import { NotificationService } from '../../../services/notification.service';
@@ -12,7 +12,8 @@ interface Role {
   selector: 'app-branch-management',
   standalone: false,
   templateUrl: './branch-management.component.html',
-  styleUrls: ['./branch-management.component.scss']
+  styleUrls: ['./branch-management.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BranchManagementComponent implements OnInit {
   branches: Branch[] = [];
@@ -60,7 +61,8 @@ export class BranchManagementComponent implements OnInit {
   constructor(
     private branchService: BranchService,
     private authService: AuthService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -74,14 +76,17 @@ export class BranchManagementComponent implements OnInit {
 
   loadBranches(): void {
     this.isLoading = true;
+    this.cdr.markForCheck();
     this.branchService.getAllBranches().subscribe({
       next: (branches) => {
         this.branches = branches;
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.notificationService.error('Failed to load branches');
         this.isLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -103,14 +108,17 @@ export class BranchManagementComponent implements OnInit {
 
   loadBranchUsers(branchId: number): void {
     this.isLoading = true;
+    this.cdr.markForCheck();
     this.branchService.getBranchUsers(branchId).subscribe({
       next: (users) => {
         this.branchUsers = users;
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.notificationService.error('Failed to load branch users');
         this.isLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -143,6 +151,7 @@ export class BranchManagementComponent implements OnInit {
       adminLastName: ''
     };
     this.showBranchModal = true;
+    this.cdr.markForCheck();
   }
 
   openEditBranchModal(branch: Branch): void {
@@ -151,6 +160,7 @@ export class BranchManagementComponent implements OnInit {
     this.logoPreview = branch.logoPath || null;
     this.branchForm = { ...branch };
     this.showBranchModal = true;
+    this.cdr.markForCheck();
   }
 
   closeBranchModal(): void {
@@ -158,6 +168,7 @@ export class BranchManagementComponent implements OnInit {
     this.branchForm = {};
     this.logoFile = null;
     this.logoPreview = null;
+    this.cdr.markForCheck();
   }
 
   onBranchLogoChange(event: Event): void {
@@ -179,6 +190,7 @@ export class BranchManagementComponent implements OnInit {
     const reader = new FileReader();
     reader.onload = () => {
       this.logoPreview = reader.result as string;
+      this.cdr.markForCheck();
     };
     reader.readAsDataURL(file);
   }
@@ -195,6 +207,7 @@ export class BranchManagementComponent implements OnInit {
     }
 
     this.savingBranch = true;
+    this.cdr.markForCheck();
     
     if (this.logoPreview && this.logoPreview.startsWith('data:image')) {
       this.branchForm.logoPath = this.logoPreview;
@@ -207,10 +220,12 @@ export class BranchManagementComponent implements OnInit {
           this.closeBranchModal();
           this.loadBranches();
           this.savingBranch = false;
+          this.cdr.markForCheck();
         },
         error: (err) => {
           this.notificationService.error(err.error?.error || 'Failed to update company');
           this.savingBranch = false;
+          this.cdr.markForCheck();
         }
       });
     } else {
@@ -226,10 +241,12 @@ export class BranchManagementComponent implements OnInit {
           this.closeBranchModal();
           this.loadBranches();
           this.savingBranch = false;
+          this.cdr.markForCheck();
         },
         error: (err) => {
           this.notificationService.error(err.error?.error || 'Failed to create company');
           this.savingBranch = false;
+          this.cdr.markForCheck();
         }
       });
     }
@@ -241,6 +258,7 @@ export class BranchManagementComponent implements OnInit {
     }
 
     this.deletingBranchId = branch.id;
+    this.cdr.markForCheck();
     this.branchService.deleteBranch(branch.id).subscribe({
       next: () => {
         this.notificationService.success('Company deleted successfully');
@@ -250,10 +268,12 @@ export class BranchManagementComponent implements OnInit {
           this.branchUsers = [];
         }
         this.deletingBranchId = null;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.notificationService.error('Failed to delete company. Make sure no users are assigned.');
         this.deletingBranchId = null;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -272,6 +292,7 @@ export class BranchManagementComponent implements OnInit {
       roleId: undefined
     };
     this.showUserModal = true;
+    this.cdr.markForCheck();
   }
 
   openEditUserModal(user: BranchUser): void {
@@ -286,6 +307,7 @@ export class BranchManagementComponent implements OnInit {
       phone: user.phone || '',
       roleId: user.role?.id
     };
+    this.cdr.markForCheck();
     this.showUserModal = true;
   }
 
@@ -301,6 +323,7 @@ export class BranchManagementComponent implements OnInit {
       phone: '',
       roleId: undefined
     };
+    this.cdr.markForCheck();
   }
 
   saveUser(): void {
@@ -317,6 +340,7 @@ export class BranchManagementComponent implements OnInit {
     }
 
     this.savingUser = true;
+    this.cdr.markForCheck();
 
     if (this.editMode && this.editingUserId) {
       this.branchService.updateBranchUser(this.selectedBranch.id, this.editingUserId, {
@@ -332,10 +356,12 @@ export class BranchManagementComponent implements OnInit {
           this.closeUserModal();
           this.loadBranchUsers(this.selectedBranch!.id);
           this.savingUser = false;
+          this.cdr.markForCheck();
         },
         error: (err) => {
           this.notificationService.error(err.error?.error || 'Failed to update user');
           this.savingUser = false;
+          this.cdr.markForCheck();
         }
       });
     } else {
@@ -345,10 +371,12 @@ export class BranchManagementComponent implements OnInit {
           this.closeUserModal();
           this.loadBranchUsers(this.selectedBranch!.id);
           this.savingUser = false;
+          this.cdr.markForCheck();
         },
         error: (err) => {
           this.notificationService.error(err.error?.error || 'Failed to create user');
           this.savingUser = false;
+          this.cdr.markForCheck();
         }
       });
     }
@@ -361,15 +389,18 @@ export class BranchManagementComponent implements OnInit {
     }
 
     this.deletingUserId = user.id;
+    this.cdr.markForCheck();
     this.branchService.deleteBranchUser(this.selectedBranch.id, user.id).subscribe({
       next: () => {
         this.notificationService.success('User deleted successfully');
         this.branchUsers = this.branchUsers.filter(u => u.id !== user.id);
         this.deletingUserId = null;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.notificationService.error('Failed to delete user');
         this.deletingUserId = null;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -378,12 +409,14 @@ export class BranchManagementComponent implements OnInit {
     this.passwordResetUserId = user.id;
     this.newPassword = '';
     this.showPasswordModal = true;
+    this.cdr.markForCheck();
   }
 
   closePasswordModal(): void {
     this.showPasswordModal = false;
     this.passwordResetUserId = null;
     this.newPassword = '';
+    this.cdr.markForCheck();
   }
 
   resetPassword(): void {
@@ -397,9 +430,11 @@ export class BranchManagementComponent implements OnInit {
       next: () => {
         this.notificationService.success('Password reset successfully');
         this.closePasswordModal();
+        this.cdr.markForCheck();
       },
       error: () => {
         this.notificationService.error('Failed to reset password');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -409,6 +444,7 @@ export class BranchManagementComponent implements OnInit {
     this.selectedBranch = null;
     this.branchUsers = [];
     this.branchSettings = null;
+    this.cdr.markForCheck();
   }
 
   openSettings(branch: Branch): void {
@@ -416,18 +452,22 @@ export class BranchManagementComponent implements OnInit {
     this.activeTab = 'settings';
     this.settingsTab = 'general';
     this.loadBranchSettings(branch.id);
+    this.cdr.markForCheck();
   }
 
   loadBranchSettings(branchId: number): void {
     this.isLoading = true;
+    this.cdr.markForCheck();
     this.branchService.getBranchSettings(branchId).subscribe({
       next: (settings) => {
         this.branchSettings = settings;
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.notificationService.error('Failed to load branch settings');
         this.isLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -436,15 +476,18 @@ export class BranchManagementComponent implements OnInit {
     if (!this.selectedBranch || !this.branchSettings) return;
     
     this.isSavingSettings = true;
+    this.cdr.markForCheck();
     this.branchService.updateBranchSettings(this.selectedBranch.id, this.branchSettings).subscribe({
       next: (settings) => {
         this.branchSettings = settings;
         this.notificationService.success('Settings saved successfully');
         this.isSavingSettings = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.notificationService.error('Failed to save settings');
         this.isSavingSettings = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -465,6 +508,7 @@ export class BranchManagementComponent implements OnInit {
     }
     
     this.isLoading = true;
+    this.cdr.markForCheck();
     this.branchService.uploadBranchLogo(this.selectedBranch.id, file).subscribe({
       next: (response) => {
         if (this.selectedBranch) {
@@ -472,10 +516,12 @@ export class BranchManagementComponent implements OnInit {
         }
         this.notificationService.success('Logo uploaded successfully');
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.notificationService.error('Failed to upload logo');
         this.isLoading = false;
+        this.cdr.markForCheck();
       }
     });
   }

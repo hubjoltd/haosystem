@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { RoleService, Role, MainModule, RolePermissions } from '../../../../services/role.service';
 import { BranchService, Branch } from '../../../../services/branch.service';
@@ -8,7 +8,8 @@ import { NotificationService } from '../../../../services/notification.service';
   selector: 'app-add-role',
   standalone: false,
   templateUrl: './add-role.component.html',
-  styleUrls: ['./add-role.component.scss']
+  styleUrls: ['./add-role.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddRoleComponent implements OnInit {
   roleName = '';
@@ -28,7 +29,8 @@ export class AddRoleComponent implements OnInit {
     private route: ActivatedRoute,
     private roleService: RoleService,
     private branchService: BranchService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -46,8 +48,14 @@ export class AddRoleComponent implements OnInit {
 
   loadBranches(): void {
     this.branchService.getAllBranches().subscribe({
-      next: (data: Branch[]) => this.branches = data,
-      error: () => this.notificationService.error('Failed to load companies')
+      next: (data: Branch[]) => {
+        this.branches = data;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.notificationService.error('Failed to load companies');
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -62,9 +70,11 @@ export class AddRoleComponent implements OnInit {
           const parsed = this.roleService.parsePermissions(role.permissions);
           this.permissions = { ...this.roleService.getDefaultPermissions(), ...parsed };
         }
+        this.cdr.markForCheck();
       },
       error: () => {
         this.notificationService.error('Failed to load role');
+        this.cdr.markForCheck();
         this.router.navigate(['/app/settings/roles']);
       }
     });
@@ -177,6 +187,7 @@ export class AddRoleComponent implements OnInit {
     }
 
     this.saving = true;
+    this.cdr.markForCheck();
 
     const role: Role = {
       name: this.roleName.trim(),
@@ -195,6 +206,7 @@ export class AddRoleComponent implements OnInit {
         error: (err) => {
           this.notificationService.error(err.error?.error || 'Failed to update role');
           this.saving = false;
+          this.cdr.markForCheck();
         }
       });
     } else {
@@ -206,6 +218,7 @@ export class AddRoleComponent implements OnInit {
         error: (err) => {
           this.notificationService.error(err.error?.error || 'Failed to create role');
           this.saving = false;
+          this.cdr.markForCheck();
         }
       });
     }
