@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { StaffService, Staff } from '../../../../services/staff.service';
 import { BranchService, Branch } from '../../../../services/branch.service';
@@ -9,7 +9,8 @@ import { NotificationService } from '../../../../services/notification.service';
   selector: 'app-add-staff',
   standalone: false,
   templateUrl: './add-staff.component.html',
-  styleUrls: ['./add-staff.component.scss']
+  styleUrls: ['./add-staff.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddStaffComponent implements OnInit {
   editMode: boolean = false;
@@ -42,7 +43,8 @@ export class AddStaffComponent implements OnInit {
     private staffService: StaffService,
     private branchService: BranchService,
     private roleService: RoleService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -62,9 +64,11 @@ export class AddStaffComponent implements OnInit {
     this.branchService.getAllBranches().subscribe({
       next: (data: Branch[]) => {
         this.branches = data;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.notificationService.error('Failed to load companies');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -89,9 +93,11 @@ export class AddStaffComponent implements OnInit {
           ...r,
           name: `${r.name} (Global)`
         }));
+        this.cdr.markForCheck();
       },
       error: () => {
         this.roles = [];
+        this.cdr.markForCheck();
       }
     });
   }
@@ -109,14 +115,17 @@ export class AddStaffComponent implements OnInit {
               }
             });
             this.roles = merged;
+            this.cdr.markForCheck();
           },
           error: () => {
             this.roles = branchRoles;
+            this.cdr.markForCheck();
           }
         });
       },
       error: () => {
         this.roles = [];
+        this.cdr.markForCheck();
       }
     });
   }
@@ -143,9 +152,11 @@ export class AddStaffComponent implements OnInit {
           } else {
             this.loadGlobalRoles();
           }
+          this.cdr.markForCheck();
         },
         error: () => {
           this.notificationService.error('Failed to load staff member');
+          this.cdr.markForCheck();
         }
       });
     }
@@ -192,6 +203,7 @@ export class AddStaffComponent implements OnInit {
         error: (err) => {
           this.notificationService.error(err.error?.error || 'Error updating staff');
           this.saving = false;
+          this.cdr.markForCheck();
         }
       });
     } else {
@@ -203,6 +215,7 @@ export class AddStaffComponent implements OnInit {
         error: (err) => {
           this.notificationService.error(err.error?.error || 'Error creating staff');
           this.saving = false;
+          this.cdr.markForCheck();
         }
       });
     }

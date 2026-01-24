@@ -109,9 +109,10 @@
     </div>
 
     <div class="form-actions">
-      <button class="btn btn-secondary" (click)="cancel()">Cancel</button>
-      <button class="btn btn-primary" (click)="saveStaff()">
-        {{ editMode ? 'Update Staff' : 'Save Staff' }}
+      <button class="btn btn-secondary" (click)="cancel()" [disabled]="saving">Cancel</button>
+      <button class="btn btn-primary" (click)="saveStaff()" [disabled]="saving">
+        <i *ngIf="saving" class="fas fa-spinner fa-spin"></i>
+        {{ saving ? 'Saving...' : (editMode ? 'Update Staff' : 'Save Staff') }}
       </button>
     </div>
   </div>
