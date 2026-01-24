@@ -122,7 +122,10 @@ public class BranchController {
     
     @GetMapping("/{id}")
     public ResponseEntity<?> getBranchById(@PathVariable Long id, HttpServletRequest request) {
-        if (!isSuperAdmin(request)) {
+        String token = extractToken(request);
+        Long userBranchId = token != null ? jwtUtil.extractBranchId(token) : null;
+        
+        if (!isSuperAdmin(request) && (userBranchId == null || !userBranchId.equals(id))) {
             return forbiddenResponse();
         }
         return branchRepository.findById(id)
@@ -266,7 +269,11 @@ public class BranchController {
     
     @PutMapping("/{id}")
     public ResponseEntity<?> updateBranch(@PathVariable Long id, @RequestBody Branch branch, HttpServletRequest request) {
-        if (!isSuperAdmin(request)) {
+        String token = extractToken(request);
+        Long userBranchId = token != null ? jwtUtil.extractBranchId(token) : null;
+        boolean isOwn = userBranchId != null && userBranchId.equals(id);
+        
+        if (!isSuperAdmin(request) && !isOwn) {
             return forbiddenResponse();
         }
         return branchRepository.findById(id)
@@ -284,14 +291,16 @@ public class BranchController {
                 existing.setCurrency(branch.getCurrency());
                 existing.setDateFormat(branch.getDateFormat());
                 existing.setTimezone(branch.getTimezone());
-                existing.setActive(branch.getActive());
-                existing.setPrimaryColor(branch.getPrimaryColor());
-                existing.setSecondaryColor(branch.getSecondaryColor());
-                if (branch.getSlug() != null && !branch.getSlug().isEmpty() && !branch.getSlug().equals(existing.getSlug())) {
-                    if (branchRepository.existsBySlug(branch.getSlug())) {
-                        return ResponseEntity.badRequest().body((Object) java.util.Map.of("error", "URL slug already exists"));
+                if (isSuperAdmin(request)) {
+                    existing.setActive(branch.getActive());
+                    existing.setPrimaryColor(branch.getPrimaryColor());
+                    existing.setSecondaryColor(branch.getSecondaryColor());
+                    if (branch.getSlug() != null && !branch.getSlug().isEmpty() && !branch.getSlug().equals(existing.getSlug())) {
+                        if (branchRepository.existsBySlug(branch.getSlug())) {
+                            return ResponseEntity.badRequest().body((Object) java.util.Map.of("error", "URL slug already exists"));
+                        }
+                        existing.setSlug(branch.getSlug());
                     }
-                    existing.setSlug(branch.getSlug());
                 }
                 existing.setUpdatedAt(LocalDateTime.now());
                 return ResponseEntity.ok((Object) branchRepository.save(existing));
