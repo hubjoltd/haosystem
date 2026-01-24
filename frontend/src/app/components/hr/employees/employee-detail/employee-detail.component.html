@@ -1237,8 +1237,8 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" (click)="showSalaryModal = false">Cancel</button>
-      <button class="btn-primary" (click)="saveSalary()">Save</button>
+      <button class="btn-secondary" (click)="showSalaryModal = false" [disabled]="saving">Cancel</button>
+      <button class="btn-primary" (click)="saveSalary()" [disabled]="saving">{{ saving ? 'Saving...' : 'Save' }}</button>
     </div>
   </div>
 </div>
@@ -1293,8 +1293,8 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" (click)="showEducationModal = false">Cancel</button>
-      <button class="btn-primary" (click)="saveEducation()">Save</button>
+      <button class="btn-secondary" (click)="showEducationModal = false" [disabled]="saving">Cancel</button>
+      <button class="btn-primary" (click)="saveEducation()" [disabled]="saving">{{ saving ? 'Saving...' : 'Save' }}</button>
     </div>
   </div>
 </div>
@@ -1344,8 +1344,8 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" (click)="showExperienceModal = false">Cancel</button>
-      <button class="btn-primary" (click)="saveExperience()">Save</button>
+      <button class="btn-secondary" (click)="showExperienceModal = false" [disabled]="saving">Cancel</button>
+      <button class="btn-primary" (click)="saveExperience()" [disabled]="saving">{{ saving ? 'Saving...' : 'Save' }}</button>
     </div>
   </div>
 </div>
@@ -1410,8 +1410,8 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" (click)="showAssetModal = false">Cancel</button>
-      <button class="btn-primary" (click)="saveAsset()">Save</button>
+      <button class="btn-secondary" (click)="showAssetModal = false" [disabled]="saving">Cancel</button>
+      <button class="btn-primary" (click)="saveAsset()" [disabled]="saving">{{ saving ? 'Saving...' : 'Save' }}</button>
     </div>
   </div>
 </div>
@@ -1470,8 +1470,8 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" (click)="showDocumentModal = false">Cancel</button>
-      <button class="btn-primary" (click)="saveDocument()">Save</button>
+      <button class="btn-secondary" (click)="showDocumentModal = false" [disabled]="uploadingDocument">Cancel</button>
+      <button class="btn-primary" (click)="saveDocument()" [disabled]="uploadingDocument">{{ uploadingDocument ? 'Saving...' : 'Save' }}</button>
     </div>
   </div>
 </div>

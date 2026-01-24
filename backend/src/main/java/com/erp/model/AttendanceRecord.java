@@ -1,6 +1,7 @@
 package com.erp.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -22,7 +23,10 @@ public class AttendanceRecord {
     @Column(nullable = false)
     private LocalDate attendanceDate;
 
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime clockIn;
+    
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime clockOut;
 
     @Column(length = 20)
