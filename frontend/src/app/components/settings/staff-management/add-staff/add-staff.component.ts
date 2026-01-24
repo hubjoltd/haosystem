@@ -77,13 +77,43 @@ export class AddStaffComponent implements OnInit {
     if (this.selectedBranchId) {
       this.staff.branchId = this.selectedBranchId;
       this.loadRolesForBranch(this.selectedBranchId);
+    } else {
+      this.loadGlobalRoles();
     }
+  }
+
+  loadGlobalRoles(): void {
+    this.roleService.getAll().subscribe({
+      next: (allRoles: Role[]) => {
+        this.roles = allRoles.filter(r => !r.branchId).map(r => ({
+          ...r,
+          name: `${r.name} (Global)`
+        }));
+      },
+      error: () => {
+        this.roles = [];
+      }
+    });
   }
 
   loadRolesForBranch(branchId: number): void {
     this.roleService.getByBranch(branchId).subscribe({
-      next: (data: Role[]) => {
-        this.roles = data;
+      next: (branchRoles: Role[]) => {
+        this.roleService.getAll().subscribe({
+          next: (allRoles: Role[]) => {
+            const globalRoles = allRoles.filter(r => !r.branchId);
+            const merged = [...branchRoles];
+            globalRoles.forEach(gr => {
+              if (!merged.find(r => r.id === gr.id)) {
+                merged.push({ ...gr, name: `${gr.name} (Global)` });
+              }
+            });
+            this.roles = merged;
+          },
+          error: () => {
+            this.roles = branchRoles;
+          }
+        });
       },
       error: () => {
         this.roles = [];
@@ -110,6 +140,8 @@ export class AddStaffComponent implements OnInit {
           if (data.branchId) {
             this.selectedBranchId = data.branchId;
             this.loadRolesForBranch(data.branchId);
+          } else {
+            this.loadGlobalRoles();
           }
         },
         error: () => {

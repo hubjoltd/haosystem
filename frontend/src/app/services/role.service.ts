@@ -48,11 +48,26 @@ export const MODULE_HIERARCHY: MainModule[] = [
     label: 'Settings', 
     icon: 'fas fa-cog',
     subModules: [
+      { key: 'Settings.Companies', label: 'Companies' },
       { key: 'Settings.General', label: 'General Settings' },
-      { key: 'Settings.Companies', label: 'Multi-Company' },
+      { key: 'Settings.Finance', label: 'Finance Settings' },
+      { key: 'Settings.Customer', label: 'Client Settings' },
+      { key: 'Settings.Contract', label: 'Contract Settings' },
       { key: 'Settings.Roles', label: 'Role Management' },
       { key: 'Settings.Staff', label: 'Staff Management' },
+      { key: 'Settings.Prefixes', label: 'Prefix Settings' },
+      { key: 'Settings.ExpenseTypes', label: 'Expense Types' },
       { key: 'Settings.Integrations', label: 'Integrations' }
+    ]
+  },
+  {
+    key: 'Projects',
+    label: 'Project Management',
+    icon: 'fas fa-project-diagram',
+    subModules: [
+      { key: 'Projects.List', label: 'Projects List' },
+      { key: 'Projects.Tasks', label: 'Tasks' },
+      { key: 'Projects.Timesheets', label: 'Timesheets' }
     ]
   },
   { 
@@ -60,8 +75,8 @@ export const MODULE_HIERARCHY: MainModule[] = [
     label: 'Customer Management', 
     icon: 'fas fa-users',
     subModules: [
-      { key: 'Customer.List', label: 'Customer List' },
-      { key: 'Customer.Contracts', label: 'Contracts' }
+      { key: 'Customer.Clients', label: 'Clients' },
+      { key: 'Customer.Contracts', label: 'Contract Management' }
     ]
   },
   { 
@@ -70,26 +85,44 @@ export const MODULE_HIERARCHY: MainModule[] = [
     icon: 'fas fa-shopping-cart',
     subModules: [
       { key: 'Purchase.Requisition', label: 'Purchase Requisition' },
-      { key: 'Purchase.Fulfillment', label: 'PR Fulfillment' },
       { key: 'Purchase.Direct', label: 'Direct Purchase' },
-      { key: 'Purchase.Invoice', label: 'Purchase Invoice' }
+      { key: 'Purchase.Invoice', label: 'Purchase Invoice' },
+      { key: 'Expenses', label: 'Expenses' }
+    ]
+  },
+  {
+    key: 'Accounting',
+    label: 'Finance & Accounting',
+    icon: 'fas fa-calculator',
+    subModules: [
+      { key: 'Accounting.Dashboard', label: 'Accounting Dashboard' },
+      { key: 'Accounting.ChartOfAccounts', label: 'Chart of Accounts' },
+      { key: 'Accounting.BankAccounts', label: 'Bank Accounts' },
+      { key: 'Accounting.JournalEntries', label: 'Journal Entries' },
+      { key: 'Accounting.Transactions', label: 'Transactions' },
+      { key: 'Accounting.Transfers', label: 'Transfers' },
+      { key: 'Accounting.Reconciliation', label: 'Reconciliation' },
+      { key: 'Accounting.Bills', label: 'Bills' },
+      { key: 'Accounting.Budgets', label: 'Budgets' },
+      { key: 'Accounting.Reports', label: 'Financial Reports' },
+      { key: 'Accounting.Settings', label: 'Accounting Settings' }
     ]
   },
   { 
     key: 'Inventory', 
     label: 'Inventory', 
-    icon: 'fas fa-boxes',
+    icon: 'fas fa-warehouse',
     subModules: [
-      { key: 'Inventory.Groups', label: 'Group Master' },
+      { key: 'Inventory.Groups', label: 'Item Groups' },
       { key: 'Inventory.Items', label: 'Item Master' },
-      { key: 'Inventory.Units', label: 'Units of Measure' },
-      { key: 'Inventory.Warehouse', label: 'Warehouse & Bin' },
+      { key: 'Inventory.Units', label: 'Unit of Measure' },
+      { key: 'Inventory.Warehouses', label: 'Warehouses/Bins' },
       { key: 'Inventory.Suppliers', label: 'Suppliers' },
       { key: 'Inventory.Valuation', label: 'Valuation' },
       { key: 'Inventory.Ledger', label: 'Inventory Ledger' },
       { key: 'Inventory.GoodsReceipt', label: 'Goods Receipt' },
       { key: 'Inventory.GoodsIssue', label: 'Goods Issue' },
-      { key: 'Inventory.Transfer', label: 'Stock Transfer' },
+      { key: 'Inventory.StockTransfer', label: 'Stock Transfer' },
       { key: 'Inventory.Adjustment', label: 'Stock Adjustment' }
     ]
   },
@@ -98,24 +131,50 @@ export const MODULE_HIERARCHY: MainModule[] = [
     label: 'HR Management', 
     icon: 'fas fa-user-tie',
     subModules: [
-      { key: 'HR.Organization', label: 'Organization Structure' },
-      { key: 'HR.Employees', label: 'Employee Master' },
+      { key: 'HR.Employees', label: 'Employee List' },
+      { key: 'HR.Departments', label: 'Departments' },
+      { key: 'HR.Locations', label: 'Locations' },
+      { key: 'HR.JobRoles', label: 'Job Roles' },
+      { key: 'HR.Grades', label: 'Grades' },
+      { key: 'HR.Designations', label: 'Designations' },
+      { key: 'HR.CostCenters', label: 'Cost Centers' },
+      { key: 'HR.ExpenseCenters', label: 'Expense Centers' },
       { key: 'HR.Documents', label: 'Document Management' },
       { key: 'HR.Recruitment', label: 'Recruitment' },
       { key: 'HR.Training', label: 'Training & Development' },
-      { key: 'HR.Onboarding', label: 'Onboarding' }
+      { key: 'HR.Onboarding', label: 'Onboarding' },
+      { key: 'HR.Settlement', label: 'F&F Settlement' }
     ]
   },
   { 
-    key: 'Payroll', 
-    label: 'Payroll', 
-    icon: 'fas fa-money-check-alt',
+    key: 'Leave', 
+    label: 'Leave Management', 
+    icon: 'fas fa-umbrella-beach',
     subModules: [
-      { key: 'Payroll.Dashboard', label: 'Payroll Dashboard' },
-      { key: 'Payroll.Process', label: 'Process Payroll' },
-      { key: 'Payroll.History', label: 'Payroll History' },
-      { key: 'Payroll.PaySlips', label: 'Pay Slips' },
-      { key: 'Payroll.Rules', label: 'Payroll Rules' }
+      { key: 'Leave.Types', label: 'Leave Types' },
+      { key: 'Leave.Holidays', label: 'Holiday Calendar' },
+      { key: 'Leave.Requests', label: 'Leave Requests' },
+      { key: 'Leave.Balances', label: 'Leave Balances' }
+    ]
+  },
+  {
+    key: 'Loans',
+    label: 'Loans & Advances',
+    icon: 'fas fa-hand-holding-usd',
+    subModules: [
+      { key: 'Loans.Applications', label: 'Loan Applications' },
+      { key: 'Loans.Ledger', label: 'Loan Ledger' },
+      { key: 'Loans.Repayments', label: 'Repayment History' }
+    ]
+  },
+  {
+    key: 'Compensation',
+    label: 'Compensation & Benefits',
+    icon: 'fas fa-gift',
+    subModules: [
+      { key: 'Compensation.SalaryBands', label: 'Salary Bands' },
+      { key: 'Compensation.Revisions', label: 'Salary Revisions' },
+      { key: 'Compensation.Benefits', label: 'Benefits' }
     ]
   },
   { 
@@ -123,71 +182,36 @@ export const MODULE_HIERARCHY: MainModule[] = [
     label: 'Attendance', 
     icon: 'fas fa-clock',
     subModules: [
-      { key: 'Attendance.Dashboard', label: 'Attendance Dashboard' },
       { key: 'Attendance.TimeClock', label: 'Time Clock' },
-      { key: 'Attendance.Timesheet', label: 'Weekly Timesheet' },
+      { key: 'Attendance.Timesheet', label: 'Timesheet' },
       { key: 'Attendance.Daily', label: 'Daily Attendance' },
-      { key: 'Attendance.Approval', label: 'Attendance Approval' }
+      { key: 'Attendance.Approval', label: 'Attendance Approval' },
+      { key: 'Attendance.Dashboard', label: 'Attendance Dashboard' }
     ]
   },
   { 
-    key: 'Accounting', 
-    label: 'Finance & Accounting', 
-    icon: 'fas fa-calculator',
+    key: 'Payroll', 
+    label: 'Payroll', 
+    icon: 'fas fa-money-check-alt',
     subModules: [
-      { key: 'Accounting.Dashboard', label: 'Accounting Dashboard' },
-      { key: 'Accounting.ChartOfAccounts', label: 'Chart of Accounts' },
-      { key: 'Accounting.BankAccounts', label: 'Bank Accounts' },
-      { key: 'Accounting.JournalEntries', label: 'Journal Entries' },
-      { key: 'Accounting.Transactions', label: 'Bank Transactions' },
-      { key: 'Accounting.Transfers', label: 'Account Transfers' },
-      { key: 'Accounting.Bills', label: 'Bills' },
-      { key: 'Accounting.Budget', label: 'Budget' },
-      { key: 'Accounting.Reconciliation', label: 'Bank Reconciliation' },
-      { key: 'Accounting.Reports', label: 'Financial Reports' }
+      { key: 'Payroll.Process', label: 'Process Payroll' },
+      { key: 'Payroll.History', label: 'Payroll History' },
+      { key: 'Payroll.PaySlips', label: 'Pay Slips' },
+      { key: 'Payroll.Dashboard', label: 'Payroll Dashboard' },
+      { key: 'Payroll.Rules', label: 'Payroll Rules' }
     ]
   },
-  { 
-    key: 'Projects', 
-    label: 'Project Management', 
-    icon: 'fas fa-project-diagram',
+  {
+    key: 'ESS',
+    label: 'Employee Self-Service',
+    icon: 'fas fa-user-circle',
     subModules: [
-      { key: 'Projects.List', label: 'Project List' },
-      { key: 'Projects.Tasks', label: 'Tasks' },
-      { key: 'Projects.Milestones', label: 'Milestones' },
-      { key: 'Projects.Timesheets', label: 'Project Timesheets' }
-    ]
-  },
-  { 
-    key: 'Expenses', 
-    label: 'Expenses & Reimbursement', 
-    icon: 'fas fa-file-invoice-dollar',
-    subModules: [
-      { key: 'Expenses.Categories', label: 'Expense Categories' },
-      { key: 'Expenses.Requests', label: 'Expense Requests' },
-      { key: 'Expenses.Approval', label: 'Expense Approval' }
-    ]
-  },
-  { 
-    key: 'Leave', 
-    label: 'Leave Management', 
-    icon: 'fas fa-calendar-alt',
-    subModules: [
-      { key: 'Leave.Types', label: 'Leave Types' },
-      { key: 'Leave.Holidays', label: 'Holiday Calendar' },
-      { key: 'Leave.Requests', label: 'Leave Requests' },
-      { key: 'Leave.Approval', label: 'Leave Approval' }
-    ]
-  },
-  { 
-    key: 'Loans', 
-    label: 'Loans & Advances', 
-    icon: 'fas fa-hand-holding-usd',
-    subModules: [
-      { key: 'Loans.Applications', label: 'Loan Applications' },
-      { key: 'Loans.Approval', label: 'Loan Approval' },
-      { key: 'Loans.Ledger', label: 'Loan Ledger' },
-      { key: 'Loans.Repayment', label: 'Repayment History' }
+      { key: 'ESS.Profile', label: 'My Profile' },
+      { key: 'ESS.Attendance', label: 'My Attendance' },
+      { key: 'ESS.Leave', label: 'My Leave' },
+      { key: 'ESS.PaySlips', label: 'My Pay Slips' },
+      { key: 'ESS.Expenses', label: 'My Expenses' },
+      { key: 'ESS.Assets', label: 'My Assets' }
     ]
   },
   { 

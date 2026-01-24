@@ -97,11 +97,11 @@
       <p class="permissions-note">Permissions are managed through the role assigned to this staff member.</p>
       <div class="form-group">
         <label>Company</label>
-        <input type="text" [value]="branches.find(b => b.id === selectedBranchId)?.name || 'Not selected'" class="form-control" disabled>
+        <input type="text" [value]="selectedBranchName" class="form-control" disabled>
       </div>
       <div class="form-group">
         <label>Assigned Role</label>
-        <input type="text" [value]="roles.find(r => r.id === staff.roleId)?.name || 'Not selected'" class="form-control" disabled>
+        <input type="text" [value]="selectedRoleName" class="form-control" disabled>
       </div>
       <div class="permissions-info" *ngIf="staff.roleId">
         <p>This staff member will inherit all permissions from the assigned role.</p>

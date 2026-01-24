@@ -176,18 +176,13 @@ export class AddRoleComponent implements OnInit {
       return;
     }
 
-    if (!this.selectedBranchId) {
-      this.notificationService.error('Please select a company');
-      return;
-    }
-
     this.saving = true;
 
     const role: Role = {
       name: this.roleName.trim(),
       description: this.roleDescription.trim(),
       permissions: this.roleService.stringifyPermissions(this.permissions),
-      branchId: this.selectedBranchId,
+      branchId: this.selectedBranchId || undefined,
       isSystemRole: this.roleType === 'system'
     };
 
