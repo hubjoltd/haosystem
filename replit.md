@@ -17,7 +17,12 @@ Preferred communication style: Simple, everyday language.
 -   **Routing**: Root path redirects to login; `/app` prefix for authenticated routes wrapped by `LayoutComponent`.
 
 ### Key Feature Modules
--   **Multi-Branch Management**: Comprehensive CRUD operations for branches, branch-specific user management, role-based access, and data isolation with extensive settings.
+-   **Multi-Company Management**: Comprehensive CRUD operations for companies (branches), company-specific user management, role-based access, and complete data isolation with extensive settings. Features include:
+    - Logo upload during company creation with base64 encoding and preview
+    - Auto-creation of admin user with provided credentials during company setup
+    - Auto-generation of 4 default roles (ADMIN, MANAGER, STAFF, VIEWER) with predefined permissions for each new company
+    - URL slug and color (primary/secondary) customization per company
+    - Immediate save/delete operations with individual loading states (no page-wide loading)
 -   **Dashboard**: Overview statistics and charts.
 -   **Settings**: Manages general, finance, customer, contract, roles, staff, and auto-ID prefix settings, including integration capabilities for external systems (QuickBooks, SAP, ADP, Jira, SMTP, SMS).
 -   **Inventory & Stock Movement**: Covers Group/Item Master, Units, Warehouse/Bin, Suppliers, Valuation, Ledger, Goods Receipt, Issue, Transfer, and Adjustments with approval workflows.

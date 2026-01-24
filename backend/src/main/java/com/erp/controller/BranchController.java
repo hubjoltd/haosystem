@@ -8,17 +8,25 @@ import com.erp.repository.BranchRepository;
 import com.erp.repository.RoleRepository;
 import com.erp.repository.UserRepository;
 import com.erp.security.JwtUtil;
+import com.erp.service.RoleService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/branches")
@@ -32,6 +40,9 @@ public class BranchController {
     
     @Autowired
     private RoleRepository roleRepository;
+    
+    @Autowired
+    private RoleService roleService;
     
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -120,26 +131,137 @@ public class BranchController {
     }
     
     @PostMapping
-    public ResponseEntity<?> createBranch(@RequestBody Branch branch, HttpServletRequest request) {
+    public ResponseEntity<?> createBranch(@RequestBody Map<String, Object> branchData, HttpServletRequest request) {
         if (!isSuperAdmin(request)) {
             return forbiddenResponse();
         }
-        if (branchRepository.existsByCode(branch.getCode())) {
+        
+        String code = (String) branchData.get("code");
+        String name = (String) branchData.get("name");
+        
+        if (code == null || code.isEmpty() || name == null || name.isEmpty()) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Branch code and name are required");
+            return ResponseEntity.badRequest().body(error);
+        }
+        
+        if (branchRepository.existsByCode(code)) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Branch code already exists");
             return ResponseEntity.badRequest().body(error);
         }
-        if (branch.getSlug() == null || branch.getSlug().isEmpty()) {
-            branch.setSlug(branch.getCode().toLowerCase().replaceAll("[^a-z0-9]", "-"));
+        
+        String slug = (String) branchData.get("slug");
+        if (slug == null || slug.isEmpty()) {
+            slug = code.toLowerCase().replaceAll("[^a-z0-9]", "-");
         }
-        if (branchRepository.existsBySlug(branch.getSlug())) {
+        if (branchRepository.existsBySlug(slug)) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "URL slug already exists");
             return ResponseEntity.badRequest().body(error);
         }
+        
+        Branch branch = new Branch();
+        branch.setCode(code);
+        branch.setName(name);
+        branch.setSlug(slug);
+        branch.setAddress((String) branchData.get("address"));
+        branch.setCity((String) branchData.get("city"));
+        branch.setState((String) branchData.get("state"));
+        branch.setCountry((String) branchData.get("country"));
+        branch.setZipCode((String) branchData.get("zipCode"));
+        branch.setPhone((String) branchData.get("phone"));
+        branch.setEmail((String) branchData.get("email"));
+        branch.setWebsite((String) branchData.get("website"));
+        branch.setCurrency((String) branchData.getOrDefault("currency", "USD"));
+        branch.setTimezone((String) branchData.getOrDefault("timezone", "UTC"));
+        branch.setPrimaryColor((String) branchData.getOrDefault("primaryColor", "#0d7377"));
+        branch.setSecondaryColor((String) branchData.getOrDefault("secondaryColor", "#14919b"));
+        branch.setLogoPath((String) branchData.get("logoPath"));
+        branch.setActive(branchData.get("active") == null || Boolean.TRUE.equals(branchData.get("active")));
         branch.setCreatedAt(LocalDateTime.now());
         branch.setUpdatedAt(LocalDateTime.now());
-        return ResponseEntity.ok(branchRepository.save(branch));
+        
+        Branch savedBranch = branchRepository.save(branch);
+        
+        roleService.createDefaultRolesForBranch(savedBranch);
+        
+        String adminUsername = (String) branchData.get("adminUsername");
+        String adminPassword = (String) branchData.get("adminPassword");
+        String adminEmail = (String) branchData.get("adminEmail");
+        String adminFirstName = (String) branchData.get("adminFirstName");
+        String adminLastName = (String) branchData.get("adminLastName");
+        
+        if (adminUsername != null && !adminUsername.isEmpty() && adminPassword != null && !adminPassword.isEmpty()) {
+            if (userRepository.existsByUsername(adminUsername)) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("branch", savedBranch);
+                response.put("warning", "Admin username already exists. Branch created without default admin.");
+                return ResponseEntity.ok(response);
+            }
+            
+            Role adminRole = roleService.findByNameAndBranchId("ADMIN", savedBranch.getId())
+                .orElse(null);
+            
+            if (adminRole != null) {
+                User adminUser = new User();
+                adminUser.setUsername(adminUsername);
+                adminUser.setEmail(adminEmail != null ? adminEmail : adminUsername + "@" + code.toLowerCase() + ".local");
+                adminUser.setPassword(passwordEncoder.encode(adminPassword));
+                adminUser.setFirstName(adminFirstName != null ? adminFirstName : "Admin");
+                adminUser.setLastName(adminLastName != null ? adminLastName : name);
+                adminUser.setRole(adminRole);
+                adminUser.setBranch(savedBranch);
+                adminUser.setIsSuperAdmin(false);
+                adminUser.setActive(true);
+                adminUser.setCreatedAt(LocalDateTime.now());
+                
+                User savedAdmin = userRepository.save(adminUser);
+                savedAdmin.setPassword(null);
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("branch", savedBranch);
+                response.put("adminUser", savedAdmin);
+                return ResponseEntity.ok(response);
+            }
+        }
+        
+        return ResponseEntity.ok(savedBranch);
+    }
+    
+    @PostMapping("/{id}/logo")
+    public ResponseEntity<?> uploadBranchLogo(@PathVariable Long id, @RequestParam("file") MultipartFile file, HttpServletRequest request) {
+        if (!isSuperAdmin(request)) {
+            return forbiddenResponse();
+        }
+        
+        return branchRepository.findById(id)
+            .map(branch -> {
+                try {
+                    String contentType = file.getContentType();
+                    if (contentType == null || !contentType.startsWith("image/")) {
+                        Map<String, String> error = new HashMap<>();
+                        error.put("error", "File must be an image");
+                        return ResponseEntity.badRequest().body((Object) error);
+                    }
+                    
+                    byte[] bytes = file.getBytes();
+                    String base64 = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(bytes);
+                    
+                    branch.setLogoPath(base64);
+                    branch.setUpdatedAt(LocalDateTime.now());
+                    branchRepository.save(branch);
+                    
+                    Map<String, String> response = new HashMap<>();
+                    response.put("logoPath", base64);
+                    return ResponseEntity.ok((Object) response);
+                } catch (IOException e) {
+                    Map<String, String> error = new HashMap<>();
+                    error.put("error", "Failed to upload logo");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body((Object) error);
+                }
+            })
+            .orElse(ResponseEntity.notFound().build());
     }
     
     @PutMapping("/{id}")

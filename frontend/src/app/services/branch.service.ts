@@ -58,8 +58,20 @@ export class BranchService {
     return this.http.get<Branch>(`${this.baseUrl}/my-branch`);
   }
 
-  createBranch(branch: Partial<Branch>): Observable<Branch> {
-    return this.http.post<Branch>(this.baseUrl, branch);
+  createBranch(branch: Partial<Branch> & { 
+    adminUsername?: string; 
+    adminPassword?: string; 
+    adminEmail?: string;
+    adminFirstName?: string;
+    adminLastName?: string;
+  }): Observable<any> {
+    return this.http.post<any>(this.baseUrl, branch);
+  }
+
+  uploadLogo(branchId: number, file: File): Observable<{ logoPath: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ logoPath: string }>(`${this.baseUrl}/${branchId}/logo`, formData);
   }
 
   updateBranch(id: number, branch: Partial<Branch>): Observable<Branch> {

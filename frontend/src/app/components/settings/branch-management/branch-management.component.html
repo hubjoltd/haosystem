@@ -65,8 +65,8 @@
           <button class="btn btn-sm btn-secondary" (click)="openEditBranchModal(branch)" title="Edit Company">
             <i class="fas fa-edit"></i>
           </button>
-          <button class="btn btn-sm btn-danger" (click)="deleteBranch(branch)" title="Delete Company">
-            <i class="fas fa-trash"></i>
+          <button class="btn btn-sm btn-danger" (click)="deleteBranch(branch)" [disabled]="deletingBranchId === branch.id" title="Delete Company">
+            <i [class]="deletingBranchId === branch.id ? 'fas fa-spinner fa-spin' : 'fas fa-trash'"></i>
           </button>
         </div>
       </div>
@@ -395,8 +395,8 @@
               <button class="btn btn-sm btn-secondary" (click)="openPasswordModal(user)" title="Reset Password">
                 <i class="fas fa-key"></i>
               </button>
-              <button class="btn btn-sm btn-danger" (click)="deleteUser(user)" title="Delete User">
-                <i class="fas fa-trash"></i>
+              <button class="btn btn-sm btn-danger" (click)="deleteUser(user)" [disabled]="deletingUserId === user.id" title="Delete User">
+                <i [class]="deletingUserId === user.id ? 'fas fa-spinner fa-spin' : 'fas fa-trash'"></i>
               </button>
             </td>
           </tr>
@@ -407,115 +407,167 @@
 </div>
 
 <div class="modal-overlay" *ngIf="showBranchModal" (click)="closeBranchModal()">
-  <div class="modal" (click)="$event.stopPropagation()">
+  <div class="modal modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ editMode ? 'Edit Company' : 'Add New Company' }}</h2>
       <button class="close-btn" (click)="closeBranchModal()"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Company Code *</label>
-          <input type="text" [(ngModel)]="branchForm.code" placeholder="e.g., CO001" [disabled]="editMode" />
-        </div>
-        <div class="form-group">
-          <label>Company Name *</label>
-          <input type="text" [(ngModel)]="branchForm.name" placeholder="Company name" />
-        </div>
-      </div>
-      <div class="form-group">
-        <label>URL Slug</label>
-        <div class="input-with-hint">
-          <input type="text" [(ngModel)]="branchForm.slug" placeholder="company-url-slug" pattern="[a-z0-9-]+" />
-          <small class="hint">Used for unique company URL (e.g., yourapp.com/hao). Use lowercase letters, numbers, and hyphens only.</small>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Primary Color</label>
-          <div class="color-picker-group">
-            <input type="color" [(ngModel)]="branchForm.primaryColor" class="color-input" />
-            <input type="text" [(ngModel)]="branchForm.primaryColor" placeholder="#0d7377" class="color-text" />
+      <div class="form-section">
+        <h3><i class="fas fa-image"></i> Company Logo</h3>
+        <div class="logo-upload-inline">
+          <div class="logo-preview-small">
+            <img *ngIf="logoPreview" [src]="logoPreview" alt="Company Logo" />
+            <i *ngIf="!logoPreview" class="fas fa-building"></i>
           </div>
-        </div>
-        <div class="form-group">
-          <label>Secondary Color</label>
-          <div class="color-picker-group">
-            <input type="color" [(ngModel)]="branchForm.secondaryColor" class="color-input" />
-            <input type="text" [(ngModel)]="branchForm.secondaryColor" placeholder="#14919b" class="color-text" />
+          <div class="logo-upload-actions">
+            <input type="file" accept="image/*" (change)="onBranchLogoChange($event)" id="branchLogoInput" class="file-input" />
+            <label for="branchLogoInput" class="btn btn-sm btn-secondary">
+              <i class="fas fa-upload"></i> {{ logoPreview ? 'Change Logo' : 'Upload Logo' }}
+            </label>
+            <small class="hint">Recommended: 200x200px, PNG or JPG, max 5MB</small>
           </div>
         </div>
       </div>
-      <div class="form-group">
-        <label>Address</label>
-        <input type="text" [(ngModel)]="branchForm.address" placeholder="Street address" />
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>City</label>
-          <input type="text" [(ngModel)]="branchForm.city" placeholder="City" />
+
+      <div class="form-section">
+        <h3><i class="fas fa-building"></i> Company Details</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Company Code *</label>
+            <input type="text" [(ngModel)]="branchForm.code" placeholder="e.g., CO001" [disabled]="editMode" />
+          </div>
+          <div class="form-group">
+            <label>Company Name *</label>
+            <input type="text" [(ngModel)]="branchForm.name" placeholder="Company name" />
+          </div>
         </div>
         <div class="form-group">
-          <label>State</label>
-          <input type="text" [(ngModel)]="branchForm.state" placeholder="State" />
+          <label>URL Slug</label>
+          <div class="input-with-hint">
+            <input type="text" [(ngModel)]="branchForm.slug" placeholder="company-url-slug" pattern="[a-z0-9-]+" />
+            <small class="hint">Used for unique company URL. Use lowercase letters, numbers, and hyphens only.</small>
+          </div>
         </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Country</label>
-          <input type="text" [(ngModel)]="branchForm.country" placeholder="Country" />
-        </div>
-        <div class="form-group">
-          <label>Zip Code</label>
-          <input type="text" [(ngModel)]="branchForm.zipCode" placeholder="Zip code" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Phone</label>
-          <input type="text" [(ngModel)]="branchForm.phone" placeholder="Phone number" />
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" [(ngModel)]="branchForm.email" placeholder="Email address" />
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Currency</label>
-          <select [(ngModel)]="branchForm.currency">
-            <option value="USD">USD - US Dollar</option>
-            <option value="EUR">EUR - Euro</option>
-            <option value="GBP">GBP - British Pound</option>
-            <option value="JPY">JPY - Japanese Yen</option>
-            <option value="CNY">CNY - Chinese Yuan</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Timezone</label>
-          <select [(ngModel)]="branchForm.timezone">
-            <option value="UTC">UTC</option>
-            <option value="America/New_York">Eastern Time (ET)</option>
-            <option value="America/Chicago">Central Time (CT)</option>
-            <option value="America/Denver">Mountain Time (MT)</option>
-            <option value="America/Los_Angeles">Pacific Time (PT)</option>
-            <option value="Europe/London">London (GMT)</option>
-            <option value="Asia/Tokyo">Tokyo (JST)</option>
-            <option value="Asia/Shanghai">Shanghai (CST)</option>
-          </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Primary Color</label>
+            <div class="color-picker-group">
+              <input type="color" [(ngModel)]="branchForm.primaryColor" class="color-input" />
+              <input type="text" [(ngModel)]="branchForm.primaryColor" placeholder="#0d7377" class="color-text" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Secondary Color</label>
+            <div class="color-picker-group">
+              <input type="color" [(ngModel)]="branchForm.secondaryColor" class="color-input" />
+              <input type="text" [(ngModel)]="branchForm.secondaryColor" placeholder="#14919b" class="color-text" />
+            </div>
+          </div>
         </div>
       </div>
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input type="checkbox" [(ngModel)]="branchForm.active" />
-          <span>Active</span>
-        </label>
+
+      <div class="form-section" *ngIf="!editMode">
+        <h3><i class="fas fa-user-shield"></i> Default Admin User</h3>
+        <p class="section-hint">Create an admin user who can manage this company. Leave blank to skip.</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Admin Username</label>
+            <input type="text" [(ngModel)]="branchForm.adminUsername" placeholder="admin_username" />
+          </div>
+          <div class="form-group">
+            <label>Admin Password</label>
+            <input type="password" [(ngModel)]="branchForm.adminPassword" placeholder="Password (min 6 chars)" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Admin Email</label>
+            <input type="email" [(ngModel)]="branchForm.adminEmail" placeholder="admin@company.com" />
+          </div>
+          <div class="form-group">
+            <label>Admin Name</label>
+            <div class="name-inputs">
+              <input type="text" [(ngModel)]="branchForm.adminFirstName" placeholder="First Name" />
+              <input type="text" [(ngModel)]="branchForm.adminLastName" placeholder="Last Name" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section collapsible">
+        <h3><i class="fas fa-map-marker-alt"></i> Address & Contact</h3>
+        <div class="form-group">
+          <label>Address</label>
+          <input type="text" [(ngModel)]="branchForm.address" placeholder="Street address" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>City</label>
+            <input type="text" [(ngModel)]="branchForm.city" placeholder="City" />
+          </div>
+          <div class="form-group">
+            <label>State</label>
+            <input type="text" [(ngModel)]="branchForm.state" placeholder="State" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Country</label>
+            <input type="text" [(ngModel)]="branchForm.country" placeholder="Country" />
+          </div>
+          <div class="form-group">
+            <label>Zip Code</label>
+            <input type="text" [(ngModel)]="branchForm.zipCode" placeholder="Zip code" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="text" [(ngModel)]="branchForm.phone" placeholder="Phone number" />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="branchForm.email" placeholder="Email address" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Currency</label>
+            <select [(ngModel)]="branchForm.currency">
+              <option value="USD">USD - US Dollar</option>
+              <option value="EUR">EUR - Euro</option>
+              <option value="GBP">GBP - British Pound</option>
+              <option value="JPY">JPY - Japanese Yen</option>
+              <option value="CNY">CNY - Chinese Yuan</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Timezone</label>
+            <select [(ngModel)]="branchForm.timezone">
+              <option value="UTC">UTC</option>
+              <option value="America/New_York">Eastern Time (ET)</option>
+              <option value="America/Chicago">Central Time (CT)</option>
+              <option value="America/Denver">Mountain Time (MT)</option>
+              <option value="America/Los_Angeles">Pacific Time (PT)</option>
+              <option value="Europe/London">London (GMT)</option>
+              <option value="Asia/Tokyo">Tokyo (JST)</option>
+              <option value="Asia/Shanghai">Shanghai (CST)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="branchForm.active" />
+            <span>Active</span>
+          </label>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeBranchModal()">Cancel</button>
-      <button class="btn btn-primary" (click)="saveBranch()" [disabled]="isLoading">
-        <i *ngIf="isLoading" class="fas fa-spinner fa-spin"></i>
+      <button class="btn btn-primary" (click)="saveBranch()" [disabled]="savingBranch">
+        <i *ngIf="savingBranch" class="fas fa-spinner fa-spin"></i>
         {{ editMode ? 'Update Company' : 'Create Company' }}
       </button>
     </div>
@@ -569,8 +621,8 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeUserModal()">Cancel</button>
-      <button class="btn btn-primary" (click)="saveUser()" [disabled]="isLoading">
-        <i *ngIf="isLoading" class="fas fa-spinner fa-spin"></i>
+      <button class="btn btn-primary" (click)="saveUser()" [disabled]="savingUser">
+        <i *ngIf="savingUser" class="fas fa-spinner fa-spin"></i>
         {{ editMode ? 'Update User' : 'Create User' }}
       </button>
     </div>

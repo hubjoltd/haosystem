@@ -1,0 +1,91 @@
+Got it — here’s a **clean, clear, and structured version** of that requirement, consistent with everything we’ve defined so far 👇
+
+---
+
+## Mandatory System Roles During Company Creation
+
+### 1. Default Roles for Every Company
+
+* For **every company created**, the following roles must be **mandatory and auto-created**:
+
+  * **CEO**
+  * **CFO**
+  * **Application Admin**
+
+---
+
+### 2. Authentication Requirement
+
+* These roles must be:
+
+  * Created **during company creation itself**
+  * Required for **authentication and system access**
+* Company creation should **not be completed** unless these roles are successfully created.
+
+---
+
+### 3. User Assignment During Company Creation
+
+* While creating a company, system must allow:
+
+  * Assigning at least one user to each mandatory role:
+
+    * CEO
+    * CFO
+    * Application Admin
+* Each assigned user must have:
+
+  * Valid login credentials
+  * Company-specific authentication access
+
+---
+
+### 4. Default Permissions
+
+* Each mandatory role should have predefined permissions:
+
+  * **Application Admin**
+
+    * Full access (View / Add / Edit / Delete) to all modules
+  * **CEO**
+
+    * View access to all modules
+    * Additional permissions as per business rules
+  * **CFO**
+
+    * View and Edit access to finance-related modules
+    * Limited access to non-financial modules
+
+*(Permissions should remain editable if required.)*
+
+---
+
+### 5. Company-Level Isolation
+
+* These roles:
+
+  * Exist **independently per company**
+  * Must not be shared across companies
+* Authentication and authorization must always be:
+
+  * Scoped to the selected company and its unique URL
+    (e.g., `abc.com/hao`, `abc.com/isd`)
+
+---
+
+### 6. Failure Handling
+
+* If creation of any mandatory role or user fails:
+
+  * Company creation should be rolled back
+  * Clear error message should be shown
+
+---
+
+If you want, I can next:
+
+* Merge **all requirements** into one final **System Requirement Document**
+* Provide a **DB schema** for company + roles + users
+* Define **authentication flow diagrams**
+
+Just tell me what you want next 👍

@@ -1,5 +1,6 @@
 package com.erp.service;
 
+import com.erp.model.Branch;
 import com.erp.model.Role;
 import com.erp.model.User;
 import com.erp.repository.RoleRepository;
@@ -24,12 +25,24 @@ public class RoleService {
         return roleRepository.findAll();
     }
     
+    public List<Role> findByBranchId(Long branchId) {
+        return roleRepository.findByBranch_Id(branchId);
+    }
+    
+    public List<Role> findByBranchIdOrSystemRole(Long branchId) {
+        return roleRepository.findByBranchIdOrSystemRole(branchId);
+    }
+    
     public Optional<Role> findById(Long id) {
         return roleRepository.findById(id);
     }
     
     public Optional<Role> findByName(String name) {
         return roleRepository.findByName(name);
+    }
+    
+    public Optional<Role> findByNameAndBranchId(String name, Long branchId) {
+        return roleRepository.findByNameAndBranch_Id(name, branchId);
     }
     
     public Role save(Role role) {
@@ -40,8 +53,19 @@ public class RoleService {
         roleRepository.deleteById(id);
     }
     
+    public boolean existsByNameAndBranchId(String name, Long branchId) {
+        return roleRepository.existsByNameAndBranchId(name, branchId);
+    }
+    
     public long countUsersByRole(Long roleId) {
         List<User> users = userRepository.findAll();
+        return users.stream()
+            .filter(u -> u.getRole() != null && u.getRole().getId().equals(roleId))
+            .count();
+    }
+    
+    public long countUsersByRoleAndBranch(Long roleId, Long branchId) {
+        List<User> users = userRepository.findByBranchId(branchId);
         return users.stream()
             .filter(u -> u.getRole() != null && u.getRole().getId().equals(roleId))
             .count();
@@ -55,8 +79,42 @@ public class RoleService {
             roleMap.put("name", role.getName());
             roleMap.put("description", role.getDescription());
             roleMap.put("permissions", role.getPermissions());
+            roleMap.put("branchId", role.getBranchId());
+            roleMap.put("isSystemRole", role.getIsSystemRole());
             roleMap.put("totalUsers", countUsersByRole(role.getId()));
             return roleMap;
         }).toList();
+    }
+    
+    public List<Map<String, Object>> findByBranchWithUserCount(Long branchId) {
+        List<Role> roles = roleRepository.findByBranch_Id(branchId);
+        return roles.stream().map(role -> {
+            Map<String, Object> roleMap = new HashMap<>();
+            roleMap.put("id", role.getId());
+            roleMap.put("name", role.getName());
+            roleMap.put("description", role.getDescription());
+            roleMap.put("permissions", role.getPermissions());
+            roleMap.put("branchId", role.getBranchId());
+            roleMap.put("isSystemRole", role.getIsSystemRole());
+            roleMap.put("totalUsers", countUsersByRoleAndBranch(role.getId(), branchId));
+            return roleMap;
+        }).toList();
+    }
+    
+    public void createDefaultRolesForBranch(Branch branch) {
+        String fullPermissions = "{\"Dashboard\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":true},\"Settings\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":true},\"Customer Management\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":true},\"Purchase\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":true},\"Inventory\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":true},\"HR Management\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":true},\"Payroll\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":true},\"Attendance\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":true},\"Accounting\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":true},\"Projects\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":true},\"Expenses\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":true},\"Leave\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":true},\"Reports\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":true}}";
+        String managerPermissions = "{\"Dashboard\":{\"view\":true,\"add\":false,\"edit\":false,\"delete\":false},\"Customer Management\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":false},\"Purchase\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":false},\"Inventory\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":false},\"HR Management\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":false},\"Payroll\":{\"view\":true,\"add\":false,\"edit\":false,\"delete\":false},\"Attendance\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":false},\"Accounting\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":false},\"Projects\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":false},\"Expenses\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":false},\"Leave\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":false},\"Reports\":{\"view\":true,\"add\":false,\"edit\":false,\"delete\":false}}";
+        String staffPermissions = "{\"Dashboard\":{\"view\":true,\"add\":false,\"edit\":false,\"delete\":false},\"Customer Management\":{\"view\":true,\"add\":true,\"edit\":false,\"delete\":false},\"Attendance\":{\"view\":true,\"add\":true,\"edit\":false,\"delete\":false},\"Projects\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":false},\"Expenses\":{\"view\":true,\"add\":true,\"edit\":false,\"delete\":false},\"Leave\":{\"view\":true,\"add\":true,\"edit\":false,\"delete\":false}}";
+        String viewerPermissions = "{\"Dashboard\":{\"view\":true,\"add\":false,\"edit\":false,\"delete\":false},\"Reports\":{\"view\":true,\"add\":false,\"edit\":false,\"delete\":false}}";
+        
+        Role adminRole = new Role("ADMIN", "Company Administrator with full access", fullPermissions, branch);
+        Role managerRole = new Role("MANAGER", "Manager with limited administrative access", managerPermissions, branch);
+        Role staffRole = new Role("STAFF", "Standard staff member", staffPermissions, branch);
+        Role viewerRole = new Role("VIEWER", "Read-only access to reports", viewerPermissions, branch);
+        
+        roleRepository.save(adminRole);
+        roleRepository.save(managerRole);
+        roleRepository.save(staffRole);
+        roleRepository.save(viewerRole);
     }
 }

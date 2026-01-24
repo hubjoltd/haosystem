@@ -29,7 +29,15 @@ export class BranchManagementComponent implements OnInit {
   editMode = false;
   settingsTab: 'general' | 'localization' | 'tax' | 'documents' | 'branding' = 'general';
   
-  branchForm: Partial<Branch> = {};
+  branchForm: Partial<Branch> & {
+    adminUsername?: string;
+    adminPassword?: string;
+    adminEmail?: string;
+    adminFirstName?: string;
+    adminLastName?: string;
+  } = {};
+  logoFile: File | null = null;
+  logoPreview: string | null = null;
   userForm: CreateBranchUserRequest = {
     username: '',
     email: '',
@@ -42,6 +50,10 @@ export class BranchManagementComponent implements OnInit {
   editingUserId: number | null = null;
   passwordResetUserId: number | null = null;
   newPassword = '';
+  savingBranch = false;
+  savingUser = false;
+  deletingBranchId: number | null = null;
+  deletingUserId: number | null = null;
   
   activeTab: 'branches' | 'users' | 'settings' = 'branches';
 
@@ -105,6 +117,8 @@ export class BranchManagementComponent implements OnInit {
 
   openAddBranchModal(): void {
     this.editMode = false;
+    this.logoFile = null;
+    this.logoPreview = null;
     this.branchForm = {
       code: '',
       slug: '',
@@ -121,13 +135,20 @@ export class BranchManagementComponent implements OnInit {
       timezone: 'UTC',
       primaryColor: '#0d7377',
       secondaryColor: '#14919b',
-      active: true
+      active: true,
+      adminUsername: '',
+      adminPassword: '',
+      adminEmail: '',
+      adminFirstName: '',
+      adminLastName: ''
     };
     this.showBranchModal = true;
   }
 
   openEditBranchModal(branch: Branch): void {
     this.editMode = true;
+    this.logoFile = null;
+    this.logoPreview = branch.logoPath || null;
     this.branchForm = { ...branch };
     this.showBranchModal = true;
   }
@@ -135,59 +156,104 @@ export class BranchManagementComponent implements OnInit {
   closeBranchModal(): void {
     this.showBranchModal = false;
     this.branchForm = {};
+    this.logoFile = null;
+    this.logoPreview = null;
+  }
+
+  onBranchLogoChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      this.notificationService.error('Please select an image file');
+      return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+      this.notificationService.error('File size must be less than 5MB');
+      return;
+    }
+    
+    this.logoFile = file;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.logoPreview = reader.result as string;
+    };
+    reader.readAsDataURL(file);
   }
 
   saveBranch(): void {
     if (!this.branchForm.code || !this.branchForm.name) {
-      this.notificationService.error('Branch code and name are required');
+      this.notificationService.error('Company code and name are required');
       return;
     }
 
-    this.isLoading = true;
+    if (!this.editMode && this.branchForm.adminUsername && !this.branchForm.adminPassword) {
+      this.notificationService.error('Please provide a password for the admin user');
+      return;
+    }
+
+    this.savingBranch = true;
+    
+    if (this.logoPreview && this.logoPreview.startsWith('data:image')) {
+      this.branchForm.logoPath = this.logoPreview;
+    }
     
     if (this.editMode && this.branchForm.id) {
       this.branchService.updateBranch(this.branchForm.id, this.branchForm).subscribe({
         next: () => {
-          this.notificationService.success('Branch updated successfully');
+          this.notificationService.success('Company updated successfully');
           this.closeBranchModal();
           this.loadBranches();
+          this.savingBranch = false;
         },
         error: (err) => {
-          this.notificationService.error(err.error?.error || 'Failed to update branch');
-          this.isLoading = false;
+          this.notificationService.error(err.error?.error || 'Failed to update company');
+          this.savingBranch = false;
         }
       });
     } else {
       this.branchService.createBranch(this.branchForm).subscribe({
-        next: () => {
-          this.notificationService.success('Branch created successfully');
+        next: (response) => {
+          if (response.adminUser) {
+            this.notificationService.success('Company and admin user created successfully');
+          } else if (response.warning) {
+            this.notificationService.warning(response.warning);
+          } else {
+            this.notificationService.success('Company created successfully');
+          }
           this.closeBranchModal();
           this.loadBranches();
+          this.savingBranch = false;
         },
         error: (err) => {
-          this.notificationService.error(err.error?.error || 'Failed to create branch');
-          this.isLoading = false;
+          this.notificationService.error(err.error?.error || 'Failed to create company');
+          this.savingBranch = false;
         }
       });
     }
   }
 
   deleteBranch(branch: Branch): void {
-    if (!confirm(`Are you sure you want to delete branch "${branch.name}"? This action cannot be undone.`)) {
+    if (!confirm(`Are you sure you want to delete company "${branch.name}"? This action cannot be undone.`)) {
       return;
     }
 
+    this.deletingBranchId = branch.id;
     this.branchService.deleteBranch(branch.id).subscribe({
       next: () => {
-        this.notificationService.success('Branch deleted successfully');
-        this.loadBranches();
+        this.notificationService.success('Company deleted successfully');
+        this.branches = this.branches.filter(b => b.id !== branch.id);
         if (this.selectedBranch?.id === branch.id) {
           this.selectedBranch = null;
           this.branchUsers = [];
         }
+        this.deletingBranchId = null;
       },
       error: () => {
-        this.notificationService.error('Failed to delete branch. Make sure no users are assigned.');
+        this.notificationService.error('Failed to delete company. Make sure no users are assigned.');
+        this.deletingBranchId = null;
       }
     });
   }
@@ -250,7 +316,7 @@ export class BranchManagementComponent implements OnInit {
       return;
     }
 
-    this.isLoading = true;
+    this.savingUser = true;
 
     if (this.editMode && this.editingUserId) {
       this.branchService.updateBranchUser(this.selectedBranch.id, this.editingUserId, {
@@ -265,10 +331,11 @@ export class BranchManagementComponent implements OnInit {
           this.notificationService.success('User updated successfully');
           this.closeUserModal();
           this.loadBranchUsers(this.selectedBranch!.id);
+          this.savingUser = false;
         },
         error: (err) => {
           this.notificationService.error(err.error?.error || 'Failed to update user');
-          this.isLoading = false;
+          this.savingUser = false;
         }
       });
     } else {
@@ -277,10 +344,11 @@ export class BranchManagementComponent implements OnInit {
           this.notificationService.success('User created successfully');
           this.closeUserModal();
           this.loadBranchUsers(this.selectedBranch!.id);
+          this.savingUser = false;
         },
         error: (err) => {
           this.notificationService.error(err.error?.error || 'Failed to create user');
-          this.isLoading = false;
+          this.savingUser = false;
         }
       });
     }
@@ -292,13 +360,16 @@ export class BranchManagementComponent implements OnInit {
       return;
     }
 
+    this.deletingUserId = user.id;
     this.branchService.deleteBranchUser(this.selectedBranch.id, user.id).subscribe({
       next: () => {
         this.notificationService.success('User deleted successfully');
-        this.loadBranchUsers(this.selectedBranch!.id);
+        this.branchUsers = this.branchUsers.filter(u => u.id !== user.id);
+        this.deletingUserId = null;
       },
       error: () => {
         this.notificationService.error('Failed to delete user');
+        this.deletingUserId = null;
       }
     });
   }
