@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -10,7 +10,8 @@ import { Project, ProjectTask, ProjectMilestone, ProjectFile, ProjectNote, Proje
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './project-management.component.html',
-  styleUrl: './project-management.component.scss'
+  styleUrl: './project-management.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProjectManagementComponent implements OnInit {
   projects: Project[] = [];
@@ -56,7 +57,10 @@ export class ProjectManagementComponent implements OnInit {
   tagsInput = '';
   draggedProject: Project | null = null;
 
-  constructor(private projectService: ProjectService) {}
+  constructor(
+    private projectService: ProjectService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.loadProjects();
@@ -67,17 +71,20 @@ export class ProjectManagementComponent implements OnInit {
   loadProjects(): void {
     this.projectService.getAll().subscribe(projects => {
       this.projects = projects;
+      this.cdr.markForCheck();
     });
   }
 
   loadClients(): void {
     const stored = localStorage.getItem('customers');
     this.clients = stored ? JSON.parse(stored) : [];
+    this.cdr.markForCheck();
   }
 
   loadEmployees(): void {
     const stored = localStorage.getItem('employees');
     this.employees = stored ? JSON.parse(stored) : [];
+    this.cdr.markForCheck();
   }
 
   getEmptyProject(): Partial<Project> {
@@ -179,6 +186,7 @@ export class ProjectManagementComponent implements OnInit {
       this.projectService.update(this.draggedProject.id!, { status: newStatus }).subscribe(() => {
         if (this.draggedProject) {
           this.draggedProject.status = newStatus;
+          this.cdr.markForCheck();
         }
       });
     }
@@ -214,17 +222,21 @@ export class ProjectManagementComponent implements OnInit {
     if (this.editMode && this.selectedProject.id) {
       this.projectService.update(this.selectedProject.id, this.selectedProject).subscribe(() => {
         this.closeModal();
+        this.cdr.markForCheck();
       });
     } else {
       this.projectService.create(this.selectedProject).subscribe(() => {
         this.closeModal();
+        this.cdr.markForCheck();
       });
     }
   }
 
   deleteProject(id: number): void {
     if (confirm('Are you sure you want to delete this project?')) {
-      this.projectService.delete(id).subscribe(() => {});
+      this.projectService.delete(id).subscribe(() => {
+        this.loadProjects();
+      });
     }
   }
 
@@ -235,12 +247,15 @@ export class ProjectManagementComponent implements OnInit {
     newProject.name = project.name + ' (Copy)';
     newProject.status = 'NOT_STARTED';
     newProject.progress = 0;
-    this.projectService.create(newProject).subscribe(() => {});
+    this.projectService.create(newProject).subscribe(() => {
+      this.loadProjects();
+    });
   }
 
   archiveProject(project: Project): void {
     this.projectService.update(project.id!, { archived: !project.archived }).subscribe(() => {
       project.archived = !project.archived;
+      this.cdr.markForCheck();
     });
   }
 

@@ -4,8 +4,24 @@
 }
 
 .table th {
-  background-color: #f8f9fa;
+  background-color: #008080;
+  color: #fff;
   font-weight: 600;
+  border: none;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.employee-id {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: #008080;
+  background: #e0f2f2;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
 }
 
 .modal.show {
@@ -27,4 +43,12 @@
 
 .list-group-item {
   padding: 0.75rem 1rem;
+}
+
+.text-end {
+  text-align: right;
+}
+
+.fw-bold {
+  font-weight: 700;
 }

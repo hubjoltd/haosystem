@@ -1,6 +1,12 @@
 <div class="ess-container">
   <div class="page-header">
     <h2>Employee Self-Service Portal</h2>
+    <div class="employee-info" *ngIf="currentEmployee">
+      <span class="employee-id-badge">
+        <i class="fas fa-id-badge"></i> {{ currentEmployee.employeeCode }}
+      </span>
+      <span class="employee-name">{{ currentEmployee.firstName }} {{ currentEmployee.lastName }}</span>
+    </div>
   </div>
 
   <div class="tabs">
@@ -246,6 +252,7 @@
             <th>Clock In</th>
             <th>Clock Out</th>
             <th>Hours</th>
+            <th>Project</th>
             <th>Status</th>
             <th>Remarks</th>
           </tr>
@@ -257,6 +264,10 @@
             <td>{{ record.clockOut?.substring(0, 5) || 'N/A' }}</td>
             <td>{{ record.regularHours || 0 }}h</td>
             <td>
+              <span *ngIf="record.project?.name || record.projectName" class="project-badge">{{ record.project?.name || record.projectName }}</span>
+              <span *ngIf="!record.project?.name && !record.projectName">-</span>
+            </td>
+            <td>
               <span class="status-badge" [ngClass]="getStatusClass(getAttendanceStatusBadge(record))">
                 {{ getAttendanceStatusBadge(record) }}
               </span>
@@ -264,7 +275,7 @@
             <td>{{ record.remarks || '-' }}</td>
           </tr>
           <tr *ngIf="attendanceRecords.length === 0">
-            <td colspan="6" class="no-data-row">No attendance records found</td>
+            <td colspan="7" class="no-data-row">No attendance records found</td>
           </tr>
         </tbody>
       </table>

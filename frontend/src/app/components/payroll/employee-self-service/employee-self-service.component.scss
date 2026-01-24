@@ -4,11 +4,54 @@
 
 .page-header {
   margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 
   h2 {
     color: #008080;
     margin: 0;
   }
+
+  .employee-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .employee-id-badge {
+      font-family: 'Courier New', monospace;
+      font-weight: 600;
+      color: #008080;
+      background: #e0f2f2;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      i {
+        font-size: 1rem;
+      }
+    }
+
+    .employee-name {
+      font-weight: 500;
+      color: #333;
+    }
+  }
+}
+
+.project-badge {
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  color: #6b21a8;
+  background: #f3e8ff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
 }
 
 .tabs {
