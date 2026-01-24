@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { StaffService, Staff } from '../../../services/staff.service';
+import { BranchService, Branch } from '../../../services/branch.service';
 
 @Component({
   selector: 'app-staff-management',
@@ -10,16 +11,36 @@ import { StaffService, Staff } from '../../../services/staff.service';
 })
 export class StaffManagementComponent implements OnInit {
   staff: Staff[] = [];
+  branches: Branch[] = [];
   loading: boolean = false;
 
   searchQuery: string = '';
+  selectedBranchId: number | null = null;
   pageSize: number = 25;
   currentPage: number = 1;
 
-  constructor(private router: Router, private staffService: StaffService) {}
+  constructor(
+    private router: Router, 
+    private staffService: StaffService,
+    private branchService: BranchService
+  ) {}
 
   ngOnInit(): void {
+    this.loadBranches();
     this.loadStaff();
+  }
+
+  loadBranches(): void {
+    this.branchService.getAllBranches().subscribe({
+      next: (data: Branch[]) => {
+        this.branches = data;
+      },
+      error: () => {}
+    });
+  }
+
+  onBranchFilterChange(): void {
+    this.currentPage = 1;
   }
 
   loadStaff(): void {
@@ -37,12 +58,22 @@ export class StaffManagementComponent implements OnInit {
   }
 
   get filteredStaff(): Staff[] {
-    if (!this.searchQuery) return this.staff;
-    return this.staff.filter(s => 
-      (s.firstName?.toLowerCase() || '').includes(this.searchQuery.toLowerCase()) ||
-      (s.lastName?.toLowerCase() || '').includes(this.searchQuery.toLowerCase()) ||
-      (s.email?.toLowerCase() || '').includes(this.searchQuery.toLowerCase())
-    );
+    let result = this.staff;
+    
+    if (this.selectedBranchId) {
+      result = result.filter(s => s.branchId === this.selectedBranchId);
+    }
+    
+    if (this.searchQuery) {
+      result = result.filter(s => 
+        (s.firstName?.toLowerCase() || '').includes(this.searchQuery.toLowerCase()) ||
+        (s.lastName?.toLowerCase() || '').includes(this.searchQuery.toLowerCase()) ||
+        (s.email?.toLowerCase() || '').includes(this.searchQuery.toLowerCase()) ||
+        (s.branchName?.toLowerCase() || '').includes(this.searchQuery.toLowerCase())
+      );
+    }
+    
+    return result;
   }
 
   get paginatedStaff(): Staff[] {

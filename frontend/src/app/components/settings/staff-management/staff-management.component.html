@@ -8,6 +8,10 @@
   <div class="card">
     <div class="table-toolbar">
       <div class="toolbar-left">
+        <select [(ngModel)]="selectedBranchId" (ngModelChange)="onBranchFilterChange()" class="company-filter">
+          <option [ngValue]="null">All Companies</option>
+          <option *ngFor="let branch of branches" [ngValue]="branch.id">{{ branch.name }}</option>
+        </select>
         <select [(ngModel)]="pageSize" class="page-size-select">
           <option [value]="10">10</option>
           <option [value]="25">25</option>
@@ -34,6 +38,7 @@
             <th class="sortable">Full Name <i class="fas fa-sort-up"></i></th>
             <th>Username</th>
             <th>Email</th>
+            <th>Company</th>
             <th>Role</th>
             <th>Last Login</th>
             <th>Active</th>
@@ -41,7 +46,7 @@
         </thead>
         <tbody>
           <tr *ngIf="paginatedStaff.length === 0">
-            <td colspan="6" class="empty-state">No staff members found</td>
+            <td colspan="7" class="empty-state">No staff members found</td>
           </tr>
           <tr *ngFor="let member of paginatedStaff">
             <td>
@@ -52,8 +57,12 @@
             </td>
             <td><code>{{ member.username }}</code></td>
             <td>{{ member.email }}</td>
-            <td>{{ member.role }}</td>
-            <td>{{ member.lastLogin }}</td>
+            <td>
+              <span class="company-badge" *ngIf="member.branchName">{{ member.branchName }}</span>
+              <span class="no-company" *ngIf="!member.branchName">-</span>
+            </td>
+            <td>{{ member.role || '-' }}</td>
+            <td>{{ member.lastLogin || '-' }}</td>
             <td>
               <label class="toggle-switch">
                 <input type="checkbox" [checked]="member.active" (change)="toggleActive(member)">

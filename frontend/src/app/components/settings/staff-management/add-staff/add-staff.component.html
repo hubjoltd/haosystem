@@ -76,22 +76,35 @@
       </div>
 
       <div class="form-group">
-        <label>Role</label>
-        <select [(ngModel)]="staff.role" class="form-control">
-          <option value="">Select Role</option>
-          <option *ngFor="let role of roles" [value]="role.name">{{ role.name }}</option>
+        <label class="required">Company</label>
+        <select [(ngModel)]="selectedBranchId" (ngModelChange)="onBranchChange()" class="form-control">
+          <option [ngValue]="null">Select Company</option>
+          <option *ngFor="let branch of branches" [ngValue]="branch.id">{{ branch.name }}</option>
         </select>
+      </div>
+
+      <div class="form-group">
+        <label>Role</label>
+        <select [(ngModel)]="staff.roleId" class="form-control" [disabled]="!selectedBranchId">
+          <option [ngValue]="undefined">Select Role</option>
+          <option *ngFor="let role of roles" [ngValue]="role.id">{{ role.name }}</option>
+        </select>
+        <small *ngIf="!selectedBranchId" class="help-text">Select a company first to see available roles</small>
       </div>
     </div>
 
     <div class="tab-content" *ngIf="activeTab === 'permissions'">
       <p class="permissions-note">Permissions are managed through the role assigned to this staff member.</p>
       <div class="form-group">
+        <label>Company</label>
+        <input type="text" [value]="branches.find(b => b.id === selectedBranchId)?.name || 'Not selected'" class="form-control" disabled>
+      </div>
+      <div class="form-group">
         <label>Assigned Role</label>
-        <select [(ngModel)]="staff.role" class="form-control">
-          <option value="">Select Role</option>
-          <option *ngFor="let role of roles" [value]="role.name">{{ role.name }}</option>
-        </select>
+        <input type="text" [value]="roles.find(r => r.id === staff.roleId)?.name || 'Not selected'" class="form-control" disabled>
+      </div>
+      <div class="permissions-info" *ngIf="staff.roleId">
+        <p>This staff member will inherit all permissions from the assigned role.</p>
       </div>
     </div>
 

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { StaffService, Staff } from '../../../../services/staff.service';
+import { BranchService, Branch } from '../../../../services/branch.service';
+import { RoleService, Role } from '../../../../services/role.service';
 import { NotificationService } from '../../../../services/notification.service';
 
 @Component({
@@ -20,6 +22,8 @@ export class AddStaffComponent implements OnInit {
     lastName: '',
     email: '',
     role: '',
+    roleId: undefined,
+    branchId: undefined,
     isAdmin: false,
     isStaffMember: true,
     phone: '',
@@ -28,19 +32,22 @@ export class AddStaffComponent implements OnInit {
   };
 
   password: string = '';
-  roles: any[] = [];
+  roles: Role[] = [];
+  branches: Branch[] = [];
+  selectedBranchId: number | null = null;
 
   constructor(
     private router: Router, 
     private route: ActivatedRoute,
     private staffService: StaffService,
+    private branchService: BranchService,
+    private roleService: RoleService,
     private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
-    this.loadRoles();
+    this.loadBranches();
     
-    // Subscribe to route params for proper data loading on navigation
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
@@ -51,14 +58,45 @@ export class AddStaffComponent implements OnInit {
     });
   }
 
+  loadBranches(): void {
+    this.branchService.getAllBranches().subscribe({
+      next: (data: Branch[]) => {
+        this.branches = data;
+      },
+      error: () => {
+        this.notificationService.error('Failed to load companies');
+      }
+    });
+  }
+
+  onBranchChange(): void {
+    this.staff.roleId = undefined;
+    this.staff.role = '';
+    this.roles = [];
+    
+    if (this.selectedBranchId) {
+      this.staff.branchId = this.selectedBranchId;
+      this.loadRolesForBranch(this.selectedBranchId);
+    }
+  }
+
+  loadRolesForBranch(branchId: number): void {
+    this.roleService.getByBranch(branchId).subscribe({
+      next: (data: Role[]) => {
+        this.roles = data;
+      },
+      error: () => {
+        this.roles = [];
+      }
+    });
+  }
+
   loadRoles(): void {
     this.staffService.getRoles().subscribe({
       next: (data) => {
-        console.log('Roles loaded:', data);
         this.roles = data;
       },
-      error: (err) => {
-        console.error('Error loading roles:', err);
+      error: () => {
         this.roles = [];
       }
     });
@@ -69,9 +107,13 @@ export class AddStaffComponent implements OnInit {
       this.staffService.getById(this.staffId).subscribe({
         next: (data) => {
           this.staff = data;
+          if (data.branchId) {
+            this.selectedBranchId = data.branchId;
+            this.loadRolesForBranch(data.branchId);
+          }
         },
-        error: (err) => {
-          console.error('Error loading staff:', err);
+        error: () => {
+          this.notificationService.error('Failed to load staff member');
         }
       });
     }
@@ -94,6 +136,11 @@ export class AddStaffComponent implements OnInit {
 
     if (!this.editMode && (!this.password || this.password.length < 6)) {
       this.notificationService.error('Password must be at least 6 characters');
+      return;
+    }
+
+    if (!this.selectedBranchId) {
+      this.notificationService.error('Please select a company');
       return;
     }
 
@@ -131,5 +178,15 @@ export class AddStaffComponent implements OnInit {
 
   cancel(): void {
     this.router.navigate(['/app/settings/staff']);
+  }
+
+  get selectedBranchName(): string {
+    const branch = this.branches.find(b => b.id === this.selectedBranchId);
+    return branch?.name || 'Not selected';
+  }
+
+  get selectedRoleName(): string {
+    const role = this.roles.find(r => r.id === this.staff.roleId);
+    return role?.name || 'Not selected';
   }
 }

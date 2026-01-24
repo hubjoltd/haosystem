@@ -11,6 +11,8 @@ export interface Staff {
   phone?: string;
   role?: string;
   roleId?: number;
+  branchId?: number;
+  branchName?: string;
   active?: boolean;
   lastLogin?: string;
   isAdmin?: boolean;
@@ -52,5 +54,13 @@ export class StaffService {
 
   getRoles(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/roles`);
+  }
+
+  getRolesByBranch(branchId: number): Observable<any[]> {
+    return this.http.get<any[]>(`/api/roles/branch/${branchId}`);
+  }
+
+  getByBranch(branchId: number): Observable<Staff[]> {
+    return this.http.get<Staff[]>(`${this.apiUrl}/branch/${branchId}`);
   }
 }
