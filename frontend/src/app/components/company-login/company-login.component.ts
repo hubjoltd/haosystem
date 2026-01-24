@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService, LoginRequest, Branch } from '../../services/auth.service';
 import { BranchService } from '../../services/branch.service';
@@ -8,7 +8,8 @@ import { NotificationService } from '../../services/notification.service';
   selector: 'app-company-login',
   standalone: false,
   templateUrl: './company-login.component.html',
-  styleUrls: ['./company-login.component.scss']
+  styleUrls: ['./company-login.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CompanyLoginComponent implements OnInit {
   username: string = '';
@@ -27,7 +28,8 @@ export class CompanyLoginComponent implements OnInit {
     private route: ActivatedRoute,
     private authService: AuthService,
     private branchService: BranchService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -40,16 +42,19 @@ export class CompanyLoginComponent implements OnInit {
   loadCompany(): void {
     this.isLoadingCompany = true;
     this.companyNotFound = false;
+    this.cdr.markForCheck();
     
     this.branchService.getBranchBySlug(this.companySlug).subscribe({
       next: (company) => {
         this.company = company;
         this.isLoadingCompany = false;
         this.applyCompanyTheme();
+        this.cdr.markForCheck();
       },
       error: () => {
         this.companyNotFound = true;
         this.isLoadingCompany = false;
+        this.cdr.markForCheck();
       }
     });
   }
@@ -90,11 +95,13 @@ export class CompanyLoginComponent implements OnInit {
       next: () => {
         this.isLoading = false;
         this.notificationService.success('Login successful!');
+        this.cdr.markForCheck();
         this.router.navigate(['/app/dashboard']);
       },
       error: (err) => {
         this.isLoading = false;
         this.notificationService.error(err.error?.error || 'Login failed. Please try again.');
+        this.cdr.markForCheck();
       }
     });
   }
