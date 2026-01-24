@@ -184,8 +184,9 @@ public class EmployeeController {
     }
     
     @PutMapping("/bank-details/{id}")
-    public ResponseEntity<EmployeeBankDetail> updateBankDetail(@PathVariable Long id, @RequestBody EmployeeBankDetail detail) {
+    public ResponseEntity<EmployeeBankDetail> updateBankDetail(@PathVariable Long id, @RequestBody EmployeeBankDetail detail, HttpServletRequest request) {
         return bankDetailRepository.findById(id)
+                .filter(existing -> canAccessEmployee(existing.getEmployee().getId(), request))
                 .map(existing -> {
                     detail.setId(id);
                     detail.setEmployee(existing.getEmployee());
@@ -196,8 +197,9 @@ public class EmployeeController {
     }
     
     @DeleteMapping("/bank-details/{id}")
-    public ResponseEntity<Void> deleteBankDetail(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteBankDetail(@PathVariable Long id, HttpServletRequest request) {
         return bankDetailRepository.findById(id)
+                .filter(existing -> canAccessEmployee(existing.getEmployee().getId(), request))
                 .map(detail -> {
                     bankDetailRepository.delete(detail);
                     return ResponseEntity.ok().<Void>build();
@@ -266,8 +268,9 @@ public class EmployeeController {
     }
     
     @PutMapping("/education/{id}")
-    public ResponseEntity<EmployeeEducation> updateEducation(@PathVariable Long id, @RequestBody EmployeeEducation education) {
+    public ResponseEntity<EmployeeEducation> updateEducation(@PathVariable Long id, @RequestBody EmployeeEducation education, HttpServletRequest request) {
         return educationRepository.findById(id)
+                .filter(existing -> canAccessEmployee(existing.getEmployee().getId(), request))
                 .map(existing -> {
                     education.setId(id);
                     education.setEmployee(existing.getEmployee());
@@ -278,8 +281,9 @@ public class EmployeeController {
     }
     
     @DeleteMapping("/education/{id}")
-    public ResponseEntity<Void> deleteEducation(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteEducation(@PathVariable Long id, HttpServletRequest request) {
         return educationRepository.findById(id)
+                .filter(existing -> canAccessEmployee(existing.getEmployee().getId(), request))
                 .map(edu -> {
                     educationRepository.delete(edu);
                     return ResponseEntity.ok().<Void>build();
@@ -309,8 +313,9 @@ public class EmployeeController {
     }
     
     @PutMapping("/experience/{id}")
-    public ResponseEntity<EmployeeExperience> updateExperience(@PathVariable Long id, @RequestBody EmployeeExperience experience) {
+    public ResponseEntity<EmployeeExperience> updateExperience(@PathVariable Long id, @RequestBody EmployeeExperience experience, HttpServletRequest request) {
         return experienceRepository.findById(id)
+                .filter(existing -> canAccessEmployee(existing.getEmployee().getId(), request))
                 .map(existing -> {
                     experience.setId(id);
                     experience.setEmployee(existing.getEmployee());
@@ -321,8 +326,9 @@ public class EmployeeController {
     }
     
     @DeleteMapping("/experience/{id}")
-    public ResponseEntity<Void> deleteExperience(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteExperience(@PathVariable Long id, HttpServletRequest request) {
         return experienceRepository.findById(id)
+                .filter(existing -> canAccessEmployee(existing.getEmployee().getId(), request))
                 .map(exp -> {
                     experienceRepository.delete(exp);
                     return ResponseEntity.ok().<Void>build();
@@ -353,8 +359,9 @@ public class EmployeeController {
     }
     
     @PutMapping("/assets/{id}")
-    public ResponseEntity<EmployeeAsset> updateAsset(@PathVariable Long id, @RequestBody EmployeeAsset asset) {
+    public ResponseEntity<EmployeeAsset> updateAsset(@PathVariable Long id, @RequestBody EmployeeAsset asset, HttpServletRequest request) {
         return assetRepository.findById(id)
+                .filter(existing -> canAccessEmployee(existing.getEmployee().getId(), request))
                 .map(existing -> {
                     asset.setId(id);
                     asset.setEmployee(existing.getEmployee());
@@ -366,8 +373,9 @@ public class EmployeeController {
     }
     
     @PutMapping("/assets/{id}/approve")
-    public ResponseEntity<EmployeeAsset> approveAsset(@PathVariable Long id, @RequestParam String status, Authentication auth) {
+    public ResponseEntity<EmployeeAsset> approveAsset(@PathVariable Long id, @RequestParam String status, Authentication auth, HttpServletRequest request) {
         return assetRepository.findById(id)
+                .filter(existing -> canAccessEmployee(existing.getEmployee().getId(), request))
                 .map(asset -> {
                     asset.setApprovalStatus(status);
                     asset.setApprovedBy(auth != null ? auth.getName() : "admin");
@@ -378,8 +386,9 @@ public class EmployeeController {
     }
     
     @DeleteMapping("/assets/{id}")
-    public ResponseEntity<Void> deleteAsset(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteAsset(@PathVariable Long id, HttpServletRequest request) {
         return assetRepository.findById(id)
+                .filter(existing -> canAccessEmployee(existing.getEmployee().getId(), request))
                 .map(asset -> {
                     assetRepository.delete(asset);
                     return ResponseEntity.ok().<Void>build();
