@@ -493,14 +493,17 @@ export class EmployeeDetailComponent implements OnInit {
     if (!this.employeeId) return;
     
     this.loadingDocumentChecklist = true;
+    this.cdr.detectChanges();
     this.documentService.getEmployeeDocumentChecklist(this.employeeId).subscribe({
       next: (data) => {
         this.documentChecklist = data;
         this.loadingDocumentChecklist = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading document checklist:', err);
         this.loadingDocumentChecklist = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -1101,8 +1104,12 @@ export class EmployeeDetailComponent implements OnInit {
         next: () => {
           this.loadSubData();
           this.loadDocumentChecklist();
+          this.cdr.detectChanges();
         },
-        error: (err) => console.error('Error verifying document:', err)
+        error: (err) => {
+          console.error('Error verifying document:', err);
+          this.cdr.detectChanges();
+        }
       });
     }
   }
@@ -1113,8 +1120,12 @@ export class EmployeeDetailComponent implements OnInit {
         next: () => {
           this.loadSubData();
           this.loadDocumentChecklist();
+          this.cdr.detectChanges();
         },
-        error: (err) => console.error('Error deleting:', err)
+        error: (err) => {
+          console.error('Error deleting:', err);
+          this.cdr.detectChanges();
+        }
       });
     }
   }
@@ -1125,8 +1136,12 @@ export class EmployeeDetailComponent implements OnInit {
         next: () => {
           this.loadSubData();
           this.loadDocumentChecklist();
+          this.cdr.detectChanges();
         },
-        error: (err) => console.error('Error verifying document:', err)
+        error: (err) => {
+          console.error('Error verifying document:', err);
+          this.cdr.detectChanges();
+        }
       });
     }
   }
@@ -1137,8 +1152,12 @@ export class EmployeeDetailComponent implements OnInit {
         next: () => {
           this.loadSubData();
           this.loadDocumentChecklist();
+          this.cdr.detectChanges();
         },
-        error: (err) => console.error('Error deleting:', err)
+        error: (err) => {
+          console.error('Error deleting:', err);
+          this.cdr.detectChanges();
+        }
       });
     }
   }
@@ -1148,6 +1167,7 @@ export class EmployeeDetailComponent implements OnInit {
       this.documentService.getDocumentById(docType.documentId).subscribe({
         next: (doc) => {
           this.openDocumentModal(doc);
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Error loading document:', err);
@@ -1168,6 +1188,7 @@ export class EmployeeDetailComponent implements OnInit {
           this.isEditingSubItem = true;
           this.selectedFile = null;
           this.showDocumentModal = true;
+          this.cdr.detectChanges();
         }
       });
     }
