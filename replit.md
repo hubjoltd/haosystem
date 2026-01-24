@@ -57,6 +57,8 @@ Preferred communication style: Simple, everyday language.
 -   **Reports**: Generates detailed reports across modules.
 
 ### Technical Implementations & Design Choices
+-   **Company Data Isolation**: All employee and department data is filtered by branchId from JWT tokens. Each company only sees their own data. SuperAdmin users bypass branch filtering and can access all data across companies.
+-   **Branch Verification Pattern**: Employee subresources (bank details, salary, education, experience, assets) verify branch access before any GET/POST/PUT/DELETE operations. Returns 404 for cross-branch access attempts.
 -   Automatic ID generation for various modules (e.g., ONB-YYYY-XXXXX for onboarding plans).
 -   Integrated approval workflows across Stock Movement, Purchase Orders, Leave, Expenses, Loans, and Attendance.
 -   Responsive sidebar dashboard layout.
