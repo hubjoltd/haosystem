@@ -41,41 +41,40 @@
           </div>
         </div>
 
-        <!-- Running timer when clocked in -->
-        <div class="running-timer" *ngIf="isClockedIn()">
-          <div class="timer-label">Working Time</div>
-          <div class="timer-display">
-            <i class="fas fa-stopwatch"></i>
-            <span class="elapsed-time">{{ elapsedTime }}</span>
+        <div class="clock-status" *ngIf="selectedEmployee && !loadingRecord">
+          <div class="status-card" *ngIf="isClockedIn()">
+            <div class="status-badge clocked-in">
+              <i class="fas fa-check-circle"></i> Currently Clocked In
+            </div>
+            <div class="clock-time">
+              <span class="label">Clock In Time:</span>
+              <span class="time">{{ formatClockTime(todayRecord?.clockIn) }}</span>
+            </div>
           </div>
-          <div class="earnings-display" *ngIf="getHourlyRate() > 0">
-            <i class="fas fa-dollar-sign"></i>
-            <span class="current-earnings">${{ currentEarnings.toFixed(2) }}</span>
+          
+          <div class="status-card" *ngIf="isClockedOut()">
+            <div class="status-badge clocked-out">
+              <i class="fas fa-check-circle"></i> Shift Completed
+            </div>
+            <div class="clock-time">
+              <span class="label">Clock In:</span>
+              <span class="time">{{ formatClockTime(todayRecord?.clockIn) }}</span>
+            </div>
+            <div class="clock-time">
+              <span class="label">Clock Out:</span>
+              <span class="time">{{ formatClockTime(todayRecord?.clockOut) }}</span>
+            </div>
+          </div>
+          
+          <div class="status-card" *ngIf="!todayRecord">
+            <div class="status-badge not-clocked">
+              <i class="fas fa-clock"></i> Not Clocked In
+            </div>
           </div>
         </div>
-        
-        <!-- Only show time info when NOT clocked in -->
-        <div class="time-info" *ngIf="selectedEmployee && !isClockedIn()">
-          <div class="time-row" *ngIf="todayRecord?.clockIn">
-            <span class="label">Last Clock In:</span>
-            <span class="value">{{ todayRecord?.clockIn?.substring(0, 5) }}</span>
-          </div>
-          <div class="time-row" *ngIf="todayRecord?.clockOut">
-            <span class="label">Last Clock Out:</span>
-            <span class="value">{{ todayRecord?.clockOut?.substring(0, 5) }}</span>
-          </div>
-        </div>
-        
-        <div class="session-summary" *ngIf="showSessionSummary && !isClockedIn()">
-          <div class="summary-title"><i class="fas fa-check-circle"></i> Session Complete</div>
-          <div class="summary-row">
-            <span>Hours Worked:</span>
-            <span>{{ formatHoursMinutes(lastSessionHours) }}</span>
-          </div>
-          <div class="summary-row" *ngIf="getHourlyRate() > 0">
-            <span>Earnings:</span>
-            <span class="earnings">${{ lastSessionEarnings.toFixed(2) }}</span>
-          </div>
+
+        <div class="loading-record" *ngIf="loadingRecord">
+          <i class="fas fa-spinner fa-spin"></i> Loading...
         </div>
 
         <div class="clock-buttons">
@@ -106,8 +105,8 @@
             <div class="activity-details">
               <span class="activity-name">{{ getEmployeeName(record) }}</span>
               <div class="activity-times">
-                <span class="time-in"><i class="fas fa-arrow-right"></i> {{ record.clockIn ? record.clockIn.substring(0, 5) : '-' }}</span>
-                <span class="time-out"><i class="fas fa-arrow-left"></i> {{ record.clockOut ? record.clockOut.substring(0, 5) : '—' }}</span>
+                <span class="time-in"><i class="fas fa-arrow-right"></i> In: {{ formatClockTime(record.clockIn) }}</span>
+                <span class="time-out"><i class="fas fa-arrow-left"></i> Out: {{ record.clockOut ? formatClockTime(record.clockOut) : '-' }}</span>
               </div>
             </div>
             <div class="activity-actions">

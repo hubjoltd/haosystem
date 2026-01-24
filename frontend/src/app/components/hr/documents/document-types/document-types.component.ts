@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { DocumentService, DocumentCategory, DocumentType } from '../../../../services/document.service';
 import { ToastService } from '../../../../services/toast.service';
 
@@ -6,7 +6,8 @@ import { ToastService } from '../../../../services/toast.service';
   selector: 'app-document-types',
   standalone: false,
   templateUrl: './document-types.component.html',
-  styleUrls: ['./document-types.component.scss']
+  styleUrls: ['./document-types.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DocumentTypesComponent implements OnInit {
   documentTypes: DocumentType[] = [];

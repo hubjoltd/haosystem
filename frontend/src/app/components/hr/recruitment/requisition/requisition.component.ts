@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -58,7 +58,8 @@ export interface ApprovalHistory {
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './requisition.component.html',
-  styleUrls: ['./requisition.component.scss']
+  styleUrls: ['./requisition.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RecruitmentRequisitionComponent implements OnInit {
   requisitions: ManpowerRequisition[] = [];

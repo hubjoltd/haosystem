@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { OrganizationService, Grade } from '../../../../services/organization.service';
 import { ToastService } from '../../../../services/toast.service';
 
@@ -6,7 +6,8 @@ import { ToastService } from '../../../../services/toast.service';
   selector: 'app-grades',
   standalone: false,
   templateUrl: './grades.component.html',
-  styleUrls: ['./grades.component.scss']
+  styleUrls: ['./grades.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GradesComponent implements OnInit {
   grades: Grade[] = [];

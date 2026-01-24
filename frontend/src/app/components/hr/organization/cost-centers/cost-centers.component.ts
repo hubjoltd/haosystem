@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { OrganizationService, CostCenter } from '../../../../services/organization.service';
 import { ToastService } from '../../../../services/toast.service';
 
@@ -6,7 +6,8 @@ import { ToastService } from '../../../../services/toast.service';
   selector: 'app-cost-centers',
   standalone: false,
   templateUrl: './cost-centers.component.html',
-  styleUrls: ['./cost-centers.component.scss']
+  styleUrls: ['./cost-centers.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CostCentersComponent implements OnInit {
   costCenters: CostCenter[] = [];

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { OrganizationService, JobRole, Department, Grade } from '../../../../services/organization.service';
 import { ToastService } from '../../../../services/toast.service';
 
@@ -6,7 +6,8 @@ import { ToastService } from '../../../../services/toast.service';
   selector: 'app-job-roles',
   standalone: false,
   templateUrl: './job-roles.component.html',
-  styleUrls: ['./job-roles.component.scss']
+  styleUrls: ['./job-roles.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class JobRolesComponent implements OnInit {
   jobRoles: JobRole[] = [];

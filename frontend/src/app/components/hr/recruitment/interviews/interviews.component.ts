@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -56,7 +56,8 @@ export interface InterviewFeedback {
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './interviews.component.html',
-  styleUrls: ['./interviews.component.scss']
+  styleUrls: ['./interviews.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RecruitmentInterviewsComponent implements OnInit {
   interviews: Interview[] = [];

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { SettlementService } from '../../../services/settlement.service';
 import { EmployeeService } from '../../../services/employee.service';
 import { ToastService } from '../../../services/toast.service';
@@ -7,7 +7,8 @@ import { ToastService } from '../../../services/toast.service';
   selector: 'app-settlement',
   standalone: false,
   templateUrl: './settlement.component.html',
-  styleUrls: ['./settlement.component.scss']
+  styleUrls: ['./settlement.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class SettlementComponent implements OnInit {
   settlements: any[] = [];

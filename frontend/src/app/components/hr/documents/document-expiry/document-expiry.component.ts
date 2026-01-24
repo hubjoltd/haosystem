@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { DocumentService, EmployeeDocument } from '../../../../services/document.service';
 import { ToastService } from '../../../../services/toast.service';
@@ -7,7 +7,8 @@ import { ToastService } from '../../../../services/toast.service';
   selector: 'app-document-expiry',
   standalone: false,
   templateUrl: './document-expiry.component.html',
-  styleUrls: ['./document-expiry.component.scss']
+  styleUrls: ['./document-expiry.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DocumentExpiryComponent implements OnInit {
   expiringDocuments: EmployeeDocument[] = [];

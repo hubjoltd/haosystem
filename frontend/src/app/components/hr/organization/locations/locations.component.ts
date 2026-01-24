@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { OrganizationService, Location } from '../../../../services/organization.service';
 import { ToastService } from '../../../../services/toast.service';
 
@@ -6,7 +6,8 @@ import { ToastService } from '../../../../services/toast.service';
   selector: 'app-locations',
   standalone: false,
   templateUrl: './locations.component.html',
-  styleUrls: ['./locations.component.scss']
+  styleUrls: ['./locations.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LocationsComponent implements OnInit {
   locations: Location[] = [];

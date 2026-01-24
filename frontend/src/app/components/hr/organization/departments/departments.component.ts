@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { OrganizationService, Department, CostCenter, Location } from '../../../../services/organization.service';
 import { ToastService } from '../../../../services/toast.service';
 import * as XLSX from 'xlsx';
@@ -15,7 +15,8 @@ declare module 'jspdf' {
   selector: 'app-departments',
   standalone: false,
   templateUrl: './departments.component.html',
-  styleUrls: ['./departments.component.scss']
+  styleUrls: ['./departments.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DepartmentsComponent implements OnInit {
   departments: Department[] = [];
