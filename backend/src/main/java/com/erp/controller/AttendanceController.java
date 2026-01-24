@@ -8,6 +8,8 @@ import com.erp.repository.AttendanceRecordRepository;
 import com.erp.repository.AttendanceRuleRepository;
 import com.erp.repository.ProjectTimeEntryRepository;
 import com.erp.repository.EmployeeRepository;
+import com.erp.security.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/attendance")
@@ -37,50 +40,112 @@ public class AttendanceController {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
+    
+    private Long extractBranchId(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return jwtUtil.extractBranchId(token);
+        }
+        return null;
+    }
+    
+    private boolean isSuperAdmin(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return jwtUtil.extractIsSuperAdmin(token);
+        }
+        return false;
+    }
+    
+    private List<Employee> getEmployeesForBranch(HttpServletRequest request) {
+        if (isSuperAdmin(request)) {
+            return employeeRepository.findByActiveTrue();
+        }
+        Long branchId = extractBranchId(request);
+        if (branchId != null) {
+            return employeeRepository.findByBranchIdAndActiveTrue(branchId);
+        }
+        return employeeRepository.findByActiveTrue();
+    }
+    
+    private Set<Long> getEmployeeIdsForBranch(HttpServletRequest request) {
+        return getEmployeesForBranch(request).stream()
+                .map(Employee::getId)
+                .collect(Collectors.toSet());
+    }
 
     @GetMapping
-    public ResponseEntity<List<AttendanceRecord>> getAllRecords() {
-        return ResponseEntity.ok(attendanceRecordRepository.findAll());
+    public ResponseEntity<List<AttendanceRecord>> getAllRecords(HttpServletRequest request) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        List<AttendanceRecord> records = attendanceRecordRepository.findAll().stream()
+                .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(records);
     }
     
     @GetMapping("/employees-for-clock")
-    public ResponseEntity<List<Employee>> getEmployeesForClock() {
-        return ResponseEntity.ok(employeeRepository.findByActiveTrue());
+    public ResponseEntity<List<Employee>> getEmployeesForClock(HttpServletRequest request) {
+        return ResponseEntity.ok(getEmployeesForBranch(request));
     }
 
     @GetMapping("/date-range")
     public ResponseEntity<List<AttendanceRecord>> getByDateRange(
+            HttpServletRequest request,
             @RequestParam String startDate,
             @RequestParam String endDate) {
         LocalDate start = LocalDate.parse(startDate);
         LocalDate end = LocalDate.parse(endDate);
-        return ResponseEntity.ok(attendanceRecordRepository.findByAttendanceDateBetween(start, end));
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        List<AttendanceRecord> records = attendanceRecordRepository.findByAttendanceDateBetween(start, end).stream()
+                .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(records);
     }
 
     @GetMapping("/employee/{employeeId}")
-    public ResponseEntity<List<AttendanceRecord>> getByEmployee(@PathVariable Long employeeId) {
+    public ResponseEntity<List<AttendanceRecord>> getByEmployee(HttpServletRequest request, @PathVariable Long employeeId) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        if (!branchEmployeeIds.contains(employeeId)) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(attendanceRecordRepository.findByEmployeeId(employeeId));
     }
 
     @GetMapping("/date/{date}")
-    public ResponseEntity<List<AttendanceRecord>> getByDate(@PathVariable String date) {
+    public ResponseEntity<List<AttendanceRecord>> getByDate(HttpServletRequest request, @PathVariable String date) {
         LocalDate localDate = LocalDate.parse(date);
-        return ResponseEntity.ok(attendanceRecordRepository.findByAttendanceDate(localDate));
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        List<AttendanceRecord> records = attendanceRecordRepository.findByAttendanceDate(localDate).stream()
+                .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(records);
     }
 
     @GetMapping("/employee/{employeeId}/range")
     public ResponseEntity<List<AttendanceRecord>> getByEmployeeAndDateRange(
+            HttpServletRequest request,
             @PathVariable Long employeeId,
             @RequestParam String startDate,
             @RequestParam String endDate) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        if (!branchEmployeeIds.contains(employeeId)) {
+            return ResponseEntity.notFound().build();
+        }
         LocalDate start = LocalDate.parse(startDate);
         LocalDate end = LocalDate.parse(endDate);
         return ResponseEntity.ok(attendanceRecordRepository.findByEmployeeIdAndAttendanceDateBetween(employeeId, start, end));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AttendanceRecord> getById(@PathVariable Long id) {
+    public ResponseEntity<AttendanceRecord> getById(HttpServletRequest request, @PathVariable Long id) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
         return attendanceRecordRepository.findById(id)
+            .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
@@ -493,18 +558,30 @@ public class AttendanceController {
     }
 
     @GetMapping("/project-time")
-    public ResponseEntity<List<ProjectTimeEntry>> getAllProjectTimeEntries() {
-        return ResponseEntity.ok(projectTimeEntryRepository.findAll());
+    public ResponseEntity<List<ProjectTimeEntry>> getAllProjectTimeEntries(HttpServletRequest request) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        List<ProjectTimeEntry> entries = projectTimeEntryRepository.findAll().stream()
+                .filter(e -> e.getEmployee() != null && branchEmployeeIds.contains(e.getEmployee().getId()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(entries);
     }
 
     @GetMapping("/project-time/employee/{employeeId}")
-    public ResponseEntity<List<ProjectTimeEntry>> getProjectTimeByEmployee(@PathVariable Long employeeId) {
+    public ResponseEntity<List<ProjectTimeEntry>> getProjectTimeByEmployee(HttpServletRequest request, @PathVariable Long employeeId) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        if (!branchEmployeeIds.contains(employeeId)) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(projectTimeEntryRepository.findByEmployeeId(employeeId));
     }
 
     @GetMapping("/project-time/project/{projectCode}")
-    public ResponseEntity<List<ProjectTimeEntry>> getProjectTimeByProject(@PathVariable String projectCode) {
-        return ResponseEntity.ok(projectTimeEntryRepository.findByProjectCode(projectCode));
+    public ResponseEntity<List<ProjectTimeEntry>> getProjectTimeByProject(HttpServletRequest request, @PathVariable String projectCode) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        List<ProjectTimeEntry> entries = projectTimeEntryRepository.findByProjectCode(projectCode).stream()
+                .filter(e -> e.getEmployee() != null && branchEmployeeIds.contains(e.getEmployee().getId()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(entries);
     }
 
     @PostMapping("/project-time")
@@ -558,21 +635,26 @@ public class AttendanceController {
     }
 
     @GetMapping("/summary/today")
-    public ResponseEntity<Map<String, Object>> getTodaySummary() {
+    public ResponseEntity<Map<String, Object>> getTodaySummary(HttpServletRequest request) {
         LocalDate today = LocalDate.now();
         Map<String, Object> summary = new HashMap<>();
+        
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        List<AttendanceRecord> todayRecords = attendanceRecordRepository.findByAttendanceDate(today).stream()
+                .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
+                .collect(Collectors.toList());
 
-        long present = attendanceRecordRepository.countPresentByDate(today);
-        long absent = attendanceRecordRepository.countAbsentByDate(today);
-        long onLeave = attendanceRecordRepository.countOnLeaveByDate(today);
-        long lateArrivals = attendanceRecordRepository.countLateArrivalsByDate(today);
+        long present = todayRecords.stream().filter(r -> "PRESENT".equals(r.getStatus())).count();
+        long absent = todayRecords.stream().filter(r -> "ABSENT".equals(r.getStatus())).count();
+        long onLeave = todayRecords.stream().filter(r -> "ON_LEAVE".equals(r.getStatus())).count();
+        long lateArrivals = todayRecords.stream().filter(r -> Boolean.TRUE.equals(r.getLateArrival())).count();
 
         summary.put("date", today.toString());
         summary.put("present", present);
         summary.put("absent", absent);
         summary.put("onLeave", onLeave);
         summary.put("lateArrivals", lateArrivals);
-        summary.put("totalEmployees", employeeRepository.count());
+        summary.put("totalEmployees", branchEmployeeIds.size());
 
         return ResponseEntity.ok(summary);
     }

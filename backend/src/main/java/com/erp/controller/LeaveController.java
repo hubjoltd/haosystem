@@ -2,6 +2,8 @@ package com.erp.controller;
 
 import com.erp.model.*;
 import com.erp.repository.*;
+import com.erp.security.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/leave")
@@ -32,6 +35,44 @@ public class LeaveController {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
+    
+    private Long extractBranchId(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return jwtUtil.extractBranchId(token);
+        }
+        return null;
+    }
+    
+    private boolean isSuperAdmin(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return jwtUtil.extractIsSuperAdmin(token);
+        }
+        return false;
+    }
+    
+    private List<Employee> getEmployeesForBranch(HttpServletRequest request) {
+        if (isSuperAdmin(request)) {
+            return employeeRepository.findByActiveTrue();
+        }
+        Long branchId = extractBranchId(request);
+        if (branchId != null) {
+            return employeeRepository.findByBranchIdAndActiveTrue(branchId);
+        }
+        return employeeRepository.findByActiveTrue();
+    }
+    
+    private Set<Long> getEmployeeIdsForBranch(HttpServletRequest request) {
+        return getEmployeesForBranch(request).stream()
+                .map(Employee::getId)
+                .collect(Collectors.toSet());
+    }
 
     @GetMapping("/types")
     public ResponseEntity<List<LeaveType>> getAllLeaveTypes() {
@@ -75,24 +116,38 @@ public class LeaveController {
     }
 
     @GetMapping("/requests")
-    public ResponseEntity<List<LeaveRequest>> getAllRequests() {
-        return ResponseEntity.ok(leaveRequestRepository.findAll());
+    public ResponseEntity<List<LeaveRequest>> getAllRequests(HttpServletRequest request) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        List<LeaveRequest> requests = leaveRequestRepository.findAll().stream()
+                .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(requests);
     }
 
     @GetMapping("/requests/pending")
-    public ResponseEntity<List<LeaveRequest>> getPendingRequests() {
-        return ResponseEntity.ok(leaveRequestRepository.findPendingRequests());
+    public ResponseEntity<List<LeaveRequest>> getPendingRequests(HttpServletRequest request) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        List<LeaveRequest> requests = leaveRequestRepository.findPendingRequests().stream()
+                .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(requests);
     }
 
     @GetMapping("/requests/{id}")
-    public ResponseEntity<LeaveRequest> getRequestById(@PathVariable Long id) {
+    public ResponseEntity<LeaveRequest> getRequestById(HttpServletRequest request, @PathVariable Long id) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
         return leaveRequestRepository.findById(id)
+            .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/requests/employee/{employeeId}")
-    public ResponseEntity<List<LeaveRequest>> getRequestsByEmployee(@PathVariable Long employeeId) {
+    public ResponseEntity<List<LeaveRequest>> getRequestsByEmployee(HttpServletRequest request, @PathVariable Long employeeId) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        if (!branchEmployeeIds.contains(employeeId)) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(leaveRequestRepository.findByEmployeeId(employeeId));
     }
 
@@ -179,8 +234,10 @@ public class LeaveController {
     }
 
     @PutMapping("/requests/{id}/approve")
-    public ResponseEntity<?> approveRequest(@PathVariable Long id, @RequestBody Map<String, Object> data) {
+    public ResponseEntity<?> approveRequest(HttpServletRequest httpRequest, @PathVariable Long id, @RequestBody Map<String, Object> data) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(httpRequest);
         return leaveRequestRepository.findById(id)
+            .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
             .map(request -> {
                 request.setStatus("APPROVED");
                 request.setApprovedAt(LocalDateTime.now());
@@ -208,8 +265,10 @@ public class LeaveController {
     }
 
     @PutMapping("/requests/{id}/reject")
-    public ResponseEntity<?> rejectRequest(@PathVariable Long id, @RequestBody Map<String, Object> data) {
+    public ResponseEntity<?> rejectRequest(HttpServletRequest httpRequest, @PathVariable Long id, @RequestBody Map<String, Object> data) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(httpRequest);
         return leaveRequestRepository.findById(id)
+            .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
             .map(request -> {
                 request.setStatus("REJECTED");
                 request.setApprovedAt(LocalDateTime.now());
@@ -236,8 +295,10 @@ public class LeaveController {
     }
 
     @PutMapping("/requests/{id}/cancel")
-    public ResponseEntity<?> cancelRequest(@PathVariable Long id) {
+    public ResponseEntity<?> cancelRequest(HttpServletRequest httpRequest, @PathVariable Long id) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(httpRequest);
         return leaveRequestRepository.findById(id)
+            .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
             .map(request -> {
                 if (!"PENDING".equals(request.getStatus())) {
                     return ResponseEntity.badRequest().body(Map.of("error", "Only pending requests can be cancelled"));
@@ -260,22 +321,33 @@ public class LeaveController {
     }
 
     @DeleteMapping("/requests/{id}")
-    public ResponseEntity<Void> deleteRequest(@PathVariable Long id) {
-        if (leaveRequestRepository.existsById(id)) {
-            leaveRequestRepository.deleteById(id);
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<Void> deleteRequest(HttpServletRequest httpRequest, @PathVariable Long id) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(httpRequest);
+        return leaveRequestRepository.findById(id)
+            .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
+            .map(request -> {
+                leaveRequestRepository.delete(request);
+                return ResponseEntity.ok().<Void>build();
+            })
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/balances/employee/{employeeId}")
-    public ResponseEntity<List<LeaveBalance>> getEmployeeBalances(@PathVariable Long employeeId) {
+    public ResponseEntity<List<LeaveBalance>> getEmployeeBalances(HttpServletRequest request, @PathVariable Long employeeId) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        if (!branchEmployeeIds.contains(employeeId)) {
+            return ResponseEntity.notFound().build();
+        }
         int currentYear = LocalDate.now().getYear();
         return ResponseEntity.ok(leaveBalanceRepository.findByEmployeeIdAndYear(employeeId, currentYear));
     }
 
     @GetMapping("/balances/employee/{employeeId}/year/{year}")
-    public ResponseEntity<List<LeaveBalance>> getEmployeeBalancesByYear(@PathVariable Long employeeId, @PathVariable Integer year) {
+    public ResponseEntity<List<LeaveBalance>> getEmployeeBalancesByYear(HttpServletRequest request, @PathVariable Long employeeId, @PathVariable Integer year) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        if (!branchEmployeeIds.contains(employeeId)) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(leaveBalanceRepository.findByEmployeeIdAndYear(employeeId, year));
     }
 

@@ -3,6 +3,8 @@ package com.erp.controller;
 import com.erp.model.*;
 import com.erp.repository.*;
 import com.erp.service.PayrollCalculationService;
+import com.erp.security.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/payroll")
@@ -41,27 +44,79 @@ public class PayrollController {
 
     @Autowired
     private AttendanceRecordRepository attendanceRecordRepository;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
+    
+    private Long extractBranchId(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return jwtUtil.extractBranchId(token);
+        }
+        return null;
+    }
+    
+    private boolean isSuperAdmin(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return jwtUtil.extractIsSuperAdmin(token);
+        }
+        return false;
+    }
+    
+    private List<Employee> getEmployeesForBranch(HttpServletRequest request) {
+        if (isSuperAdmin(request)) {
+            return employeeRepository.findByActiveTrue();
+        }
+        Long branchId = extractBranchId(request);
+        if (branchId != null) {
+            return employeeRepository.findByBranchIdAndActiveTrue(branchId);
+        }
+        return employeeRepository.findByActiveTrue();
+    }
+    
+    private Set<Long> getEmployeeIdsForBranch(HttpServletRequest request) {
+        return getEmployeesForBranch(request).stream()
+                .map(Employee::getId)
+                .collect(Collectors.toSet());
+    }
 
     @GetMapping("/timesheets")
-    public ResponseEntity<List<Timesheet>> getAllTimesheets() {
-        return ResponseEntity.ok(timesheetRepository.findAll());
+    public ResponseEntity<List<Timesheet>> getAllTimesheets(HttpServletRequest request) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        List<Timesheet> timesheets = timesheetRepository.findAll().stream()
+                .filter(t -> t.getEmployee() != null && branchEmployeeIds.contains(t.getEmployee().getId()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(timesheets);
     }
 
     @GetMapping("/timesheets/{id}")
-    public ResponseEntity<Timesheet> getTimesheetById(@PathVariable Long id) {
+    public ResponseEntity<Timesheet> getTimesheetById(HttpServletRequest request, @PathVariable Long id) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
         return timesheetRepository.findById(id)
+            .filter(t -> t.getEmployee() != null && branchEmployeeIds.contains(t.getEmployee().getId()))
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/timesheets/employee/{employeeId}")
-    public ResponseEntity<List<Timesheet>> getTimesheetsByEmployee(@PathVariable Long employeeId) {
+    public ResponseEntity<List<Timesheet>> getTimesheetsByEmployee(HttpServletRequest request, @PathVariable Long employeeId) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        if (!branchEmployeeIds.contains(employeeId)) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(timesheetRepository.findByEmployeeId(employeeId));
     }
 
     @GetMapping("/timesheets/status/{status}")
-    public ResponseEntity<List<Timesheet>> getTimesheetsByStatus(@PathVariable String status) {
-        return ResponseEntity.ok(timesheetRepository.findByStatus(status));
+    public ResponseEntity<List<Timesheet>> getTimesheetsByStatus(HttpServletRequest request, @PathVariable String status) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        List<Timesheet> timesheets = timesheetRepository.findByStatus(status).stream()
+                .filter(t -> t.getEmployee() != null && branchEmployeeIds.contains(t.getEmployee().getId()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(timesheets);
     }
 
     @PostMapping("/timesheets")
@@ -126,20 +181,24 @@ public class PayrollController {
     }
 
     @GetMapping("/runs")
-    public ResponseEntity<List<PayrollRun>> getAllPayrollRuns() {
+    public ResponseEntity<List<PayrollRun>> getAllPayrollRuns(HttpServletRequest request) {
         return ResponseEntity.ok(payrollRunRepository.findAllByOrderByCreatedAtDesc());
     }
 
     @GetMapping("/runs/{id}")
-    public ResponseEntity<PayrollRun> getPayrollRunById(@PathVariable Long id) {
+    public ResponseEntity<PayrollRun> getPayrollRunById(HttpServletRequest request, @PathVariable Long id) {
         return payrollRunRepository.findById(id)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/runs/{id}/records")
-    public ResponseEntity<List<PayrollRecord>> getPayrollRecordsByRun(@PathVariable Long id) {
-        return ResponseEntity.ok(payrollRecordRepository.findByPayrollRunId(id));
+    public ResponseEntity<List<PayrollRecord>> getPayrollRecordsByRun(HttpServletRequest request, @PathVariable Long id) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        List<PayrollRecord> records = payrollRecordRepository.findByPayrollRunId(id).stream()
+                .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(records);
     }
 
     @PostMapping("/runs")
@@ -291,17 +350,29 @@ public class PayrollController {
     }
 
     @GetMapping("/records/employee/{employeeId}")
-    public ResponseEntity<List<PayrollRecord>> getPayrollRecordsByEmployee(@PathVariable Long employeeId) {
+    public ResponseEntity<List<PayrollRecord>> getPayrollRecordsByEmployee(HttpServletRequest request, @PathVariable Long employeeId) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        if (!branchEmployeeIds.contains(employeeId)) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(payrollRecordRepository.findByEmployeeIdOrderByCreatedAtDesc(employeeId));
     }
 
     @GetMapping("/records/employee/{employeeId}/paystubs")
-    public ResponseEntity<List<PayrollRecord>> getPaystubs(@PathVariable Long employeeId) {
+    public ResponseEntity<List<PayrollRecord>> getPaystubs(HttpServletRequest request, @PathVariable Long employeeId) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        if (!branchEmployeeIds.contains(employeeId)) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(payrollRecordRepository.findProcessedPayrollRecordsByEmployee(employeeId));
     }
 
     @GetMapping("/benefits/employee/{employeeId}")
-    public ResponseEntity<List<EmployeeBenefit>> getEmployeeBenefits(@PathVariable Long employeeId) {
+    public ResponseEntity<List<EmployeeBenefit>> getEmployeeBenefits(HttpServletRequest request, @PathVariable Long employeeId) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        if (!branchEmployeeIds.contains(employeeId)) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(employeeBenefitRepository.findByEmployeeIdAndIsActiveTrue(employeeId));
     }
 
@@ -347,25 +418,39 @@ public class PayrollController {
     }
 
     @GetMapping("/project-timesheets")
-    public ResponseEntity<List<ProjectTimesheet>> getAllProjectTimesheets() {
-        return ResponseEntity.ok(projectTimesheetRepository.findAllByOrderByCreatedAtDesc());
+    public ResponseEntity<List<ProjectTimesheet>> getAllProjectTimesheets(HttpServletRequest request) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        List<ProjectTimesheet> timesheets = projectTimesheetRepository.findAllByOrderByCreatedAtDesc().stream()
+                .filter(t -> t.getEmployee() != null && branchEmployeeIds.contains(t.getEmployee().getId()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(timesheets);
     }
 
     @GetMapping("/project-timesheets/{id}")
-    public ResponseEntity<ProjectTimesheet> getProjectTimesheetById(@PathVariable Long id) {
+    public ResponseEntity<ProjectTimesheet> getProjectTimesheetById(HttpServletRequest request, @PathVariable Long id) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
         return projectTimesheetRepository.findById(id)
+            .filter(t -> t.getEmployee() != null && branchEmployeeIds.contains(t.getEmployee().getId()))
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/project-timesheets/employee/{employeeId}")
-    public ResponseEntity<List<ProjectTimesheet>> getProjectTimesheetsByEmployee(@PathVariable Long employeeId) {
+    public ResponseEntity<List<ProjectTimesheet>> getProjectTimesheetsByEmployee(HttpServletRequest request, @PathVariable Long employeeId) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        if (!branchEmployeeIds.contains(employeeId)) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(projectTimesheetRepository.findByEmployeeId(employeeId));
     }
 
     @GetMapping("/project-timesheets/project/{projectCode}")
-    public ResponseEntity<List<ProjectTimesheet>> getProjectTimesheetsByProject(@PathVariable String projectCode) {
-        return ResponseEntity.ok(projectTimesheetRepository.findByProjectCode(projectCode));
+    public ResponseEntity<List<ProjectTimesheet>> getProjectTimesheetsByProject(HttpServletRequest request, @PathVariable String projectCode) {
+        Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
+        List<ProjectTimesheet> timesheets = projectTimesheetRepository.findByProjectCode(projectCode).stream()
+                .filter(t -> t.getEmployee() != null && branchEmployeeIds.contains(t.getEmployee().getId()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(timesheets);
     }
 
     @PostMapping("/project-timesheets")
