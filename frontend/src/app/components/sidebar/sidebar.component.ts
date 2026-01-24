@@ -267,11 +267,10 @@ export class SidebarComponent implements OnInit {
       expanded: false,
       permissionKey: 'Attendance',
       children: [
+        { icon: 'fas fa-chart-bar', label: 'Attendance Dashboard', labelKey: 'nav.attendanceDashboard', route: '/app/mis/attendance-dashboard' },
         { icon: 'fas fa-clock', label: 'Time Clock', labelKey: 'nav.timeClock', route: '/app/attendance/clock-in-out' },
-        { icon: 'fas fa-calendar-week', label: 'Weekly Timesheet', labelKey: 'nav.weeklyTimesheet', route: '/app/attendance/weekly-timesheet' },
         { icon: 'fas fa-calendar-day', label: 'Daily Attendance', labelKey: 'nav.dailyAttendance', route: '/app/attendance/management' },
-        { icon: 'fas fa-check-circle', label: 'Attendance Approval', labelKey: 'nav.attendanceApproval', route: '/app/attendance/approval' },
-        { icon: 'fas fa-chart-bar', label: 'Attendance Dashboard', labelKey: 'nav.attendanceDashboard', route: '/app/mis/attendance-dashboard' }
+        { icon: 'fas fa-calendar-week', label: 'Weekly Timesheet', labelKey: 'nav.weeklyTimesheet', route: '/app/attendance/weekly-timesheet' }
       ]
     },
     {

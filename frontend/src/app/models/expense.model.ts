@@ -81,6 +81,26 @@ export interface ExpenseRequest {
   updatedAt?: string;
   createdBy?: string;
   updatedBy?: string;
+  // 2-level approval fields
+  managerApprovalStatus?: string;
+  managerApprovedBy?: any;
+  managerApprovedAt?: string;
+  managerRemarks?: string;
+  hrApprovalStatus?: string;
+  hrApprovedBy?: any;
+  hrApprovedAt?: string;
+  hrRemarks?: string;
+  activityLog?: ExpenseActivity[];
+}
+
+export interface ExpenseActivity {
+  id?: number;
+  action: string;
+  performedBy?: any;
+  performedAt?: string;
+  remarks?: string;
+  oldStatus?: string;
+  newStatus?: string;
 }
 
 export const EXPENSE_TYPES = [

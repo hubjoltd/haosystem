@@ -1,0 +1,55 @@
+<div class="activity-container">
+  <div class="activity-header">
+    <h3>{{ title }}</h3>
+    <span class="activity-icon"><i class="fas fa-stream"></i></span>
+  </div>
+
+  <div class="add-note-section" *ngIf="showAddNote">
+    <div class="note-input-wrapper">
+      <input 
+        type="text" 
+        [(ngModel)]="newNote" 
+        placeholder="Type your message here..."
+        (keyup.enter)="submitNote()"
+        [disabled]="submitting"
+      />
+      <button class="send-btn" (click)="submitNote()" [disabled]="!newNote.trim() || submitting">
+        Send
+      </button>
+    </div>
+  </div>
+
+  <div class="timeline" *ngIf="!loading && activities.length > 0">
+    <div class="timeline-item" *ngFor="let activity of activities" [ngClass]="getActionClass(activity.action)">
+      <div class="timeline-marker">
+        <div class="avatar">{{ getPerformerInitial(activity.performedBy) }}</div>
+        <div class="connector"></div>
+      </div>
+      <div class="timeline-content">
+        <div class="content-header">
+          <span class="performer-name">{{ getPerformerName(activity.performedBy) }}</span>
+          <span class="timestamp"><i class="fas fa-clock"></i> {{ formatDateTime(activity.performedAt) }}</span>
+          <span class="action-badge" [ngClass]="getActionClass(activity.action)">{{ activity.action }}</span>
+        </div>
+        <div class="content-body" *ngIf="activity.remarks">
+          {{ activity.remarks }}
+        </div>
+        <div class="status-change" *ngIf="activity.oldStatus && activity.newStatus">
+          <span class="status-badge old">{{ activity.oldStatus }}</span>
+          <i class="fas fa-arrow-right"></i>
+          <span class="status-badge new">{{ activity.newStatus }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && activities.length === 0">
+    <i class="fas fa-history"></i>
+    <p>No activity yet</p>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Loading activity...</p>
+  </div>
+</div>

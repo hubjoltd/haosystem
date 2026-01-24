@@ -127,6 +127,7 @@
             <th>Days</th>
             <th>Status</th>
             <th>Reason</th>
+            <th>Activity</th>
           </tr>
         </thead>
         <tbody>
@@ -136,12 +137,17 @@
             <td>{{ req.endDate | date:'MMM d, yyyy' }}</td>
             <td>{{ getLeaveDays(req) }}</td>
             <td>
-              <span class="status-badge" [ngClass]="getStatusClass(req.status || 'PENDING')">{{ req.status }}</span>
+              <span class="status-badge" [ngClass]="getLeaveStatusClass(req.status || 'PENDING')">{{ getApprovalStatusText(req) }}</span>
             </td>
             <td>{{ req.reason }}</td>
+            <td>
+              <button class="btn-icon" (click)="openLeaveActivityModal(req)" title="View Activity">
+                <i class="fas fa-history"></i>
+              </button>
+            </td>
           </tr>
           <tr *ngIf="leaveRequests.length === 0">
-            <td colspan="6" class="no-data-row">No leave requests found</td>
+            <td colspan="7" class="no-data-row">No leave requests found</td>
           </tr>
         </tbody>
       </table>
@@ -704,6 +710,60 @@
         <span *ngIf="!submittingLoan">Submit Application</span>
         <span *ngIf="submittingLoan">Submitting...</span>
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Leave Activity Modal -->
+<div class="modal-overlay" *ngIf="showLeaveActivityModal" (click)="closeLeaveActivityModal()">
+  <div class="modal activity-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Leave Request Activity</h3>
+      <button class="close-btn" (click)="closeLeaveActivityModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body" *ngIf="selectedLeaveRequest">
+      <div class="request-info-bar">
+        <span><strong>{{ selectedLeaveRequest.leaveType?.name }}</strong></span>
+        <span class="separator">|</span>
+        <span>{{ selectedLeaveRequest.startDate | date:'MMM d, yyyy' }} - {{ selectedLeaveRequest.endDate | date:'MMM d, yyyy' }}</span>
+        <span class="status-badge" [ngClass]="getLeaveStatusClass(selectedLeaveRequest.status || '')">{{ getApprovalStatusText(selectedLeaveRequest) }}</span>
+      </div>
+      <app-activity-timeline
+        [activities]="leaveActivityItems"
+        [loading]="loadingLeaveActivity"
+        [showAddNote]="true"
+        title="Activity Stream"
+        (addNote)="onAddLeaveNote($event)"
+      ></app-activity-timeline>
+    </div>
+  </div>
+</div>
+
+<!-- Expense Activity Modal -->
+<div class="modal-overlay" *ngIf="showExpenseActivityModal" (click)="closeExpenseActivityModal()">
+  <div class="modal activity-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Expense Request Activity</h3>
+      <button class="close-btn" (click)="closeExpenseActivityModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body" *ngIf="selectedExpenseRequest">
+      <div class="request-info-bar">
+        <span><strong>{{ selectedExpenseRequest.description || 'Expense' }}</strong></span>
+        <span class="separator">|</span>
+        <span>${{ selectedExpenseRequest.amount | number:'1.2-2' }}</span>
+        <span class="status-badge" [ngClass]="getLeaveStatusClass(selectedExpenseRequest.status || '')">{{ selectedExpenseRequest.status }}</span>
+      </div>
+      <app-activity-timeline
+        [activities]="expenseActivityItems"
+        [loading]="loadingExpenseActivity"
+        [showAddNote]="true"
+        title="Activity Stream"
+        (addNote)="onAddExpenseNote($event)"
+      ></app-activity-timeline>
     </div>
   </div>
 </div>

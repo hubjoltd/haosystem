@@ -663,6 +663,17 @@ export class EmployeeDetailComponent implements OnInit {
           this.saving = false;
           this.cdr.detectChanges();
           this.toastService.success('Employee created successfully!');
+          // Initialize leave balances for the new employee
+          if (created.id) {
+            this.leaveService.initializeBalances(created.id).subscribe({
+              next: () => {
+                console.log('Leave balances initialized for employee');
+              },
+              error: (err) => {
+                console.warn('Could not initialize leave balances:', err);
+              }
+            });
+          }
           this.router.navigate(['/app/hr/employees', created.id]);
         },
         error: (err) => {

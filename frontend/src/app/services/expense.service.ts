@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ExpenseCategory, ExpenseRequest, ExpenseItem } from '../models/expense.model';
+import { ExpenseCategory, ExpenseRequest, ExpenseItem, ExpenseActivity } from '../models/expense.model';
 
 @Injectable({
   providedIn: 'root'
@@ -128,5 +128,38 @@ export class ExpenseService {
 
   postToAccounts(id: number, accountingReference: string): Observable<ExpenseRequest> {
     return this.http.post<ExpenseRequest>(`${this.apiUrl}/${id}/post-to-accounts`, { accountingReference });
+  }
+
+  // 2-level approval methods
+  managerApprove(id: number, remarks?: string): Observable<ExpenseRequest> {
+    return this.http.post<ExpenseRequest>(`${this.apiUrl}/${id}/manager-approve`, { remarks });
+  }
+
+  managerReject(id: number, remarks?: string): Observable<ExpenseRequest> {
+    return this.http.post<ExpenseRequest>(`${this.apiUrl}/${id}/manager-reject`, { remarks });
+  }
+
+  hrApprove(id: number, remarks?: string): Observable<ExpenseRequest> {
+    return this.http.post<ExpenseRequest>(`${this.apiUrl}/${id}/hr-approve`, { remarks });
+  }
+
+  hrReject(id: number, remarks?: string): Observable<ExpenseRequest> {
+    return this.http.post<ExpenseRequest>(`${this.apiUrl}/${id}/hr-reject`, { remarks });
+  }
+
+  getPendingManagerApprovals(): Observable<ExpenseRequest[]> {
+    return this.http.get<ExpenseRequest[]>(`${this.apiUrl}/pending-manager`);
+  }
+
+  getPendingHrApprovals(): Observable<ExpenseRequest[]> {
+    return this.http.get<ExpenseRequest[]>(`${this.apiUrl}/pending-hr`);
+  }
+
+  getRequestActivity(id: number): Observable<ExpenseActivity[]> {
+    return this.http.get<ExpenseActivity[]>(`${this.apiUrl}/${id}/activity`);
+  }
+
+  addActivityNote(id: number, note: string): Observable<ExpenseActivity> {
+    return this.http.post<ExpenseActivity>(`${this.apiUrl}/${id}/activity`, { note });
   }
 }

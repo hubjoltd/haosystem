@@ -43,10 +43,32 @@ export interface LeaveRequest {
   approverRemarks?: string;
   attachmentUrl?: string;
   emergencyContact?: string;
-  startTime?: string; // For hourly leave requests (HH:mm format)
-  endTime?: string; // For hourly leave requests (HH:mm format)
-  totalHours?: number; // Hours requested for hourly leave
-  isHourlyLeave?: boolean; // Whether this is an hourly leave request
+  startTime?: string;
+  endTime?: string;
+  totalHours?: number;
+  isHourlyLeave?: boolean;
+  // 2-level approval fields
+  managerApprovalStatus?: string;
+  managerApprovedBy?: any;
+  managerApprovedAt?: string;
+  managerRemarks?: string;
+  hrApprovalStatus?: string;
+  hrApprovedBy?: any;
+  hrApprovedAt?: string;
+  hrRemarks?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  activityLog?: ApprovalActivity[];
+}
+
+export interface ApprovalActivity {
+  id?: number;
+  action: string;
+  performedBy?: any;
+  performedAt?: string;
+  remarks?: string;
+  oldStatus?: string;
+  newStatus?: string;
 }
 
 export interface LeaveBalance {
@@ -147,6 +169,39 @@ export class LeaveService {
 
   deleteRequest(id: number): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/requests/${id}`);
+  }
+
+  // 2-level approval methods
+  managerApprove(id: number, remarks?: string): Observable<LeaveRequest> {
+    return this.http.put<LeaveRequest>(`${this.baseUrl}/requests/${id}/manager-approve`, { remarks });
+  }
+
+  managerReject(id: number, remarks?: string): Observable<LeaveRequest> {
+    return this.http.put<LeaveRequest>(`${this.baseUrl}/requests/${id}/manager-reject`, { remarks });
+  }
+
+  hrApprove(id: number, remarks?: string): Observable<LeaveRequest> {
+    return this.http.put<LeaveRequest>(`${this.baseUrl}/requests/${id}/hr-approve`, { remarks });
+  }
+
+  hrReject(id: number, remarks?: string): Observable<LeaveRequest> {
+    return this.http.put<LeaveRequest>(`${this.baseUrl}/requests/${id}/hr-reject`, { remarks });
+  }
+
+  getPendingManagerApprovals(): Observable<LeaveRequest[]> {
+    return this.http.get<LeaveRequest[]>(`${this.baseUrl}/requests/pending-manager`);
+  }
+
+  getPendingHrApprovals(): Observable<LeaveRequest[]> {
+    return this.http.get<LeaveRequest[]>(`${this.baseUrl}/requests/pending-hr`);
+  }
+
+  getRequestActivity(id: number): Observable<ApprovalActivity[]> {
+    return this.http.get<ApprovalActivity[]>(`${this.baseUrl}/requests/${id}/activity`);
+  }
+
+  addActivityNote(id: number, note: string): Observable<ApprovalActivity> {
+    return this.http.post<ApprovalActivity>(`${this.baseUrl}/requests/${id}/activity`, { note });
   }
 
   getEmployeeBalances(employeeId: number): Observable<LeaveBalance[]> {

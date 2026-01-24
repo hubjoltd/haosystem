@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { PayrollService, PayrollRecord } from '../../../services/payroll.service';
-import { LeaveService, LeaveBalance, LeaveRequest } from '../../../services/leave.service';
+import { LeaveService, LeaveBalance, LeaveRequest, ApprovalActivity } from '../../../services/leave.service';
 import { LoanService } from '../../../services/loan.service';
 import { ExpenseService } from '../../../services/expense.service';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
@@ -12,13 +12,16 @@ import { DocumentService, EmployeeDocument, DocumentType, ChecklistCategory, Che
 import { EmployeeService, EmployeeAsset, Employee } from '../../../services/employee.service';
 import { SalarySlipService, SalarySlipData, EmployeeSlipInfo } from '../../../services/salary-slip.service';
 import { PayslipComponent, PayslipData } from '../payslip/payslip.component';
+import { ActivityTimelineComponent, ActivityItem } from '../../shared/activity-timeline/activity-timeline.component';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-employee-self-service',
   standalone: true,
-  imports: [CommonModule, FormsModule, PayslipComponent, TranslateModule],
+  imports: [CommonModule, FormsModule, PayslipComponent, TranslateModule, ActivityTimelineComponent],
   templateUrl: './employee-self-service.component.html',
-  styleUrls: ['./employee-self-service.component.scss']
+  styleUrls: ['./employee-self-service.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EmployeeSelfServiceComponent implements OnInit {
   activeTab = 'paystubs';
@@ -99,6 +102,18 @@ export class EmployeeSelfServiceComponent implements OnInit {
   submittingExpense = false;
   submittingLoan = false;
 
+  // Activity modal for leave requests
+  showLeaveActivityModal = false;
+  selectedLeaveRequest: LeaveRequest | null = null;
+  leaveActivityItems: ActivityItem[] = [];
+  loadingLeaveActivity = false;
+
+  // Activity modal for expense requests
+  showExpenseActivityModal = false;
+  selectedExpenseRequest: any = null;
+  expenseActivityItems: ActivityItem[] = [];
+  loadingExpenseActivity = false;
+
   constructor(
     private payrollService: PayrollService,
     private leaveService: LeaveService,
@@ -108,7 +123,9 @@ export class EmployeeSelfServiceComponent implements OnInit {
     private authService: AuthService,
     private documentService: DocumentService,
     private employeeService: EmployeeService,
-    private salarySlipService: SalarySlipService
+    private salarySlipService: SalarySlipService,
+    private cdr: ChangeDetectorRef,
+    private toastService: ToastService
   ) {
     this.currentEmployeeId = this.authService.getCurrentUserId() || 0;
   }
@@ -757,5 +774,189 @@ export class EmployeeSelfServiceComponent implements OnInit {
       'MISC': 'fa-ellipsis-h'
     };
     return icons[code] || 'fa-receipt';
+  }
+
+  // Leave Activity Modal Methods
+  openLeaveActivityModal(request: LeaveRequest): void {
+    this.selectedLeaveRequest = request;
+    this.showLeaveActivityModal = true;
+    this.loadLeaveActivity(request.id!);
+  }
+
+  closeLeaveActivityModal(): void {
+    this.showLeaveActivityModal = false;
+    this.selectedLeaveRequest = null;
+    this.leaveActivityItems = [];
+  }
+
+  loadLeaveActivity(requestId: number): void {
+    this.loadingLeaveActivity = true;
+    this.cdr.markForCheck();
+    
+    this.leaveService.getRequestActivity(requestId).subscribe({
+      next: (activities) => {
+        this.leaveActivityItems = activities.map(a => ({
+          id: a.id,
+          action: a.action,
+          performedBy: a.performedBy,
+          performedAt: a.performedAt,
+          remarks: a.remarks,
+          oldStatus: a.oldStatus,
+          newStatus: a.newStatus
+        }));
+        this.loadingLeaveActivity = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.leaveActivityItems = this.generateLeaveActivityMock();
+        this.loadingLeaveActivity = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  generateLeaveActivityMock(): ActivityItem[] {
+    if (!this.selectedLeaveRequest) return [];
+    const activities: ActivityItem[] = [];
+    
+    activities.push({
+      action: 'Request Submitted',
+      performedBy: this.currentEmployee,
+      performedAt: this.selectedLeaveRequest.createdAt || this.selectedLeaveRequest.startDate,
+      remarks: this.selectedLeaveRequest.reason,
+      newStatus: 'PENDING_MANAGER'
+    });
+
+    if (this.selectedLeaveRequest.managerApprovedAt) {
+      activities.push({
+        action: this.selectedLeaveRequest.managerApprovalStatus === 'APPROVED' ? 'Manager Approved' : 'Manager Rejected',
+        performedBy: this.selectedLeaveRequest.managerApprovedBy,
+        performedAt: this.selectedLeaveRequest.managerApprovedAt,
+        remarks: this.selectedLeaveRequest.managerRemarks,
+        oldStatus: 'PENDING_MANAGER',
+        newStatus: this.selectedLeaveRequest.managerApprovalStatus === 'APPROVED' ? 'PENDING_HR' : 'REJECTED'
+      });
+    }
+
+    if (this.selectedLeaveRequest.hrApprovedAt) {
+      activities.push({
+        action: this.selectedLeaveRequest.hrApprovalStatus === 'APPROVED' ? 'HR Approved' : 'HR Rejected',
+        performedBy: this.selectedLeaveRequest.hrApprovedBy,
+        performedAt: this.selectedLeaveRequest.hrApprovedAt,
+        remarks: this.selectedLeaveRequest.hrRemarks,
+        oldStatus: 'PENDING_HR',
+        newStatus: this.selectedLeaveRequest.hrApprovalStatus === 'APPROVED' ? 'APPROVED' : 'REJECTED'
+      });
+    }
+
+    return activities.reverse();
+  }
+
+  onAddLeaveNote(note: string): void {
+    if (this.selectedLeaveRequest?.id) {
+      this.leaveService.addActivityNote(this.selectedLeaveRequest.id, note).subscribe({
+        next: () => {
+          this.toastService.success('Note added');
+          this.loadLeaveActivity(this.selectedLeaveRequest!.id!);
+        },
+        error: () => {
+          this.toastService.error('Failed to add note');
+        }
+      });
+    }
+  }
+
+  // Expense Activity Modal Methods
+  openExpenseActivityModal(expense: any): void {
+    this.selectedExpenseRequest = expense;
+    this.showExpenseActivityModal = true;
+    this.loadExpenseActivity(expense.id);
+  }
+
+  closeExpenseActivityModal(): void {
+    this.showExpenseActivityModal = false;
+    this.selectedExpenseRequest = null;
+    this.expenseActivityItems = [];
+  }
+
+  loadExpenseActivity(requestId: number): void {
+    this.loadingExpenseActivity = true;
+    this.cdr.markForCheck();
+    
+    this.expenseService.getRequestActivity(requestId).subscribe({
+      next: (activities) => {
+        this.expenseActivityItems = activities.map(a => ({
+          id: a.id,
+          action: a.action,
+          performedBy: a.performedBy,
+          performedAt: a.performedAt,
+          remarks: a.remarks,
+          oldStatus: a.oldStatus,
+          newStatus: a.newStatus
+        }));
+        this.loadingExpenseActivity = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.expenseActivityItems = this.generateExpenseActivityMock();
+        this.loadingExpenseActivity = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  generateExpenseActivityMock(): ActivityItem[] {
+    if (!this.selectedExpenseRequest) return [];
+    return [{
+      action: 'Expense Submitted',
+      performedBy: this.currentEmployee,
+      performedAt: this.selectedExpenseRequest.createdAt || this.selectedExpenseRequest.expenseDate,
+      remarks: this.selectedExpenseRequest.description,
+      newStatus: this.selectedExpenseRequest.status
+    }];
+  }
+
+  onAddExpenseNote(note: string): void {
+    if (this.selectedExpenseRequest?.id) {
+      this.expenseService.addActivityNote(this.selectedExpenseRequest.id, note).subscribe({
+        next: () => {
+          this.toastService.success('Note added');
+          this.loadExpenseActivity(this.selectedExpenseRequest.id);
+        },
+        error: () => {
+          this.toastService.error('Failed to add note');
+        }
+      });
+    }
+  }
+
+  getLeaveStatusClass(status: string): string {
+    switch (status) {
+      case 'PENDING':
+      case 'PENDING_MANAGER':
+      case 'PENDING_HR':
+        return 'pending';
+      case 'APPROVED':
+        return 'approved';
+      case 'REJECTED':
+        return 'rejected';
+      case 'CANCELLED':
+        return 'cancelled';
+      default:
+        return '';
+    }
+  }
+
+  getApprovalStatusText(request: LeaveRequest): string {
+    if (request.managerApprovalStatus === 'APPROVED' && !request.hrApprovalStatus) {
+      return 'Awaiting HR';
+    } else if (!request.managerApprovalStatus) {
+      return 'Awaiting Manager';
+    } else if (request.status === 'APPROVED') {
+      return 'Approved';
+    } else if (request.status === 'REJECTED') {
+      return 'Rejected';
+    }
+    return request.status || '';
   }
 }

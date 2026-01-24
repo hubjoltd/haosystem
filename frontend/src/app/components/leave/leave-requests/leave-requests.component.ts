@@ -1,17 +1,20 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { LeaveService, LeaveRequest, LeaveType, LeaveBalance } from '../../../services/leave.service';
+import { LeaveService, LeaveRequest, LeaveType, LeaveBalance, ApprovalActivity } from '../../../services/leave.service';
 import { EmployeeService } from '../../../services/employee.service';
+import { ToastService } from '../../../services/toast.service';
 import { finalize } from 'rxjs/operators';
+import { ActivityTimelineComponent, ActivityItem } from '../../shared/activity-timeline/activity-timeline.component';
 
 @Component({
   selector: 'app-leave-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, ActivityTimelineComponent],
   templateUrl: './leave-requests.component.html',
-  styleUrls: ['./leave-requests.component.scss']
+  styleUrls: ['./leave-requests.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LeaveRequestsComponent implements OnInit {
   requests: LeaveRequest[] = [];
@@ -44,10 +47,20 @@ export class LeaveRequestsComponent implements OnInit {
   selectedRequest: LeaveRequest | null = null;
   approverRemarks = '';
 
+  // Activity timeline
+  showActivityModal = false;
+  activityRequest: LeaveRequest | null = null;
+  activityItems: ActivityItem[] = [];
+  loadingActivity = false;
+
+  // Approval type for 2-level system
+  approvalType: 'manager' | 'hr' = 'manager';
+
   constructor(
     private leaveService: LeaveService,
     private employeeService: EmployeeService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private toastService: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -284,7 +297,10 @@ export class LeaveRequestsComponent implements OnInit {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'PENDING': return 'pending';
+      case 'PENDING': 
+      case 'PENDING_MANAGER':
+      case 'PENDING_HR':
+        return 'pending';
       case 'APPROVED': return 'approved';
       case 'REJECTED': return 'rejected';
       case 'CANCELLED': return 'cancelled';
@@ -294,5 +310,181 @@ export class LeaveRequestsComponent implements OnInit {
 
   formatDate(date: string): string {
     return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  // 2-level approval methods
+  managerApprove(): void {
+    if (this.selectedRequest?.id) {
+      this.leaveService.managerApprove(this.selectedRequest.id, this.approverRemarks).subscribe({
+        next: () => {
+          this.toastService.success('Manager approval successful');
+          this.loadRequests();
+          this.closeApprovalModal();
+        },
+        error: (err) => {
+          this.toastService.error('Error: ' + (err.error?.error || 'Unknown error'));
+        }
+      });
+    }
+  }
+
+  managerReject(): void {
+    if (this.selectedRequest?.id) {
+      this.leaveService.managerReject(this.selectedRequest.id, this.approverRemarks).subscribe({
+        next: () => {
+          this.toastService.success('Request rejected by manager');
+          this.loadRequests();
+          this.closeApprovalModal();
+        },
+        error: (err) => {
+          this.toastService.error('Error: ' + (err.error?.error || 'Unknown error'));
+        }
+      });
+    }
+  }
+
+  hrApprove(): void {
+    if (this.selectedRequest?.id) {
+      this.leaveService.hrApprove(this.selectedRequest.id, this.approverRemarks).subscribe({
+        next: () => {
+          this.toastService.success('HR approval successful - Leave request approved');
+          this.loadRequests();
+          this.closeApprovalModal();
+        },
+        error: (err) => {
+          this.toastService.error('Error: ' + (err.error?.error || 'Unknown error'));
+        }
+      });
+    }
+  }
+
+  hrReject(): void {
+    if (this.selectedRequest?.id) {
+      this.leaveService.hrReject(this.selectedRequest.id, this.approverRemarks).subscribe({
+        next: () => {
+          this.toastService.success('Request rejected by HR');
+          this.loadRequests();
+          this.closeApprovalModal();
+        },
+        error: (err) => {
+          this.toastService.error('Error: ' + (err.error?.error || 'Unknown error'));
+        }
+      });
+    }
+  }
+
+  // Activity timeline methods
+  openActivityModal(request: LeaveRequest): void {
+    this.activityRequest = request;
+    this.showActivityModal = true;
+    this.loadActivity(request.id!);
+  }
+
+  closeActivityModal(): void {
+    this.showActivityModal = false;
+    this.activityRequest = null;
+    this.activityItems = [];
+  }
+
+  loadActivity(requestId: number): void {
+    this.loadingActivity = true;
+    this.cdr.markForCheck();
+    
+    this.leaveService.getRequestActivity(requestId).pipe(
+      finalize(() => {
+        this.loadingActivity = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: (activities) => {
+        this.activityItems = activities.map(a => ({
+          id: a.id,
+          action: a.action,
+          performedBy: a.performedBy,
+          performedAt: a.performedAt,
+          remarks: a.remarks,
+          oldStatus: a.oldStatus,
+          newStatus: a.newStatus
+        }));
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.activityItems = this.generateMockActivity();
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  generateMockActivity(): ActivityItem[] {
+    if (!this.activityRequest) return [];
+    const activities: ActivityItem[] = [];
+    
+    activities.push({
+      action: 'Request Created',
+      performedBy: this.activityRequest.employee,
+      performedAt: this.activityRequest.createdAt || this.activityRequest.startDate,
+      remarks: this.activityRequest.reason,
+      newStatus: 'PENDING_MANAGER'
+    });
+
+    if (this.activityRequest.managerApprovedAt) {
+      activities.push({
+        action: this.activityRequest.managerApprovalStatus === 'APPROVED' ? 'Manager Approved' : 'Manager Rejected',
+        performedBy: this.activityRequest.managerApprovedBy,
+        performedAt: this.activityRequest.managerApprovedAt,
+        remarks: this.activityRequest.managerRemarks,
+        oldStatus: 'PENDING_MANAGER',
+        newStatus: this.activityRequest.managerApprovalStatus === 'APPROVED' ? 'PENDING_HR' : 'REJECTED'
+      });
+    }
+
+    if (this.activityRequest.hrApprovedAt) {
+      activities.push({
+        action: this.activityRequest.hrApprovalStatus === 'APPROVED' ? 'HR Approved' : 'HR Rejected',
+        performedBy: this.activityRequest.hrApprovedBy,
+        performedAt: this.activityRequest.hrApprovedAt,
+        remarks: this.activityRequest.hrRemarks,
+        oldStatus: 'PENDING_HR',
+        newStatus: this.activityRequest.hrApprovalStatus === 'APPROVED' ? 'APPROVED' : 'REJECTED'
+      });
+    }
+
+    return activities.reverse();
+  }
+
+  onAddNote(note: string): void {
+    if (this.activityRequest?.id) {
+      this.leaveService.addActivityNote(this.activityRequest.id, note).subscribe({
+        next: () => {
+          this.toastService.success('Note added');
+          this.loadActivity(this.activityRequest!.id!);
+        },
+        error: () => {
+          this.toastService.error('Failed to add note');
+        }
+      });
+    }
+  }
+
+  getApprovalStage(request: LeaveRequest): string {
+    if (request.status === 'PENDING' || request.status === 'PENDING_MANAGER') {
+      return 'manager';
+    } else if (request.status === 'PENDING_HR') {
+      return 'hr';
+    }
+    return '';
+  }
+
+  getApprovalStatusText(request: LeaveRequest): string {
+    if (request.managerApprovalStatus === 'APPROVED' && !request.hrApprovalStatus) {
+      return 'Awaiting HR Approval';
+    } else if (!request.managerApprovalStatus) {
+      return 'Awaiting Manager Approval';
+    } else if (request.status === 'APPROVED') {
+      return 'Fully Approved';
+    } else if (request.status === 'REJECTED') {
+      return 'Rejected';
+    }
+    return request.status || '';
   }
 }
