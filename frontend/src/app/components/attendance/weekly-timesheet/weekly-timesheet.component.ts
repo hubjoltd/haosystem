@@ -4,7 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
 import { EmployeeService, Employee } from '../../../services/employee.service';
+import { ToastService } from '../../../services/toast.service';
 import { finalize } from 'rxjs/operators';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 
 interface TimesheetRecord {
   employeeId: number;
@@ -37,6 +46,7 @@ interface ProjectGroup {
 export class WeeklyTimesheetComponent implements OnInit {
   loading = false;
   dataLoaded = false;
+  generating = false;
 
   selectedDate: string = '';
   periodStartDate: string = '';
@@ -54,6 +64,7 @@ export class WeeklyTimesheetComponent implements OnInit {
   constructor(
     private attendanceService: AttendanceService,
     private employeeService: EmployeeService,
+    private toastService: ToastService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -216,5 +227,117 @@ export class WeeklyTimesheetComponent implements OnInit {
   formatDisplayDate(dateStr: string): string {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+  }
+
+  generateTimesheet(): void {
+    this.generating = true;
+    this.dataLoaded = false;
+    this.cdr.markForCheck();
+    
+    this.employeeService.getAll().subscribe({
+      next: (employees: Employee[]) => {
+        this.employees = employees.filter((e: Employee) => e.active);
+        this.attendanceService.getByDateRange(this.periodStartDate, this.periodEndDate).pipe(
+          finalize(() => {
+            this.generating = false;
+            this.dataLoaded = true;
+            this.cdr.markForCheck();
+          })
+        ).subscribe({
+          next: (records: AttendanceRecord[]) => {
+            this.attendanceRecords = records.filter(r => 
+              r.approvalStatus === 'APPROVED' || r.status === 'APPROVED'
+            );
+            this.processData();
+            this.toastService.success('Timesheet generated successfully');
+          },
+          error: (err: any) => {
+            console.error('Error generating timesheet:', err);
+            this.toastService.error('Failed to generate timesheet');
+          }
+        });
+      },
+      error: (err: any) => {
+        console.error('Error loading employees:', err);
+        this.generating = false;
+        this.toastService.error('Failed to load employees');
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  downloadPDF(): void {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(18);
+    doc.text('Weekly Timesheet Report', 14, 22);
+    
+    doc.setFontSize(11);
+    doc.text(`Period: ${this.getWeekRangeDisplay()}`, 14, 32);
+    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 38);
+
+    doc.setFontSize(10);
+    doc.text(`Total Employees: ${this.totalEmployees}`, 14, 48);
+    doc.text(`Total Hours: ${this.totalHours.toFixed(1)}h`, 80, 48);
+    doc.text(`Total OT: ${this.totalOvertime.toFixed(1)}h`, 140, 48);
+
+    let yPosition = 58;
+    
+    this.projectGroups.forEach(group => {
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`${group.name} (${group.employeeCount} employees, ${group.totalHours.toFixed(2)}h)`, 14, yPosition);
+      yPosition += 6;
+      
+      const tableData = group.records.map(r => [
+        r.employeeName,
+        this.formatDisplayDate(r.date),
+        r.clockIn?.substring(0, 5) || '-',
+        r.clockOut?.substring(0, 5) || '-',
+        r.hours > 0 ? r.hours.toFixed(2) : '-',
+        r.overtime > 0 ? r.overtime.toFixed(2) : '-'
+      ]);
+
+      doc.autoTable({
+        startY: yPosition,
+        head: [['Employee', 'Date', 'Clock In', 'Clock Out', 'Hours', 'OT']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [0, 128, 128] },
+        margin: { left: 14 }
+      });
+
+      yPosition = (doc as any).lastAutoTable.finalY + 10;
+      
+      if (yPosition > 260) {
+        doc.addPage();
+        yPosition = 20;
+      }
+    });
+
+    doc.save(`Weekly_Timesheet_${this.periodStartDate}_${this.periodEndDate}.pdf`);
+    this.toastService.success('PDF downloaded');
+  }
+
+  downloadCSV(): void {
+    let csvContent = 'Project,Employee,Date,Clock In,Clock Out,Hours,Overtime,Status\n';
+
+    this.projectGroups.forEach(group => {
+      group.records.forEach(record => {
+        csvContent += `"${group.name}","${record.employeeName}","${record.date}","${record.clockIn || ''}","${record.clockOut || ''}",${record.hours},${record.overtime},"${record.status}"\n`;
+      });
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Weekly_Timesheet_${this.periodStartDate}_${this.periodEndDate}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    this.toastService.success('CSV downloaded');
   }
 }

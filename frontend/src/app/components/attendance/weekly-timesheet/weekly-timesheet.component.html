@@ -9,6 +9,16 @@
         <i class="fas fa-calendar"></i>
         <input type="date" [(ngModel)]="selectedDate" (change)="onDateChange()" />
       </div>
+      <button class="btn-generate" (click)="generateTimesheet()" [disabled]="generating">
+        <i class="fas" [ngClass]="generating ? 'fa-spinner fa-spin' : 'fa-sync-alt'"></i>
+        Generate
+      </button>
+      <button class="btn-download-pdf" (click)="downloadPDF()" [disabled]="projectGroups.length === 0">
+        <i class="fas fa-file-pdf"></i> PDF
+      </button>
+      <button class="btn-download-csv" (click)="downloadCSV()" [disabled]="projectGroups.length === 0">
+        <i class="fas fa-file-csv"></i> CSV
+      </button>
     </div>
   </div>
 

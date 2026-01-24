@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -10,7 +10,8 @@ import { EmployeeService, Employee } from '../../../services/employee.service';
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './clock-in-out.component.html',
-  styleUrls: ['./clock-in-out.component.scss']
+  styleUrls: ['./clock-in-out.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ClockInOutComponent implements OnInit, OnDestroy {
   currentTime: Date = new Date();
@@ -208,25 +209,32 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     }
     this.loadingClockIn = true;
     this.showSessionSummary = false;
+    this.cdr.markForCheck();
     
     this.attendanceService.clockIn(this.selectedEmployeeId, 'WEB').subscribe({
       next: (record) => {
-        this.todayRecord = record;
-        this.showMessage('Clocked in successfully! Timer started.', 'success');
-        this.loadingClockIn = false;
-        this.loadTodayActivities();
-        
-        if (record.clockIn) {
-          this.startTimerFromClockIn(record.clockIn);
-        } else {
-          this.elapsedSeconds = 0;
-          this.currentEarnings = 0;
-          this.startTimer();
-        }
+        this.ngZone.run(() => {
+          this.todayRecord = record;
+          this.showMessage('Clocked in successfully! Timer started.', 'success');
+          this.loadingClockIn = false;
+          this.loadTodayActivities();
+          
+          if (record.clockIn) {
+            this.startTimerFromClockIn(record.clockIn);
+          } else {
+            this.elapsedSeconds = 0;
+            this.currentEarnings = 0;
+            this.startTimer();
+          }
+          this.cdr.markForCheck();
+        });
       },
       error: (err) => {
-        this.showMessage(err.error?.error || 'Failed to clock in', 'error');
-        this.loadingClockIn = false;
+        this.ngZone.run(() => {
+          this.showMessage(err.error?.error || 'Failed to clock in', 'error');
+          this.loadingClockIn = false;
+          this.cdr.markForCheck();
+        });
       }
     });
   }
@@ -237,26 +245,33 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
       return;
     }
     this.loadingClockOut = true;
+    this.cdr.markForCheck();
     
     const hoursWorked = this.elapsedSeconds / 3600;
     const earnings = hoursWorked * this.getHourlyRate();
     
     this.attendanceService.clockOut(this.selectedEmployeeId).subscribe({
       next: (record) => {
-        this.todayRecord = record;
-        this.stopTimer();
-        
-        this.lastSessionHours = hoursWorked;
-        this.lastSessionEarnings = earnings;
-        this.showSessionSummary = true;
-        
-        this.showMessage(`Clocked out! Worked ${this.formatHoursMinutes(hoursWorked)} | Earned $${earnings.toFixed(2)}`, 'success');
-        this.loadingClockOut = false;
-        this.loadTodayActivities();
+        this.ngZone.run(() => {
+          this.todayRecord = record;
+          this.stopTimer();
+          
+          this.lastSessionHours = hoursWorked;
+          this.lastSessionEarnings = earnings;
+          this.showSessionSummary = true;
+          
+          this.showMessage(`Clocked out! Worked ${this.formatHoursMinutes(hoursWorked)} | Earned $${earnings.toFixed(2)}`, 'success');
+          this.loadingClockOut = false;
+          this.loadTodayActivities();
+          this.cdr.markForCheck();
+        });
       },
       error: (err) => {
-        this.showMessage(err.error?.error || 'Failed to clock out', 'error');
-        this.loadingClockOut = false;
+        this.ngZone.run(() => {
+          this.showMessage(err.error?.error || 'Failed to clock out', 'error');
+          this.loadingClockOut = false;
+          this.cdr.markForCheck();
+        });
       }
     });
   }

@@ -38,6 +38,10 @@ export class AttendanceManagementComponent implements OnInit {
   bulkFile: File | null = null;
   newRule: AttendanceRule = this.getEmptyRule();
   newProjectTime: ProjectTimeEntry = this.getEmptyProjectTime();
+  
+  selectAll = false;
+  approvingId: number | null = null;
+  bulkApproving = false;
 
   constructor(
     private attendanceService: AttendanceService,
@@ -276,5 +280,86 @@ export class AttendanceManagementComponent implements OnInit {
       billable: true,
       billableRate: 0
     };
+  }
+
+  toggleSelectAll(): void {
+    this.filteredRecords.forEach(r => r.selected = this.selectAll);
+    this.cdr.markForCheck();
+  }
+
+  getSelectedRecords(): AttendanceRecord[] {
+    return this.filteredRecords.filter(r => r.selected && r.approvalStatus === 'PENDING');
+  }
+
+  approveRecord(record: AttendanceRecord): void {
+    if (!record.id) return;
+    this.approvingId = record.id;
+    this.cdr.markForCheck();
+    
+    this.attendanceService.approve(record.id).subscribe({
+      next: (updated) => {
+        record.approvalStatus = 'APPROVED';
+        record.approvedAt = updated.approvedAt;
+        this.toastService.success('Attendance approved');
+        this.approvingId = null;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.toastService.error(err.error?.error || 'Failed to approve');
+        this.approvingId = null;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  rejectRecord(record: AttendanceRecord): void {
+    if (!record.id) return;
+    const remarks = prompt('Enter rejection reason (optional):');
+    
+    this.approvingId = record.id;
+    this.cdr.markForCheck();
+    
+    this.attendanceService.reject(record.id, remarks || undefined).subscribe({
+      next: (updated) => {
+        record.approvalStatus = 'REJECTED';
+        record.remarks = updated.remarks;
+        this.toastService.success('Attendance rejected');
+        this.approvingId = null;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.toastService.error(err.error?.error || 'Failed to reject');
+        this.approvingId = null;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  bulkApprove(): void {
+    const selected = this.getSelectedRecords();
+    if (selected.length === 0) {
+      this.toastService.warning('No pending records selected');
+      return;
+    }
+    
+    const ids = selected.map(r => r.id!).filter(id => id);
+    this.bulkApproving = true;
+    this.cdr.markForCheck();
+    
+    this.attendanceService.bulkApprove(ids).subscribe({
+      next: (result) => {
+        this.toastService.success(`${result.approved} record(s) approved`);
+        selected.forEach(r => r.approvalStatus = 'APPROVED');
+        this.selectAll = false;
+        this.filteredRecords.forEach(r => r.selected = false);
+        this.bulkApproving = false;
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.toastService.error(err.error?.error || 'Bulk approval failed');
+        this.bulkApproving = false;
+        this.cdr.markForCheck();
+      }
+    });
   }
 }

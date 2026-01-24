@@ -42,15 +42,18 @@
     <table class="attendance-table" *ngIf="!loading">
       <thead>
         <tr>
+          <th><input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()" /></th>
           <th>Employee</th>
           <th>Clock In</th>
           <th>Clock Out</th>
           <th>Hours</th>
           <th>Status</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let record of filteredRecords">
+          <td><input type="checkbox" [(ngModel)]="record.selected" /></td>
           <td>
             <div class="employee-cell">
               <div class="avatar">{{ getInitials(record.employee) }}</div>
@@ -65,11 +68,38 @@
               {{ getDisplayStatus(record) }}
             </span>
           </td>
+          <td class="actions-cell">
+            <button *ngIf="record.approvalStatus === 'PENDING'" 
+                    class="btn-approve" 
+                    (click)="approveRecord(record)"
+                    [disabled]="approvingId === record.id">
+              <i class="fas fa-check"></i> Approve
+            </button>
+            <button *ngIf="record.approvalStatus === 'PENDING'" 
+                    class="btn-reject" 
+                    (click)="rejectRecord(record)"
+                    [disabled]="approvingId === record.id">
+              <i class="fas fa-times"></i> Reject
+            </button>
+            <span *ngIf="record.approvalStatus === 'APPROVED'" class="approved-label">
+              <i class="fas fa-check-circle"></i> Approved
+            </span>
+            <span *ngIf="record.approvalStatus === 'REJECTED'" class="rejected-label">
+              <i class="fas fa-times-circle"></i> Rejected
+            </span>
+          </td>
         </tr>
         <tr *ngIf="filteredRecords.length === 0">
-          <td colspan="5" class="no-data">No attendance records found for this date</td>
+          <td colspan="7" class="no-data">No attendance records found for this date</td>
         </tr>
       </tbody>
     </table>
+    
+    <div class="bulk-actions" *ngIf="getSelectedRecords().length > 0">
+      <span>{{ getSelectedRecords().length }} record(s) selected</span>
+      <button class="btn-bulk-approve" (click)="bulkApprove()" [disabled]="bulkApproving">
+        <i class="fas fa-check-double"></i> Approve Selected
+      </button>
+    </div>
   </div>
 </div>

@@ -25,6 +25,10 @@
     }
 
     .header-right {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+
       .date-picker {
         display: flex;
         align-items: center;
@@ -49,6 +53,75 @@
           &:focus { 
             outline: none; 
           }
+        }
+      }
+
+      .btn-generate {
+        background: #008080;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+
+        &:hover:not(:disabled) {
+          background: #006666;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+
+      .btn-download-pdf {
+        background: #dc2626;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+
+        &:hover:not(:disabled) {
+          background: #b91c1c;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+
+      .btn-download-csv {
+        background: #059669;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.2s;
+
+        &:hover:not(:disabled) {
+          background: #047857;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
         }
       }
     }

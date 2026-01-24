@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { EmployeeService, Employee } from '../../../../services/employee.service';
 import { OrganizationService, Department, Designation } from '../../../../services/organization.service';
@@ -17,7 +17,8 @@ declare module 'jspdf' {
   selector: 'app-employee-list',
   standalone: false,
   templateUrl: './employee-list.component.html',
-  styleUrls: ['./employee-list.component.scss']
+  styleUrls: ['./employee-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EmployeeListComponent implements OnInit {
   employees: Employee[] = [];
@@ -155,9 +156,22 @@ export class EmployeeListComponent implements OnInit {
 
   deleteEmployee(emp: Employee) {
     if (emp.id && confirm(`Are you sure you want to delete ${emp.firstName} ${emp.lastName}?`)) {
+      this.loading = true;
+      this.cdr.markForCheck();
       this.employeeService.delete(emp.id).subscribe({
-        next: () => this.loadData(),
-        error: (err) => console.error('Error deleting employee:', err)
+        next: () => {
+          this.employees = this.employees.filter(e => e.id !== emp.id);
+          this.applyFilters();
+          this.loading = false;
+          this.toastService.success('Employee deleted successfully');
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Error deleting employee:', err);
+          this.loading = false;
+          this.toastService.error('Failed to delete employee');
+          this.cdr.markForCheck();
+        }
       });
     }
   }

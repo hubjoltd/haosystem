@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -48,7 +48,8 @@ export interface OfferLetter {
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './offers.component.html',
-  styleUrls: ['./offers.component.scss']
+  styleUrls: ['./offers.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RecruitmentOffersComponent implements OnInit {
   offers: OfferLetter[] = [];
@@ -106,23 +107,28 @@ export class RecruitmentOffersComponent implements OnInit {
 
   loadData(): void {
     this.loading = true;
+    this.cdr.markForCheck();
     this.recruitmentService.getOffers().subscribe({
       next: (data) => {
         this.offers = data;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.generateMockData();
         this.loading = false;
+        this.cdr.markForCheck();
       }
     });
 
     this.recruitmentService.getCandidates().subscribe({
       next: (data) => {
         this.candidates = data.filter((c: any) => c.stage === 'OFFER' || c.stage === 'INTERVIEW');
+        this.cdr.markForCheck();
       },
       error: () => {
         this.candidates = [];
+        this.cdr.markForCheck();
       }
     });
   }
@@ -284,35 +290,36 @@ export class RecruitmentOffersComponent implements OnInit {
     }
 
     this.saving = true;
+    this.cdr.markForCheck();
     if (this.isEditing) {
       this.recruitmentService.updateOffer(this.selectedOffer.id!, this.selectedOffer).subscribe({
         next: () => {
           this.saving = false;
-          this.cdr.detectChanges();
           const idx = this.offers.findIndex(o => o.id === this.selectedOffer.id);
           if (idx >= 0) this.offers[idx] = { ...this.selectedOffer };
           this.toastService.success('Offer updated successfully');
           this.closeModal();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.saving = false;
-          this.cdr.detectChanges();
           this.toastService.error('Failed to update offer');
+          this.cdr.markForCheck();
         }
       });
     } else {
       this.recruitmentService.createOffer(this.selectedOffer).subscribe({
         next: (created) => {
           this.saving = false;
-          this.cdr.detectChanges();
           this.offers.unshift(created);
           this.toastService.success('Offer created successfully');
           this.closeModal();
+          this.cdr.markForCheck();
         },
         error: () => {
           this.saving = false;
-          this.cdr.detectChanges();
           this.toastService.error('Failed to create offer');
+          this.cdr.markForCheck();
         }
       });
     }
@@ -377,11 +384,13 @@ export class RecruitmentOffersComponent implements OnInit {
         offer.status = 'SENT';
         offer.sentDate = new Date().toISOString().split('T')[0];
         this.toastService.success('Offer sent to candidate');
+        this.cdr.markForCheck();
       },
       error: () => {
         offer.status = 'SENT';
         offer.sentDate = new Date().toISOString().split('T')[0];
         this.toastService.success('Offer sent to candidate');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -392,11 +401,13 @@ export class RecruitmentOffersComponent implements OnInit {
         offer.status = 'ACCEPTED';
         offer.responseDate = new Date().toISOString().split('T')[0];
         this.toastService.success('Offer marked as accepted');
+        this.cdr.markForCheck();
       },
       error: () => {
         offer.status = 'ACCEPTED';
         offer.responseDate = new Date().toISOString().split('T')[0];
         this.toastService.success('Offer marked as accepted');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -411,12 +422,14 @@ export class RecruitmentOffersComponent implements OnInit {
         offer.responseDate = new Date().toISOString().split('T')[0];
         offer.declineReason = reason;
         this.toastService.info('Offer marked as declined');
+        this.cdr.markForCheck();
       },
       error: () => {
         offer.status = 'DECLINED';
         offer.responseDate = new Date().toISOString().split('T')[0];
         offer.declineReason = reason;
         this.toastService.info('Offer marked as declined');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -428,10 +441,12 @@ export class RecruitmentOffersComponent implements OnInit {
       next: () => {
         this.offers = this.offers.filter(o => o.id !== offer.id);
         this.toastService.success('Offer deleted');
+        this.cdr.markForCheck();
       },
       error: () => {
         this.offers = this.offers.filter(o => o.id !== offer.id);
         this.toastService.success('Offer deleted');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -513,11 +528,13 @@ export class RecruitmentOffersComponent implements OnInit {
         this.convertOffer!.status = 'CONVERTED';
         this.toastService.success(`Successfully converted ${this.convertEmployeeData.firstName} ${this.convertEmployeeData.lastName} to employee with code ${this.convertEmployeeData.employeeCode}`);
         this.closeConvertModal();
+        this.cdr.markForCheck();
       },
       error: () => {
         this.convertOffer!.status = 'CONVERTED';
         this.toastService.success(`Successfully converted ${this.convertEmployeeData.firstName} ${this.convertEmployeeData.lastName} to employee with code ${this.convertEmployeeData.employeeCode}`);
         this.closeConvertModal();
+        this.cdr.markForCheck();
       }
     });
   }
