@@ -23,13 +23,13 @@ export class ProjectService {
       }),
       catchError(err => {
         console.error('Error loading projects from API:', err);
-        const stored = localStorage.getItem('projects');
-        if (stored) {
-          this.projectsSubject.next(JSON.parse(stored));
-        }
         return of([]);
       })
     ).subscribe();
+  }
+
+  refreshProjects(): void {
+    this.loadProjects();
   }
 
   private mapProjectFromApi(p: any): Project {
@@ -69,30 +69,6 @@ export class ProjectService {
       tap(newProject => {
         const projects = [...this.projectsSubject.getValue(), this.mapProjectFromApi(newProject)];
         this.projectsSubject.next(projects);
-      }),
-      catchError(() => {
-        const projects = this.projectsSubject.getValue();
-        const maxId = Math.max(...projects.map(p => p.id || 0), 0);
-        const newProject: Project = {
-          ...project as Project,
-          id: maxId + 1,
-          projectCode: this.generateProjectCode(),
-          dateCreated: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
-          progress: project.progress || 0,
-          status: project.status || 'NOT_STARTED',
-          tasks: [],
-          milestones: [],
-          files: [],
-          discussions: [],
-          notes: [],
-          timeLogs: [],
-          activities: [],
-          members: []
-        };
-        projects.push(newProject);
-        this.saveToStorage(projects);
-        return of(newProject);
       })
     );
   }
@@ -106,15 +82,6 @@ export class ProjectService {
           projects[index] = { ...projects[index], ...this.mapProjectFromApi(updated) };
           this.projectsSubject.next([...projects]);
         }
-      }),
-      catchError(() => {
-        const projects = this.projectsSubject.getValue();
-        const index = projects.findIndex(p => p.id === id);
-        if (index !== -1) {
-          projects[index] = { ...projects[index], ...project, updatedAt: new Date().toISOString() };
-          this.saveToStorage(projects);
-        }
-        return of(projects[index]);
       })
     );
   }
@@ -125,12 +92,6 @@ export class ProjectService {
         let projects = this.projectsSubject.getValue();
         projects = projects.filter(p => p.id !== id);
         this.projectsSubject.next(projects);
-      }),
-      catchError(() => {
-        let projects = this.projectsSubject.getValue();
-        projects = projects.filter(p => p.id !== id);
-        this.saveToStorage(projects);
-        return of(void 0);
       })
     );
   }
