@@ -17,6 +17,7 @@ declare module 'jspdf' {
 
 interface TimesheetRecord {
   employeeId: number;
+  employeeCode: string;
   employeeName: string;
   date: string;
   clockIn: string;
@@ -155,6 +156,7 @@ export class WeeklyTimesheetComponent implements OnInit {
       const emp = this.employees.find(e => e.id === empId);
       const empName = emp ? `${emp.firstName} ${emp.lastName}` : 
                       (record.employee ? `${record.employee.firstName} ${record.employee.lastName}` : 'Unknown');
+      const empCode = emp?.employeeCode || record.employee?.employeeCode || '';
       
       const projectName = record.project?.name || record.projectName || 'Unknown';
       const projectId = record.project?.id?.toString() || record.projectName || 'unknown';
@@ -178,6 +180,7 @@ export class WeeklyTimesheetComponent implements OnInit {
 
       group.records.push({
         employeeId: empId,
+        employeeCode: empCode,
         employeeName: empName,
         date: record.attendanceDate,
         clockIn: record.clockIn || '',
@@ -295,6 +298,7 @@ export class WeeklyTimesheetComponent implements OnInit {
       yPosition += 6;
       
       const tableData = group.records.map(r => [
+        r.employeeCode || '-',
         r.employeeName,
         this.formatDisplayDate(r.date),
         r.clockIn?.substring(0, 5) || '-',
@@ -305,7 +309,7 @@ export class WeeklyTimesheetComponent implements OnInit {
 
       doc.autoTable({
         startY: yPosition,
-        head: [['Employee', 'Date', 'Clock In', 'Clock Out', 'Hours', 'OT']],
+        head: [['ID', 'Employee', 'Date', 'Clock In', 'Clock Out', 'Hours', 'OT']],
         body: tableData,
         theme: 'striped',
         headStyles: { fillColor: [0, 128, 128] },
@@ -325,11 +329,11 @@ export class WeeklyTimesheetComponent implements OnInit {
   }
 
   downloadCSV(): void {
-    let csvContent = 'Project,Employee,Date,Clock In,Clock Out,Hours,Overtime,Status\n';
+    let csvContent = 'Project,Employee ID,Employee,Date,Clock In,Clock Out,Hours,Overtime,Status\n';
 
     this.projectGroups.forEach(group => {
       group.records.forEach(record => {
-        csvContent += `"${group.name}","${record.employeeName}","${record.date}","${record.clockIn || ''}","${record.clockOut || ''}",${record.hours},${record.overtime},"${record.status}"\n`;
+        csvContent += `"${group.name}","${record.employeeCode || ''}","${record.employeeName}","${record.date}","${record.clockIn || ''}","${record.clockOut || ''}",${record.hours},${record.overtime},"${record.status}"\n`;
       });
     });
 

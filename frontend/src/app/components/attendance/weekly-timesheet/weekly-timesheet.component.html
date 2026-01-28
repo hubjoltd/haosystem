@@ -78,6 +78,7 @@
         <table class="employees-table">
           <thead>
             <tr>
+              <th>Employee ID</th>
               <th>Employee</th>
               <th>Date</th>
               <th>Clock In</th>
@@ -90,6 +91,7 @@
           </thead>
           <tbody>
             <tr *ngFor="let record of group.records">
+              <td class="emp-code">{{ record.employeeCode || '—' }}</td>
               <td class="emp-name">{{ record.employeeName }}</td>
               <td>{{ formatDisplayDate(record.date) }}</td>
               <td>{{ record.clockIn?.substring(0, 5) || '—' }}</td>
