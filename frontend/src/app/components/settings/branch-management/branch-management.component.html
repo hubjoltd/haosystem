@@ -406,7 +406,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showBranchModal" (click)="closeBranchModal()">
+<div class="modal-overlay" *ngIf="showBranchModal">
   <div class="modal modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ editMode ? 'Edit Company' : 'Add New Company' }}</h2>
@@ -574,7 +574,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showUserModal" (click)="closeUserModal()">
+<div class="modal-overlay" *ngIf="showUserModal">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ editMode ? 'Edit User' : 'Add New User' }}</h2>
@@ -629,7 +629,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showPasswordModal" (click)="closePasswordModal()">
+<div class="modal-overlay" *ngIf="showPasswordModal">
   <div class="modal modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Reset Password</h2>

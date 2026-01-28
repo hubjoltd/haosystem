@@ -70,11 +70,11 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+<div class="modal-overlay" *ngIf="showModal">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ isEditing ? 'Edit' : 'Add' }} Salary Head</h3>
-      <button class="close-btn" (click)="closeModal()">&times;</button>
+      <button class="close-btn">&times;</button>
     </div>
     <div class="modal-body">
       <div class="form-row">
@@ -157,7 +157,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-secondary">Cancel</button>
       <button class="btn btn-primary" (click)="saveHead()">{{ isEditing ? 'Update' : 'Create' }}</button>
     </div>
   </div>

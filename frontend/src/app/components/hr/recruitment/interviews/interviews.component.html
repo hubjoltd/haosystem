@@ -119,11 +119,11 @@
 </div>
 
 <!-- Create/Edit Modal -->
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+<div class="modal-overlay" *ngIf="showModal">
   <div class="modal-content large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ isEditing ? 'Edit Interview' : 'Schedule Interview' }}</h3>
-      <button class="btn-close" (click)="closeModal()"><i class="fa fa-times"></i></button>
+      <button class="btn-close"><i class="fa fa-times"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-section">
@@ -239,7 +239,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-secondary">Cancel</button>
       <button class="btn btn-primary" (click)="saveInterview()">
         {{ isEditing ? 'Update Interview' : 'Schedule Interview' }}
       </button>
@@ -248,11 +248,11 @@
 </div>
 
 <!-- View Details Modal -->
-<div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+<div class="modal-overlay" *ngIf="showViewModal">
   <div class="modal-content large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Interview Details</h3>
-      <button class="btn-close" (click)="closeViewModal()"><i class="fa fa-times"></i></button>
+      <button class="btn-close"><i class="fa fa-times"></i></button>
     </div>
     <div class="modal-body" *ngIf="viewInterview">
       <div class="detail-header">
@@ -366,7 +366,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeViewModal()">Close</button>
+      <button class="btn btn-secondary">Close</button>
       <button class="btn btn-primary" (click)="openFeedbackModal(viewInterview!); closeViewModal()" 
               *ngIf="viewInterview?.status === 'SCHEDULED' || viewInterview?.status === 'COMPLETED'">
         <i class="fa fa-star"></i> {{ viewInterview?.feedback ? 'Update Feedback' : 'Add Feedback' }}
@@ -376,7 +376,7 @@
 </div>
 
 <!-- Feedback Modal -->
-<div class="modal-overlay" *ngIf="showFeedbackModal" (click)="closeFeedbackModal()">
+<div class="modal-overlay" *ngIf="showFeedbackModal">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Interview Feedback</h3>

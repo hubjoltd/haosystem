@@ -138,11 +138,11 @@
 </div>
 
 <!-- Create/Edit Modal -->
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+<div class="modal-overlay" *ngIf="showModal">
   <div class="modal-content large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ isEditing ? 'Edit Offer' : 'Create Offer' }}</h3>
-      <button class="btn-close" (click)="closeModal()"><i class="fa fa-times"></i></button>
+      <button class="btn-close"><i class="fa fa-times"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-section">
@@ -283,7 +283,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-secondary">Cancel</button>
       <button class="btn btn-primary" (click)="saveOffer()">
         {{ isEditing ? 'Update Offer' : 'Save as Draft' }}
       </button>
@@ -292,11 +292,11 @@
 </div>
 
 <!-- View Details Modal -->
-<div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+<div class="modal-overlay" *ngIf="showViewModal">
   <div class="modal-content large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Offer Details</h3>
-      <button class="btn-close" (click)="closeViewModal()"><i class="fa fa-times"></i></button>
+      <button class="btn-close"><i class="fa fa-times"></i></button>
     </div>
     <div class="modal-body" *ngIf="viewOffer">
       <div class="detail-header">
@@ -428,7 +428,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeViewModal()">Close</button>
+      <button class="btn btn-secondary">Close</button>
       <button class="btn btn-primary" (click)="sendOffer(viewOffer!); closeViewModal()" *ngIf="viewOffer?.status === 'APPROVED'">
         <i class="fa fa-paper-plane"></i> Send to Candidate
       </button>
@@ -437,11 +437,11 @@
 </div>
 
 <!-- Approval Modal -->
-<div class="modal-overlay" *ngIf="showApprovalModal" (click)="closeApprovalModal()">
+<div class="modal-overlay" *ngIf="showApprovalModal">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ approvalAction === 'approve' ? 'Approve Offer' : 'Return for Revision' }}</h3>
-      <button class="btn-close" (click)="closeApprovalModal()"><i class="fa fa-times"></i></button>
+      <button class="btn-close"><i class="fa fa-times"></i></button>
     </div>
     <div class="modal-body" *ngIf="approvalOffer">
       <div class="offer-summary">
@@ -456,7 +456,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeApprovalModal()">Cancel</button>
+      <button class="btn btn-secondary">Cancel</button>
       <button class="btn" [ngClass]="approvalAction === 'approve' ? 'btn-success' : 'btn-warning'" (click)="submitApproval()">
         {{ approvalAction === 'approve' ? 'Approve' : 'Return for Revision' }}
       </button>
@@ -465,7 +465,7 @@
 </div>
 
 <!-- Convert to Employee Modal -->
-<div class="modal-overlay" *ngIf="showConvertModal" (click)="closeConvertModal()">
+<div class="modal-overlay" *ngIf="showConvertModal">
   <div class="modal-content large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3><i class="fa fa-user-plus"></i> Convert to Employee</h3>

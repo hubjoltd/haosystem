@@ -96,11 +96,11 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+<div class="modal-overlay" *ngIf="showModal">
   <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ editMode ? 'View Issue' : 'New Goods Issue' }}</h2>
-      <button class="close-btn" (click)="closeModal()">&times;</button>
+      <button class="close-btn">&times;</button>
     </div>
     <div class="modal-body">
       <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>
@@ -195,7 +195,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeModal()">{{ editMode ? 'Close' : 'Cancel' }}</button>
+      <button class="btn btn-secondary">{{ editMode ? 'Close' : 'Cancel' }}</button>
       <button class="btn btn-primary" (click)="saveIssue()" *ngIf="!editMode" [disabled]="saving">
         {{ saving ? 'Saving...' : 'Save Issue' }}
       </button>

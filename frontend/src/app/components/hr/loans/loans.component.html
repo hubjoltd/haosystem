@@ -77,7 +77,7 @@
   </div>
 
   <!-- New Loan Application Form -->
-  <div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">
+  <div *ngIf="showForm" class="modal-overlay">
     <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>New Loan Application</h3>
@@ -181,7 +181,7 @@
   </div>
 
   <!-- EMI Preview Modal -->
-  <div *ngIf="showEmiPreview" class="modal-overlay" (click)="closeEmiPreview()">
+  <div *ngIf="showEmiPreview" class="modal-overlay">
     <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>EMI Schedule Preview</h3>
@@ -234,11 +234,11 @@
   </div>
 
   <!-- Approval Modal -->
-  <div *ngIf="showApprovalModal" class="modal-overlay" (click)="closeApprovalModal()">
+  <div *ngIf="showApprovalModal" class="modal-overlay">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Approve Loan Application</h3>
-        <button class="close-btn" (click)="closeApprovalModal()">&times;</button>
+        <button class="close-btn">&times;</button>
       </div>
       <div class="approval-details" *ngIf="selectedLoan">
         <p><strong>Employee:</strong> {{ selectedLoan.employee?.firstName }} {{ selectedLoan.employee?.lastName }}</p>
@@ -259,14 +259,14 @@
         <textarea [(ngModel)]="approvalData.remarks" rows="3" placeholder="Add approval remarks..."></textarea>
       </div>
       <div class="form-actions">
-        <button class="btn btn-secondary" (click)="closeApprovalModal()">Cancel</button>
+        <button class="btn btn-secondary">Cancel</button>
         <button class="btn btn-success" (click)="approveLoan()">Approve</button>
       </div>
     </div>
   </div>
 
   <!-- Repayment Schedule Modal -->
-  <div *ngIf="selectedLoan && !showApprovalModal && !showLedger" class="modal-overlay" (click)="closeRepayments()">
+  <div *ngIf="selectedLoan && !showApprovalModal && !showLedger" class="modal-overlay">
     <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Repayment Schedule - {{ selectedLoan.applicationNumber }}</h3>
@@ -325,7 +325,7 @@
   </div>
 
   <!-- Loan Ledger Modal -->
-  <div *ngIf="showLedger" class="modal-overlay" (click)="closeLedger()">
+  <div *ngIf="showLedger" class="modal-overlay">
     <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Loan Ledger - {{ ledgerLoan?.applicationNumber }}</h3>

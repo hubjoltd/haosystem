@@ -214,7 +214,7 @@
     </div>
   </div>
 
-  <div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">
+  <div *ngIf="showForm" class="modal-overlay">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <h3>{{ editingItem ? 'Edit' : 'New' }} Requisition</h3>
       <form (ngSubmit)="saveRequisition()">
@@ -246,7 +246,7 @@
     </div>
   </div>
 
-  <div *ngIf="showPostingForm" class="modal-overlay" (click)="closePostingForm()">
+  <div *ngIf="showPostingForm" class="modal-overlay">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <h3>New Job Posting</h3>
       <form (ngSubmit)="saveJobPosting()">
@@ -285,7 +285,7 @@
     </div>
   </div>
 
-  <div *ngIf="showCandidateForm" class="modal-overlay" (click)="closeCandidateForm()">
+  <div *ngIf="showCandidateForm" class="modal-overlay">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <h3>Add Candidate</h3>
       <form (ngSubmit)="saveCandidate()">
@@ -324,7 +324,7 @@
     </div>
   </div>
 
-  <div *ngIf="showInterviewForm" class="modal-overlay" (click)="closeInterviewForm()">
+  <div *ngIf="showInterviewForm" class="modal-overlay">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <h3>Schedule Interview</h3>
       <form (ngSubmit)="saveInterview()">

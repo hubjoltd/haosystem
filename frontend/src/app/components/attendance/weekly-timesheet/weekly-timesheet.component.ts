@@ -378,8 +378,11 @@ export class WeeklyTimesheetComponent implements OnInit {
     return this.employeeWeekRecords.reduce((sum, r) => sum + r.overtime, 0);
   }
 
+  getDayOfMonth(dateStr: string): number {
+    return new Date(dateStr).getDate();
+  }
+
   downloadEmployeePDF(record: TimesheetRecord): void {
-    // Get all records for this employee
     const empRecords: TimesheetRecord[] = [];
     this.projectGroups.forEach(group => {
       const records = group.records.filter(r => r.employeeId === record.employeeId);
@@ -387,43 +390,94 @@ export class WeeklyTimesheetComponent implements OnInit {
     });
     empRecords.sort((a, b) => a.date.localeCompare(b.date));
 
-    const doc = new jsPDF();
+    const doc = new jsPDF('landscape');
+    const pageWidth = doc.internal.pageSize.getWidth();
     
-    doc.setFontSize(18);
-    doc.text('Employee Weekly Timesheet', 14, 22);
+    doc.setFillColor(0, 128, 128);
+    doc.rect(0, 0, pageWidth, 25, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Single Employee Time Sheet', 14, 16);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Organization - Fiscal Year Period`, pageWidth - 14, 16, { align: 'right' });
     
-    doc.setFontSize(12);
-    doc.text(`Employee: ${record.employeeName}`, 14, 32);
-    doc.text(`Period: ${this.getWeekRangeDisplay()}`, 14, 40);
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 48);
-
+    doc.setTextColor(0, 0, 0);
+    
     const totalHours = empRecords.reduce((sum, r) => sum + r.hours, 0);
     const totalOT = empRecords.reduce((sum, r) => sum + r.overtime, 0);
 
-    doc.setFontSize(10);
-    doc.text(`Total Hours: ${totalHours.toFixed(2)}h`, 14, 58);
-    doc.text(`Total Overtime: ${totalOT.toFixed(2)}h`, 80, 58);
-    doc.text(`Total: ${(totalHours + totalOT).toFixed(2)}h`, 140, 58);
-
     const tableData = empRecords.map(r => [
-      this.formatDisplayDate(r.date),
-      r.clockIn?.substring(0, 5) || '-',
-      r.clockOut?.substring(0, 5) || '-',
-      r.hours > 0 ? r.hours.toFixed(2) : '-',
-      r.overtime > 0 ? r.overtime.toFixed(2) : '-',
-      r.status
+      this.getDayOfMonth(r.date).toString(),
+      r.clockIn?.substring(0, 5) || '',
+      r.clockOut?.substring(0, 5) || '',
+      r.hours > 0 ? r.hours.toFixed(2) : '',
+      r.overtime > 0 ? r.overtime.toFixed(2) : ''
     ]);
 
     doc.autoTable({
-      startY: 68,
-      head: [['Date', 'Clock In', 'Clock Out', 'Hours', 'OT', 'Status']],
+      startY: 35,
+      head: [['Day', 'In', 'Out', 'Hours', 'OT']],
       body: tableData,
-      theme: 'striped',
-      headStyles: { fillColor: [0, 128, 128] },
-      margin: { left: 14 },
-      foot: [['Total', '', '', totalHours.toFixed(2), totalOT.toFixed(2), '']],
-      footStyles: { fillColor: [0, 128, 128], textColor: [255, 255, 255], fontStyle: 'bold' }
+      theme: 'grid',
+      headStyles: { 
+        fillColor: [240, 230, 200], 
+        textColor: [0, 0, 0],
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      bodyStyles: {
+        halign: 'center',
+        fontSize: 9
+      },
+      columnStyles: {
+        0: { cellWidth: 20 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 25 },
+        4: { cellWidth: 25 }
+      },
+      margin: { left: 14, right: pageWidth - 140 },
+      foot: [['Total', '', '', totalHours.toFixed(2), totalOT.toFixed(2)]],
+      footStyles: { 
+        fillColor: [240, 230, 200], 
+        textColor: [0, 0, 0],
+        fontStyle: 'bold',
+        halign: 'center'
+      }
     });
+
+    const infoX = 160;
+    let infoY = 35;
+    const lineHeight = 8;
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    const infoFields = [
+      { label: 'Employee', value: record.employeeName },
+      { label: 'ID', value: `EMP-${record.employeeId}` },
+      { label: 'Pay Period', value: this.getWeekRangeDisplay() },
+      { label: 'Hours per Week', value: totalHours.toFixed(2) },
+      { label: 'Overtime', value: totalOT.toFixed(2) },
+      { label: 'Days Worked', value: empRecords.length.toString() }
+    ];
+
+    infoFields.forEach(field => {
+      doc.setFont('helvetica', 'bold');
+      doc.text(field.label, infoX, infoY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(field.value, infoX + 50, infoY);
+      infoY += lineHeight;
+    });
+
+    infoY += 10;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Notes', infoX, infoY);
+    infoY += 5;
+    doc.setDrawColor(200, 200, 200);
+    doc.rect(infoX, infoY, 110, 30);
 
     const fileName = `Timesheet_${record.employeeName.replace(/\s+/g, '_')}_${this.periodStartDate}_${this.periodEndDate}.pdf`;
     doc.save(fileName);

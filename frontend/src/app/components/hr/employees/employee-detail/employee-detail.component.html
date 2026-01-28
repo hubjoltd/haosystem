@@ -1102,7 +1102,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showBankModal" (click)="showBankModal = false">
+<div class="modal-overlay" *ngIf="showBankModal">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ isEditingSubItem ? 'Edit' : 'Add' }} Bank Detail</h3>
@@ -1156,7 +1156,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showSalaryModal" (click)="showSalaryModal = false">
+<div class="modal-overlay" *ngIf="showSalaryModal">
   <div class="modal modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Add Salary Revision</h3>
@@ -1243,7 +1243,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showEducationModal" (click)="showEducationModal = false">
+<div class="modal-overlay" *ngIf="showEducationModal">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ isEditingSubItem ? 'Edit' : 'Add' }} Education</h3>
@@ -1299,7 +1299,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showExperienceModal" (click)="showExperienceModal = false">
+<div class="modal-overlay" *ngIf="showExperienceModal">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ isEditingSubItem ? 'Edit' : 'Add' }} Experience</h3>
@@ -1350,7 +1350,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showAssetModal" (click)="showAssetModal = false">
+<div class="modal-overlay" *ngIf="showAssetModal">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ isEditingSubItem ? 'Edit' : 'Add' }} Asset</h3>
@@ -1416,7 +1416,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showDocumentModal" (click)="showDocumentModal = false">
+<div class="modal-overlay" *ngIf="showDocumentModal">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ isEditingSubItem ? 'Edit' : 'Add' }} Document</h3>

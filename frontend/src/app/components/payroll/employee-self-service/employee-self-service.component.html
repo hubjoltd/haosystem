@@ -595,7 +595,7 @@
   (printPayslip)="printPaystub(selectedPaystub!)">
 </app-payslip>
 
-<div class="modal-overlay" *ngIf="showLeaveRequestModal" (click)="closeLeaveRequestModal()">
+<div class="modal-overlay" *ngIf="showLeaveRequestModal">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Submit Leave Request</h3>
@@ -633,7 +633,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showExpenseRequestModal" (click)="closeExpenseRequestModal()">
+<div class="modal-overlay" *ngIf="showExpenseRequestModal">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Submit Expense Request</h3>
@@ -704,7 +704,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showReceiptPreviewModal" (click)="closeReceiptPreview()">
+<div class="modal-overlay" *ngIf="showReceiptPreviewModal">
   <div class="modal receipt-preview-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Receipt Preview</h3>
@@ -716,7 +716,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showLoanRequestModal" (click)="closeLoanRequestModal()">
+<div class="modal-overlay" *ngIf="showLoanRequestModal">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Apply for Loan/Advance</h3>
@@ -765,7 +765,7 @@
 </div>
 
 <!-- Leave Activity Modal -->
-<div class="modal-overlay" *ngIf="showLeaveActivityModal" (click)="closeLeaveActivityModal()">
+<div class="modal-overlay" *ngIf="showLeaveActivityModal">
   <div class="modal activity-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Leave Request Activity</h3>
@@ -792,7 +792,7 @@
 </div>
 
 <!-- Expense Activity Modal -->
-<div class="modal-overlay" *ngIf="showExpenseActivityModal" (click)="closeExpenseActivityModal()">
+<div class="modal-overlay" *ngIf="showExpenseActivityModal">
   <div class="modal activity-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Expense Request Activity</h3>

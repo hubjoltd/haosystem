@@ -134,7 +134,7 @@
   </div>
 
   <!-- Program Form Modal -->
-  <div *ngIf="showForm" class="modal-overlay" (click)="closeForm()">
+  <div *ngIf="showForm" class="modal-overlay">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <h3>{{ editingItem ? 'Edit' : 'New' }} Program</h3>
       <form (ngSubmit)="saveProgram()">
@@ -175,7 +175,7 @@
   </div>
 
   <!-- Session Form Modal -->
-  <div *ngIf="showSessionForm" class="modal-overlay" (click)="closeSessionForm()">
+  <div *ngIf="showSessionForm" class="modal-overlay">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <h3>{{ editingSession ? 'Edit' : 'New' }} Training Session</h3>
       <form (ngSubmit)="saveSession()">
@@ -225,7 +225,7 @@
   </div>
 
   <!-- Enrollment Modal -->
-  <div *ngIf="showEnrollmentModal" class="modal-overlay" (click)="closeEnrollmentModal()">
+  <div *ngIf="showEnrollmentModal" class="modal-overlay">
     <div class="modal-content modal-lg" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Enrollments - {{ selectedSession?.program?.name }}</h3>
@@ -291,7 +291,7 @@
   </div>
 
   <!-- Feedback Modal -->
-  <div *ngIf="showFeedbackModal" class="modal-overlay" (click)="closeFeedbackModal()">
+  <div *ngIf="showFeedbackModal" class="modal-overlay">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <h3>Submit Training Feedback</h3>
       <form (ngSubmit)="submitFeedback()">

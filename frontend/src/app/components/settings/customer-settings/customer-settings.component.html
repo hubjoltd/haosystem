@@ -90,11 +90,11 @@
 </div>
 
 <!-- Modal -->
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+<div class="modal-overlay" *ngIf="showModal">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ isEditMode ? 'Edit' : 'Add' }} {{ modalType === 'group' ? 'Customer Group' : 'Customer Status' }}</h3>
-      <button class="close-btn" (click)="closeModal()">&times;</button>
+      <button class="close-btn">&times;</button>
     </div>
     <div class="modal-body">
       <!-- Group Form -->
@@ -112,7 +112,7 @@
           <input type="number" [(ngModel)]="editingGroup.discount" name="discount" min="0" max="100" placeholder="Enter discount percentage">
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="button" class="btn btn-secondary">Cancel</button>
           <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Save' }}</button>
         </div>
       </form>
@@ -128,7 +128,7 @@
           <input type="color" [(ngModel)]="editingStatus.color" name="color">
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="button" class="btn btn-secondary">Cancel</button>
           <button type="submit" class="btn btn-primary">{{ isEditMode ? 'Update' : 'Save' }}</button>
         </div>
       </form>

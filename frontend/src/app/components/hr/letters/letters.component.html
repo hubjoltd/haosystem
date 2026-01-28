@@ -76,7 +76,7 @@
     </table>
   </div>
 
-  <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+  <div class="modal-overlay" *ngIf="showForm">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Generate HR Letter</h3>
@@ -145,7 +145,7 @@
     </div>
   </div>
 
-  <div class="modal-overlay" *ngIf="showPreview && selectedLetter" (click)="closePreview()">
+  <div class="modal-overlay" *ngIf="showPreview && selectedLetter">
     <div class="modal-content letter-preview" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>{{ selectedLetter.subject }}</h3>

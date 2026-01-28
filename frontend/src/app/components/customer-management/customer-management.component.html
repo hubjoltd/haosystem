@@ -108,11 +108,11 @@
 </div>
 
 <!-- Main Client Modal with Tabs -->
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+<div class="modal-overlay" *ngIf="showModal">
   <div class="modal modal-large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ viewMode ? 'View Client' : (editMode ? 'Edit Client' : 'Add Client') }}</h2>
-      <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+      <button class="close-btn"><i class="fas fa-times"></i></button>
     </div>
 
     <div class="modal-tabs">
@@ -532,7 +532,7 @@
     </div>
 
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeModal()">{{ viewMode ? 'Close' : 'Cancel' }}</button>
+      <button class="btn btn-secondary">{{ viewMode ? 'Close' : 'Cancel' }}</button>
       <button class="btn btn-primary" (click)="saveClient()" *ngIf="!viewMode">{{ editMode ? 'Update Client' : 'Save Client' }}</button>
     </div>
   </div>
@@ -610,11 +610,11 @@
 </div>
 
 <!-- Document Sub-Modal -->
-<div class="modal-overlay sub-modal" *ngIf="showDocumentModal" (click)="closeDocumentModal()">
+<div class="modal-overlay sub-modal" *ngIf="showDocumentModal">
   <div class="modal modal-medium" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Add Document</h3>
-      <button class="close-btn" (click)="closeDocumentModal()"><i class="fas fa-times"></i></button>
+      <button class="close-btn"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-group">
@@ -641,7 +641,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeDocumentModal()">Cancel</button>
+      <button class="btn btn-secondary">Cancel</button>
       <button class="btn btn-primary" (click)="saveDocument()" [disabled]="!selectedDocument.name">Add Document</button>
     </div>
   </div>

@@ -94,7 +94,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="displayDialog" (click)="displayDialog = false">
+<div class="modal-overlay" *ngIf="displayDialog">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ isEdit ? 'Edit Account' : 'Add Account' }}</h2>
@@ -149,7 +149,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+<div class="modal-overlay" *ngIf="showDeleteConfirm">
   <div class="modal modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Confirm Delete</h2>

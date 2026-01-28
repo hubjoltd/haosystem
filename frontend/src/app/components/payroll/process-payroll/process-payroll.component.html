@@ -242,7 +242,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+<div class="modal-overlay" *ngIf="showDetailModal">
   <div class="modal detail-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Pay Stub - {{ getEmployeeName(selectedRecord!) }}</h3>

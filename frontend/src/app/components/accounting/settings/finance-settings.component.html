@@ -102,7 +102,7 @@
             </button>
           </div>
           
-          <div class="modal-overlay" *ngIf="showAddDetailType" (click)="showAddDetailType = false">
+          <div class="modal-overlay" *ngIf="showAddDetailType">
             <div class="modal-content" (click)="$event.stopPropagation()">
               <h3>Add Account Detail Type</h3>
               <div class="form-group">
@@ -264,7 +264,7 @@
             </div>
           </div>
 
-          <div class="modal-overlay" *ngIf="showAddCurrency" (click)="showAddCurrency = false">
+          <div class="modal-overlay" *ngIf="showAddCurrency">
             <div class="modal-content" (click)="$event.stopPropagation()">
               <h3>Add Currency Rate</h3>
               <div class="form-group">

@@ -129,7 +129,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showItemModal" (click)="closeItemModal()">
+<div class="modal-overlay" *ngIf="showItemModal">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ editingItemIndex >= 0 ? 'Edit Item' : 'Add Expense Item' }}</h3>

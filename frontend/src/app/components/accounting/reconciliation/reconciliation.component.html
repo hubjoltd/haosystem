@@ -68,7 +68,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="displayDialog" (click)="displayDialog = false">
+<div class="modal-overlay" *ngIf="displayDialog">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>New Reconciliation</h2>

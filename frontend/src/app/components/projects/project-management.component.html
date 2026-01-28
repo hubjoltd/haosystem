@@ -270,11 +270,11 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+<div class="modal-overlay" *ngIf="showModal">
   <div class="modal modal-xl" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ viewMode ? 'View Project' : (editMode ? 'Edit Project' : 'New Project') }}</h3>
-      <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+      <button class="close-btn"><i class="fas fa-times"></i></button>
     </div>
 
     <div class="modal-tabs">
@@ -668,7 +668,7 @@
     </div>
 
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeModal()">{{ viewMode ? 'Close' : 'Cancel' }}</button>
+      <button class="btn btn-secondary">{{ viewMode ? 'Close' : 'Cancel' }}</button>
       <button class="btn btn-primary" (click)="saveProject()" *ngIf="!viewMode">{{ editMode ? 'Update' : 'Create' }} Project</button>
     </div>
   </div>

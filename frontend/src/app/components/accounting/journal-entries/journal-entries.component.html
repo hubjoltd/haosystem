@@ -90,7 +90,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="displayDialog" (click)="displayDialog = false">
+<div class="modal-overlay" *ngIf="displayDialog">
   <div class="modal modal-xl" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ isEdit ? 'View Journal Entry' : 'New Journal Entry' }}</h2>
@@ -187,7 +187,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelAction()">
+<div class="modal-overlay" *ngIf="showDeleteConfirm">
   <div class="modal modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Confirm Delete</h2>
@@ -202,7 +202,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showPostConfirm" (click)="cancelAction()">
+<div class="modal-overlay" *ngIf="showPostConfirm">
   <div class="modal modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Confirm Post</h2>
@@ -217,7 +217,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showReverseConfirm" (click)="cancelAction()">
+<div class="modal-overlay" *ngIf="showReverseConfirm">
   <div class="modal modal-sm" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Confirm Reversal</h2>

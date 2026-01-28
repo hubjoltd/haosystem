@@ -580,3 +580,136 @@
     }
   }
 }
+
+// Single Employee Timesheet Modal
+.single-timesheet-modal {
+  max-width: 900px !important;
+
+  .modal-header {
+    background: linear-gradient(135deg, #008080, #006666);
+    color: white;
+    border-radius: 12px 12px 0 0;
+    position: relative;
+    flex-direction: column;
+    align-items: flex-start;
+
+    h2 {
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .modal-subtitle {
+      margin: 0;
+      font-size: 12px;
+      opacity: 0.85;
+    }
+
+    .btn-close {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: white;
+      
+      &:hover { color: #e5e7eb; }
+    }
+  }
+
+  .single-timesheet-body {
+    padding: 24px;
+  }
+
+  .timesheet-layout {
+    display: flex;
+    gap: 24px;
+  }
+
+  .timesheet-table-section {
+    flex: 1;
+    max-width: 350px;
+  }
+
+  .single-timesheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+
+    th, td {
+      border: 1px solid #d4c8a8;
+      padding: 6px 8px;
+      text-align: center;
+    }
+
+    thead {
+      background: #f5ecd7;
+
+      th {
+        font-weight: 600;
+        color: #374151;
+      }
+    }
+
+    tbody tr:nth-child(even) {
+      background: #fafafa;
+    }
+
+    .day-col {
+      width: 40px;
+      font-weight: 500;
+    }
+
+    tfoot {
+      .total-row {
+        background: #f5ecd7;
+        font-weight: 600;
+      }
+    }
+
+    .no-records {
+      padding: 20px;
+      color: #9ca3af;
+    }
+  }
+
+  .employee-details-section {
+    flex: 1;
+    min-width: 280px;
+  }
+
+  .detail-group {
+    margin-bottom: 20px;
+
+    &.notes-section {
+      .notes-box {
+        margin-top: 8px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        height: 80px;
+        background: white;
+      }
+    }
+  }
+
+  .detail-row {
+    display: flex;
+    padding: 8px 0;
+    border-bottom: 1px solid #e5e7eb;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .detail-label {
+    width: 120px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 13px;
+  }
+
+  .detail-value {
+    flex: 1;
+    color: #1f2937;
+    font-size: 13px;
+  }
+}

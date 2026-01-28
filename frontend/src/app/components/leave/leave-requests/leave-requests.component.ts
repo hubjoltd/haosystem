@@ -321,8 +321,9 @@ export class LeaveRequestsComponent implements OnInit {
           this.loadRequests();
           this.closeApprovalModal();
         },
-        error: (err) => {
-          this.toastService.error('Error: ' + (err.error?.error || 'Unknown error'));
+        error: (err: any) => {
+          const errorMsg = err.error?.error || err.error?.message || err.message || 'Connection error. Please try again.';
+          this.toastService.error('Error: ' + errorMsg);
         }
       });
     }
@@ -336,8 +337,9 @@ export class LeaveRequestsComponent implements OnInit {
           this.loadRequests();
           this.closeApprovalModal();
         },
-        error: (err) => {
-          this.toastService.error('Error: ' + (err.error?.error || 'Unknown error'));
+        error: (err: any) => {
+          const errorMsg = err.error?.error || err.error?.message || err.message || 'Connection error. Please try again.';
+          this.toastService.error('Error: ' + errorMsg);
         }
       });
     }
@@ -352,7 +354,8 @@ export class LeaveRequestsComponent implements OnInit {
           this.closeApprovalModal();
         },
         error: (err) => {
-          this.toastService.error('Error: ' + (err.error?.error || 'Unknown error'));
+          const errorMsg = err.error?.error || err.error?.message || err.message || 'Connection error. Please try again.';
+          this.toastService.error('Error: ' + errorMsg);
         }
       });
     }
@@ -366,8 +369,9 @@ export class LeaveRequestsComponent implements OnInit {
           this.loadRequests();
           this.closeApprovalModal();
         },
-        error: (err) => {
-          this.toastService.error('Error: ' + (err.error?.error || 'Unknown error'));
+        error: (err: any) => {
+          const errorMsg = err.error?.error || err.error?.message || err.message || 'Connection error. Please try again.';
+          this.toastService.error('Error: ' + errorMsg);
         }
       });
     }

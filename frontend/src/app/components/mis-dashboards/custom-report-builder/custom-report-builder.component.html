@@ -123,7 +123,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showTemplateModal" (click)="closeTemplateModal()">
+<div class="modal-overlay" *ngIf="showTemplateModal">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ currentTemplate.id ? 'Update' : 'Save' }} Template</h2>
@@ -157,7 +157,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showPreview" (click)="closePreview()">
+<div class="modal-overlay" *ngIf="showPreview">
   <div class="modal-content preview-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Report Preview</h2>

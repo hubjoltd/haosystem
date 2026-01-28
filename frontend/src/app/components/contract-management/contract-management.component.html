@@ -101,11 +101,11 @@
 </div>
 
 <!-- Modal -->
-<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+<div class="modal-overlay" *ngIf="showModal">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ editMode ? 'Edit Contract' : 'New Contract' }}</h2>
-      <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+      <button class="close-btn"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-group">
@@ -147,7 +147,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+      <button class="btn btn-secondary">Cancel</button>
       <button class="btn btn-primary" (click)="saveContract()">{{ editMode ? 'Update' : 'Save' }}</button>
     </div>
   </div>
