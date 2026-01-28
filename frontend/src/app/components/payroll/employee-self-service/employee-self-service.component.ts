@@ -14,6 +14,8 @@ import { SalarySlipService, SalarySlipData, EmployeeSlipInfo } from '../../../se
 import { PayslipComponent, PayslipData } from '../payslip/payslip.component';
 import { ActivityTimelineComponent, ActivityItem } from '../../shared/activity-timeline/activity-timeline.component';
 import { ToastService } from '../../../services/toast.service';
+import { ProjectService } from '../../../services/project.service';
+import { Project } from '../../../models/project.model';
 
 @Component({
   selector: 'app-employee-self-service',
@@ -37,6 +39,7 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
   assets: EmployeeAsset[] = [];
   policies: any[] = [];
   expenseCategories: any[] = [];
+  projects: Project[] = [];
   
   currentEmployeeId: number = 0;
   currentEmployee: Employee | null = null;
@@ -63,6 +66,8 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
     receiptNumber: string;
     receiptFile: File | null;
     receiptPreview: string;
+    payeeName: string;
+    projectId: number;
   } = {
     categoryId: 0,
     amount: 0,
@@ -70,7 +75,9 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
     expenseDate: '',
     receiptNumber: '',
     receiptFile: null,
-    receiptPreview: ''
+    receiptPreview: '',
+    payeeName: '',
+    projectId: 0
   };
   showReceiptPreviewModal = false;
   selectedReceiptUrl = '';
@@ -133,6 +140,7 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
     private documentService: DocumentService,
     private employeeService: EmployeeService,
     private salarySlipService: SalarySlipService,
+    private projectService: ProjectService,
     private cdr: ChangeDetectorRef,
     private toastService: ToastService
   ) {
@@ -148,6 +156,7 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
     this.loadLoans();
     this.loadExpenses();
     this.loadExpenseCategories();
+    this.loadProjects();
     this.loadAttendance();
     this.loadDocuments();
     this.loadAssets();
@@ -496,6 +505,15 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
     ];
   }
 
+  loadProjects(): void {
+    this.projectService.projects$.subscribe({
+      next: (projects) => {
+        this.projects = projects;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   // Expense Request Methods
   openExpenseRequestModal(): void {
     this.newExpenseRequest = {
@@ -505,7 +523,9 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
       expenseDate: new Date().toISOString().split('T')[0],
       receiptNumber: '',
       receiptFile: null,
-      receiptPreview: ''
+      receiptPreview: '',
+      payeeName: '',
+      projectId: 0
     };
     this.showExpenseRequestModal = true;
   }
