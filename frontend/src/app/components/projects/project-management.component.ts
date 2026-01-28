@@ -248,17 +248,29 @@ export class ProjectManagementComponent implements OnInit {
     this.selectedProject.tags = this.tagsInput.split(',').map(t => t.trim()).filter(t => t);
     
     if (this.editMode && this.selectedProject.id) {
-      this.projectService.update(this.selectedProject.id, this.selectedProject).subscribe(() => {
-        this.loadProjects();
-        this.closeModal();
-        this.cdr.markForCheck();
+      this.projectService.update(this.selectedProject.id, this.selectedProject).subscribe({
+        next: () => {
+          this.loadProjects();
+          this.closeModal();
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Error updating project:', err);
+          alert('Failed to update project. Please try again.');
+        }
       });
     } else {
-      this.projectService.create(this.selectedProject).subscribe((newProject) => {
-        this.loadProjects();
-        this.selectedProject = { ...newProject };
-        this.editMode = true;
-        this.cdr.markForCheck();
+      this.projectService.create(this.selectedProject).subscribe({
+        next: (newProject) => {
+          this.loadProjects();
+          this.selectedProject = { ...newProject };
+          this.editMode = true;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Error creating project:', err);
+          alert('Failed to create project. Please try again.');
+        }
       });
     }
   }
