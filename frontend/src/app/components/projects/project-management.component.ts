@@ -245,7 +245,9 @@ export class ProjectManagementComponent implements OnInit {
   saveProject(): void {
     if (!this.selectedProject.name) return;
     
-    this.selectedProject.tags = this.tagsInput.split(',').map(t => t.trim()).filter(t => t);
+    // Backend expects tags as comma-separated string, not array
+    const tagsArray = this.tagsInput.split(',').map(t => t.trim()).filter(t => t);
+    (this.selectedProject as any).tags = tagsArray.join(',');
     
     if (this.editMode && this.selectedProject.id) {
       this.projectService.update(this.selectedProject.id, this.selectedProject).subscribe({
