@@ -183,7 +183,7 @@ public class AttendanceController {
         
         // Set project information from employee's assigned project
         if (employee.getProject() != null) {
-            record.setProjectCode(employee.getProject().getCode());
+            record.setProjectCode(employee.getProject().getProjectCode());
             record.setProjectName(employee.getProject().getName());
         }
 
