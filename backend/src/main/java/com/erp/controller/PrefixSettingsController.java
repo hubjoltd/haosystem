@@ -32,4 +32,14 @@ public class PrefixSettingsController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/preview/{type}")
+    public ResponseEntity<String> previewNextId(@PathVariable String type) {
+        try {
+            String nextId = prefixSettingsService.previewNextId(type);
+            return ResponseEntity.ok(nextId);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

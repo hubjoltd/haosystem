@@ -112,7 +112,7 @@ export class DirectPurchaseComponent implements OnInit {
   }
 
   generatePONumber(): void {
-    this.settingsService.generatePrefixId('po').subscribe({
+    this.settingsService.previewPrefixId('po').subscribe({
       next: (poNumber) => {
         this.selectedPurchase.poNumber = poNumber;
       },

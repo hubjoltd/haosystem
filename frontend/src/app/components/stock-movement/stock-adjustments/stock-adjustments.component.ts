@@ -146,7 +146,7 @@ export class StockAdjustmentsComponent implements OnInit {
   }
 
   generateAdjustmentNumber(): void {
-    this.settingsService.generatePrefixId('adjustment').subscribe({
+    this.settingsService.previewPrefixId('adjustment').subscribe({
       next: (adjustmentNumber: string) => {
         this.selectedAdjustment.adjustmentNumber = adjustmentNumber;
       },

@@ -217,7 +217,7 @@ export class RecruitmentRequisitionComponent implements OnInit {
   }
 
   generateRequisitionNumber(): void {
-    this.settingsService.generatePrefixId('mrf').subscribe({
+    this.settingsService.previewPrefixId('mrf').subscribe({
       next: (number) => {
         this.selectedRequisition.requisitionNumber = number;
       },

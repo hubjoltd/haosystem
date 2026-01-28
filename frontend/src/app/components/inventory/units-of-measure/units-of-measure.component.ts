@@ -81,7 +81,7 @@ export class UnitsOfMeasureComponent implements OnInit {
   }
 
   generateUnitCode(): void {
-    this.settingsService.generatePrefixId('unit').subscribe({
+    this.settingsService.previewPrefixId('unit').subscribe({
       next: (code) => {
         this.selectedUnit.code = code;
       },

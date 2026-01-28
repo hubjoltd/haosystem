@@ -76,7 +76,7 @@ export class SupplierComponent implements OnInit {
   }
 
   generateSupplierCode(): void {
-    this.settingsService.generatePrefixId('supplier').subscribe({
+    this.settingsService.previewPrefixId('supplier').subscribe({
       next: (code) => {
         this.selectedSupplier.code = code;
       },

@@ -116,7 +116,7 @@ export class WarehouseBinComponent implements OnInit {
   }
 
   generateWarehouseCode(): void {
-    this.settingsService.generatePrefixId('warehouse').subscribe({
+    this.settingsService.previewPrefixId('warehouse').subscribe({
       next: (code) => {
         this.selectedWarehouse.code = code;
       },
@@ -125,7 +125,7 @@ export class WarehouseBinComponent implements OnInit {
   }
 
   generateBinCode(): void {
-    this.settingsService.generatePrefixId('bin').subscribe({
+    this.settingsService.previewPrefixId('bin').subscribe({
       next: (code) => {
         this.selectedBin.code = code;
       },

@@ -131,7 +131,7 @@ export class PurchaseInvoiceComponent implements OnInit {
   }
 
   generateInvoiceNumber(): void {
-    this.settingsService.generatePrefixId('invoice').subscribe({
+    this.settingsService.previewPrefixId('invoice').subscribe({
       next: (invNumber) => {
         this.selectedInvoice.invoiceNumber = invNumber;
       },

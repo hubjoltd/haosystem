@@ -80,7 +80,7 @@ export class MaterialTransferFulfillmentComponent implements OnInit {
   }
 
   generateTransferNumber(): void {
-    this.settingsService.generatePrefixId('transfer').subscribe({
+    this.settingsService.previewPrefixId('transfer').subscribe({
       next: (transferNumber) => {
         this.transferNumber = transferNumber;
       },

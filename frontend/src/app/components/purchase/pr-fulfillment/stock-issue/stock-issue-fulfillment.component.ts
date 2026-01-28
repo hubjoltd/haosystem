@@ -77,7 +77,7 @@ export class StockIssueFulfillmentComponent implements OnInit {
   }
 
   generateIssueNumber(): void {
-    this.settingsService.generatePrefixId('issue').subscribe({
+    this.settingsService.previewPrefixId('issue').subscribe({
       next: (issueNumber) => {
         this.issueNumber = issueNumber;
       },

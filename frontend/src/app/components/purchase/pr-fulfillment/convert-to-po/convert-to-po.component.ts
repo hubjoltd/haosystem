@@ -74,7 +74,7 @@ export class ConvertToPoComponent implements OnInit {
   }
 
   generatePONumber(): void {
-    this.settingsService.generatePrefixId('po').subscribe({
+    this.settingsService.previewPrefixId('po').subscribe({
       next: (poNumber) => {
         this.poNumber = poNumber;
       },

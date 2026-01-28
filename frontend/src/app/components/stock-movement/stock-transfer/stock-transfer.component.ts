@@ -146,7 +146,7 @@ export class StockTransferComponent implements OnInit {
   }
 
   generateTransferNumber(): void {
-    this.settingsService.generatePrefixId('transfer').subscribe({
+    this.settingsService.previewPrefixId('transfer').subscribe({
       next: (transferNumber: string) => {
         this.selectedTransfer.transferNumber = transferNumber;
       },

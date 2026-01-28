@@ -95,4 +95,8 @@ export class SettingsService {
   generatePrefixId(type: string): Observable<string> {
     return this.http.get(`${this.baseUrl}/prefixes/generate/${type}`, { responseType: 'text' });
   }
+
+  previewPrefixId(type: string): Observable<string> {
+    return this.http.get(`${this.baseUrl}/prefixes/preview/${type}`, { responseType: 'text' });
+  }
 }

@@ -191,7 +191,7 @@ export class PurchaseRequisitionComponent implements OnInit {
   }
 
   generatePRNumber(): void {
-    this.settingsService.generatePrefixId('pr').subscribe({
+    this.settingsService.previewPrefixId('pr').subscribe({
       next: (prNumber) => {
         this.selectedPR.prNumber = prNumber;
       },

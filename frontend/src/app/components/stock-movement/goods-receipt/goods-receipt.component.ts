@@ -223,7 +223,7 @@ export class GoodsReceiptComponent implements OnInit {
   }
 
   generateGRNNumber(): void {
-    this.settingsService.generatePrefixId('grn').subscribe({
+    this.settingsService.previewPrefixId('grn').subscribe({
       next: (grnNumber) => {
         this.selectedGRN.grnNumber = grnNumber;
       },

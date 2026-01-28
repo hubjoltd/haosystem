@@ -79,7 +79,7 @@ export class GroupMasterComponent implements OnInit {
   }
 
   generateGroupCode(): void {
-    this.settingsService.generatePrefixId('group').subscribe({
+    this.settingsService.previewPrefixId('group').subscribe({
       next: (code) => {
         this.selectedGroup.code = code;
       },

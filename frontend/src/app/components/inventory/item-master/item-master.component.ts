@@ -146,7 +146,7 @@ export class ItemMasterComponent implements OnInit {
   }
 
   generateItemCode(): void {
-    this.settingsService.generatePrefixId('item').subscribe({
+    this.settingsService.previewPrefixId('item').subscribe({
       next: (code) => {
         this.selectedItem.code = code;
       },

@@ -28,6 +28,67 @@ public class PrefixSettingsService {
         return prefixSettingsRepository.save(settings);
     }
 
+    public String previewNextId(String type) {
+        PrefixSettings settings = getSettings();
+        String prefix;
+        int nextNumber;
+        
+        switch (type.toLowerCase()) {
+            case "item":
+                prefix = settings.getItemPrefix();
+                nextNumber = settings.getItemNextNumber();
+                break;
+            case "group":
+                prefix = settings.getGroupPrefix();
+                nextNumber = settings.getGroupNextNumber();
+                break;
+            case "warehouse":
+                prefix = settings.getWarehousePrefix();
+                nextNumber = settings.getWarehouseNextNumber();
+                break;
+            case "bin":
+                prefix = settings.getBinPrefix();
+                nextNumber = settings.getBinNextNumber();
+                break;
+            case "supplier":
+                prefix = settings.getSupplierPrefix();
+                nextNumber = settings.getSupplierNextNumber();
+                break;
+            case "unit":
+                prefix = settings.getUnitPrefix();
+                nextNumber = settings.getUnitNextNumber();
+                break;
+            case "pr":
+                prefix = settings.getPrPrefix();
+                nextNumber = settings.getPrNextNumber();
+                break;
+            case "po":
+                prefix = settings.getPoPrefix();
+                nextNumber = settings.getPoNextNumber();
+                break;
+            case "grn":
+                prefix = settings.getGrnPrefix();
+                nextNumber = settings.getGrnNextNumber();
+                break;
+            case "issue":
+                prefix = settings.getIssuePrefix();
+                nextNumber = settings.getIssueNextNumber();
+                break;
+            case "transfer":
+                prefix = settings.getTransferPrefix();
+                nextNumber = settings.getTransferNextNumber();
+                break;
+            case "adjustment":
+                prefix = settings.getAdjustmentPrefix();
+                nextNumber = settings.getAdjustmentNextNumber();
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown type: " + type);
+        }
+        
+        return prefix + String.format("%04d", nextNumber);
+    }
+
     @Transactional
     public String generateNextId(String type) {
         PrefixSettings settings = getSettings();
