@@ -180,6 +180,12 @@ public class AttendanceController {
         record.setCaptureMethod(captureMethod);
         record.setStatus("PRESENT");
         record.setApprovalStatus("APPROVED");
+        
+        // Set project information from employee's assigned project
+        if (employee.getProject() != null) {
+            record.setProjectCode(employee.getProject().getCode());
+            record.setProjectName(employee.getProject().getName());
+        }
 
         AttendanceRule rule = attendanceRuleRepository.findByIsDefaultTrue().orElse(null);
         if (rule != null && rule.getStandardStartTime() != null && rule.getGraceMinutesIn() != null) {
