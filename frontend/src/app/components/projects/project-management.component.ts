@@ -245,12 +245,42 @@ export class ProjectManagementComponent implements OnInit {
   saveProject(): void {
     if (!this.selectedProject.name) return;
     
-    // Backend expects tags as comma-separated string, not array
-    const tagsArray = this.tagsInput.split(',').map(t => t.trim()).filter(t => t);
-    (this.selectedProject as any).tags = tagsArray.join(',');
+    // Prepare project data for backend - remove array fields and convert tags to string
+    const projectData: any = {
+      name: this.selectedProject.name,
+      description: this.selectedProject.description,
+      projectCode: this.selectedProject.projectCode,
+      status: this.selectedProject.status,
+      billingType: this.selectedProject.billingType,
+      startDate: this.selectedProject.startDate,
+      endDate: this.selectedProject.endDate,
+      deadline: this.selectedProject.deadline,
+      estimatedHours: this.selectedProject.estimatedHours,
+      estimatedCost: this.selectedProject.estimatedCost,
+      hourlyRate: this.selectedProject.hourlyRate,
+      fixedRateAmount: this.selectedProject.fixedRateAmount,
+      progress: this.selectedProject.progress || 0,
+      currency: this.selectedProject.currency,
+      customerId: this.selectedProject.customerId,
+      projectManagerId: this.selectedProject.projectManagerId,
+      allowCustomerViewProject: this.selectedProject.allowCustomerViewProject,
+      allowCustomerViewTasks: this.selectedProject.allowCustomerViewTasks,
+      allowCustomerCommentTasks: this.selectedProject.allowCustomerCommentTasks,
+      allowCustomerViewTaskComments: this.selectedProject.allowCustomerViewTaskComments,
+      allowCustomerViewTimesheets: this.selectedProject.allowCustomerViewTimesheets,
+      allowCustomerViewFiles: this.selectedProject.allowCustomerViewFiles,
+      allowCustomerUploadFiles: this.selectedProject.allowCustomerUploadFiles,
+      allowCustomerViewDiscussions: this.selectedProject.allowCustomerViewDiscussions,
+      calculatedProgress: this.selectedProject.calculatedProgress,
+      billableTasks: this.selectedProject.billableTasks,
+      invoiceProject: this.selectedProject.invoiceProject,
+      invoiceTasks: this.selectedProject.invoiceTasks,
+      invoiceTimesheets: this.selectedProject.invoiceTimesheets,
+      tags: this.tagsInput.split(',').map(t => t.trim()).filter(t => t).join(',')
+    };
     
     if (this.editMode && this.selectedProject.id) {
-      this.projectService.update(this.selectedProject.id, this.selectedProject).subscribe({
+      this.projectService.update(this.selectedProject.id, projectData).subscribe({
         next: () => {
           this.loadProjects();
           this.closeModal();
@@ -262,7 +292,7 @@ export class ProjectManagementComponent implements OnInit {
         }
       });
     } else {
-      this.projectService.create(this.selectedProject).subscribe({
+      this.projectService.create(projectData).subscribe({
         next: (newProject) => {
           this.loadProjects();
           this.selectedProject = { ...newProject };
