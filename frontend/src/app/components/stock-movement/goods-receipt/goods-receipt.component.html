@@ -99,7 +99,7 @@
   <div class="modal modal-lg" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ editMode ? 'View' : 'New' }} Goods Receipt Note</h2>
-      <button class="close-btn">&times;</button>
+      <button class="close-btn" (click)="showModal = false">&times;</button>
     </div>
     <div class="modal-body">
       <div class="alert alert-danger" *ngIf="errorMessage">{{ errorMessage }}</div>

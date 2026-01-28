@@ -300,7 +300,7 @@
     <div class="modal-content timesheet-modal" (click)="$event.stopPropagation()">
       <div class="modal-header blue-header">
         <h3>Individual Timesheet</h3>
-        <button class="close-btn">
+        <button class="close-btn" (click)="showTimesheetModal = false">
           <i class="fas fa-times"></i>
         </button>
       </div>

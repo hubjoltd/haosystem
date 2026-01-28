@@ -274,7 +274,7 @@
   <div class="modal modal-xl" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ viewMode ? 'View Project' : (editMode ? 'Edit Project' : 'New Project') }}</h3>
-      <button class="close-btn"><i class="fas fa-times"></i></button>
+      <button class="close-btn" (click)="showModal = false"><i class="fas fa-times"></i></button>
     </div>
 
     <div class="modal-tabs">

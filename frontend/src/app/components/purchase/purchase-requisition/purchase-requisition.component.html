@@ -595,7 +595,7 @@
   <div class="modal-content large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ isEditing ? 'Edit Requisition' : 'New Purchase Requisition' }}</h2>
-      <button class="close-btn">
+      <button class="close-btn" (click)="showModal = false">
         <i class="fa fa-times"></i>
       </button>
     </div>
@@ -857,7 +857,7 @@
   <div class="modal-content large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>PR History - {{ selectedPR.prNumber }}</h2>
-      <button class="close-btn">
+      <button class="close-btn" (click)="showViewModal = false">
         <i class="fa fa-times"></i>
       </button>
     </div>
@@ -965,7 +965,7 @@
   <div class="modal-content large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Stock Fulfillment - {{ selectedPR.prNumber }}</h2>
-      <button class="close-btn">
+      <button class="close-btn" (click)="showStockFulfillmentModal = false">
         <i class="fa fa-times"></i>
       </button>
     </div>
@@ -1041,7 +1041,7 @@
   <div class="modal-content large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Material Transfer - {{ selectedPR.prNumber }}</h2>
-      <button class="close-btn">
+      <button class="close-btn" (click)="showMaterialTransferModal = false">
         <i class="fa fa-times"></i>
       </button>
     </div>

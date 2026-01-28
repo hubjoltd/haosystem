@@ -56,7 +56,7 @@
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ editMode ? 'Edit Tax Rate' : 'Add Tax Rate' }}</h2>
-      <button class="close-btn"><i class="fas fa-times"></i></button>
+      <button class="close-btn" (click)="showModal = false"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-group">

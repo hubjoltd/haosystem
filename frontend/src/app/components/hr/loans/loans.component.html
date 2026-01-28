@@ -238,7 +238,7 @@
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Approve Loan Application</h3>
-        <button class="close-btn">&times;</button>
+        <button class="close-btn" (click)="showApprovalModal = false">&times;</button>
       </div>
       <div class="approval-details" *ngIf="selectedLoan">
         <p><strong>Employee:</strong> {{ selectedLoan.employee?.firstName }} {{ selectedLoan.employee?.lastName }}</p>

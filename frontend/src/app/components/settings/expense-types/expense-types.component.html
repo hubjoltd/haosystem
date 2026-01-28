@@ -54,7 +54,7 @@
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ editMode ? 'Edit' : 'Add' }} Expense Type</h3>
-      <button class="close-btn">
+      <button class="close-btn" (click)="showModal = false">
         <i class="fas fa-times"></i>
       </button>
     </div>
