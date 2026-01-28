@@ -217,7 +217,9 @@ export class ProjectManagementComponent implements OnInit {
     if (project) {
       this.editMode = true;
       this.selectedProject = { ...project };
-      this.tagsInput = project.tags?.join(', ') || '';
+      // Handle tags - could be string or array from backend
+      const tags = project.tags;
+      this.tagsInput = Array.isArray(tags) ? tags.join(', ') : (tags || '');
       this.previewProjectCode = project.projectCode || '';
     } else {
       this.editMode = false;
@@ -227,6 +229,7 @@ export class ProjectManagementComponent implements OnInit {
     }
     this.activeTab = 'overview';
     this.showModal = true;
+    this.cdr.markForCheck();
   }
 
   generatePreviewCode(): void {
@@ -240,6 +243,7 @@ export class ProjectManagementComponent implements OnInit {
     this.showModal = false;
     this.selectedProject = this.getEmptyProject();
     this.viewMode = false;
+    this.cdr.markForCheck();
   }
 
   saveProject(): void {
@@ -309,8 +313,15 @@ export class ProjectManagementComponent implements OnInit {
 
   deleteProject(id: number): void {
     if (confirm('Are you sure you want to delete this project?')) {
-      this.projectService.delete(id).subscribe(() => {
-        this.loadProjects();
+      this.projectService.delete(id).subscribe({
+        next: () => {
+          this.loadProjects();
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Error deleting project:', err);
+          alert('Failed to delete project. Please try again.');
+        }
       });
     }
   }
