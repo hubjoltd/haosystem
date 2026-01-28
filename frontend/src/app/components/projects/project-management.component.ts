@@ -471,11 +471,13 @@ export class ProjectManagementComponent implements OnInit {
   openMemberModal(): void {
     this.editingMember = { role: 'Member' };
     this.showMemberModal = true;
+    this.cdr.markForCheck();
   }
 
   closeMemberModal(): void {
     this.showMemberModal = false;
     this.editingMember = {};
+    this.cdr.markForCheck();
   }
 
   saveMember(): void {
@@ -484,10 +486,17 @@ export class ProjectManagementComponent implements OnInit {
     const emp = this.employees.find(e => e.id === this.editingMember.employeeId);
     this.editingMember.employee = emp;
     
-    this.projectService.addMember(this.selectedProject.id, this.editingMember).subscribe(member => {
-      if (!this.selectedProject.members) this.selectedProject.members = [];
-      this.selectedProject.members.push(member);
-      this.closeMemberModal();
+    this.projectService.addMember(this.selectedProject.id, this.editingMember).subscribe({
+      next: (member) => {
+        if (!this.selectedProject.members) this.selectedProject.members = [];
+        this.selectedProject.members.push(member);
+        this.closeMemberModal();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Error adding member:', err);
+        alert('Failed to add member. Please try again.');
+      }
     });
   }
 
@@ -495,8 +504,15 @@ export class ProjectManagementComponent implements OnInit {
     if (!this.selectedProject.id || !this.selectedProject.members) return;
     const member = this.selectedProject.members[index];
     if (confirm('Remove this member?')) {
-      this.projectService.removeMember(this.selectedProject.id, member.id!).subscribe(() => {
-        this.selectedProject.members?.splice(index, 1);
+      this.projectService.removeMember(this.selectedProject.id, member.id!).subscribe({
+        next: () => {
+          this.selectedProject.members?.splice(index, 1);
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Error removing member:', err);
+          alert('Failed to remove member. Please try again.');
+        }
       });
     }
   }
@@ -504,20 +520,29 @@ export class ProjectManagementComponent implements OnInit {
   openFileModal(): void {
     this.editingFile = { name: '', visibility: 'STAFF' };
     this.showFileModal = true;
+    this.cdr.markForCheck();
   }
 
   closeFileModal(): void {
     this.showFileModal = false;
     this.editingFile = {};
+    this.cdr.markForCheck();
   }
 
   saveFile(): void {
     if (!this.editingFile.name || !this.selectedProject.id) return;
     
-    this.projectService.addFile(this.selectedProject.id, this.editingFile).subscribe(file => {
-      if (!this.selectedProject.files) this.selectedProject.files = [];
-      this.selectedProject.files.push(file);
-      this.closeFileModal();
+    this.projectService.addFile(this.selectedProject.id, this.editingFile).subscribe({
+      next: (file) => {
+        if (!this.selectedProject.files) this.selectedProject.files = [];
+        this.selectedProject.files.push(file);
+        this.closeFileModal();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Error adding file:', err);
+        alert('Failed to add file. Please try again.');
+      }
     });
   }
 
@@ -525,8 +550,15 @@ export class ProjectManagementComponent implements OnInit {
     if (!this.selectedProject.id || !this.selectedProject.files) return;
     const file = this.selectedProject.files[index];
     if (confirm('Delete this file?')) {
-      this.projectService.deleteFile(this.selectedProject.id, file.id!).subscribe(() => {
-        this.selectedProject.files?.splice(index, 1);
+      this.projectService.deleteFile(this.selectedProject.id, file.id!).subscribe({
+        next: () => {
+          this.selectedProject.files?.splice(index, 1);
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Error deleting file:', err);
+          alert('Failed to delete file. Please try again.');
+        }
       });
     }
   }
@@ -534,20 +566,29 @@ export class ProjectManagementComponent implements OnInit {
   openNoteModal(): void {
     this.editingNote = { content: '' };
     this.showNoteModal = true;
+    this.cdr.markForCheck();
   }
 
   closeNoteModal(): void {
     this.showNoteModal = false;
     this.editingNote = {};
+    this.cdr.markForCheck();
   }
 
   saveNote(): void {
     if (!this.editingNote.content || !this.selectedProject.id) return;
     
-    this.projectService.addNote(this.selectedProject.id, this.editingNote).subscribe(note => {
-      if (!this.selectedProject.notes) this.selectedProject.notes = [];
-      this.selectedProject.notes.push(note);
-      this.closeNoteModal();
+    this.projectService.addNote(this.selectedProject.id, this.editingNote).subscribe({
+      next: (note) => {
+        if (!this.selectedProject.notes) this.selectedProject.notes = [];
+        this.selectedProject.notes.push(note);
+        this.closeNoteModal();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Error adding note:', err);
+        alert('Failed to add note. Please try again.');
+      }
     });
   }
 
@@ -555,8 +596,15 @@ export class ProjectManagementComponent implements OnInit {
     if (!this.selectedProject.id || !this.selectedProject.notes) return;
     const note = this.selectedProject.notes[index];
     if (confirm('Delete this note?')) {
-      this.projectService.deleteNote(this.selectedProject.id, note.id!).subscribe(() => {
-        this.selectedProject.notes?.splice(index, 1);
+      this.projectService.deleteNote(this.selectedProject.id, note.id!).subscribe({
+        next: () => {
+          this.selectedProject.notes?.splice(index, 1);
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Error deleting note:', err);
+          alert('Failed to delete note. Please try again.');
+        }
       });
     }
   }
@@ -564,24 +612,33 @@ export class ProjectManagementComponent implements OnInit {
   openTimeLogModal(): void {
     this.editingTimeLog = { date: new Date().toISOString().split('T')[0], hours: 0, billable: true };
     this.showTimeLogModal = true;
+    this.cdr.markForCheck();
   }
 
   closeTimeLogModal(): void {
     this.showTimeLogModal = false;
     this.editingTimeLog = {};
+    this.cdr.markForCheck();
   }
 
   saveTimeLog(): void {
     if (!this.editingTimeLog.hours || !this.selectedProject.id) return;
     
-    this.projectService.addTimeLog(this.selectedProject.id, this.editingTimeLog).subscribe(timeLog => {
-      if (!this.selectedProject.timeLogs) this.selectedProject.timeLogs = [];
-      this.selectedProject.timeLogs.push(timeLog);
-      this.selectedProject.totalLoggedTime = (this.selectedProject.totalLoggedTime || 0) + timeLog.hours;
-      if (timeLog.billable) {
-        this.selectedProject.totalBillableTime = (this.selectedProject.totalBillableTime || 0) + timeLog.hours;
+    this.projectService.addTimeLog(this.selectedProject.id, this.editingTimeLog).subscribe({
+      next: (timeLog) => {
+        if (!this.selectedProject.timeLogs) this.selectedProject.timeLogs = [];
+        this.selectedProject.timeLogs.push(timeLog);
+        this.selectedProject.totalLoggedTime = (this.selectedProject.totalLoggedTime || 0) + timeLog.hours;
+        if (timeLog.billable) {
+          this.selectedProject.totalBillableTime = (this.selectedProject.totalBillableTime || 0) + timeLog.hours;
+        }
+        this.closeTimeLogModal();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Error adding time log:', err);
+        alert('Failed to add time log. Please try again.');
       }
-      this.closeTimeLogModal();
     });
   }
 
@@ -589,12 +646,19 @@ export class ProjectManagementComponent implements OnInit {
     if (!this.selectedProject.id || !this.selectedProject.timeLogs) return;
     const timeLog = this.selectedProject.timeLogs[index];
     if (confirm('Delete this time log?')) {
-      this.projectService.deleteTimeLog(this.selectedProject.id, timeLog.id!).subscribe(() => {
-        this.selectedProject.totalLoggedTime = (this.selectedProject.totalLoggedTime || 0) - timeLog.hours;
-        if (timeLog.billable) {
-          this.selectedProject.totalBillableTime = (this.selectedProject.totalBillableTime || 0) - timeLog.hours;
+      this.projectService.deleteTimeLog(this.selectedProject.id, timeLog.id!).subscribe({
+        next: () => {
+          this.selectedProject.totalLoggedTime = (this.selectedProject.totalLoggedTime || 0) - timeLog.hours;
+          if (timeLog.billable) {
+            this.selectedProject.totalBillableTime = (this.selectedProject.totalBillableTime || 0) - timeLog.hours;
+          }
+          this.selectedProject.timeLogs?.splice(index, 1);
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Error deleting time log:', err);
+          alert('Failed to delete time log. Please try again.');
         }
-        this.selectedProject.timeLogs?.splice(index, 1);
       });
     }
   }
