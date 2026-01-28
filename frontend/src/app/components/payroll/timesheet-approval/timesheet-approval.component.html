@@ -5,7 +5,7 @@
       <p class="subtitle">Approved attendance data and payroll processing</p>
     </div>
     <div class="header-actions">
-      <button class="btn btn-outline-primary" (click)="goToStep(5)">
+      <button class="btn btn-outline-primary" (click)="goToStep(3)">
         <i class="fas fa-history"></i> View Payroll History
       </button>
     </div>
@@ -18,176 +18,53 @@
   <div class="step-wizard-new">
     <div class="step-item" [class.active]="currentStep === 0" [class.completed]="currentStep > 0" (click)="goToStep(0)">
       <div class="step-circle">
-        <i class="fas" [ngClass]="currentStep > 0 ? 'fa-check' : 'fa-clipboard-check'"></i>
+        <i class="fas" [ngClass]="currentStep > 0 ? 'fa-check' : 'fa-file-alt'"></i>
       </div>
       <div class="step-line" [class.completed]="currentStep > 0"></div>
       <div class="step-text">
         <span class="step-number">Step 1:</span>
-        <span class="step-title">Approved Attendance</span>
+        <span class="step-title">Generate Payroll</span>
       </div>
     </div>
 
     <div class="step-item" [class.active]="currentStep === 1" [class.completed]="currentStep > 1" (click)="goToStep(1)">
       <div class="step-circle">
-        <i class="fas" [ngClass]="currentStep > 1 ? 'fa-check' : 'fa-file-alt'"></i>
+        <i class="fas" [ngClass]="currentStep > 1 ? 'fa-check' : 'fa-calculator'"></i>
       </div>
       <div class="step-line" [class.completed]="currentStep > 1"></div>
       <div class="step-text">
         <span class="step-number">Step 2:</span>
-        <span class="step-title">Generate Timesheets</span>
+        <span class="step-title">Calculate Payroll</span>
       </div>
     </div>
 
     <div class="step-item" [class.active]="currentStep === 2" [class.completed]="currentStep > 2" (click)="goToStep(2)">
       <div class="step-circle">
-        <i class="fas" [ngClass]="currentStep > 2 ? 'fa-check' : 'fa-dollar-sign'"></i>
+        <i class="fas" [ngClass]="currentStep > 2 ? 'fa-check' : 'fa-play-circle'"></i>
       </div>
       <div class="step-line" [class.completed]="currentStep > 2"></div>
       <div class="step-text">
         <span class="step-number">Step 3:</span>
-        <span class="step-title">Calculate Payroll</span>
-      </div>
-    </div>
-
-    <div class="step-item" [class.active]="currentStep === 3" [class.completed]="currentStep > 3" (click)="goToStep(3)">
-      <div class="step-circle">
-        <i class="fas" [ngClass]="currentStep > 3 ? 'fa-check' : 'fa-cog'"></i>
-      </div>
-      <div class="step-line" [class.completed]="currentStep > 3"></div>
-      <div class="step-text">
-        <span class="step-number">Step 4:</span>
         <span class="step-title">Process Payroll</span>
       </div>
     </div>
 
-    <div class="step-item" [class.active]="currentStep === 4" (click)="goToStep(5)">
+    <div class="step-item" [class.active]="currentStep === 3" (click)="goToStep(3)">
       <div class="step-circle">
         <i class="fas fa-history"></i>
       </div>
       <div class="step-text">
-        <span class="step-number">Step 5:</span>
+        <span class="step-number">Step 4:</span>
         <span class="step-title">Payroll History</span>
       </div>
     </div>
   </div>
 
-  <!-- Step 1: Approved Attendance (Auto-Load) -->
+  <!-- Step 1: Generate Payroll -->
   <div class="step-content" *ngIf="currentStep === 0">
     <div class="section-box">
       <div class="step-header">
-        <h3>Step 1: Approved Attendance Data</h3>
-        <p class="period-info">Showing approved attendance records</p>
-      </div>
-
-      <div class="form-grid compact">
-        <div class="form-group">
-          <label>Start Date</label>
-          <input type="date" [(ngModel)]="approvedStartDate" (change)="onApprovedDateChange()" />
-        </div>
-        <div class="form-group">
-          <label>End Date</label>
-          <input type="date" [(ngModel)]="approvedEndDate" (change)="onApprovedDateChange()" />
-        </div>
-      </div>
-
-      <div class="summary-stats-row">
-        <div class="stat-box blue">
-          <div class="stat-icon"><i class="fas fa-users"></i></div>
-          <div class="stat-info">
-            <span class="stat-label">Employees</span>
-            <span class="stat-value">{{ totalApprovedEmployees }}</span>
-          </div>
-        </div>
-        <div class="stat-box green">
-          <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
-          <div class="stat-info">
-            <span class="stat-label">Records</span>
-            <span class="stat-value">{{ totalApprovedRecords }}</span>
-          </div>
-        </div>
-        <div class="stat-box purple">
-          <div class="stat-icon"><i class="fas fa-clock"></i></div>
-          <div class="stat-info">
-            <span class="stat-label">Total Hours</span>
-            <span class="stat-value">{{ totalApprovedHours.toFixed(1) }}h</span>
-          </div>
-        </div>
-        <div class="stat-box orange">
-          <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
-          <div class="stat-info">
-            <span class="stat-label">Overtime</span>
-            <span class="stat-value">{{ totalApprovedOT.toFixed(1) }}h</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="sub-section">
-        <h4><i class="fas fa-check-circle"></i> Approved Attendance Records</h4>
-      </div>
-
-      <div class="loading-indicator" *ngIf="loading">
-        <i class="fas fa-spinner fa-spin"></i> Loading approved attendance...
-      </div>
-
-      <div class="table-container" *ngIf="!loading">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>EMP ID</th>
-              <th>NAME</th>
-              <th>DEPARTMENT</th>
-              <th>DATE</th>
-              <th>CLOCK IN</th>
-              <th>CLOCK OUT</th>
-              <th>HOURS</th>
-              <th>OT</th>
-              <th>STATUS</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let record of approvedAttendanceRecords; let i = index">
-              <td>{{ i + 1 }}</td>
-              <td class="emp-id"><a class="employee-code-link" [routerLink]="['/app/hr/employees', record.employeeId]">{{ record.employeeCode }}</a></td>
-              <td class="emp-name">{{ record.employeeName }}</td>
-              <td>{{ record.department }}</td>
-              <td>{{ formatDateDisplay(record.attendanceDate) }}</td>
-              <td>{{ record.clockIn?.substring(0, 5) || '-' }}</td>
-              <td>{{ record.clockOut?.substring(0, 5) || '-' }}</td>
-              <td class="hours">{{ record.regularHours.toFixed(1) }}</td>
-              <td class="hours">{{ record.overtimeHours.toFixed(1) }}</td>
-              <td>
-                <span class="status-badge approved">{{ record.status }}</span>
-              </td>
-            </tr>
-            <tr *ngIf="approvedAttendanceRecords.length === 0 && !loading">
-              <td colspan="10" class="no-data">
-                <i class="fas fa-calendar-times"></i>
-                No approved attendance records found for this period
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="step-actions-bar">
-        <div class="left-actions">
-          <span class="selected-info">{{ approvedAttendanceRecords.length }} approved records</span>
-        </div>
-        <div class="right-actions">
-          <button class="btn btn-primary" (click)="goToStep(1)">
-            Next: Generate Timesheets <i class="fas fa-arrow-right"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Step 2: Generate Timesheet -->
-  <div class="step-content" *ngIf="currentStep === 1">
-    <div class="section-box">
-      <div class="step-header">
-        <h3>Step 2: Generate Timesheet Summary</h3>
+        <h3>Step 1: Generate Payroll</h3>
         <p class="period-info">Period: {{ generateStartDate }} - {{ generateEndDate }} ({{ getPayPeriodTypeLabel() }})</p>
       </div>
 
@@ -212,17 +89,17 @@
         <div class="form-group" style="display: flex; align-items: flex-end;">
           <button class="btn btn-success" [disabled]="generating" (click)="generateTimesheetsForPeriod()">
             <i class="fas fa-sync" [class.fa-spin]="generating"></i>
-            {{ generating ? 'Generating...' : 'Generate Timesheets' }}
+            {{ generating ? 'Generating...' : 'Generate Payroll' }}
           </button>
         </div>
       </div>
 
       <div class="sub-section">
-        <h4><i class="fas fa-file-alt"></i> Generated Timesheets</h4>
+        <h4><i class="fas fa-file-alt"></i> Generated Payroll Records</h4>
       </div>
 
       <div class="loading-indicator" *ngIf="generating">
-        <i class="fas fa-spinner fa-spin"></i> Generating timesheets from approved attendance...
+        <i class="fas fa-spinner fa-spin"></i> Generating payroll from approved attendance...
       </div>
 
       <div class="table-container" *ngIf="!generating">
@@ -272,7 +149,7 @@
             <tr *ngIf="generatedTimesheets.length === 0 && !generating">
               <td colspan="10" class="no-data">
                 <i class="fas fa-file-alt"></i>
-                No timesheets generated yet. Click "Generate Timesheets" to create from approved attendance.
+                No payroll records generated yet. Click "Generate Payroll" to create from approved attendance.
               </td>
             </tr>
           </tbody>
@@ -281,13 +158,10 @@
 
       <div class="step-actions-bar">
         <div class="left-actions">
-          <span class="selected-info">{{ generatedTimesheets.length }} timesheets generated</span>
+          <span class="selected-info">{{ generatedTimesheets.length }} payroll records generated</span>
         </div>
         <div class="right-actions">
-          <button class="btn btn-outline-secondary" (click)="goToStep(0)">
-            <i class="fas fa-arrow-left"></i> Back
-          </button>
-          <button class="btn btn-primary" (click)="goToStep(2)">
+          <button class="btn btn-primary" (click)="goToStep(1)">
             Next: Calculate Payroll <i class="fas fa-arrow-right"></i>
           </button>
         </div>
@@ -375,8 +249,8 @@
     </div>
   </div>
 
-  <!-- Step 3: Calculate Payroll -->
-  <div class="step-content" *ngIf="currentStep === 2">
+  <!-- Step 2: Calculate Payroll -->
+  <div class="step-content" *ngIf="currentStep === 1">
     <div class="section-box">
       <div class="payroll-summary-cards">
         <div class="payroll-card green">
@@ -398,7 +272,7 @@
       </div>
 
       <div class="step-header">
-        <h3>Step 2: Payroll Calculation Complete</h3>
+        <h3>Step 2: Calculate Payroll</h3>
         <p class="period-info">Period: {{ generateStartDate && generateEndDate ? generateStartDate + ' - ' + generateEndDate : '-' }}</p>
       </div>
 
@@ -481,13 +355,10 @@
           <span class="selected-info">{{ getSelectedStep3Count() }} employee(s) selected</span>
         </div>
         <div class="right-actions">
-          <button class="btn btn-outline-secondary" (click)="goToStep(1)">
+          <button class="btn btn-outline-secondary" (click)="goToStep(0)">
             Back
           </button>
-          <button class="btn btn-success" [disabled]="getSelectedStep3Count() === 0" (click)="processSelectedPayroll()">
-            <i class="fas fa-check-circle"></i> Process Payroll
-          </button>
-          <button class="btn btn-primary" (click)="goToStep(3)">
+          <button class="btn btn-primary" (click)="goToStep(2)">
             Next: Process Payroll <i class="fas fa-arrow-right"></i>
           </button>
         </div>
@@ -495,12 +366,21 @@
     </div>
   </div>
 
-  <!-- Step 4: Process Payroll -->
-  <div class="step-content" *ngIf="currentStep === 3">
+  <!-- Step 3: Process Payroll -->
+  <div class="step-content" *ngIf="currentStep === 2">
     <div class="section-box">
       <div class="step-header">
         <h3>Step 3: Process Payroll</h3>
-        <p class="period-info">Review processed and held payroll records</p>
+        <p class="period-info">Review and process payroll with pay date</p>
+      </div>
+
+      <!-- Pay Date Input -->
+      <div class="pay-date-section">
+        <div class="form-group pay-date-group">
+          <label>Pay Date <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="processPayDate" class="pay-date-input" [class.error-border]="showProcessPayDateError">
+          <span class="error-message" *ngIf="showProcessPayDateError">Pay date is required to process payroll</span>
+        </div>
       </div>
 
       <div class="payroll-summary-cards">
@@ -667,13 +547,16 @@
 
       <div class="step-actions-bar">
         <div class="left-actions">
-          <span class="selected-info">{{ processedPayrollRows.length }} processed, {{ holdPayrollRows.length }} on hold</span>
+          <span class="selected-info">{{ getSelectedStep3Count() }} employee(s) selected for processing</span>
         </div>
         <div class="right-actions">
-          <button class="btn btn-outline-secondary" (click)="goToStep(2)">
+          <button class="btn btn-outline-secondary" (click)="goToStep(1)">
             Back
           </button>
-          <button class="btn btn-primary" (click)="goToStep(5)">
+          <button class="btn btn-success" [disabled]="getSelectedStep3Count() === 0" (click)="processSelectedPayrollWithDate()">
+            <i class="fas fa-check-circle"></i> Process Payroll
+          </button>
+          <button class="btn btn-primary" (click)="goToStep(3)">
             View Payroll History <i class="fas fa-arrow-right"></i>
           </button>
         </div>
@@ -682,7 +565,7 @@
   </div>
 
   <!-- Payroll Summary Section after processing -->
-  <div class="payroll-summary-section" *ngIf="showPayrollSummary && currentStep === 3">
+  <div class="payroll-summary-section" *ngIf="showPayrollSummary && currentStep === 2">
     <div class="section-box summary-box">
       <div class="summary-header">
         <h3><i class="fas fa-check-circle text-success"></i> Payroll Processed Successfully</h3>

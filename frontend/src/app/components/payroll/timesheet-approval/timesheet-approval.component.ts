@@ -164,6 +164,10 @@ export class TimesheetApprovalComponent implements OnInit {
   // Step 3: Selection for processing
   allStep3Selected = false;
   
+  // Step 3: Process Payroll with pay date
+  processPayDate: string = '';
+  showProcessPayDateError = false;
+  
   // Step 4: Process Payroll - Two tables
   processedPayrollRows: PayrollCalculationRow[] = [];
   holdPayrollRows: PayrollCalculationRow[] = [];
@@ -207,7 +211,8 @@ export class TimesheetApprovalComponent implements OnInit {
   }
 
   goToStep(step: number): void {
-    if (step === 5) {
+    if (step === 3) {
+      // Step 4: Payroll History
       window.location.href = '/app/payroll/history';
       return;
     }
@@ -215,16 +220,41 @@ export class TimesheetApprovalComponent implements OnInit {
     this.currentStep = step;
     
     if (step === 0) {
+      // Step 1: Generate Payroll - load approved attendance first
       this.loadApprovedAttendance();
     } else if (step === 1) {
-      // Step 2: Generate Timesheet - employees already loaded
-    } else if (step === 2) {
-      // Step 3: Calculate Payroll - auto-calculate from generated timesheets
+      // Step 2: Calculate Payroll - auto-calculate from generated timesheets
       this.autoCalculatePayroll();
-    } else if (step === 3) {
-      this.loadPayableEmployees();
+    } else if (step === 2) {
+      // Step 3: Process Payroll - set default pay date to end of period
+      if (!this.processPayDate && this.generateEndDate) {
+        this.processPayDate = this.generateEndDate;
+      }
+      this.showProcessPayDateError = false;
     }
     this.cdr.markForCheck();
+  }
+  
+  processSelectedPayrollWithDate(): void {
+    // Validate pay date is required
+    if (!this.processPayDate) {
+      this.showProcessPayDateError = true;
+      this.showMessage('Pay date is required to process payroll', 'error');
+      this.cdr.markForCheck();
+      return;
+    }
+    
+    this.showProcessPayDateError = false;
+    
+    // Get selected rows from payrollCalculationRows
+    const selectedRows = this.payrollCalculationRows.filter(r => r.selected);
+    if (selectedRows.length === 0) {
+      this.showMessage('Please select employees to process', 'error');
+      return;
+    }
+    
+    // Process selected employees
+    this.processSelectedPayroll();
   }
   
   autoCalculatePayroll(): void {
