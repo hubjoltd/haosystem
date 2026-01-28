@@ -39,6 +39,13 @@ public class ExpenseRequest {
     @Column(length = 50)
     private String projectCode;
     
+    @Column(length = 200)
+    private String payeeName;
+    
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private ExpenseCategory category;
+    
     @Column(nullable = false)
     private BigDecimal totalAmount = BigDecimal.ZERO;
     
@@ -151,6 +158,10 @@ public class ExpenseRequest {
     public void setCostCenter(CostCenter costCenter) { this.costCenter = costCenter; }
     public String getProjectCode() { return projectCode; }
     public void setProjectCode(String projectCode) { this.projectCode = projectCode; }
+    public String getPayeeName() { return payeeName; }
+    public void setPayeeName(String payeeName) { this.payeeName = payeeName; }
+    public ExpenseCategory getCategory() { return category; }
+    public void setCategory(ExpenseCategory category) { this.category = category; }
     public BigDecimal getTotalAmount() { return totalAmount; }
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
     public BigDecimal getApprovedAmount() { return approvedAmount; }

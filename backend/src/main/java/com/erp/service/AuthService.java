@@ -30,6 +30,9 @@ public class AuthService {
     @Autowired
     private BranchRepository branchRepository;
     
+    @Autowired
+    private EmployeeRepository employeeRepository;
+    
     public AuthResponse login(LoginRequest request) {
         Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
         
@@ -83,7 +86,15 @@ public class AuthService {
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
         
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().getName(), branchId, isSuperAdmin);
+        Long employeeId = null;
+        if (user.getEmail() != null) {
+            Optional<Employee> employeeOpt = employeeRepository.findByEmail(user.getEmail());
+            if (employeeOpt.isPresent()) {
+                employeeId = employeeOpt.get().getId();
+            }
+        }
+        
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().getName(), branchId, isSuperAdmin, employeeId);
         
         return new AuthResponse(
             token,

@@ -198,6 +198,11 @@ public class ExpenseService {
             costCenterRepository.findById(costCenterId).ifPresent(request::setCostCenter);
         }
         if (data.containsKey("projectCode")) request.setProjectCode((String) data.get("projectCode"));
+        if (data.containsKey("payeeName")) request.setPayeeName((String) data.get("payeeName"));
+        if (data.containsKey("categoryId") && data.get("categoryId") != null) {
+            Long categoryId = Long.valueOf(data.get("categoryId").toString());
+            expenseCategoryRepository.findById(categoryId).ifPresent(request::setCategory);
+        }
         if (data.containsKey("reimbursementRequired")) {
             request.setReimbursementRequired((Boolean) data.get("reimbursementRequired"));
         }

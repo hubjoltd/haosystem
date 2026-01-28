@@ -61,6 +61,30 @@ public class LeaveRequest {
 
     private Boolean notifyManager;
 
+    @Column(length = 20)
+    private String managerApprovalStatus;
+    
+    @ManyToOne
+    @JoinColumn(name = "manager_approved_by")
+    private Employee managerApprovedBy;
+    
+    private LocalDateTime managerApprovedAt;
+    
+    @Column(length = 500)
+    private String managerRemarks;
+    
+    @Column(length = 20)
+    private String hrApprovalStatus;
+    
+    @ManyToOne
+    @JoinColumn(name = "hr_approved_by")
+    private Employee hrApprovedBy;
+    
+    private LocalDateTime hrApprovedAt;
+    
+    @Column(length = 500)
+    private String hrRemarks;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -140,4 +164,28 @@ public class LeaveRequest {
 
     public Boolean getIsHourlyLeave() { return isHourlyLeave; }
     public void setIsHourlyLeave(Boolean isHourlyLeave) { this.isHourlyLeave = isHourlyLeave; }
+
+    public String getManagerApprovalStatus() { return managerApprovalStatus; }
+    public void setManagerApprovalStatus(String managerApprovalStatus) { this.managerApprovalStatus = managerApprovalStatus; }
+
+    public Employee getManagerApprovedBy() { return managerApprovedBy; }
+    public void setManagerApprovedBy(Employee managerApprovedBy) { this.managerApprovedBy = managerApprovedBy; }
+
+    public LocalDateTime getManagerApprovedAt() { return managerApprovedAt; }
+    public void setManagerApprovedAt(LocalDateTime managerApprovedAt) { this.managerApprovedAt = managerApprovedAt; }
+
+    public String getManagerRemarks() { return managerRemarks; }
+    public void setManagerRemarks(String managerRemarks) { this.managerRemarks = managerRemarks; }
+
+    public String getHrApprovalStatus() { return hrApprovalStatus; }
+    public void setHrApprovalStatus(String hrApprovalStatus) { this.hrApprovalStatus = hrApprovalStatus; }
+
+    public Employee getHrApprovedBy() { return hrApprovedBy; }
+    public void setHrApprovedBy(Employee hrApprovedBy) { this.hrApprovedBy = hrApprovedBy; }
+
+    public LocalDateTime getHrApprovedAt() { return hrApprovedAt; }
+    public void setHrApprovedAt(LocalDateTime hrApprovedAt) { this.hrApprovedAt = hrApprovedAt; }
+
+    public String getHrRemarks() { return hrRemarks; }
+    public void setHrRemarks(String hrRemarks) { this.hrRemarks = hrRemarks; }
 }

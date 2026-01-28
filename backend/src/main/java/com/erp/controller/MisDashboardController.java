@@ -6,8 +6,17 @@ import org.springframework.web.bind.annotation.*;
 
 import com.erp.repository.EmployeeRepository;
 import com.erp.repository.DepartmentRepository;
+import com.erp.repository.PayrollRecordRepository;
+import com.erp.repository.PayrollRunRepository;
+import com.erp.model.PayrollRecord;
+import com.erp.model.PayrollRun;
+import com.erp.model.Employee;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/mis-dashboard")
@@ -19,6 +28,12 @@ public class MisDashboardController {
 
     @Autowired
     private DepartmentRepository departmentRepository;
+    
+    @Autowired
+    private PayrollRecordRepository payrollRecordRepository;
+    
+    @Autowired
+    private PayrollRunRepository payrollRunRepository;
 
     @GetMapping("/hr")
     public ResponseEntity<Map<String, Object>> getHRStats() {
@@ -91,57 +106,147 @@ public class MisDashboardController {
     public ResponseEntity<Map<String, Object>> getPayrollStats() {
         Map<String, Object> stats = new HashMap<>();
         
-        stats.put("totalPayrollCost", 1250000);
-        stats.put("avgSalary", 75000);
-        stats.put("totalDeductions", 187500);
-        stats.put("totalOvertimePay", 45000);
+        List<PayrollRecord> allRecords = payrollRecordRepository.findAll();
+        List<Employee> employees = employeeRepository.findByActiveTrue();
         
-        List<Map<String, Object>> payrollTrend = Arrays.asList(
-            Map.of("month", "Jul", "cost", 1180000),
-            Map.of("month", "Aug", "cost", 1195000),
-            Map.of("month", "Sep", "cost", 1210000),
-            Map.of("month", "Oct", "cost", 1230000),
-            Map.of("month", "Nov", "cost", 1245000),
-            Map.of("month", "Dec", "cost", 1250000)
-        );
+        BigDecimal totalPayrollCost = allRecords.stream()
+            .map(r -> r.getGrossPay() != null ? r.getGrossPay() : BigDecimal.ZERO)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        BigDecimal avgSalary = employees.isEmpty() ? BigDecimal.ZERO : 
+            employees.stream()
+                .map(e -> e.getSalary() != null ? e.getSalary() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(employees.size()), 2, java.math.RoundingMode.HALF_UP);
+        
+        BigDecimal totalDeductions = allRecords.stream()
+            .map(r -> r.getTotalDeductions() != null ? r.getTotalDeductions() : BigDecimal.ZERO)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        BigDecimal totalOvertimePay = allRecords.stream()
+            .map(r -> r.getOvertimePay() != null ? r.getOvertimePay() : BigDecimal.ZERO)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        stats.put("totalPayrollCost", totalPayrollCost.doubleValue());
+        stats.put("avgSalary", avgSalary.doubleValue());
+        stats.put("totalDeductions", totalDeductions.doubleValue());
+        stats.put("totalOvertimePay", totalOvertimePay.doubleValue());
+        
+        DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMM");
+        LocalDate now = LocalDate.now();
+        List<Map<String, Object>> payrollTrend = new ArrayList<>();
+        for (int i = 5; i >= 0; i--) {
+            LocalDate monthDate = now.minusMonths(i);
+            String monthName = monthDate.format(monthFormatter);
+            int year = monthDate.getYear();
+            int month = monthDate.getMonthValue();
+            
+            BigDecimal monthCost = allRecords.stream()
+                .filter(r -> r.getPayrollRun() != null && r.getPayrollRun().getPeriodStartDate() != null)
+                .filter(r -> r.getPayrollRun().getPeriodStartDate().getYear() == year && 
+                            r.getPayrollRun().getPeriodStartDate().getMonthValue() == month)
+                .map(r -> r.getGrossPay() != null ? r.getGrossPay() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("month", monthName);
+            entry.put("cost", monthCost.doubleValue());
+            payrollTrend.add(entry);
+        }
         stats.put("payrollTrend", payrollTrend);
         
+        BigDecimal fedTax = allRecords.stream().map(r -> r.getFederalTax() != null ? r.getFederalTax() : BigDecimal.ZERO).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal stateTax = allRecords.stream().map(r -> r.getStateTax() != null ? r.getStateTax() : BigDecimal.ZERO).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal socSec = allRecords.stream().map(r -> r.getSocialSecurityTax() != null ? r.getSocialSecurityTax() : BigDecimal.ZERO).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal medicare = allRecords.stream().map(r -> r.getMedicareTax() != null ? r.getMedicareTax() : BigDecimal.ZERO).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal health = allRecords.stream().map(r -> r.getHealthInsurance() != null ? r.getHealthInsurance() : BigDecimal.ZERO).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal retirement = allRecords.stream().map(r -> r.getRetirement401k() != null ? r.getRetirement401k() : BigDecimal.ZERO).reduce(BigDecimal.ZERO, BigDecimal::add);
+        
         List<Map<String, Object>> deductions = Arrays.asList(
-            Map.of("category", "Federal Tax", "amount", 75000),
-            Map.of("category", "State Tax", "amount", 37500),
-            Map.of("category", "Social Security", "amount", 35000),
-            Map.of("category", "Medicare", "amount", 18000),
-            Map.of("category", "Health Insurance", "amount", 15000),
-            Map.of("category", "401(k)", "amount", 7000)
+            Map.of("category", "Federal Tax", "amount", fedTax.doubleValue()),
+            Map.of("category", "State Tax", "amount", stateTax.doubleValue()),
+            Map.of("category", "Social Security", "amount", socSec.doubleValue()),
+            Map.of("category", "Medicare", "amount", medicare.doubleValue()),
+            Map.of("category", "Health Insurance", "amount", health.doubleValue()),
+            Map.of("category", "401(k)", "amount", retirement.doubleValue())
         );
         stats.put("deductionsBreakdown", deductions);
         
-        List<Map<String, Object>> otTrend = Arrays.asList(
-            Map.of("month", "Jul", "hours", 420, "cost", 38000),
-            Map.of("month", "Aug", "hours", 380, "cost", 35000),
-            Map.of("month", "Sep", "hours", 450, "cost", 42000),
-            Map.of("month", "Oct", "hours", 520, "cost", 48000),
-            Map.of("month", "Nov", "hours", 480, "cost", 44000),
-            Map.of("month", "Dec", "hours", 490, "cost", 45000)
-        );
+        List<Map<String, Object>> otTrend = new ArrayList<>();
+        for (int i = 5; i >= 0; i--) {
+            LocalDate monthDate = now.minusMonths(i);
+            String monthName = monthDate.format(monthFormatter);
+            int year = monthDate.getYear();
+            int month = monthDate.getMonthValue();
+            
+            double monthHours = allRecords.stream()
+                .filter(r -> r.getPayrollRun() != null && r.getPayrollRun().getPeriodStartDate() != null)
+                .filter(r -> r.getPayrollRun().getPeriodStartDate().getYear() == year && 
+                            r.getPayrollRun().getPeriodStartDate().getMonthValue() == month)
+                .mapToDouble(r -> r.getOvertimeHours() != null ? r.getOvertimeHours().doubleValue() : 0)
+                .sum();
+            
+            BigDecimal monthOtCost = allRecords.stream()
+                .filter(r -> r.getPayrollRun() != null && r.getPayrollRun().getPeriodStartDate() != null)
+                .filter(r -> r.getPayrollRun().getPeriodStartDate().getYear() == year && 
+                            r.getPayrollRun().getPeriodStartDate().getMonthValue() == month)
+                .map(r -> r.getOvertimePay() != null ? r.getOvertimePay() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            Map<String, Object> entry = new HashMap<>();
+            entry.put("month", monthName);
+            entry.put("hours", (int) monthHours);
+            entry.put("cost", monthOtCost.doubleValue());
+            otTrend.add(entry);
+        }
         stats.put("overtimeTrend", otTrend);
         
-        List<Map<String, Object>> deptPayroll = Arrays.asList(
-            Map.of("department", "Engineering", "cost", 450000),
-            Map.of("department", "Sales", "cost", 280000),
-            Map.of("department", "Marketing", "cost", 150000),
-            Map.of("department", "HR", "cost", 120000),
-            Map.of("department", "Finance", "cost", 180000),
-            Map.of("department", "Operations", "cost", 70000)
-        );
+        Map<String, BigDecimal> deptPayrollMap = employees.stream()
+            .filter(e -> e.getDepartment() != null)
+            .collect(Collectors.groupingBy(
+                e -> e.getDepartment().getName(),
+                Collectors.mapping(
+                    e -> e.getSalary() != null ? e.getSalary() : BigDecimal.ZERO,
+                    Collectors.reducing(BigDecimal.ZERO, BigDecimal::add)
+                )
+            ));
+        
+        List<Map<String, Object>> deptPayroll = deptPayrollMap.entrySet().stream()
+            .map(entry -> {
+                Map<String, Object> m = new HashMap<>();
+                m.put("department", entry.getKey());
+                m.put("cost", entry.getValue().doubleValue());
+                return m;
+            })
+            .collect(Collectors.toList());
+        if (deptPayroll.isEmpty()) {
+            deptPayroll = Arrays.asList(
+                Map.of("department", "No Data", "cost", 0)
+            );
+        }
         stats.put("departmentPayroll", deptPayroll);
         
+        long count30_50 = employees.stream().filter(e -> e.getSalary() != null && 
+            e.getSalary().compareTo(BigDecimal.valueOf(30000)) >= 0 && 
+            e.getSalary().compareTo(BigDecimal.valueOf(50000)) < 0).count();
+        long count50_75 = employees.stream().filter(e -> e.getSalary() != null && 
+            e.getSalary().compareTo(BigDecimal.valueOf(50000)) >= 0 && 
+            e.getSalary().compareTo(BigDecimal.valueOf(75000)) < 0).count();
+        long count75_100 = employees.stream().filter(e -> e.getSalary() != null && 
+            e.getSalary().compareTo(BigDecimal.valueOf(75000)) >= 0 && 
+            e.getSalary().compareTo(BigDecimal.valueOf(100000)) < 0).count();
+        long count100_150 = employees.stream().filter(e -> e.getSalary() != null && 
+            e.getSalary().compareTo(BigDecimal.valueOf(100000)) >= 0 && 
+            e.getSalary().compareTo(BigDecimal.valueOf(150000)) < 0).count();
+        long count150plus = employees.stream().filter(e -> e.getSalary() != null && 
+            e.getSalary().compareTo(BigDecimal.valueOf(150000)) >= 0).count();
+        
         List<Map<String, Object>> salaryDist = Arrays.asList(
-            Map.of("range", "$30-50K", "count", 25),
-            Map.of("range", "$50-75K", "count", 48),
-            Map.of("range", "$75-100K", "count", 42),
-            Map.of("range", "$100-150K", "count", 28),
-            Map.of("range", "$150K+", "count", 13)
+            Map.of("range", "$30-50K", "count", count30_50),
+            Map.of("range", "$50-75K", "count", count50_75),
+            Map.of("range", "$75-100K", "count", count75_100),
+            Map.of("range", "$100-150K", "count", count100_150),
+            Map.of("range", "$150K+", "count", count150plus)
         );
         stats.put("salaryDistribution", salaryDist);
         

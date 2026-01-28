@@ -59,6 +59,8 @@ export interface ExpenseRequest {
   costCenter?: any;
   costCenterId?: number;
   projectCode?: string;
+  categoryId?: number;
+  payeeName?: string;
   totalAmount?: number;
   approvedAmount?: number;
   status?: string;

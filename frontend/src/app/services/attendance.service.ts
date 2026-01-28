@@ -24,6 +24,7 @@ export interface AttendanceRecord {
   approvedAt?: string;
   project?: { id?: number; name?: string };
   projectName?: string;
+  projectCode?: string;
   selected?: boolean;
 }
 

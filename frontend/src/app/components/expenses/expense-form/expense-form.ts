@@ -10,6 +10,7 @@ import { ExpenseRequest, ExpenseItem, ExpenseCategory, EXPENSE_TYPES, PAYMENT_ME
 
 interface ExpenseItemForm extends Partial<ExpenseItem> {
   expenseType?: string;
+  categoryId?: number;
   receiptFileName?: string;
   receiptFileData?: string;
 }
@@ -128,6 +129,7 @@ export class ExpenseFormComponent implements OnInit {
     } else {
       this.itemForm = {
         expenseType: '',
+        categoryId: undefined,
         description: '',
         amount: 0,
         receiptFileName: '',

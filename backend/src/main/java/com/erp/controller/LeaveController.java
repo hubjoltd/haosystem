@@ -48,6 +48,15 @@ public class LeaveController {
         return null;
     }
     
+    private Long extractEmployeeId(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            return jwtUtil.extractEmployeeId(token);
+        }
+        return null;
+    }
+    
     private boolean isSuperAdmin(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -304,11 +313,141 @@ public class LeaveController {
         return leaveRequestRepository.findById(id)
             .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
             .map(request -> {
-                if (!"PENDING".equals(request.getStatus())) {
+                if (!"PENDING".equals(request.getStatus()) && !"PENDING_MANAGER".equals(request.getStatus())) {
                     return ResponseEntity.badRequest().body(Map.of("error", "Only pending requests can be cancelled"));
                 }
 
                 request.setStatus("CANCELLED");
+
+                int currentYear = request.getStartDate().getYear();
+                Optional<LeaveBalance> balanceOpt = leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndYear(
+                    request.getEmployee().getId(), request.getLeaveType().getId(), currentYear);
+                if (balanceOpt.isPresent()) {
+                    LeaveBalance balance = balanceOpt.get();
+                    balance.setPending(balance.getPending().subtract(request.getTotalDays()));
+                    leaveBalanceRepository.save(balance);
+                }
+
+                return ResponseEntity.ok(leaveRequestRepository.save(request));
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/requests/{id}/manager-approve")
+    public ResponseEntity<?> managerApproveRequest(HttpServletRequest httpRequest, @PathVariable Long id, @RequestBody Map<String, Object> data) {
+        Long approverId = extractEmployeeId(httpRequest);
+        return leaveRequestRepository.findById(id)
+            .map(request -> {
+                String currentStatus = request.getStatus();
+                if (!"PENDING".equals(currentStatus) && !"PENDING_MANAGER".equals(currentStatus)) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Request is not pending manager approval"));
+                }
+
+                request.setManagerApprovalStatus("APPROVED");
+                request.setManagerApprovedAt(LocalDateTime.now());
+                request.setStatus("PENDING_HR");
+                if (data.containsKey("remarks")) {
+                    request.setManagerRemarks((String) data.get("remarks"));
+                }
+                if (approverId != null) {
+                    employeeRepository.findById(approverId).ifPresent(request::setManagerApprovedBy);
+                }
+
+                return ResponseEntity.ok(leaveRequestRepository.save(request));
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/requests/{id}/manager-reject")
+    public ResponseEntity<?> managerRejectRequest(HttpServletRequest httpRequest, @PathVariable Long id, @RequestBody Map<String, Object> data) {
+        Long approverId = extractEmployeeId(httpRequest);
+        return leaveRequestRepository.findById(id)
+            .map(request -> {
+                String currentStatus = request.getStatus();
+                if (!"PENDING".equals(currentStatus) && !"PENDING_MANAGER".equals(currentStatus)) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Request is not pending manager approval"));
+                }
+
+                request.setManagerApprovalStatus("REJECTED");
+                request.setManagerApprovedAt(LocalDateTime.now());
+                request.setStatus("REJECTED");
+                if (data.containsKey("remarks")) {
+                    request.setManagerRemarks((String) data.get("remarks"));
+                }
+                if (approverId != null) {
+                    employeeRepository.findById(approverId).ifPresent(request::setManagerApprovedBy);
+                }
+
+                int currentYear = request.getStartDate().getYear();
+                Optional<LeaveBalance> balanceOpt = leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndYear(
+                    request.getEmployee().getId(), request.getLeaveType().getId(), currentYear);
+                if (balanceOpt.isPresent()) {
+                    LeaveBalance balance = balanceOpt.get();
+                    balance.setPending(balance.getPending().subtract(request.getTotalDays()));
+                    leaveBalanceRepository.save(balance);
+                }
+
+                return ResponseEntity.ok(leaveRequestRepository.save(request));
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/requests/{id}/hr-approve")
+    public ResponseEntity<?> hrApproveRequest(HttpServletRequest httpRequest, @PathVariable Long id, @RequestBody Map<String, Object> data) {
+        Long approverId = extractEmployeeId(httpRequest);
+        return leaveRequestRepository.findById(id)
+            .map(request -> {
+                if (!"PENDING_HR".equals(request.getStatus())) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Request is not pending HR approval"));
+                }
+
+                request.setHrApprovalStatus("APPROVED");
+                request.setHrApprovedAt(LocalDateTime.now());
+                request.setStatus("APPROVED");
+                request.setApprovedAt(LocalDateTime.now());
+                if (data.containsKey("remarks")) {
+                    request.setHrRemarks((String) data.get("remarks"));
+                }
+                if (approverId != null) {
+                    employeeRepository.findById(approverId).ifPresent(emp -> {
+                        request.setHrApprovedBy(emp);
+                        request.setApprovedBy(emp);
+                    });
+                }
+
+                int currentYear = request.getStartDate().getYear();
+                Optional<LeaveBalance> balanceOpt = leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndYear(
+                    request.getEmployee().getId(), request.getLeaveType().getId(), currentYear);
+                if (balanceOpt.isPresent()) {
+                    LeaveBalance balance = balanceOpt.get();
+                    balance.setPending(balance.getPending().subtract(request.getTotalDays()));
+                    balance.setUsed(balance.getUsed().add(request.getTotalDays()));
+                    leaveBalanceRepository.save(balance);
+                }
+
+                return ResponseEntity.ok(leaveRequestRepository.save(request));
+            })
+            .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/requests/{id}/hr-reject")
+    public ResponseEntity<?> hrRejectRequest(HttpServletRequest httpRequest, @PathVariable Long id, @RequestBody Map<String, Object> data) {
+        Long approverId = extractEmployeeId(httpRequest);
+        return leaveRequestRepository.findById(id)
+            .map(request -> {
+                if (!"PENDING_HR".equals(request.getStatus())) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "Request is not pending HR approval"));
+                }
+
+                request.setHrApprovalStatus("REJECTED");
+                request.setHrApprovedAt(LocalDateTime.now());
+                request.setStatus("REJECTED");
+                if (data.containsKey("remarks")) {
+                    request.setHrRemarks((String) data.get("remarks"));
+                }
+                if (approverId != null) {
+                    employeeRepository.findById(approverId).ifPresent(request::setHrApprovedBy);
+                }
 
                 int currentYear = request.getStartDate().getYear();
                 Optional<LeaveBalance> balanceOpt = leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndYear(

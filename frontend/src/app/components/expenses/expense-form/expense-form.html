@@ -23,12 +23,26 @@
           <input type="date" [(ngModel)]="expenseRequest.expenseDate">
         </div>
         <div class="form-group">
+          <label>Payee Name *</label>
+          <input type="text" [(ngModel)]="expenseRequest.payeeName" placeholder="Enter payee/vendor name">
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
           <label>Project (Optional)</label>
           <select [(ngModel)]="expenseRequest.projectCode">
             <option value="">-- No Project --</option>
             <option *ngFor="let project of projects" [value]="project.projectCode">
               {{ project.projectCode }} - {{ project.name }}
             </option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Expense Category</label>
+          <select [(ngModel)]="expenseRequest.categoryId">
+            <option value="">-- Select Category --</option>
+            <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
           </select>
         </div>
       </div>
@@ -126,7 +140,15 @@
     
     <div class="modal-body">
       <div class="form-group">
-        <label>Expense Type *</label>
+        <label>Expense Category *</label>
+        <select [(ngModel)]="itemForm.categoryId">
+          <option value="">Select Category</option>
+          <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Expense Type</label>
         <select [(ngModel)]="itemForm.expenseType">
           <option value="">Select Expense Type</option>
           <option *ngFor="let type of expenseTypesList" [value]="type.name">{{ type.name }}</option>

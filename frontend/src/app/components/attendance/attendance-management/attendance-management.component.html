@@ -43,10 +43,12 @@
       <thead>
         <tr>
           <th><input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()" /></th>
+          <th>Employee ID</th>
           <th>Employee</th>
           <th>Clock In</th>
           <th>Clock Out</th>
           <th>Hours</th>
+          <th>Project</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -54,6 +56,7 @@
       <tbody>
         <tr *ngFor="let record of filteredRecords">
           <td><input type="checkbox" [(ngModel)]="record.selected" /></td>
+          <td class="emp-id">{{ record.employee?.employeeCode || record.employee?.id || '-' }}</td>
           <td>
             <div class="employee-cell">
               <div class="avatar">{{ getInitials(record.employee) }}</div>
@@ -63,6 +66,7 @@
           <td>{{ formatTime(record.clockIn) }}</td>
           <td>{{ formatTime(record.clockOut) }}</td>
           <td>{{ calculateHoursDisplay(record) }}</td>
+          <td>{{ record.projectCode || record.project?.name || record.projectName || '-' }}</td>
           <td>
             <span class="status-badge" [ngClass]="getStatusBadgeClass(record)">
               {{ getDisplayStatus(record) }}
@@ -90,7 +94,7 @@
           </td>
         </tr>
         <tr *ngIf="filteredRecords.length === 0">
-          <td colspan="7" class="no-data">No attendance records found for this date</td>
+          <td colspan="9" class="no-data">No attendance records found for this date</td>
         </tr>
       </tbody>
     </table>
