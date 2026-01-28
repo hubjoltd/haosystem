@@ -697,8 +697,8 @@ AND NOT EXISTS (SELECT 1 FROM onboarding_plans WHERE plan_number = 'ONB-2026-000
 
 -- Create Employee Self-Service Role (Time Clock + ESS only)
 INSERT INTO roles (name, description, permissions)
-VALUES ('ESS_EMPLOYEE', 'Employee Self-Service - Time Clock and ESS Portal access only', 'TIME_CLOCK,ESS_PORTAL,ESS_LEAVE,ESS_ATTENDANCE,ESS_PAYSLIP,ESS_EXPENSES,ESS_DOCUMENTS')
-ON CONFLICT (name) DO NOTHING;
+SELECT 'ESS_EMPLOYEE', 'Employee Self-Service - Time Clock and ESS Portal access only', 'TIME_CLOCK,ESS_PORTAL,ESS_LEAVE,ESS_ATTENDANCE,ESS_PAYSLIP,ESS_EXPENSES,ESS_DOCUMENTS'
+WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = 'ESS_EMPLOYEE' AND branch_id IS NULL);
 
 -- Create 3 Companies (Branches)
 INSERT INTO branches (code, name, address, city, state, country, zip_code, phone, email, currency, timezone, active, created_at, updated_at)
