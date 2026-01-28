@@ -369,9 +369,12 @@
       </div>
 
       <div class="tab-content" *ngIf="activeTab === 'members'">
+        <div class="alert alert-info" *ngIf="!editMode">
+          <i class="fas fa-info-circle"></i> Please save the project first before adding members.
+        </div>
         <div class="section-header">
           <h4>Project Members</h4>
-          <button class="btn btn-primary btn-sm" (click)="openMemberModal()" *ngIf="!viewMode">
+          <button class="btn btn-primary btn-sm" (click)="openMemberModal()" *ngIf="!viewMode && editMode">
             <i class="fas fa-plus"></i> Add Member
           </button>
         </div>
@@ -406,7 +409,7 @@
             </tbody>
           </table>
         </div>
-        <div class="empty-state-box" *ngIf="!selectedProject.members || selectedProject.members.length === 0">
+        <div class="empty-state-box" *ngIf="(!selectedProject.members || selectedProject.members.length === 0) && editMode">
           <p>No members assigned yet.</p>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { TranslateModule } from '@ngx-translate/core';
 import { ProjectService } from '../../services/project.service';
 import { Project, ProjectTask, ProjectMilestone, ProjectFile, ProjectNote, ProjectTimeLog, ProjectMember, PROJECT_STATUSES, BILLING_TYPES, TASK_STATUSES, TASK_PRIORITIES } from '../../models/project.model';
@@ -56,9 +57,11 @@ export class ProjectManagementComponent implements OnInit {
   
   tagsInput = '';
   draggedProject: Project | null = null;
+  previewProjectCode = '';
 
   constructor(
     private projectService: ProjectService,
+    private http: HttpClient,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -76,15 +79,31 @@ export class ProjectManagementComponent implements OnInit {
   }
 
   loadClients(): void {
-    const stored = localStorage.getItem('customers');
-    this.clients = stored ? JSON.parse(stored) : [];
-    this.cdr.markForCheck();
+    this.http.get<any[]>('/api/customers').subscribe({
+      next: (customers) => {
+        this.clients = customers;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        const stored = localStorage.getItem('customers');
+        this.clients = stored ? JSON.parse(stored) : [];
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   loadEmployees(): void {
-    const stored = localStorage.getItem('employees');
-    this.employees = stored ? JSON.parse(stored) : [];
-    this.cdr.markForCheck();
+    this.http.get<any[]>('/api/employees').subscribe({
+      next: (employees) => {
+        this.employees = employees;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        const stored = localStorage.getItem('employees');
+        this.employees = stored ? JSON.parse(stored) : [];
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   getEmptyProject(): Partial<Project> {
@@ -199,13 +218,22 @@ export class ProjectManagementComponent implements OnInit {
       this.editMode = true;
       this.selectedProject = { ...project };
       this.tagsInput = project.tags?.join(', ') || '';
+      this.previewProjectCode = project.projectCode || '';
     } else {
       this.editMode = false;
       this.selectedProject = this.getEmptyProject();
       this.tagsInput = '';
+      this.generatePreviewCode();
     }
     this.activeTab = 'overview';
     this.showModal = true;
+  }
+
+  generatePreviewCode(): void {
+    const count = this.projects.length + 1;
+    this.previewProjectCode = `PRJ-${count.toString().padStart(6, '0')}`;
+    this.selectedProject.projectCode = this.previewProjectCode;
+    this.cdr.markForCheck();
   }
 
   closeModal(): void {
@@ -221,12 +249,15 @@ export class ProjectManagementComponent implements OnInit {
     
     if (this.editMode && this.selectedProject.id) {
       this.projectService.update(this.selectedProject.id, this.selectedProject).subscribe(() => {
+        this.loadProjects();
         this.closeModal();
         this.cdr.markForCheck();
       });
     } else {
-      this.projectService.create(this.selectedProject).subscribe(() => {
-        this.closeModal();
+      this.projectService.create(this.selectedProject).subscribe((newProject) => {
+        this.loadProjects();
+        this.selectedProject = { ...newProject };
+        this.editMode = true;
         this.cdr.markForCheck();
       });
     }
