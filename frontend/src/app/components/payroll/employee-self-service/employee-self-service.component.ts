@@ -197,7 +197,7 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
     this.loadAssets();
     this.loadPolicies();
     this.loadTodayClockRecord();
-    this.loadOfferLetters();
+    // Note: loadOfferLetters is called after employee is loaded (needs email for filtering)
     
     // Start clock timer
     this.clockInterval = setInterval(() => {
@@ -215,7 +215,12 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
 
   loadCurrentEmployee(): void {
     this.employeeService.getById(this.currentEmployeeId).subscribe({
-      next: (data) => this.currentEmployee = data,
+      next: (data) => {
+        this.currentEmployee = data;
+        // Load offer letters after employee is loaded (needs email for filtering)
+        this.loadOfferLetters();
+        this.cdr.markForCheck();
+      },
       error: (err) => console.error('Error loading employee:', err)
     });
   }
@@ -889,45 +894,57 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
     this.selectedExpenseRequest = expense;
     this.loadingExpenseActivity = true;
     this.showExpenseActivityModal = true;
-    if (expense.activityLog && expense.activityLog.length > 0) {
-      this.expenseActivityItems = expense.activityLog.map((log: any) => ({
-        action: log.action,
-        performedBy: log.performedBy?.firstName ? `${log.performedBy.firstName} ${log.performedBy.lastName}` : 'System',
-        performedAt: log.performedAt,
-        remarks: log.remarks || '',
-        oldStatus: log.oldStatus,
-        newStatus: log.newStatus
-      }));
-      this.loadingExpenseActivity = false;
+    
+    // Call the API to get activity log like leave approval does
+    if (expense.id) {
+      this.expenseService.getRequestActivity(expense.id).subscribe({
+        next: (activities) => {
+          this.expenseActivityItems = activities.map((a: any) => ({
+            action: a.action,
+            performedBy: a.performedBy?.firstName ? `${a.performedBy.firstName} ${a.performedBy.lastName}` : (a.performedByName || 'System'),
+            performedAt: a.performedAt,
+            remarks: a.remarks || '',
+            oldStatus: a.oldStatus,
+            newStatus: a.newStatus
+          }));
+          this.loadingExpenseActivity = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          // Fallback to inline activity generation if API fails
+          this.expenseActivityItems = [{
+            action: 'CREATED',
+            performedBy: expense.employee?.firstName ? `${expense.employee.firstName} ${expense.employee.lastName}` : 'Employee',
+            performedAt: expense.createdAt,
+            remarks: 'Request submitted',
+            oldStatus: '',
+            newStatus: expense.status || 'DRAFT'
+          }];
+          if (expense.approvedAt) {
+            this.expenseActivityItems.push({
+              action: 'APPROVED',
+              performedBy: expense.approver?.firstName ? `${expense.approver.firstName} ${expense.approver.lastName}` : 'Manager',
+              performedAt: expense.approvedAt,
+              remarks: expense.approverRemarks || '',
+              oldStatus: 'PENDING_APPROVAL',
+              newStatus: 'APPROVED'
+            });
+          }
+          if (expense.rejectedAt) {
+            this.expenseActivityItems.push({
+              action: 'REJECTED',
+              performedBy: expense.approver?.firstName ? `${expense.approver.firstName} ${expense.approver.lastName}` : 'Manager',
+              performedAt: expense.rejectedAt,
+              remarks: expense.rejectionReason || '',
+              oldStatus: 'PENDING_APPROVAL',
+              newStatus: 'REJECTED'
+            });
+          }
+          this.loadingExpenseActivity = false;
+          this.cdr.markForCheck();
+        }
+      });
     } else {
-      this.expenseActivityItems = [{
-        action: 'CREATED',
-        performedBy: expense.employee?.firstName ? `${expense.employee.firstName} ${expense.employee.lastName}` : 'Employee',
-        performedAt: expense.createdAt,
-        remarks: 'Request submitted',
-        oldStatus: '',
-        newStatus: expense.status
-      }];
-      if (expense.approvedAt) {
-        this.expenseActivityItems.push({
-          action: 'APPROVED',
-          performedBy: expense.approver?.firstName ? `${expense.approver.firstName} ${expense.approver.lastName}` : 'Manager',
-          performedAt: expense.approvedAt,
-          remarks: expense.approverRemarks || '',
-          oldStatus: 'PENDING_APPROVAL',
-          newStatus: 'APPROVED'
-        });
-      }
-      if (expense.rejectedAt) {
-        this.expenseActivityItems.push({
-          action: 'REJECTED',
-          performedBy: expense.approver?.firstName ? `${expense.approver.firstName} ${expense.approver.lastName}` : 'Manager',
-          performedAt: expense.rejectedAt,
-          remarks: expense.rejectionReason || '',
-          oldStatus: 'PENDING_APPROVAL',
-          newStatus: 'REJECTED'
-        });
-      }
       this.loadingExpenseActivity = false;
     }
   }
@@ -1252,9 +1269,20 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
   loadOfferLetters(): void {
     this.recruitmentService.getOffers().subscribe({
       next: (data: any[]) => {
-        const currentEmail = this.currentEmployee?.email?.toLowerCase() || '';
+        // Check multiple possible email fields
+        const emp: any = this.currentEmployee;
+        const currentEmail = (emp?.email || emp?.workEmail || emp?.personalEmail || '').toLowerCase();
+        console.log('ESS Offer Letters - Current employee email:', currentEmail, 'Total offers:', data.length);
+        
         this.offerLetters = data
-          .filter((o: any) => o.candidateEmail?.toLowerCase() === currentEmail)
+          .filter((o: any) => {
+            const offerEmail = (o.candidateEmail || '').toLowerCase();
+            const matches = offerEmail === currentEmail;
+            if (!matches && offerEmail) {
+              console.log('ESS Offer Letters - Offer email:', offerEmail, 'does not match:', currentEmail);
+            }
+            return matches;
+          })
           .map((o: any) => ({
             id: o.id,
             offerNumber: o.offerNumber || '',
