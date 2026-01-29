@@ -523,7 +523,14 @@ public class RecruitmentService {
             offer.setValidUntil(LocalDate.parse((String) data.get("validUntil")));
         }
         if (data.containsKey("termsAndConditions")) offer.setTermsAndConditions((String) data.get("termsAndConditions"));
-        if (data.containsKey("benefits")) offer.setBenefits((String) data.get("benefits"));
+        if (data.containsKey("benefits")) {
+            Object benefitsObj = data.get("benefits");
+            if (benefitsObj instanceof java.util.List) {
+                offer.setBenefits(String.join(",", (java.util.List<String>) benefitsObj));
+            } else if (benefitsObj instanceof String) {
+                offer.setBenefits((String) benefitsObj);
+            }
+        }
     }
 
     @Transactional
