@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { RecruitmentService } from '../../../../services/recruitment.service';
 import { ToastService } from '../../../../services/toast.service';
+import jsPDF from 'jspdf';
 
 export interface OfferLetter {
   id?: number;
@@ -548,5 +549,183 @@ export class RecruitmentOffersComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  downloadOfferPDF(offer: OfferLetter): void {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const footerHeight = 25;
+    const maxY = pageHeight - footerHeight;
+    let yPos = 40;
+
+    const addHeader = () => {
+      doc.setFillColor(0, 128, 128);
+      doc.rect(0, 0, pageWidth, 30, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('HAO SYSTEM', pageWidth / 2, 15, { align: 'center' });
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Enterprise Resource Planning', pageWidth / 2, 23, { align: 'center' });
+      doc.setTextColor(0, 0, 0);
+    };
+
+    const addFooter = () => {
+      doc.setFillColor(0, 128, 128);
+      doc.rect(0, pageHeight - 20, pageWidth, 20, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(8);
+      doc.text('This is a computer-generated document. No signature is required.', pageWidth / 2, pageHeight - 12, { align: 'center' });
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, pageHeight - 6, { align: 'center' });
+      doc.setTextColor(0, 0, 0);
+    };
+
+    const checkPageBreak = (neededHeight: number = 10) => {
+      if (yPos + neededHeight > maxY) {
+        addFooter();
+        doc.addPage();
+        addHeader();
+        yPos = 40;
+      }
+    };
+
+    addHeader();
+
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('OFFER LETTER', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 10;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Offer Number: ${offer.offerNumber}`, margin, yPos);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - margin - 50, yPos);
+    yPos += 15;
+
+    doc.setFontSize(11);
+    doc.text(`Dear ${offer.candidateName},`, margin, yPos);
+    yPos += 10;
+
+    const introText = `We are pleased to offer you the position of ${offer.jobTitle} in our ${offer.department} department. This letter outlines the terms and conditions of your employment.`;
+    const splitIntro = doc.splitTextToSize(introText, pageWidth - 2 * margin);
+    doc.text(splitIntro, margin, yPos);
+    yPos += splitIntro.length * 6 + 10;
+
+    checkPageBreak(60);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Position Details:', margin, yPos);
+    yPos += 8;
+    doc.setFont('helvetica', 'normal');
+
+    const details = [
+      ['Position:', offer.jobTitle],
+      ['Department:', offer.department],
+      ['Employment Type:', offer.employmentType],
+      ['Work Mode:', offer.workMode],
+      ['Location:', offer.location],
+      ['Reporting To:', offer.reportingTo || 'To be assigned'],
+      ['Start Date:', offer.joiningDate],
+    ];
+
+    details.forEach(([label, value]) => {
+      checkPageBreak(8);
+      doc.text(`${label}`, margin, yPos);
+      doc.text(`${value}`, margin + 50, yPos);
+      yPos += 6;
+    });
+    yPos += 10;
+
+    checkPageBreak(30);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Compensation:', margin, yPos);
+    yPos += 8;
+    doc.setFont('helvetica', 'normal');
+
+    const compensation = [
+      ['Base Salary:', `${offer.currency} ${offer.baseSalary.toLocaleString()} ${offer.salaryFrequency}`],
+      ['Bonus:', offer.bonus ? `${offer.currency} ${offer.bonus.toLocaleString()} (${offer.bonusType})` : 'N/A'],
+      ['Stock Options:', offer.stockOptions || 'N/A'],
+    ];
+
+    compensation.forEach(([label, value]) => {
+      checkPageBreak(8);
+      doc.text(`${label}`, margin, yPos);
+      doc.text(`${value}`, margin + 50, yPos);
+      yPos += 6;
+    });
+    yPos += 10;
+
+    checkPageBreak(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Benefits:', margin, yPos);
+    yPos += 8;
+    doc.setFont('helvetica', 'normal');
+
+    const benefitsList: string[] = Array.isArray(offer.benefits) ? offer.benefits : ((offer.benefits as string) || '').split(',');
+    benefitsList.forEach((benefit: string) => {
+      if (benefit.trim()) {
+        checkPageBreak(8);
+        doc.text(`• ${benefit.trim()}`, margin + 5, yPos);
+        yPos += 6;
+      }
+    });
+    yPos += 10;
+
+    checkPageBreak(40);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Terms:', margin, yPos);
+    yPos += 8;
+    doc.setFont('helvetica', 'normal');
+
+    const terms = [
+      ['Probation Period:', `${offer.probationPeriod} months`],
+      ['Notice Period:', `${offer.noticePeriod} days`],
+      ['Offer Valid Until:', offer.expiryDate],
+    ];
+
+    terms.forEach(([label, value]) => {
+      checkPageBreak(8);
+      doc.text(`${label}`, margin, yPos);
+      doc.text(`${value}`, margin + 50, yPos);
+      yPos += 6;
+    });
+    yPos += 15;
+
+    if (offer.customTerms) {
+      checkPageBreak(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Additional Terms:', margin, yPos);
+      yPos += 8;
+      doc.setFont('helvetica', 'normal');
+      const splitTerms = doc.splitTextToSize(offer.customTerms, pageWidth - 2 * margin);
+      splitTerms.forEach((line: string) => {
+        checkPageBreak(8);
+        doc.text(line, margin, yPos);
+        yPos += 6;
+      });
+      yPos += 10;
+    }
+
+    checkPageBreak(50);
+    const closingText = 'We are excited to have you join our team and look forward to your contributions. Please sign and return this offer letter by the expiry date to confirm your acceptance.';
+    const splitClosing = doc.splitTextToSize(closingText, pageWidth - 2 * margin);
+    doc.text(splitClosing, margin, yPos);
+    yPos += splitClosing.length * 6 + 15;
+
+    doc.text('Sincerely,', margin, yPos);
+    yPos += 10;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Human Resources Department', margin, yPos);
+    yPos += 6;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Hao System ERP', margin, yPos);
+
+    addFooter();
+
+    doc.save(`Offer_Letter_${offer.offerNumber}.pdf`);
+    this.toastService.success('Offer letter PDF downloaded');
   }
 }

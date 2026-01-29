@@ -16,6 +16,37 @@ import { ActivityTimelineComponent, ActivityItem } from '../../shared/activity-t
 import { ToastService } from '../../../services/toast.service';
 import { ProjectService } from '../../../services/project.service';
 import { Project } from '../../../models/project.model';
+import { RecruitmentService } from '../../../services/recruitment.service';
+import jsPDF from 'jspdf';
+
+export interface EssOfferLetter {
+  id: number;
+  offerNumber: string;
+  candidateName: string;
+  candidateEmail: string;
+  jobTitle: string;
+  department: string;
+  reportingTo?: string;
+  employmentType: string;
+  workMode: string;
+  location: string;
+  baseSalary: number;
+  currency: string;
+  salaryFrequency: string;
+  bonus?: number;
+  bonusType?: string;
+  stockOptions?: string;
+  benefits: string[];
+  joiningDate: string;
+  expiryDate: string;
+  probationPeriod: number;
+  noticePeriod: number;
+  customTerms?: string;
+  status: string;
+  sentDate?: string;
+  responseDate?: string;
+  createdAt?: string;
+}
 
 @Component({
   selector: 'app-employee-self-service',
@@ -40,6 +71,9 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
   policies: any[] = [];
   expenseCategories: any[] = [];
   projects: Project[] = [];
+  offerLetters: EssOfferLetter[] = [];
+  showOfferViewModal = false;
+  selectedOfferLetter: EssOfferLetter | null = null;
   
   currentEmployeeId: number = 0;
   currentEmployee: Employee | null = null;
@@ -141,6 +175,7 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
     private employeeService: EmployeeService,
     private salarySlipService: SalarySlipService,
     private projectService: ProjectService,
+    private recruitmentService: RecruitmentService,
     private cdr: ChangeDetectorRef,
     private toastService: ToastService
   ) {
@@ -162,6 +197,7 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
     this.loadAssets();
     this.loadPolicies();
     this.loadTodayClockRecord();
+    this.loadOfferLetters();
     
     // Start clock timer
     this.clockInterval = setInterval(() => {
@@ -1106,5 +1142,251 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
       return 'Rejected';
     }
     return request.status || '';
+  }
+
+  loadOfferLetters(): void {
+    this.recruitmentService.getOffers().subscribe({
+      next: (data: any[]) => {
+        const currentEmail = this.currentEmployee?.email?.toLowerCase() || '';
+        this.offerLetters = data
+          .filter((o: any) => o.candidateEmail?.toLowerCase() === currentEmail)
+          .map((o: any) => ({
+            id: o.id,
+            offerNumber: o.offerNumber || '',
+            candidateName: o.candidateName || '',
+            candidateEmail: o.candidateEmail || '',
+            jobTitle: o.jobTitle || o.positionTitle || '',
+            department: o.department || '',
+            reportingTo: o.reportingTo,
+            employmentType: o.employmentType || '',
+            workMode: o.workMode || '',
+            location: o.location || '',
+            baseSalary: o.baseSalary || o.offeredSalary || 0,
+            currency: o.currency || 'USD',
+            salaryFrequency: o.salaryFrequency || 'Monthly',
+            bonus: o.bonus || o.signingBonus,
+            bonusType: o.bonusType,
+            stockOptions: o.stockOptions,
+            benefits: Array.isArray(o.benefits) ? o.benefits : (o.benefits || '').split(',').filter((b: string) => b.trim()),
+            joiningDate: o.joiningDate || o.proposedJoinDate || '',
+            expiryDate: o.expiryDate || o.validUntil || '',
+            probationPeriod: o.probationPeriod || 90,
+            noticePeriod: o.noticePeriod || 30,
+            customTerms: o.customTerms || o.termsAndConditions,
+            status: o.status || 'DRAFT',
+            sentDate: o.sentDate,
+            responseDate: o.responseDate,
+            createdAt: o.createdAt
+          }));
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => console.error('Error loading offer letters:', err)
+    });
+  }
+
+  viewOfferDetails(offer: EssOfferLetter): void {
+    this.selectedOfferLetter = offer;
+    this.showOfferViewModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeOfferViewModal(): void {
+    this.showOfferViewModal = false;
+    this.selectedOfferLetter = null;
+    this.cdr.markForCheck();
+  }
+
+  downloadOfferLetterPDF(offer: EssOfferLetter): void {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
+    const footerHeight = 25;
+    const maxY = pageHeight - footerHeight;
+    let yPos = 40;
+
+    const addHeader = () => {
+      doc.setFillColor(0, 128, 128);
+      doc.rect(0, 0, pageWidth, 30, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('HAO SYSTEM', pageWidth / 2, 15, { align: 'center' });
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Enterprise Resource Planning', pageWidth / 2, 23, { align: 'center' });
+      doc.setTextColor(0, 0, 0);
+    };
+
+    const addFooter = () => {
+      doc.setFillColor(0, 128, 128);
+      doc.rect(0, pageHeight - 20, pageWidth, 20, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(8);
+      doc.text('This is a computer-generated document. No signature is required.', pageWidth / 2, pageHeight - 12, { align: 'center' });
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, pageWidth / 2, pageHeight - 6, { align: 'center' });
+      doc.setTextColor(0, 0, 0);
+    };
+
+    const checkPageBreak = (neededHeight: number = 10) => {
+      if (yPos + neededHeight > maxY) {
+        addFooter();
+        doc.addPage();
+        addHeader();
+        yPos = 40;
+      }
+    };
+
+    addHeader();
+
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('OFFER LETTER', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 10;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Offer Number: ${offer.offerNumber}`, margin, yPos);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - margin - 50, yPos);
+    yPos += 15;
+
+    doc.setFontSize(11);
+    doc.text(`Dear ${offer.candidateName},`, margin, yPos);
+    yPos += 10;
+
+    const introText = `We are pleased to offer you the position of ${offer.jobTitle} in our ${offer.department} department. This letter outlines the terms and conditions of your employment.`;
+    const splitIntro = doc.splitTextToSize(introText, pageWidth - 2 * margin);
+    doc.text(splitIntro, margin, yPos);
+    yPos += splitIntro.length * 6 + 10;
+
+    checkPageBreak(60);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Position Details:', margin, yPos);
+    yPos += 8;
+    doc.setFont('helvetica', 'normal');
+
+    const details = [
+      ['Position:', offer.jobTitle],
+      ['Department:', offer.department],
+      ['Employment Type:', offer.employmentType],
+      ['Work Mode:', offer.workMode],
+      ['Location:', offer.location],
+      ['Reporting To:', offer.reportingTo || 'To be assigned'],
+      ['Start Date:', offer.joiningDate],
+    ];
+
+    details.forEach(([label, value]) => {
+      checkPageBreak(8);
+      doc.text(`${label}`, margin, yPos);
+      doc.text(`${value}`, margin + 50, yPos);
+      yPos += 6;
+    });
+    yPos += 10;
+
+    checkPageBreak(30);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Compensation:', margin, yPos);
+    yPos += 8;
+    doc.setFont('helvetica', 'normal');
+
+    const compensation = [
+      ['Base Salary:', `${offer.currency} ${offer.baseSalary.toLocaleString()} ${offer.salaryFrequency}`],
+      ['Bonus:', offer.bonus ? `${offer.currency} ${offer.bonus.toLocaleString()} (${offer.bonusType})` : 'N/A'],
+      ['Stock Options:', offer.stockOptions || 'N/A'],
+    ];
+
+    compensation.forEach(([label, value]) => {
+      checkPageBreak(8);
+      doc.text(`${label}`, margin, yPos);
+      doc.text(`${value}`, margin + 50, yPos);
+      yPos += 6;
+    });
+    yPos += 10;
+
+    if (offer.benefits && offer.benefits.length > 0) {
+      checkPageBreak(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Benefits:', margin, yPos);
+      yPos += 8;
+      doc.setFont('helvetica', 'normal');
+
+      offer.benefits.forEach((benefit: string) => {
+        if (benefit.trim()) {
+          checkPageBreak(8);
+          doc.text(`• ${benefit.trim()}`, margin + 5, yPos);
+          yPos += 6;
+        }
+      });
+      yPos += 10;
+    }
+
+    checkPageBreak(40);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Terms:', margin, yPos);
+    yPos += 8;
+    doc.setFont('helvetica', 'normal');
+
+    const terms = [
+      ['Probation Period:', `${offer.probationPeriod} days`],
+      ['Notice Period:', `${offer.noticePeriod} days`],
+      ['Offer Valid Until:', offer.expiryDate],
+    ];
+
+    terms.forEach(([label, value]) => {
+      checkPageBreak(8);
+      doc.text(`${label}`, margin, yPos);
+      doc.text(`${value}`, margin + 50, yPos);
+      yPos += 6;
+    });
+    yPos += 15;
+
+    if (offer.customTerms) {
+      checkPageBreak(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Additional Terms:', margin, yPos);
+      yPos += 8;
+      doc.setFont('helvetica', 'normal');
+      const splitTerms = doc.splitTextToSize(offer.customTerms, pageWidth - 2 * margin);
+      splitTerms.forEach((line: string) => {
+        checkPageBreak(8);
+        doc.text(line, margin, yPos);
+        yPos += 6;
+      });
+      yPos += 10;
+    }
+
+    checkPageBreak(50);
+    const closingText = 'We are excited to have you join our team and look forward to your contributions. Please sign and return this offer letter by the expiry date to confirm your acceptance.';
+    const splitClosing = doc.splitTextToSize(closingText, pageWidth - 2 * margin);
+    doc.text(splitClosing, margin, yPos);
+    yPos += splitClosing.length * 6 + 15;
+
+    doc.text('Sincerely,', margin, yPos);
+    yPos += 10;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Human Resources Department', margin, yPos);
+    yPos += 6;
+    doc.setFont('helvetica', 'normal');
+    doc.text('Hao System ERP', margin, yPos);
+
+    addFooter();
+
+    doc.save(`Offer_Letter_${offer.offerNumber}.pdf`);
+    this.toastService.success('Offer letter PDF downloaded');
+  }
+
+  formatOfferSalary(offer: EssOfferLetter): string {
+    const salary = offer.baseSalary.toLocaleString();
+    return `${offer.currency} ${salary} / ${offer.salaryFrequency}`;
+  }
+
+  getOfferStatusClass(status: string): string {
+    switch (status) {
+      case 'DRAFT': return 'status-draft';
+      case 'SENT': return 'status-sent';
+      case 'ACCEPTED': return 'status-accepted';
+      case 'DECLINED': return 'status-declined';
+      default: return 'status-pending';
+    }
   }
 }

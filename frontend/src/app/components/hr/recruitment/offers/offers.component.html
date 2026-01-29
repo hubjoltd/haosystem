@@ -103,6 +103,9 @@
             <button class="btn-icon" title="View" (click)="viewDetails(offer)">
               <i class="fa fa-eye"></i>
             </button>
+            <button class="btn-icon" title="Download PDF" (click)="downloadOfferPDF(offer)">
+              <i class="fa fa-download"></i>
+            </button>
             <button class="btn-icon" title="Edit" (click)="openEditModal(offer)" *ngIf="offer.status === 'DRAFT'">
               <i class="fa fa-pencil"></i>
             </button>
@@ -428,8 +431,11 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary">Close</button>
-      <button class="btn btn-primary" (click)="sendOffer(viewOffer!); closeViewModal()" *ngIf="viewOffer?.status === 'APPROVED'">
+      <button class="btn btn-secondary" (click)="closeViewModal()">Close</button>
+      <button class="btn btn-primary" (click)="downloadOfferPDF(viewOffer!)">
+        <i class="fa fa-download"></i> Download PDF
+      </button>
+      <button class="btn btn-success" (click)="sendOffer(viewOffer!); closeViewModal()" *ngIf="viewOffer?.status === 'APPROVED'">
         <i class="fa fa-paper-plane"></i> Send to Candidate
       </button>
     </div>

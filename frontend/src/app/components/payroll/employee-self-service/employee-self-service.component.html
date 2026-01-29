@@ -34,6 +34,9 @@
     <button class="tab" [class.active]="activeTab === 'policies'" (click)="activeTab = 'policies'">
       <i class="fas fa-book"></i> Policies
     </button>
+    <button class="tab" [class.active]="activeTab === 'offers'" (click)="activeTab = 'offers'">
+      <i class="fas fa-file-signature"></i> Offer Letters
+    </button>
   </div>
 
   <div class="tab-content" *ngIf="activeTab === 'paystubs'">
@@ -581,6 +584,155 @@
         <i class="fas fa-book"></i>
         <p>No policies available</p>
       </div>
+    </div>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'offers'">
+    <div class="section-header">
+      <h3>My Offer Letters</h3>
+    </div>
+    <div class="info-card" style="margin-bottom: 20px;">
+      <i class="fas fa-info-circle"></i>
+      <p>View and download your offer letters. Contact HR for any clarifications or questions.</p>
+    </div>
+    <div class="offers-grid">
+      <div class="offer-card" *ngFor="let offer of offerLetters">
+        <div class="offer-header">
+          <div class="offer-icon">
+            <i class="fas fa-file-signature"></i>
+          </div>
+          <div class="offer-info">
+            <h4>{{ offer.jobTitle }}</h4>
+            <span class="offer-number">{{ offer.offerNumber }}</span>
+          </div>
+          <span class="status-badge" [ngClass]="getOfferStatusClass(offer.status)">{{ offer.status }}</span>
+        </div>
+        <div class="offer-body">
+          <div class="offer-detail">
+            <span class="label">Department</span>
+            <span class="value">{{ offer.department }}</span>
+          </div>
+          <div class="offer-detail">
+            <span class="label">Salary</span>
+            <span class="value">{{ formatOfferSalary(offer) }}</span>
+          </div>
+          <div class="offer-detail">
+            <span class="label">Start Date</span>
+            <span class="value">{{ offer.joiningDate | date:'MMM d, yyyy' }}</span>
+          </div>
+          <div class="offer-detail" *ngIf="offer.benefits && offer.benefits.length > 0">
+            <span class="label">Benefits</span>
+            <span class="value benefits-list">{{ offer.benefits.join(', ') }}</span>
+          </div>
+        </div>
+        <div class="offer-footer">
+          <button class="btn btn-outline-primary btn-sm" (click)="viewOfferDetails(offer)">
+            <i class="fas fa-eye"></i> View
+          </button>
+          <button class="btn btn-primary btn-sm" (click)="downloadOfferLetterPDF(offer)">
+            <i class="fas fa-download"></i> Download PDF
+          </button>
+        </div>
+      </div>
+      <div class="no-data" *ngIf="offerLetters.length === 0">
+        <i class="fas fa-file-signature"></i>
+        <p>No offer letters available</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Offer Letter View Modal -->
+<div class="modal-overlay" *ngIf="showOfferViewModal">
+  <div class="modal large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Offer Letter Details</h3>
+      <button class="close-btn" (click)="closeOfferViewModal()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body" *ngIf="selectedOfferLetter">
+      <div class="offer-detail-header">
+        <h2>{{ selectedOfferLetter.jobTitle }}</h2>
+        <span class="status-badge large" [ngClass]="getOfferStatusClass(selectedOfferLetter.status)">{{ selectedOfferLetter.status }}</span>
+      </div>
+      <div class="offer-meta">
+        <span><i class="fas fa-hashtag"></i> {{ selectedOfferLetter.offerNumber }}</span>
+        <span><i class="fas fa-building"></i> {{ selectedOfferLetter.department }}</span>
+        <span><i class="fas fa-map-marker-alt"></i> {{ selectedOfferLetter.location }}</span>
+      </div>
+
+      <div class="detail-sections">
+        <div class="detail-section">
+          <h4>Position Details</h4>
+          <div class="detail-row">
+            <span class="label">Employment Type</span>
+            <span class="value">{{ selectedOfferLetter.employmentType }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Work Mode</span>
+            <span class="value">{{ selectedOfferLetter.workMode }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedOfferLetter.reportingTo">
+            <span class="label">Reporting To</span>
+            <span class="value">{{ selectedOfferLetter.reportingTo }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Compensation</h4>
+          <div class="detail-row">
+            <span class="label">Base Salary</span>
+            <span class="value highlight">{{ formatOfferSalary(selectedOfferLetter) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedOfferLetter.bonus">
+            <span class="label">{{ selectedOfferLetter.bonusType || 'Bonus' }}</span>
+            <span class="value">{{ selectedOfferLetter.currency }} {{ selectedOfferLetter.bonus | number }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedOfferLetter.stockOptions">
+            <span class="label">Stock Options</span>
+            <span class="value">{{ selectedOfferLetter.stockOptions }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Timeline</h4>
+          <div class="detail-row">
+            <span class="label">Start Date</span>
+            <span class="value">{{ selectedOfferLetter.joiningDate | date:'MMM d, yyyy' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Offer Expiry</span>
+            <span class="value">{{ selectedOfferLetter.expiryDate | date:'MMM d, yyyy' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Probation Period</span>
+            <span class="value">{{ selectedOfferLetter.probationPeriod }} days</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Notice Period</span>
+            <span class="value">{{ selectedOfferLetter.noticePeriod }} days</span>
+          </div>
+        </div>
+
+        <div class="detail-section full" *ngIf="selectedOfferLetter.benefits && selectedOfferLetter.benefits.length > 0">
+          <h4>Benefits</h4>
+          <div class="benefits-tags">
+            <span class="benefit-tag" *ngFor="let benefit of selectedOfferLetter.benefits">{{ benefit }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section full" *ngIf="selectedOfferLetter.customTerms">
+          <h4>Additional Terms</h4>
+          <p class="terms-text">{{ selectedOfferLetter.customTerms }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeOfferViewModal()">Close</button>
+      <button class="btn btn-primary" (click)="downloadOfferLetterPDF(selectedOfferLetter!)">
+        <i class="fas fa-download"></i> Download PDF
+      </button>
     </div>
   </div>
 </div>
