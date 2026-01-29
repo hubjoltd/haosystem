@@ -160,9 +160,9 @@
           </div>
           <div class="form-group">
             <label>Candidate <span class="required">*</span></label>
-            <select (change)="selectCandidate($event)">
-              <option value="">-- Select Candidate --</option>
-              <option *ngFor="let candidate of candidates" [value]="candidate.id">
+            <select [(ngModel)]="selectedOffer.candidateId" (ngModelChange)="onCandidateChange($event)">
+              <option [ngValue]="null">-- Select Candidate --</option>
+              <option *ngFor="let candidate of candidates" [ngValue]="candidate.id">
                 {{ candidate.firstName }} {{ candidate.lastName }} - {{ candidate.appliedPosition }}
               </option>
             </select>

@@ -123,7 +123,7 @@ export class RecruitmentOffersComponent implements OnInit {
 
     this.recruitmentService.getCandidates().subscribe({
       next: (data) => {
-        this.candidates = data.filter((c: any) => c.stage === 'OFFER' || c.stage === 'INTERVIEW');
+        this.candidates = data;
         this.cdr.markForCheck();
       },
       error: () => {
@@ -274,6 +274,17 @@ export class RecruitmentOffersComponent implements OnInit {
       this.selectedOffer.candidateName = `${candidate.firstName} ${candidate.lastName}`;
       this.selectedOffer.candidateEmail = candidate.email;
       this.selectedOffer.jobTitle = candidate.appliedPosition || '';
+      this.cdr.markForCheck();
+    }
+  }
+
+  onCandidateChange(candidateId: number): void {
+    const candidate = this.candidates.find(c => c.id === candidateId);
+    if (candidate) {
+      this.selectedOffer.candidateName = `${candidate.firstName} ${candidate.lastName}`;
+      this.selectedOffer.candidateEmail = candidate.email;
+      this.selectedOffer.jobTitle = candidate.appliedPosition || '';
+      this.cdr.markForCheck();
     }
   }
 
