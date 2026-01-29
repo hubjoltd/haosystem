@@ -514,17 +514,32 @@ public class RecruitmentService {
         }
         if (data.containsKey("offeredSalary") && data.get("offeredSalary") != null) {
             offer.setOfferedSalary(new BigDecimal(data.get("offeredSalary").toString()));
+        } else if (data.containsKey("baseSalary") && data.get("baseSalary") != null) {
+            offer.setOfferedSalary(new BigDecimal(data.get("baseSalary").toString()));
         }
         if (data.containsKey("signingBonus") && data.get("signingBonus") != null) {
             offer.setSigningBonus(new BigDecimal(data.get("signingBonus").toString()));
+        } else if (data.containsKey("bonus") && data.get("bonus") != null) {
+            offer.setSigningBonus(new BigDecimal(data.get("bonus").toString()));
         }
         if (data.containsKey("proposedJoinDate") && data.get("proposedJoinDate") != null) {
             offer.setProposedJoinDate(LocalDate.parse((String) data.get("proposedJoinDate")));
+        } else if (data.containsKey("joiningDate") && data.get("joiningDate") != null) {
+            offer.setProposedJoinDate(LocalDate.parse((String) data.get("joiningDate")));
         }
         if (data.containsKey("validUntil") && data.get("validUntil") != null) {
             offer.setValidUntil(LocalDate.parse((String) data.get("validUntil")));
+        } else if (data.containsKey("expiryDate") && data.get("expiryDate") != null) {
+            offer.setValidUntil(LocalDate.parse((String) data.get("expiryDate")));
         }
-        if (data.containsKey("termsAndConditions")) offer.setTermsAndConditions((String) data.get("termsAndConditions"));
+        if (data.containsKey("employmentType")) {
+            offer.setEmploymentType((String) data.get("employmentType"));
+        }
+        if (data.containsKey("termsAndConditions")) {
+            offer.setTermsAndConditions((String) data.get("termsAndConditions"));
+        } else if (data.containsKey("customTerms")) {
+            offer.setTermsAndConditions((String) data.get("customTerms"));
+        }
         if (data.containsKey("benefits")) {
             Object benefitsObj = data.get("benefits");
             if (benefitsObj instanceof java.util.List) {
