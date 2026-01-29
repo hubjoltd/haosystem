@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService, Branch } from '../../services/auth.service';
 import { BranchService } from '../../services/branch.service';
@@ -23,6 +23,7 @@ interface MenuItem {
 export class SidebarComponent implements OnInit {
   @Input() collapsed: boolean = false;
   @Input() mobileOpen: boolean = false;
+  @Output() menuItemClicked = new EventEmitter<void>();
 
   currentBranch: Branch | null = null;
 
@@ -462,6 +463,7 @@ export class SidebarComponent implements OnInit {
   toggleMenu(item: MenuItem, parentItems?: MenuItem[]): void {
     if (item.route) {
       this.router.navigate([item.route]);
+      this.menuItemClicked.emit();
       if (parentItems) {
         parentItems.forEach(i => {
           if (i !== item && !i.children?.includes(item)) {
