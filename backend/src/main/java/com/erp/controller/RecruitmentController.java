@@ -8,8 +8,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/recruitment")
@@ -256,15 +259,92 @@ public class RecruitmentController {
     }
 
     @GetMapping("/offers")
-    public ResponseEntity<List<OfferLetter>> getAllOfferLetters() {
-        return ResponseEntity.ok(recruitmentService.findAllOfferLetters());
+    public ResponseEntity<List<Map<String, Object>>> getAllOfferLetters() {
+        List<OfferLetter> offers = recruitmentService.findAllOfferLetters();
+        return ResponseEntity.ok(offers.stream().map(this::mapOfferToDTO).collect(Collectors.toList()));
     }
 
     @GetMapping("/offers/{id}")
-    public ResponseEntity<OfferLetter> getOfferLetter(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> getOfferLetter(@PathVariable Long id) {
         return recruitmentService.findOfferLetterById(id)
-            .map(ResponseEntity::ok)
+            .map(offer -> ResponseEntity.ok(mapOfferToDTO(offer)))
             .orElse(ResponseEntity.notFound().build());
+    }
+    
+    private Map<String, Object> mapOfferToDTO(OfferLetter offer) {
+        Map<String, Object> dto = new HashMap<>();
+        dto.put("id", offer.getId());
+        dto.put("offerNumber", offer.getOfferNumber());
+        dto.put("jobTitle", offer.getPositionTitle());
+        dto.put("status", offer.getStatus());
+        dto.put("employmentType", offer.getEmploymentType());
+        dto.put("baseSalary", offer.getOfferedSalary());
+        dto.put("bonus", offer.getSigningBonus());
+        dto.put("joiningDate", offer.getProposedJoinDate());
+        dto.put("expiryDate", offer.getValidUntil());
+        dto.put("customTerms", offer.getTermsAndConditions());
+        dto.put("letterContent", offer.getLetterContent());
+        dto.put("sentDate", offer.getSentAt());
+        dto.put("responseDate", offer.getAcceptedAt() != null ? offer.getAcceptedAt() : offer.getDeclinedAt());
+        dto.put("declineReason", offer.getDeclineReason());
+        dto.put("approvedDate", offer.getApprovedAt());
+        dto.put("createdAt", offer.getCreatedAt());
+        dto.put("template", "Standard");
+        dto.put("offerType", "NEW_HIRE");
+        dto.put("workMode", "ONSITE");
+        dto.put("currency", "USD");
+        dto.put("salaryFrequency", "YEARLY");
+        dto.put("bonusType", "SIGNING");
+        dto.put("probationPeriod", 90);
+        dto.put("noticePeriod", 30);
+        
+        if (offer.getCandidate() != null) {
+            Candidate candidate = offer.getCandidate();
+            dto.put("candidateId", candidate.getId());
+            dto.put("candidateName", candidate.getFirstName() + " " + candidate.getLastName());
+            dto.put("candidateEmail", candidate.getEmail());
+        }
+        
+        if (offer.getDepartment() != null) {
+            dto.put("department", offer.getDepartment().getName());
+            dto.put("departmentId", offer.getDepartment().getId());
+        }
+        
+        if (offer.getLocation() != null) {
+            dto.put("location", offer.getLocation().getName());
+            dto.put("locationId", offer.getLocation().getId());
+        }
+        
+        if (offer.getReportingTo() != null) {
+            Employee manager = offer.getReportingTo();
+            dto.put("reportingTo", manager.getFirstName() + " " + manager.getLastName());
+            dto.put("reportingToId", manager.getId());
+        }
+        
+        if (offer.getApprovedBy() != null) {
+            Employee approver = offer.getApprovedBy();
+            dto.put("approvedBy", approver.getFirstName() + " " + approver.getLastName());
+            dto.put("approvedById", approver.getId());
+        }
+        
+        if (offer.getBenefits() != null && !offer.getBenefits().isEmpty()) {
+            String[] benefitsList = offer.getBenefits().split(",");
+            List<String> benefits = new ArrayList<>();
+            for (String b : benefitsList) {
+                benefits.add(b.trim());
+            }
+            dto.put("benefits", benefits);
+        } else {
+            dto.put("benefits", new ArrayList<>());
+        }
+        
+        String approvalStatus = "PENDING";
+        if (offer.getApprovedAt() != null) {
+            approvalStatus = "APPROVED";
+        }
+        dto.put("approvalStatus", approvalStatus);
+        
+        return dto;
     }
 
     @GetMapping("/offers/candidate/{candidateId}")
