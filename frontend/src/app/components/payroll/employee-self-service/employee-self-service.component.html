@@ -357,37 +357,49 @@
         <thead>
           <tr>
             <th>Date</th>
+            <th>Payee Name</th>
             <th>Category</th>
+            <th>Project</th>
             <th>Receipt #</th>
             <th>Attachment</th>
             <th>Amount</th>
             <th>Status</th>
+            <th>Approved By</th>
+            <th>Approved At</th>
             <th>Approved Amount</th>
             <th>Remarks</th>
+            <th>Activity</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let expense of expenses">
             <td>{{ expense.createdAt | date:'MMM d, yyyy' }}</td>
-            <td>{{ expense.category?.name || 'N/A' }}</td>
-            <td>{{ expense.receiptNumber || '-' }}</td>
+            <td>{{ expense.payeeName || '-' }}</td>
+            <td>{{ expense.category?.name || getExpenseCategory(expense) || 'N/A' }}</td>
+            <td>{{ expense.projectCode || '-' }}</td>
+            <td>{{ getExpenseReceiptNumber(expense) || '-' }}</td>
             <td>
-              <div class="attachment-cell" *ngIf="expense.receiptUrl">
-                <img *ngIf="expense.receiptUrl?.startsWith('data:image')" 
-                     [src]="expense.receiptUrl" 
-                     class="receipt-thumbnail" 
-                     alt="Receipt"
-                     (click)="openReceiptPreview(expense.receiptUrl)"
-                     title="Click to preview">
-                <a *ngIf="expense.receiptUrl?.startsWith('data:application/pdf')" 
-                   [href]="expense.receiptUrl" 
-                   target="_blank"
-                   class="pdf-link"
-                   title="Click to open PDF">
-                  <i class="fas fa-file-pdf"></i>
-                </a>
-              </div>
-              <span *ngIf="!expense.receiptUrl" class="no-attachment">-</span>
+              <ng-container *ngIf="getExpenseAttachment(expense) as attachment">
+                <div class="attachment-cell" *ngIf="attachment">
+                  <img *ngIf="attachment.startsWith('data:image')" 
+                       [src]="attachment" 
+                       class="receipt-thumbnail" 
+                       alt="Receipt"
+                       (click)="openReceiptPreview(attachment)"
+                       title="Click to preview">
+                  <a *ngIf="attachment.startsWith('data:application/pdf')" 
+                     [href]="attachment" 
+                     target="_blank"
+                     class="pdf-link"
+                     title="Click to open PDF">
+                    <i class="fas fa-file-pdf"></i>
+                  </a>
+                  <span *ngIf="!attachment.startsWith('data:image') && !attachment.startsWith('data:application/pdf')" class="file-link">
+                    <i class="fas fa-file"></i> File
+                  </span>
+                </div>
+              </ng-container>
+              <span *ngIf="!getExpenseAttachment(expense)" class="no-attachment">-</span>
             </td>
             <td>${{ expense.totalAmount | number:'1.2-2' }}</td>
             <td>
@@ -395,11 +407,18 @@
                 {{ expense.status }}
               </span>
             </td>
+            <td>{{ getExpenseApproverName(expense) }}</td>
+            <td>{{ getExpenseApprovalDate(expense) }}</td>
             <td>${{ expense.approvedAmount | number:'1.2-2' }}</td>
-            <td>{{ expense.remarks || '-' }}</td>
+            <td>{{ expense.approverRemarks || expense.managerRemarks || '-' }}</td>
+            <td>
+              <button class="btn-icon" (click)="viewExpenseActivity(expense)" title="View Activity">
+                <i class="fas fa-history"></i>
+              </button>
+            </td>
           </tr>
           <tr *ngIf="expenses.length === 0">
-            <td colspan="8" class="no-data-row">No expense requests found</td>
+            <td colspan="13" class="no-data-row">No expense requests found</td>
           </tr>
         </tbody>
       </table>
@@ -965,10 +984,10 @@
     </div>
     <div class="modal-body" *ngIf="selectedExpenseRequest">
       <div class="request-info-bar">
-        <span><strong>{{ selectedExpenseRequest.description || 'Expense' }}</strong></span>
+        <span><strong>{{ selectedExpenseRequest.title || selectedExpenseRequest.description || 'Expense' }}</strong></span>
         <span class="separator">|</span>
-        <span>${{ selectedExpenseRequest.amount | number:'1.2-2' }}</span>
-        <span class="status-badge" [ngClass]="getLeaveStatusClass(selectedExpenseRequest.status || '')">{{ selectedExpenseRequest.status }}</span>
+        <span>${{ selectedExpenseRequest.totalAmount | number:'1.2-2' }}</span>
+        <span class="status-badge" [ngClass]="getExpenseStatusClass(selectedExpenseRequest.status || '')">{{ selectedExpenseRequest.status }}</span>
       </div>
       <app-activity-timeline
         [activities]="expenseActivityItems"

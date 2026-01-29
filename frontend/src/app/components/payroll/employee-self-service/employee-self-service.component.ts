@@ -827,6 +827,117 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
     }
   }
 
+  getExpenseCategory(expense: any): string {
+    if (expense.items && expense.items.length > 0) {
+      const categories = expense.items
+        .filter((item: any) => item.category?.name)
+        .map((item: any) => item.category.name);
+      return categories.length > 0 ? categories.join(', ') : '';
+    }
+    return '';
+  }
+
+  getExpenseReceiptNumber(expense: any): string {
+    if (expense.receiptNumber) return expense.receiptNumber;
+    if (expense.items && expense.items.length > 0) {
+      const receiptNumbers = expense.items
+        .filter((item: any) => item.receiptNumber)
+        .map((item: any) => item.receiptNumber);
+      return receiptNumbers.length > 0 ? receiptNumbers.join(', ') : '';
+    }
+    return '';
+  }
+
+  getExpenseAttachment(expense: any): string | null {
+    if (expense.receiptUrl) return expense.receiptUrl;
+    if (expense.items && expense.items.length > 0) {
+      const item = expense.items.find((i: any) => i.receiptUrl || i.receiptFileData);
+      if (item) return item.receiptUrl || item.receiptFileData;
+    }
+    return null;
+  }
+
+  getExpenseApproverName(expense: any): string {
+    if (expense.approver?.firstName) {
+      return `${expense.approver.firstName} ${expense.approver.lastName || ''}`.trim();
+    }
+    if (expense.hrApprovedBy?.firstName) {
+      return `${expense.hrApprovedBy.firstName} ${expense.hrApprovedBy.lastName || ''}`.trim();
+    }
+    if (expense.managerApprovedBy?.firstName) {
+      return `${expense.managerApprovedBy.firstName} ${expense.managerApprovedBy.lastName || ''}`.trim();
+    }
+    return '-';
+  }
+
+  getExpenseApprovalDate(expense: any): string {
+    const dateToFormat = expense.approvedAt || expense.hrApprovedAt || expense.managerApprovedAt;
+    if (dateToFormat) {
+      return new Date(dateToFormat).toLocaleString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    }
+    return '-';
+  }
+
+  viewExpenseActivity(expense: any): void {
+    this.selectedExpenseRequest = expense;
+    this.loadingExpenseActivity = true;
+    this.showExpenseActivityModal = true;
+    if (expense.activityLog && expense.activityLog.length > 0) {
+      this.expenseActivityItems = expense.activityLog.map((log: any) => ({
+        action: log.action,
+        performedBy: log.performedBy?.firstName ? `${log.performedBy.firstName} ${log.performedBy.lastName}` : 'System',
+        performedAt: log.performedAt,
+        remarks: log.remarks || '',
+        oldStatus: log.oldStatus,
+        newStatus: log.newStatus
+      }));
+      this.loadingExpenseActivity = false;
+    } else {
+      this.expenseActivityItems = [{
+        action: 'CREATED',
+        performedBy: expense.employee?.firstName ? `${expense.employee.firstName} ${expense.employee.lastName}` : 'Employee',
+        performedAt: expense.createdAt,
+        remarks: 'Request submitted',
+        oldStatus: '',
+        newStatus: expense.status
+      }];
+      if (expense.approvedAt) {
+        this.expenseActivityItems.push({
+          action: 'APPROVED',
+          performedBy: expense.approver?.firstName ? `${expense.approver.firstName} ${expense.approver.lastName}` : 'Manager',
+          performedAt: expense.approvedAt,
+          remarks: expense.approverRemarks || '',
+          oldStatus: 'PENDING_APPROVAL',
+          newStatus: 'APPROVED'
+        });
+      }
+      if (expense.rejectedAt) {
+        this.expenseActivityItems.push({
+          action: 'REJECTED',
+          performedBy: expense.approver?.firstName ? `${expense.approver.firstName} ${expense.approver.lastName}` : 'Manager',
+          performedAt: expense.rejectedAt,
+          remarks: expense.rejectionReason || '',
+          oldStatus: 'PENDING_APPROVAL',
+          newStatus: 'REJECTED'
+        });
+      }
+      this.loadingExpenseActivity = false;
+    }
+  }
+
+  closeExpenseActivityModal(): void {
+    this.showExpenseActivityModal = false;
+    this.selectedExpenseRequest = null;
+    this.expenseActivityItems = [];
+  }
+
   getAttendanceStatusBadge(record: AttendanceRecord): string {
     return record.status || 'ABSENT';
   }
@@ -1055,12 +1166,6 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
     this.selectedExpenseRequest = expense;
     this.showExpenseActivityModal = true;
     this.loadExpenseActivity(expense.id);
-  }
-
-  closeExpenseActivityModal(): void {
-    this.showExpenseActivityModal = false;
-    this.selectedExpenseRequest = null;
-    this.expenseActivityItems = [];
   }
 
   loadExpenseActivity(requestId: number): void {
