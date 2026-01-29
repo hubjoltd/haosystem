@@ -1,11 +1,13 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CustomerService, Customer, ClientContact, ClientNote, ClientDocument } from '../../services/customer.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-customer-management',
   standalone: false,
   templateUrl: './customer-management.component.html',
-  styleUrls: ['./customer-management.component.scss']
+  styleUrls: ['./customer-management.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CustomerManagementComponent implements OnInit {
   clients: Customer[] = [];
@@ -38,7 +40,11 @@ export class CustomerManagementComponent implements OnInit {
     { value: 'documents', label: 'View Documents' }
   ];
 
-  constructor(private customerService: CustomerService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private customerService: CustomerService, 
+    private cdr: ChangeDetectorRef,
+    private notificationService: NotificationService
+  ) {}
 
   ngOnInit(): void {
     this.loadClients();
@@ -52,6 +58,7 @@ export class CustomerManagementComponent implements OnInit {
   loadClients(): void {
     this.loading = true;
     this.dataReady = false;
+    this.cdr.markForCheck();
     this.customerService.getAll().subscribe({
       next: (data) => {
         this.clients = data.map(c => ({
@@ -67,10 +74,13 @@ export class CustomerManagementComponent implements OnInit {
           contracts: c.contracts || []
         }));
         this.completeLoading();
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error loading clients', err);
+        this.notificationService.error('Error loading clients');
         this.completeLoading();
+        this.cdr.markForCheck();
       }
     });
   }
@@ -152,6 +162,7 @@ export class CustomerManagementComponent implements OnInit {
     }
     this.activeTab = 'profile';
     this.showModal = true;
+    this.cdr.markForCheck();
   }
 
   viewClient(client: Customer) {
@@ -171,6 +182,7 @@ export class CustomerManagementComponent implements OnInit {
     };
     this.activeTab = 'profile';
     this.showModal = true;
+    this.cdr.markForCheck();
   }
 
   closeModal() {
@@ -178,28 +190,51 @@ export class CustomerManagementComponent implements OnInit {
     this.viewMode = false;
     this.selectedClient = this.getEmptyClient();
     this.activeTab = 'profile';
+    this.cdr.markForCheck();
   }
 
   setActiveTab(tab: string) {
     this.activeTab = tab;
+    this.cdr.markForCheck();
   }
 
   saveClient(): void {
+    if (!this.selectedClient.name?.trim()) {
+      this.notificationService.error('Client name is required');
+      return;
+    }
+    if (!this.selectedClient.email?.trim()) {
+      this.notificationService.error('Client email is required');
+      return;
+    }
+    
     if (this.editMode && this.selectedClient.id) {
       this.customerService.update(this.selectedClient.id, this.selectedClient).subscribe({
         next: () => {
+          this.notificationService.success('Client updated successfully');
           this.loadClients();
           this.closeModal();
+          this.cdr.markForCheck();
         },
-        error: (err) => console.error('Error updating client', err)
+        error: (err) => {
+          console.error('Error updating client', err);
+          this.notificationService.error('Error updating client');
+          this.cdr.markForCheck();
+        }
       });
     } else {
       this.customerService.create(this.selectedClient).subscribe({
         next: () => {
+          this.notificationService.success('Client created successfully');
           this.loadClients();
           this.closeModal();
+          this.cdr.markForCheck();
         },
-        error: (err) => console.error('Error creating client', err)
+        error: (err) => {
+          console.error('Error creating client', err);
+          this.notificationService.error('Error creating client');
+          this.cdr.markForCheck();
+        }
       });
     }
   }
@@ -207,8 +242,16 @@ export class CustomerManagementComponent implements OnInit {
   deleteClient(id: number): void {
     if (confirm('Are you sure you want to delete this client?')) {
       this.customerService.delete(id).subscribe({
-        next: () => this.loadClients(),
-        error: (err) => console.error('Error deleting client', err)
+        next: () => {
+          this.notificationService.success('Client deleted successfully');
+          this.loadClients();
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Error deleting client', err);
+          this.notificationService.error('Error deleting client');
+          this.cdr.markForCheck();
+        }
       });
     }
   }
@@ -222,11 +265,13 @@ export class CustomerManagementComponent implements OnInit {
       this.selectedContact = this.getEmptyContact();
     }
     this.showContactModal = true;
+    this.cdr.markForCheck();
   }
 
   closeContactModal() {
     this.showContactModal = false;
     this.selectedContact = this.getEmptyContact();
+    this.cdr.markForCheck();
   }
 
   saveContact() {
@@ -243,6 +288,7 @@ export class CustomerManagementComponent implements OnInit {
       this.selectedClient.contacts.push({ ...this.selectedContact });
     }
     this.closeContactModal();
+    this.cdr.markForCheck();
   }
 
   deleteContact(contactId: number) {

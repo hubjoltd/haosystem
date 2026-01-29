@@ -4,6 +4,7 @@ import { StaffService, Staff } from '../../../../services/staff.service';
 import { BranchService, Branch } from '../../../../services/branch.service';
 import { RoleService, Role } from '../../../../services/role.service';
 import { NotificationService } from '../../../../services/notification.service';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-add-staff',
@@ -28,9 +29,10 @@ export class AddStaffComponent implements OnInit {
     isAdmin: false,
     isStaffMember: true,
     phone: '',
-    hourlyRate: 0,
     active: true
   };
+  
+  currentBranchName: string = '';
 
   password: string = '';
   roles: Role[] = [];
@@ -44,11 +46,12 @@ export class AddStaffComponent implements OnInit {
     private branchService: BranchService,
     private roleService: RoleService,
     private notificationService: NotificationService,
+    private authService: AuthService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.loadBranches();
+    this.initializeCurrentBranch();
     
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
@@ -58,6 +61,27 @@ export class AddStaffComponent implements OnInit {
         this.loadStaff();
       }
     });
+  }
+  
+  initializeCurrentBranch(): void {
+    const branchId = this.authService.getCurrentBranchId();
+    if (branchId) {
+      this.selectedBranchId = branchId;
+      this.staff.branchId = branchId;
+      this.branchService.getBranchById(branchId).subscribe({
+        next: (branch) => {
+          this.currentBranchName = branch.name;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.currentBranchName = 'Current Company';
+          this.cdr.markForCheck();
+        }
+      });
+      this.loadRolesForBranch(branchId);
+    } else {
+      this.loadBranches();
+    }
   }
 
   loadBranches(): void {
@@ -182,11 +206,7 @@ export class AddStaffComponent implements OnInit {
       return;
     }
 
-    if (!this.editMode && !this.selectedBranchId) {
-      this.notificationService.error('Please select a company');
-      return;
-    }
-
+    
     this.saving = true;
     this.cdr.markForCheck();
 

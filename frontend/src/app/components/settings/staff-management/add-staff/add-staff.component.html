@@ -57,14 +57,6 @@
       </div>
 
       <div class="form-group">
-        <label>Hourly Rate</label>
-        <div class="input-with-suffix">
-          <input type="number" [(ngModel)]="staff.hourlyRate" class="form-control" placeholder="0">
-          <span class="suffix">₹</span>
-        </div>
-      </div>
-
-      <div class="form-group">
         <label>Phone</label>
         <input type="tel" [(ngModel)]="staff.phone" class="form-control" placeholder="Enter phone number">
       </div>
@@ -76,20 +68,17 @@
       </div>
 
       <div class="form-group">
-        <label class="required">Company</label>
-        <select [(ngModel)]="selectedBranchId" (ngModelChange)="onBranchChange()" class="form-control">
-          <option [ngValue]="null">Select Company</option>
-          <option *ngFor="let branch of branches" [ngValue]="branch.id">{{ branch.name }}</option>
-        </select>
+        <label>Company</label>
+        <input type="text" [value]="currentBranchName" class="form-control" disabled>
+        <small class="help-text">Staff will be added to your current company</small>
       </div>
 
       <div class="form-group">
         <label>Role</label>
-        <select [(ngModel)]="staff.roleId" class="form-control" [disabled]="!selectedBranchId">
+        <select [(ngModel)]="staff.roleId" class="form-control">
           <option [ngValue]="undefined">Select Role</option>
           <option *ngFor="let role of roles" [ngValue]="role.id">{{ role.name }}</option>
         </select>
-        <small *ngIf="!selectedBranchId" class="help-text">Select a company first to see available roles</small>
       </div>
     </div>
 
@@ -97,7 +86,7 @@
       <p class="permissions-note">Permissions are managed through the role assigned to this staff member.</p>
       <div class="form-group">
         <label>Company</label>
-        <input type="text" [value]="selectedBranchName" class="form-control" disabled>
+        <input type="text" [value]="currentBranchName" class="form-control" disabled>
       </div>
       <div class="form-group">
         <label>Assigned Role</label>
