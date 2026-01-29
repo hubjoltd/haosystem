@@ -123,7 +123,7 @@
   <div class="modal-content large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ isEditing ? 'Edit Interview' : 'Schedule Interview' }}</h3>
-      <button class="btn-close"><i class="fa fa-times"></i></button>
+      <button class="btn-close" (click)="closeModal()"><i class="fa fa-times"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-section">
@@ -252,7 +252,7 @@
   <div class="modal-content large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Interview Details</h3>
-      <button class="btn-close"><i class="fa fa-times"></i></button>
+      <button class="btn-close" (click)="closeViewModal()"><i class="fa fa-times"></i></button>
     </div>
     <div class="modal-body" *ngIf="viewInterview">
       <div class="detail-header">

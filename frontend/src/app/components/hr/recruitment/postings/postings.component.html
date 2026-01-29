@@ -145,7 +145,7 @@
   <div class="modal-content large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ isEditing ? 'Edit Job Posting' : 'Create Job Posting' }}</h3>
-      <button class="btn-close"><i class="fa fa-times"></i></button>
+      <button class="btn-close" (click)="closeModal()"><i class="fa fa-times"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-section">
@@ -315,7 +315,7 @@
   <div class="modal-content large" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Job Posting Details</h3>
-      <button class="btn-close"><i class="fa fa-times"></i></button>
+      <button class="btn-close" (click)="closeViewModal()"><i class="fa fa-times"></i></button>
     </div>
     <div class="modal-body" *ngIf="viewPosting">
       <div class="detail-header">

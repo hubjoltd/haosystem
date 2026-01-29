@@ -441,7 +441,7 @@
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ approvalAction === 'approve' ? 'Approve Offer' : 'Return for Revision' }}</h3>
-      <button class="btn-close"><i class="fa fa-times"></i></button>
+      <button class="btn-close" (click)="closeApprovalModal()"><i class="fa fa-times"></i></button>
     </div>
     <div class="modal-body" *ngIf="approvalOffer">
       <div class="offer-summary">
