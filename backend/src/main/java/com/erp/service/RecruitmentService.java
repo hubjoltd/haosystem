@@ -497,6 +497,8 @@ public class RecruitmentService {
         }
         if (data.containsKey("positionTitle")) {
             offer.setPositionTitle((String) data.get("positionTitle"));
+        } else if (data.containsKey("jobTitle")) {
+            offer.setPositionTitle((String) data.get("jobTitle"));
         }
         if (data.containsKey("gradeId") && data.get("gradeId") != null) {
             gradeRepository.findById(Long.valueOf(data.get("gradeId").toString())).ifPresent(offer::setGrade);
