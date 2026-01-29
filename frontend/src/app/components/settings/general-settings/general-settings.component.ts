@@ -143,4 +143,10 @@ export class GeneralSettingsComponent implements OnInit {
       });
     }
   }
+
+  resetSettings(): void {
+    this.loadCurrentBranch();
+    this.loadSettings();
+    this.notificationService.info('Settings reset to saved values');
+  }
 }

@@ -239,7 +239,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary">Cancel</button>
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
       <button class="btn btn-primary" (click)="saveInterview()">
         {{ isEditing ? 'Update Interview' : 'Schedule Interview' }}
       </button>

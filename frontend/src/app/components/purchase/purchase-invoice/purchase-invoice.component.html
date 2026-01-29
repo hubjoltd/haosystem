@@ -324,7 +324,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary">Cancel</button>
+      <button class="btn-secondary" (click)="closeModal()">Cancel</button>
       <button class="btn-primary" (click)="saveInvoice()">
         {{ editMode ? 'Update Invoice' : 'Create Invoice' }}
       </button>

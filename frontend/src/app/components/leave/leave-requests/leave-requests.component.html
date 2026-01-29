@@ -180,7 +180,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-secondary" [disabled]="saving">Cancel</button>
+        <button class="btn-secondary" (click)="closeModal()" [disabled]="saving">Cancel</button>
         <button class="btn-primary" (click)="submitRequest()" [disabled]="saving">
           <i class="fas fa-spinner fa-spin" *ngIf="saving"></i>
           {{ saving ? 'Submitting...' : 'Submit Request' }}
@@ -265,7 +265,7 @@
     <div class="modal activity-modal" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2>Leave Request Activity</h2>
-        <button class="btn-close"><i class="fas fa-times"></i></button>
+        <button class="btn-close" (click)="closeActivityModal()"><i class="fas fa-times"></i></button>
       </div>
       <div class="modal-body" *ngIf="activityRequest">
         <div class="request-info-bar">

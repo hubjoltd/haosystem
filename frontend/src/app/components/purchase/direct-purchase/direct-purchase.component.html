@@ -351,7 +351,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary">Cancel</button>
+      <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
       <button class="btn btn-primary" (click)="savePurchase()" [disabled]="selectedPurchase.supplierId === 0">
         {{ editMode ? 'Update' : 'Save' }}
       </button>

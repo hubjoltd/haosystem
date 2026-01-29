@@ -813,7 +813,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary">Cancel</button>
+      <button class="btn-secondary" (click)="closeModal()">Cancel</button>
       
       <button class="btn-primary" (click)="saveDraft()" *ngIf="canSubmit(selectedPR) || !isEditing">
         <i class="fa fa-save"></i> Save as Draft
@@ -1029,7 +1029,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary">Cancel</button>
+      <button class="btn-secondary" (click)="closeStockFulfillmentModal()">Cancel</button>
       <button class="btn-primary" (click)="saveStockFulfillment()">
         <i class="fa fa-check"></i> Fulfill Selected Items
       </button>
@@ -1102,7 +1102,7 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary">Cancel</button>
+      <button class="btn-secondary" (click)="closeMaterialTransferModal()">Cancel</button>
       <button class="btn-primary" (click)="saveMaterialTransfer()">
         <i class="fa fa-check"></i> Transfer Selected Items
       </button>

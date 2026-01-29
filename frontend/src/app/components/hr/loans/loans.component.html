@@ -259,7 +259,7 @@
         <textarea [(ngModel)]="approvalData.remarks" rows="3" placeholder="Add approval remarks..."></textarea>
       </div>
       <div class="form-actions">
-        <button class="btn btn-secondary">Cancel</button>
+        <button class="btn btn-secondary" (click)="closeApprovalModal()">Cancel</button>
         <button class="btn btn-success" (click)="approveLoan()">Approve</button>
       </div>
     </div>

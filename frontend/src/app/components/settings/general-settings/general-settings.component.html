@@ -76,7 +76,7 @@
   </div>
 
   <div class="form-actions">
-    <button class="btn btn-secondary">Cancel</button>
+    <button class="btn btn-secondary" (click)="resetSettings()">Cancel</button>
     <button class="btn btn-primary" (click)="saveSettings()" [disabled]="saving">
       <i class="fas fa-save"></i> {{ saving ? 'Saving...' : 'Save Changes' }}
     </button>
