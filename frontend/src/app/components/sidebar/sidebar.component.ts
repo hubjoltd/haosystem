@@ -281,8 +281,7 @@ export class SidebarComponent implements OnInit {
       expanded: false,
       permissionKey: 'Payroll',
       children: [
-        { icon: 'fas fa-clock', label: 'Weekly Timesheets', labelKey: 'nav.weeklyTimesheets', route: '/app/payroll/timesheets' },
-        { icon: 'fas fa-cog', label: 'Process Payroll', labelKey: 'nav.processPayroll', route: '/app/payroll/process-payroll' },
+        { icon: 'fas fa-cog', label: 'Process Payroll', labelKey: 'nav.processPayroll' },
         { icon: 'fas fa-history', label: 'Payroll History', labelKey: 'nav.payrollHistory', route: '/app/payroll/history' },
         { icon: 'fas fa-file-invoice-dollar', label: 'Pay Slips (ESS)', labelKey: 'nav.paySlips', route: '/app/payroll/self-service' },
         { icon: 'fas fa-chart-pie', label: 'Payroll Dashboard', labelKey: 'nav.payrollDashboard', route: '/app/mis/payroll-dashboard' }
