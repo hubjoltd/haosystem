@@ -175,6 +175,11 @@ export class TimesheetApprovalComponent implements OnInit {
   step4TotalProcessedNet = 0;
   step4TotalHoldGross = 0;
   step4TotalHoldNet = 0;
+
+  // Weekly Timesheet view
+  timesheetViewMode = 'employee';
+  filterDepartment = '';
+  departments: string[] = [];
   
   // Legacy Step 4 fields
   employeesToProcess = 0;
@@ -195,6 +200,25 @@ export class TimesheetApprovalComponent implements OnInit {
     this.setDefaultDates();
     this.loadEmployees();
     this.loadPayFrequencies();
+    this.extractDepartments();
+  }
+
+  extractDepartments(): void {
+    const deptSet = new Set<string>();
+    this.generatedTimesheets.forEach(ts => {
+      if (ts.department) deptSet.add(ts.department);
+    });
+    this.departments = Array.from(deptSet).sort();
+  }
+
+  getTotalRegularHours(): string {
+    const total = this.generatedTimesheets.reduce((sum, ts) => sum + (ts.totalRegularHours || 0), 0);
+    return total.toFixed(1);
+  }
+
+  getTotalOvertimeHours(): string {
+    const total = this.generatedTimesheets.reduce((sum, ts) => sum + (ts.totalOvertimeHours || 0), 0);
+    return total.toFixed(1);
   }
 
   setDefaultDates(): void {

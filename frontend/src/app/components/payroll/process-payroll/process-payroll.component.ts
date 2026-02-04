@@ -30,6 +30,11 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
   payDate: string = '';
   showPayDateError = false;
 
+  periodType = 'BI_WEEKLY';
+  selectedProject = '';
+  filterStartDate = '';
+  filterEndDate = '';
+
   summary = {
     totalGrossPay: 0,
     totalDeductions: 0,
@@ -48,6 +53,7 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.setDefaultDates();
     this.routeSub = this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
@@ -60,6 +66,18 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
         this.loadPayrollRuns();
       }
     });
+  }
+
+  setDefaultDates(): void {
+    const today = new Date();
+    const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    this.filterStartDate = firstOfMonth.toISOString().split('T')[0];
+    this.filterEndDate = lastOfMonth.toISOString().split('T')[0];
+  }
+
+  calculatePayrollPreview(): void {
+    this.router.navigate(['/app/payroll/timesheets']);
   }
 
   ngOnDestroy(): void {

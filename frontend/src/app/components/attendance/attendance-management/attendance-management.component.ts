@@ -53,6 +53,10 @@ export class AttendanceManagementComponent implements OnInit {
     calculatedHours: 0
   };
 
+  currentPage = 1;
+  pageSize = 10;
+  Math = Math;
+
   constructor(
     private attendanceService: AttendanceService,
     private employeeService: EmployeeService,
@@ -117,10 +121,12 @@ export class AttendanceManagementComponent implements OnInit {
   }
 
   onDateChange(): void {
+    this.currentPage = 1;
     this.loadAttendanceRecords();
   }
 
   onSearchChange(): void {
+    this.currentPage = 1;
     this.applyFilters();
   }
 
@@ -140,6 +146,7 @@ export class AttendanceManagementComponent implements OnInit {
       });
     }
     this.filteredRecords = records;
+    this.currentPage = 1;
     this.cdr.detectChanges();
   }
 
@@ -371,6 +378,43 @@ export class AttendanceManagementComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  get paginatedRecords(): AttendanceRecord[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    return this.filteredRecords.slice(start, end);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredRecords.length / this.pageSize);
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.cdr.markForCheck();
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxPages = 5;
+    let start = Math.max(1, this.currentPage - 2);
+    let end = Math.min(this.totalPages, start + maxPages - 1);
+    if (end - start < maxPages - 1) {
+      start = Math.max(1, end - maxPages + 1);
+    }
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  calculateTotalHours(record: AttendanceRecord): string {
+    const regular = record.regularHours || 0;
+    const ot = record.overtimeHours || 0;
+    return (regular + ot).toFixed(1);
   }
 
   openEditModal(record: AttendanceRecord): void {

@@ -1,13 +1,42 @@
 <div class="attendance-payroll-approval">
   <div class="page-header">
     <div class="header-left">
-      <h1>Attendance & Payroll Approval</h1>
-      <p class="subtitle">Approved attendance data and payroll processing</p>
+      <h1>Weekly Timesheets</h1>
+      <p class="subtitle">Review employee timesheets and process payroll</p>
     </div>
     <div class="header-actions">
+      <input type="date" [(ngModel)]="generateEndDate" class="date-input" />
       <button class="btn btn-outline-primary" (click)="goToStep(3)">
         <i class="fas fa-history"></i> View Payroll History
       </button>
+    </div>
+  </div>
+  
+  <div class="timesheet-summary-cards">
+    <div class="ts-card blue">
+      <span class="ts-card-value">{{ generatedTimesheets.length || 0 }}</span>
+      <span class="ts-card-label">Employees</span>
+    </div>
+    <div class="ts-card yellow">
+      <span class="ts-card-value">{{ getTotalRegularHours() }}h</span>
+      <span class="ts-card-label">Regular Hours</span>
+    </div>
+    <div class="ts-card orange">
+      <span class="ts-card-value">{{ getTotalOvertimeHours() }}h</span>
+      <span class="ts-card-label">OT Hours</span>
+    </div>
+  </div>
+  
+  <div class="timesheet-filters">
+    <div class="filter-group">
+      <label><input type="radio" name="viewMode" value="employee" [(ngModel)]="timesheetViewMode" /> Employee-Wise</label>
+      <label><input type="radio" name="viewMode" value="project" [(ngModel)]="timesheetViewMode" /> Project-Wise</label>
+    </div>
+    <div class="filter-selects">
+      <select class="filter-select" [(ngModel)]="filterDepartment">
+        <option value="">All Departments</option>
+        <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+      </select>
     </div>
   </div>
 

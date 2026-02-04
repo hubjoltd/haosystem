@@ -1,5 +1,162 @@
 .process-payroll-container {
-  padding: 20px;
+  padding: 24px;
+  background: linear-gradient(135deg, #f0f9f9 0%, #e8f4f4 100%);
+  min-height: 100vh;
+}
+
+.page-header {
+  margin-bottom: 24px;
+
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+    color: #008080;
+  }
+
+  .subtitle {
+    color: #6b7280;
+    margin-top: 4px;
+    font-size: 14px;
+  }
+}
+
+.select-period-section {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 16px;
+  }
+
+  .period-form {
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 160px;
+
+      label {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 500;
+      }
+
+      .form-control {
+        padding: 10px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        background: white;
+        color: #374151;
+
+        &:focus {
+          outline: none;
+          border-color: #008080;
+        }
+      }
+
+      &.btn-group {
+        align-self: flex-end;
+      }
+    }
+
+    .btn-calculate {
+      background: #008080;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+
+      &:hover {
+        background: #006666;
+      }
+
+      i {
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+.saved-runs-section {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 16px;
+  }
+
+  .runs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .run-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        border-color: #008080;
+        background: #f0fafa;
+      }
+
+      .run-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .run-name {
+          font-weight: 600;
+          color: #374151;
+        }
+
+        .run-period {
+          font-size: 13px;
+          color: #6b7280;
+        }
+      }
+
+      .run-status-badge {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+
+        &.status-approved { background: #e3f2fd; color: #1565c0; }
+        &.status-calculated { background: #fff3e0; color: #ef6c00; }
+        &.status-processed { background: #e8f5e9; color: #2e7d32; }
+      }
+    }
+  }
 }
 
 .loading-state {
