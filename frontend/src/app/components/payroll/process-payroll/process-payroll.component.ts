@@ -59,7 +59,6 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.setDefaultDates();
-    this.loadPayrollRuns();
   }
 
   ngOnDestroy(): void {
@@ -94,7 +93,6 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Step 1: Calculate Payroll - creates a new payroll run from approved timesheets
   calculatePayroll(): void {
     if (!this.filterStartDate || !this.filterEndDate) {
       alert('Please select start and end dates');

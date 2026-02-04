@@ -325,6 +325,32 @@
   }
 }
 
+.empty-state-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 60px 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  text-align: center;
+
+  .empty-icon {
+    font-size: 3rem;
+    color: #ccc;
+    margin-bottom: 15px;
+  }
+
+  p {
+    color: #666;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+
 .saved-runs-section {
   background: #fff;
   border-radius: 8px;
