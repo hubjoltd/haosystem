@@ -6,8 +6,9 @@
     </div>
   </div>
 
-  <!-- Filter Section -->
+  <!-- Select Pay Period & Project -->
   <div class="select-period-section">
+    <h3>Select Pay Period & Project</h3>
     <div class="period-form">
       <div class="form-group">
         <label>Period Type</label>
@@ -41,7 +42,7 @@
     </div>
   </div>
 
-  <!-- Current Run Bar -->
+  <!-- Current Run Bar (shown after calculation or selection) -->
   <div class="current-run-bar" *ngIf="currentRun">
     <div class="run-info">
       <span class="run-label">{{ selectedProject || 'Company Level' }} - {{ getPeriodLabel() }}</span>
@@ -52,7 +53,7 @@
     </button>
   </div>
 
-  <!-- Summary Cards -->
+  <!-- Summary Cards (shown after calculation) -->
   <div class="summary-cards" *ngIf="currentRun">
     <div class="summary-card blue">
       <span class="card-label">Pending Employees</span>
@@ -72,7 +73,7 @@
     </div>
   </div>
 
-  <!-- Payroll Table -->
+  <!-- Pending Payroll Table (shown after calculation) -->
   <div class="pending-payroll-section" *ngIf="currentRun">
     <div class="section-header">
       <h3>Pending Payroll - Select & Process</h3>
@@ -140,7 +141,7 @@
             </td>
           </tr>
           <tr *ngIf="payrollRecords.length === 0">
-            <td colspan="14" class="no-data">No payroll records found. Calculate payroll to generate records from approved timesheets.</td>
+            <td colspan="14" class="no-data">No payroll records found</td>
           </tr>
         </tbody>
         <tfoot *ngIf="payrollRecords.length > 0">
@@ -156,16 +157,29 @@
     </div>
   </div>
 
-  <!-- Empty State when no current run -->
-  <div class="empty-state-section" *ngIf="!currentRun && !loading">
-    <div class="empty-icon">
-      <i class="fas fa-calculator"></i>
+  <!-- Saved Payroll Runs - Click to View & Process (shown when no current run) -->
+  <div class="saved-runs-section" *ngIf="!currentRun">
+    <h3>Saved Payroll Runs - Click to View & Process</h3>
+    
+    <div class="loading-state" *ngIf="loading">
+      <i class="fas fa-spinner fa-spin"></i> Loading...
     </div>
-    <p>Select a pay period and click "Calculate Payroll" to generate payroll from approved timesheets.</p>
-  </div>
 
-  <div class="loading-state" *ngIf="loading">
-    <i class="fas fa-spinner fa-spin"></i> Loading...
+    <div class="empty-state" *ngIf="!loading && payrollRuns.length === 0">
+      <p>No payroll runs found. Calculate a new payroll above.</p>
+    </div>
+
+    <div class="runs-list" *ngIf="payrollRuns.length > 0">
+      <div class="run-item" *ngFor="let run of payrollRuns" (click)="selectSavedRun(run)">
+        <div class="run-details">
+          <span class="run-name">{{ run.payrollRunNumber || 'Company Level' }} - {{ getPeriodTypeLabel(run.payFrequency) }}</span>
+          <span class="run-period">{{ run.periodStartDate }} to {{ run.periodEndDate }}</span>
+        </div>
+        <div class="run-status" [ngClass]="getStatusClass(run.status)">
+          {{ run.status }}
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

@@ -59,6 +59,7 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.setDefaultDates();
+    this.loadPayrollRuns();
   }
 
   ngOnDestroy(): void {
@@ -327,6 +328,17 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
       'SEMI_MONTHLY': 'Semi-Monthly'
     };
     return types[this.periodType] || this.periodType;
+  }
+
+  getPeriodTypeLabel(periodType: any): string {
+    if (!periodType) return '';
+    const types: {[key: string]: string} = {
+      'BI_WEEKLY': 'Bi-Weekly',
+      'WEEKLY': 'Weekly',
+      'MONTHLY': 'Monthly',
+      'SEMI_MONTHLY': 'Semi-Monthly'
+    };
+    return types[periodType] || String(periodType);
   }
 
   // Download Payslip
