@@ -303,6 +303,7 @@ com/erp/model/Location.class
 com/erp/model/Interview.class
 com/erp/repository/PRFulfillmentItemRepository.class
 com/erp/repository/ProjectMilestoneRepository.class
+com/erp/config/DataSeeder.class
 com/erp/repository/GoodsReceiptRepository.class
 com/erp/model/GoodsIssue.class
 com/erp/repository/PurchaseRequisitionRepository.class

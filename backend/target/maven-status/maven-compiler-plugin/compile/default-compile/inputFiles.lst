@@ -216,6 +216,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/model/ExpenseCenter.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/PurchaseInvoiceRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Role.java
+/home/runner/workspace/backend/src/main/java/com/erp/config/DataSeeder.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/UserRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/ExpenseRequest.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/PurchaseInvoiceService.java
