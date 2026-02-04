@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -15,57 +15,57 @@ import jsPDF from 'jspdf';
   styleUrls: ['./process-payroll.component.scss']
 })
 export class ProcessPayrollComponent implements OnInit, OnDestroy {
-  payrollRuns: PayrollRun[] = [];
-  payrollRun: PayrollRun | null = null;
-  payrollRecords: PayrollRecord[] = [];
-  selectedRecordIds: Set<number> = new Set();
-  loading = false;
-  processing = false;
-  selectedRecord: PayrollRecord | null = null;
-  showDetailModal = false;
-  accountPostings: any = null;
-  viewMode: 'list' | 'detail' = 'list';
-  private routeSub: Subscription | null = null;
-  
-  payDate: string = '';
-  showPayDateError = false;
-
+  // Filter form
   periodType = 'BI_WEEKLY';
   selectedProject = '';
   filterStartDate = '';
   filterEndDate = '';
 
+  // Saved runs list
+  payrollRuns: PayrollRun[] = [];
+  
+  // Current calculated payroll
+  currentRun: PayrollRun | null = null;
+  payrollRecords: PayrollRecord[] = [];
+  selectedRecordIds: Set<number> = new Set();
+  
+  // UI State
+  loading = false;
+  calculating = false;
+  processing = false;
+  showProcessModal = false;
+  showPayStubModal = false;
+  selectedRecord: PayrollRecord | null = null;
+  
+  // Process modal
+  payDate = '';
+  
+  // Summary
   summary = {
-    totalGrossPay: 0,
-    totalDeductions: 0,
-    totalTaxes: 0,
-    totalNetPay: 0,
-    totalEmployerContributions: 0,
-    totalBasePay: 0,
-    totalOvertimePay: 0,
-    totalReimbursements: 0
+    pendingEmployees: 0,
+    grossPay: 0,
+    netTax: 0,
+    netPay: 0
   };
+
+  private routeSub: Subscription | null = null;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private payrollService: PayrollService
+    private payrollService: PayrollService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     this.setDefaultDates();
-    this.routeSub = this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (id) {
-        this.viewMode = 'detail';
-        this.loadPayrollRun(parseInt(id));
-      } else {
-        this.viewMode = 'list';
-        this.payrollRun = null;
-        this.payrollRecords = [];
-        this.loadPayrollRuns();
-      }
-    });
+    this.loadPayrollRuns();
+  }
+
+  ngOnDestroy(): void {
+    if (this.routeSub) {
+      this.routeSub.unsubscribe();
+    }
   }
 
   setDefaultDates(): void {
@@ -76,25 +76,16 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
     this.filterEndDate = lastOfMonth.toISOString().split('T')[0];
   }
 
-  calculatePayrollPreview(): void {
-    this.router.navigate(['/app/payroll/timesheets']);
-  }
-
-  ngOnDestroy(): void {
-    if (this.routeSub) {
-      this.routeSub.unsubscribe();
-    }
-  }
-
   loadPayrollRuns(): void {
     this.loading = true;
     this.payrollService.getPayrollRuns().subscribe({
       next: (runs) => {
         this.payrollRuns = runs.filter(r => {
           const status = r.status?.toUpperCase();
-          return status === 'APPROVED' || status === 'CALCULATED' || status === 'PARTIALLY_PROCESSED';
+          return status === 'CALCULATED' || status === 'APPROVED' || status === 'PARTIALLY_PROCESSED';
         });
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading payroll runs:', err);
@@ -103,34 +94,69 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
     });
   }
 
-  selectRun(run: PayrollRun): void {
-    if (run.id) {
-      this.router.navigate(['/app/payroll/process', run.id]);
+  // Step 1: Calculate Payroll - creates a new payroll run from approved timesheets
+  calculatePayroll(): void {
+    if (!this.filterStartDate || !this.filterEndDate) {
+      alert('Please select start and end dates');
+      return;
     }
-  }
 
-  loadPayrollRun(id: number): void {
-    this.loading = true;
-    this.payrollService.getPayrollRun(id).subscribe({
+    this.calculating = true;
+    
+    const runData = {
+      periodType: this.periodType,
+      projectCode: this.selectedProject || null,
+      periodStartDate: this.filterStartDate,
+      periodEndDate: this.filterEndDate
+    };
+
+    this.payrollService.createPayrollRun(runData).subscribe({
       next: (run) => {
-        this.payrollRun = run;
-        this.payDate = run.payDate || '';
-        this.showPayDateError = false;
-        this.loadPayrollRecords(id);
+        this.currentRun = run;
+        // Auto-calculate after creating
+        if (run.id) {
+          this.payrollService.calculatePayroll(run.id).subscribe({
+            next: (calculatedRun) => {
+              this.currentRun = calculatedRun;
+              this.loadPayrollRecords(run.id!);
+              this.calculating = false;
+              this.loadPayrollRuns(); // Refresh saved runs list
+            },
+            error: (err) => {
+              console.error('Error calculating payroll:', err);
+              this.calculating = false;
+              alert('Error calculating payroll: ' + (err.error?.message || 'Unknown error'));
+            }
+          });
+        } else {
+          // Handle case where run.id is not returned
+          this.calculating = false;
+          alert('Payroll run created but no ID returned. Please try again.');
+        }
       },
       error: (err) => {
-        console.error('Error loading payroll run:', err);
-        this.loading = false;
+        console.error('Error creating payroll run:', err);
+        this.calculating = false;
+        alert('Error creating payroll run: ' + (err.error?.message || 'Unknown error'));
       }
     });
   }
 
+  selectSavedRun(run: PayrollRun): void {
+    this.currentRun = run;
+    if (run.id) {
+      this.loadPayrollRecords(run.id);
+    }
+  }
+
   loadPayrollRecords(runId: number): void {
+    this.loading = true;
     this.payrollService.getPayrollRecordsByRun(runId).subscribe({
       next: (records) => {
         this.payrollRecords = records;
         this.calculateSummary();
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Error loading records:', err);
@@ -140,21 +166,21 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
   }
 
   calculateSummary(): void {
-    const selectedRecords = this.getSelectedRecords();
-    const recordsToSum = selectedRecords.length > 0 ? selectedRecords : this.payrollRecords;
-    
+    const pendingRecords = this.payrollRecords.filter(r => r.status !== 'PROCESSED');
     this.summary = {
-      totalGrossPay: recordsToSum.reduce((sum, r) => sum + (r.grossPay || 0), 0),
-      totalDeductions: recordsToSum.reduce((sum, r) => sum + (r.totalDeductions || 0), 0),
-      totalTaxes: recordsToSum.reduce((sum, r) => sum + (r.totalTaxes || 0), 0),
-      totalNetPay: recordsToSum.reduce((sum, r) => sum + (r.netPay || 0), 0),
-      totalEmployerContributions: recordsToSum.reduce((sum, r) => sum + (r.totalEmployerContributions || 0), 0),
-      totalBasePay: recordsToSum.reduce((sum, r) => sum + (r.basePay || 0), 0),
-      totalOvertimePay: recordsToSum.reduce((sum, r) => sum + (r.overtimePay || 0), 0),
-      totalReimbursements: recordsToSum.reduce((sum, r) => sum + (r.reimbursements || 0), 0)
+      pendingEmployees: pendingRecords.length,
+      grossPay: pendingRecords.reduce((sum, r) => sum + (r.grossPay || 0), 0),
+      netTax: pendingRecords.reduce((sum, r) => {
+        // Use totalTaxes if available, otherwise sum individual tax fields
+        const taxes = r.totalTaxes || 
+          ((r.federalTax || 0) + (r.stateTax || 0) + (r.socialSecurityTax || 0) + (r.medicareTax || 0));
+        return sum + taxes;
+      }, 0),
+      netPay: pendingRecords.reduce((sum, r) => sum + (r.netPay || 0), 0)
     };
   }
 
+  // Selection
   toggleSelectAll(event: any): void {
     if (event.target.checked) {
       this.payrollRecords.forEach(r => {
@@ -165,7 +191,7 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
     } else {
       this.selectedRecordIds.clear();
     }
-    this.calculateSummary();
+    this.cdr.detectChanges();
   }
 
   toggleRecord(record: PayrollRecord): void {
@@ -175,7 +201,7 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
       } else {
         this.selectedRecordIds.add(record.id);
       }
-      this.calculateSummary();
+      this.cdr.detectChanges();
     }
   }
 
@@ -193,91 +219,85 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
     return this.payrollRecords.filter(r => r.id && this.selectedRecordIds.has(r.id));
   }
 
-  canProcess(): boolean {
-    if (!this.payrollRun) return false;
-    const status = this.payrollRun.status;
-    const hasPayDate = !!this.payDate;
-    const hasUnprocessedRecords = this.selectedRecordIds.size > 0 || this.payrollRecords.some(r => r.status !== 'PROCESSED');
-    return (status === 'CALCULATED' || status === 'APPROVED') && hasPayDate && hasUnprocessedRecords;
-  }
-
-  getUnprocessedRecordsCount(): number {
-    if (this.selectedRecordIds.size > 0) {
-      return this.payrollRecords.filter(r => r.id && this.selectedRecordIds.has(r.id) && r.status !== 'PROCESSED').length;
-    }
+  getUnprocessedCount(): number {
     return this.payrollRecords.filter(r => r.status !== 'PROCESSED').length;
   }
 
-  getProcessedRecordsCount(): number {
-    return this.payrollRecords.filter(r => r.status === 'PROCESSED').length;
+  // Step 4: Open Process Modal
+  openProcessModal(): void {
+    const count = this.selectedRecordIds.size > 0 ? this.selectedRecordIds.size : this.getUnprocessedCount();
+    if (count === 0) {
+      alert('No employees to process');
+      return;
+    }
+    this.payDate = '';
+    this.showProcessModal = true;
   }
 
+  closeProcessModal(): void {
+    this.showProcessModal = false;
+    this.payDate = '';
+  }
+
+  // Step 4: Process Payroll with Pay Date
   processPayroll(): void {
-    if (!this.payrollRun?.id) return;
+    if (!this.currentRun?.id) return;
     
     if (!this.payDate) {
-      this.showPayDateError = true;
-      alert('Please enter a Pay Date before processing payroll.');
+      alert('Please select a pay date');
       return;
     }
-    this.showPayDateError = false;
-    
-    const unprocessedCount = this.getUnprocessedRecordsCount();
-    if (unprocessedCount === 0) {
-      alert('All records have already been processed. No duplicates allowed.');
-      return;
-    }
-    
+
     const selectedIds = Array.from(this.selectedRecordIds).filter(id => {
       const record = this.payrollRecords.find(r => r.id === id);
       return record && record.status !== 'PROCESSED';
     });
-    
-    const count = selectedIds.length > 0 ? selectedIds.length : unprocessedCount;
-    
-    if (!confirm(`Are you sure you want to process payroll for ${count} employee(s)?\n\nPay Date: ${this.payDate}\n\nThis action will:\n• Mark selected records as PROCESSED\n• Post to accounting ledgers\n• Generate pay stubs\n\nThis action cannot be undone.`)) {
-      return;
-    }
+
+    const count = selectedIds.length > 0 ? selectedIds.length : this.getUnprocessedCount();
 
     this.processing = true;
-    this.payrollService.processPayroll(this.payrollRun.id, { 
+    this.payrollService.processPayroll(this.currentRun.id, {
       recordIds: selectedIds,
-      payDate: this.payDate 
+      payDate: this.payDate
     }).subscribe({
       next: (response: any) => {
         this.processing = false;
-        this.accountPostings = response.accountPostings;
+        this.showProcessModal = false;
         
-        const message = `Successfully processed ${response.processedCount} payroll record(s).\n\n` +
-          `Pay Date: ${this.payDate}\n\n` +
-          `Account Postings:\n` +
-          `• Salary Expenses: $${response.totalGrossPay?.toFixed(2) || '0.00'}\n` +
-          `• Employer Contributions: $${response.totalEmployerContributions?.toFixed(2) || '0.00'}\n` +
-          `• Tax Liabilities: $${response.totalTaxes?.toFixed(2) || '0.00'}\n` +
-          `• Net Payable: $${response.totalNetPay?.toFixed(2) || '0.00'}`;
+        alert(`Successfully processed payroll for ${response.processedCount || count} employee(s).\nPay Date: ${this.payDate}`);
         
-        alert(message);
+        // Refresh data and go to history
         this.selectedRecordIds.clear();
-        this.loadPayrollRun(this.payrollRun!.id!);
+        this.router.navigate(['/app/payroll/history']);
       },
       error: (err) => {
         this.processing = false;
         console.error('Error processing payroll:', err);
-        alert('Error processing payroll: ' + (err.error?.error || 'Unknown error'));
+        alert('Error processing payroll: ' + (err.error?.message || 'Unknown error'));
       }
     });
   }
 
-  viewRecordDetails(record: PayrollRecord): void {
-    this.selectedRecord = record;
-    this.showDetailModal = true;
+  // Clear current run and go back to filter form
+  clearCurrentRun(): void {
+    this.currentRun = null;
+    this.payrollRecords = [];
+    this.selectedRecordIds.clear();
+    this.loadPayrollRuns();
   }
 
-  closeDetailModal(): void {
-    this.showDetailModal = false;
+  // View Pay Stub
+  viewPayStub(record: PayrollRecord): void {
+    this.selectedRecord = record;
+    this.showPayStubModal = true;
+  }
+
+  closePayStubModal(): void {
+    this.showPayStubModal = false;
     this.selectedRecord = null;
   }
 
+  // Helpers
   getEmployeeName(record: PayrollRecord): string {
     if (record.employee) {
       return `${record.employee.firstName || ''} ${record.employee.lastName || ''}`.trim() || 'Unknown';
@@ -297,30 +317,21 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
       case 'FULLY_PROCESSED': 
       case 'COMPLETED': return 'status-processed';
       case 'PARTIALLY_PROCESSED': return 'status-partial';
-      default: return 'status-draft';
-    }
-  }
-  
-  getStatusLabel(status: string): string {
-    switch (status?.toUpperCase()) {
-      case 'CALCULATED': 
-      case 'APPROVED': return 'Ready to Process';
-      case 'PROCESSED': 
-      case 'FULLY_PROCESSED': 
-      case 'COMPLETED': return 'Processed';
-      case 'PARTIALLY_PROCESSED': return 'Partially Processed';
-      default: return status || 'Draft';
+      default: return 'status-pending';
     }
   }
 
-  goBack(): void {
-    if (this.viewMode === 'detail') {
-      this.router.navigate(['/app/payroll/process']);
-    } else {
-      this.router.navigate(['/app/payroll/timesheets']);
-    }
+  getPeriodLabel(): string {
+    const types: {[key: string]: string} = {
+      'BI_WEEKLY': 'Bi-Weekly',
+      'WEEKLY': 'Weekly',
+      'MONTHLY': 'Monthly',
+      'SEMI_MONTHLY': 'Semi-Monthly'
+    };
+    return types[this.periodType] || this.periodType;
   }
 
+  // Download Payslip
   downloadPayslip(record: PayrollRecord): void {
     const doc = new jsPDF();
     const employeeName = this.getEmployeeName(record);
@@ -328,50 +339,30 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
     
     doc.setFontSize(20);
     doc.setTextColor(0, 121, 107);
-    doc.text('PAYSLIP', 105, 20, { align: 'center' });
+    doc.text('PAY STUB', 105, 20, { align: 'center' });
     
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.text(`Pay Period: ${this.payrollRun?.periodStartDate || ''} to ${this.payrollRun?.periodEndDate || ''}`, 105, 30, { align: 'center' });
+    doc.text(`Pay Period: ${this.currentRun?.periodStartDate || ''} to ${this.currentRun?.periodEndDate || ''}`, 105, 30, { align: 'center' });
     
-    doc.setLineWidth(0.5);
     doc.line(20, 35, 190, 35);
     
-    doc.setFontSize(11);
-    doc.text('Employee Details', 20, 45);
     doc.setFontSize(10);
-    doc.text(`Name: ${employeeName}`, 20, 55);
-    doc.text(`Employee ID: ${employeeCode}`, 20, 62);
-    doc.text(`Pay Date: ${this.payrollRun?.payDate || 'N/A'}`, 120, 55);
-    doc.text(`Status: ${record.status}`, 120, 62);
+    doc.text(`Employee: ${employeeName}`, 20, 45);
+    doc.text(`ID: ${employeeCode}`, 20, 52);
+    doc.text(`Pay Date: ${this.currentRun?.payDate || this.payDate || 'N/A'}`, 120, 45);
     
-    doc.line(20, 70, 190, 70);
-    
-    let y = 80;
+    let y = 65;
     doc.setFontSize(11);
-    doc.setTextColor(0, 121, 107);
     doc.text('EARNINGS', 20, y);
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(10);
-    
     y += 10;
+    doc.setFontSize(10);
     doc.text('Base Pay:', 25, y);
     doc.text(`$${(record.basePay || 0).toFixed(2)}`, 170, y, { align: 'right' });
-    
     y += 7;
     doc.text('Overtime Pay:', 25, y);
     doc.text(`$${(record.overtimePay || 0).toFixed(2)}`, 170, y, { align: 'right' });
-    
-    y += 7;
-    doc.text('Bonuses:', 25, y);
-    doc.text(`$${(record.bonuses || 0).toFixed(2)}`, 170, y, { align: 'right' });
-    
-    y += 7;
-    doc.text('Reimbursements:', 25, y);
-    doc.text(`$${(record.reimbursements || 0).toFixed(2)}`, 170, y, { align: 'right' });
-    
     y += 10;
-    doc.setFontSize(11);
     doc.text('Gross Pay:', 25, y);
     doc.setFont('helvetica', 'bold');
     doc.text(`$${(record.grossPay || 0).toFixed(2)}`, 170, y, { align: 'right' });
@@ -379,57 +370,31 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
     
     y += 15;
     doc.setFontSize(11);
-    doc.setTextColor(0, 121, 107);
     doc.text('DEDUCTIONS', 20, y);
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(10);
-    
     y += 10;
+    doc.setFontSize(10);
     doc.text('Federal Tax:', 25, y);
     doc.text(`-$${(record.federalTax || 0).toFixed(2)}`, 170, y, { align: 'right' });
-    
     y += 7;
     doc.text('State Tax:', 25, y);
     doc.text(`-$${(record.stateTax || 0).toFixed(2)}`, 170, y, { align: 'right' });
-    
     y += 7;
     doc.text('Social Security:', 25, y);
     doc.text(`-$${(record.socialSecurityTax || 0).toFixed(2)}`, 170, y, { align: 'right' });
-    
     y += 7;
     doc.text('Medicare:', 25, y);
     doc.text(`-$${(record.medicareTax || 0).toFixed(2)}`, 170, y, { align: 'right' });
-    
-    y += 7;
-    doc.text('Health Insurance:', 25, y);
-    doc.text(`-$${(record.healthInsurance || 0).toFixed(2)}`, 170, y, { align: 'right' });
-    
-    y += 7;
-    doc.text('401(k) Contribution:', 25, y);
-    doc.text(`-$${(record.retirement401k || 0).toFixed(2)}`, 170, y, { align: 'right' });
-    
     y += 10;
-    doc.setFontSize(11);
     doc.text('Total Deductions:', 25, y);
     doc.setFont('helvetica', 'bold');
     doc.text(`-$${(record.totalDeductions || 0).toFixed(2)}`, 170, y, { align: 'right' });
-    doc.setFont('helvetica', 'normal');
     
     y += 20;
-    doc.setLineWidth(1);
-    doc.line(20, y - 5, 190, y - 5);
-    
     doc.setFontSize(14);
     doc.setTextColor(0, 121, 107);
-    doc.text('NET PAY:', 25, y + 5);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`$${(record.netPay || 0).toFixed(2)}`, 170, y + 5, { align: 'right' });
+    doc.text('NET PAY:', 25, y);
+    doc.text(`$${(record.netPay || 0).toFixed(2)}`, 170, y, { align: 'right' });
     
-    doc.setFontSize(8);
-    doc.setTextColor(128, 128, 128);
-    doc.setFont('helvetica', 'normal');
-    doc.text('This is a computer-generated document. No signature is required.', 105, 280, { align: 'center' });
-    
-    doc.save(`payslip_${employeeCode}_${this.payrollRun?.periodEndDate || 'unknown'}.pdf`);
+    doc.save(`paystub_${employeeCode}_${this.currentRun?.periodEndDate || 'payroll'}.pdf`);
   }
 }

@@ -1,307 +1,260 @@
 <div class="process-payroll-container">
-  <div *ngIf="viewMode === 'list'">
-    <div class="page-header">
-      <div class="header-left">
-        <h2>Process Payroll</h2>
-        <p class="subtitle">Calculate payroll based on approved timesheets</p>
-      </div>
-    </div>
-
-    <div class="select-period-section">
-      <h3>Select Pay Period & Project</h3>
-      <div class="period-form">
-        <div class="form-group">
-          <label>Period Type</label>
-          <select [(ngModel)]="periodType" class="form-control">
-            <option value="BI_WEEKLY">Bi-Weekly</option>
-            <option value="MONTHLY">Monthly</option>
-            <option value="WEEKLY">Weekly</option>
-            <option value="SEMI_MONTHLY">Semi-Monthly</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Project / Site</label>
-          <select [(ngModel)]="selectedProject" class="form-control">
-            <option value="">All Projects (Company Level)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Start Date</label>
-          <input type="date" [(ngModel)]="filterStartDate" class="form-control" />
-        </div>
-        <div class="form-group">
-          <label>End Date</label>
-          <input type="date" [(ngModel)]="filterEndDate" class="form-control" />
-        </div>
-        <div class="form-group btn-group">
-          <button class="btn-calculate" (click)="calculatePayrollPreview()">
-            <i class="fas fa-calculator"></i> Calculate Payroll
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="saved-runs-section">
-      <h3>Saved Payroll Runs - Click to View & Process</h3>
-      
-      <div class="empty-state" *ngIf="payrollRuns.length === 0">
-        <p>No payroll runs found. Calculate a new payroll above.</p>
-      </div>
-
-      <div class="runs-list" *ngIf="payrollRuns.length > 0">
-        <div class="run-item" *ngFor="let run of payrollRuns" (click)="selectRun(run)">
-          <div class="run-info">
-            <span class="run-name">{{ run.payrollRunNumber || 'Company Level' }}</span>
-            <span class="run-period">{{ run.periodStartDate }} to {{ run.periodEndDate }}</span>
-          </div>
-          <div class="run-status-badge" [ngClass]="getStatusClass(run.status)">
-            {{ getStatusLabel(run.status) }}
-          </div>
-        </div>
-      </div>
+  <div class="page-header">
+    <div class="header-left">
+      <h2>Process Payroll</h2>
+      <p class="subtitle">Calculate payroll based on approved timesheets</p>
     </div>
   </div>
 
-  <div *ngIf="viewMode === 'detail'">
-    <div class="page-header">
-      <div class="header-left">
-        <button class="btn btn-back" (click)="goBack()">
-          <i class="fas fa-arrow-left"></i>
+  <!-- Step 1: Select Pay Period & Project -->
+  <div class="select-period-section">
+    <h3>Select Pay Period & Project</h3>
+    <div class="period-form">
+      <div class="form-group">
+        <label>Period Type</label>
+        <select [(ngModel)]="periodType" class="form-control">
+          <option value="BI_WEEKLY">Bi-Weekly</option>
+          <option value="WEEKLY">Weekly</option>
+          <option value="MONTHLY">Monthly</option>
+          <option value="SEMI_MONTHLY">Semi-Monthly</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Project / Site</label>
+        <select [(ngModel)]="selectedProject" class="form-control">
+          <option value="">All Projects (Company Level)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Start Date</label>
+        <input type="date" [(ngModel)]="filterStartDate" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label>End Date</label>
+        <input type="date" [(ngModel)]="filterEndDate" class="form-control" />
+      </div>
+      <div class="form-group btn-group">
+        <button class="btn-calculate" (click)="calculatePayroll()" [disabled]="calculating">
+          <i class="fas fa-calculator"></i> 
+          {{ calculating ? 'Calculating...' : 'Calculate Payroll' }}
         </button>
-        <div>
-          <h2>Process Payroll</h2>
-          <span class="run-info" *ngIf="payrollRun">{{ payrollRun.payrollRunNumber }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Current Calculated Run Bar -->
+  <div class="current-run-bar" *ngIf="currentRun">
+    <div class="run-info">
+      <span class="run-label">{{ selectedProject || 'Company Level' }} - {{ getPeriodLabel() }}</span>
+      <span class="run-period">{{ currentRun.periodStartDate }} to {{ currentRun.periodEndDate }}</span>
+    </div>
+    <button class="btn-clear" (click)="clearCurrentRun()">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <!-- Step 2: Summary Cards (shown after calculation) -->
+  <div class="summary-cards" *ngIf="currentRun">
+    <div class="summary-card blue">
+      <span class="card-label">Pending Employees</span>
+      <span class="card-value">{{ summary.pendingEmployees }}</span>
+    </div>
+    <div class="summary-card yellow">
+      <span class="card-label">Gross Pay</span>
+      <span class="card-value">${{ summary.grossPay.toFixed(2) }}</span>
+    </div>
+    <div class="summary-card orange">
+      <span class="card-label">Net Tax</span>
+      <span class="card-value">${{ summary.netTax.toFixed(2) }}</span>
+    </div>
+    <div class="summary-card green">
+      <span class="card-label">Net Pay</span>
+      <span class="card-value">${{ summary.netPay.toFixed(2) }}</span>
+    </div>
+  </div>
+
+  <!-- Step 2: Pending Payroll Table -->
+  <div class="pending-payroll-section" *ngIf="currentRun">
+    <div class="section-header">
+      <h3>Pending Payroll - Select & Process</h3>
+      <button class="btn btn-process" (click)="openProcessModal()" [disabled]="getUnprocessedCount() === 0">
+        <i class="fas fa-play"></i> Process
+        {{ selectedRecordIds.size > 0 ? '(' + selectedRecordIds.size + ')' : '(' + getUnprocessedCount() + ')' }}
+      </button>
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="checkbox-col">
+              <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll($event)">
+            </th>
+            <th>EMP ID</th>
+            <th>NAME</th>
+            <th>PROJECT</th>
+            <th class="number-col">HOURS</th>
+            <th class="number-col">RATE</th>
+            <th class="number-col">GROSS</th>
+            <th class="number-col">SOC.SEC</th>
+            <th class="number-col">MEDICARE</th>
+            <th class="number-col">FED TAX</th>
+            <th class="number-col">STATE TAX</th>
+            <th class="number-col">NET PAY</th>
+            <th>STATUS</th>
+            <th>ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of payrollRecords; let i = index" 
+              [class.selected]="isSelected(record)"
+              [class.processed]="record.status === 'PROCESSED'">
+            <td class="checkbox-col">
+              <input type="checkbox" 
+                     [checked]="isSelected(record)" 
+                     [disabled]="record.status === 'PROCESSED'"
+                     (change)="toggleRecord(record)">
+            </td>
+            <td>{{ getEmployeeCode(record) }}</td>
+            <td class="employee-name">{{ getEmployeeName(record) }}</td>
+            <td>{{ record.projectCode || 'Company Level' }}</td>
+            <td class="number-col">{{ (record.regularHours || 0) + (record.overtimeHours || 0) | number:'1.2-2' }}</td>
+            <td class="number-col">${{ record.hourlyRate?.toFixed(2) || '0.00' }}</td>
+            <td class="number-col">${{ record.grossPay?.toFixed(2) || '0.00' }}</td>
+            <td class="number-col">${{ record.socialSecurityTax?.toFixed(2) || '0.00' }}</td>
+            <td class="number-col">${{ record.medicareTax?.toFixed(2) || '0.00' }}</td>
+            <td class="number-col">${{ record.federalTax?.toFixed(2) || '0.00' }}</td>
+            <td class="number-col">${{ record.stateTax?.toFixed(2) || '0.00' }}</td>
+            <td class="number-col amount-net">${{ record.netPay?.toFixed(2) || '0.00' }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(record.status || 'PENDING')">
+                {{ record.status === 'PROCESSED' ? 'Processed' : 'Pending Payment' }}
+              </span>
+            </td>
+            <td class="actions-col">
+              <button class="btn-icon" (click)="viewPayStub(record)" title="View Pay Stub">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn-icon download" *ngIf="record.status === 'PROCESSED'" (click)="downloadPayslip(record)" title="Download">
+                <i class="fas fa-download"></i>
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="payrollRecords.length === 0">
+            <td colspan="14" class="no-data">No payroll records found</td>
+          </tr>
+        </tbody>
+        <tfoot *ngIf="payrollRecords.length > 0">
+          <tr class="totals-row">
+            <td colspan="6"><strong>TOTAL</strong></td>
+            <td class="number-col"><strong>${{ summary.grossPay.toFixed(2) }}</strong></td>
+            <td colspan="4"></td>
+            <td class="number-col"><strong>${{ summary.netPay.toFixed(2) }}</strong></td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- Saved Payroll Runs (when no current run) -->
+  <div class="saved-runs-section" *ngIf="!currentRun">
+    <h3>Saved Payroll Runs - Click to View & Process</h3>
+    
+    <div class="loading-state" *ngIf="loading">
+      <i class="fas fa-spinner fa-spin"></i> Loading...
+    </div>
+
+    <div class="empty-state" *ngIf="!loading && payrollRuns.length === 0">
+      <p>No payroll runs found. Calculate a new payroll above.</p>
+    </div>
+
+    <div class="runs-list" *ngIf="payrollRuns.length > 0">
+      <div class="run-item" *ngFor="let run of payrollRuns" (click)="selectSavedRun(run)">
+        <div class="run-info">
+          <span class="run-name">{{ run.payrollRunNumber || 'Company Level' }} - {{ run.periodStartDate ? (run.periodStartDate + ' to ' + run.periodEndDate) : '' }}</span>
+        </div>
+        <div class="run-status" [ngClass]="getStatusClass(run.status)">
+          {{ run.status }}
         </div>
       </div>
-      <div class="process-status-info" *ngIf="payrollRun?.status !== 'PROCESSED'">
-        <span class="status-count processed" *ngIf="getProcessedRecordsCount() > 0">
-          <i class="fas fa-check"></i> {{ getProcessedRecordsCount() }} Processed
-        </span>
-        <span class="status-count pending" *ngIf="getUnprocessedRecordsCount() > 0">
-          <i class="fas fa-clock"></i> {{ getUnprocessedRecordsCount() }} Pending
-        </span>
-      </div>
-      <button class="btn btn-success" (click)="processPayroll()" 
-              [disabled]="processing || !canProcess()"
-              *ngIf="payrollRun?.status !== 'PROCESSED' && payrollRun?.status !== 'FULLY_PROCESSED'">
-        <i class="fas fa-check-circle"></i> 
-        {{ processing ? 'Processing...' : (selectedRecordIds.size > 0 ? 'Process Selected (' + selectedRecordIds.size + ')' : 'Process All (' + getUnprocessedRecordsCount() + ')') }}
-      </button>
-      <span class="processed-badge" *ngIf="payrollRun?.status === 'PROCESSED' || payrollRun?.status === 'FULLY_PROCESSED'">
-        <i class="fas fa-check-circle"></i> Fully Processed
-      </span>
     </div>
-
-  <div class="summary-section" *ngIf="payrollRun">
-    <div class="summary-card">
-      <span class="label">Pay Period</span>
-      <span class="value">{{ payrollRun.periodStartDate }} - {{ payrollRun.periodEndDate }}</span>
-    </div>
-    <div class="summary-card pay-date-card" [class.error]="showPayDateError">
-      <span class="label">Pay Date <span class="required">*</span></span>
-      <input type="date" [(ngModel)]="payDate" class="pay-date-input" 
-             [class.error-border]="showPayDateError"
-             [disabled]="payrollRun?.status === 'PROCESSED' || payrollRun?.status === 'FULLY_PROCESSED'">
-      <span class="error-message" *ngIf="showPayDateError">Pay date is required</span>
-    </div>
-    <div class="summary-card">
-      <span class="label">Employees</span>
-      <span class="value">{{ payrollRecords.length }}</span>
-    </div>
-    <div class="summary-card">
-      <span class="label">Gross Pay</span>
-      <span class="value amount">${{ summary.totalGrossPay.toFixed(2) }}</span>
-    </div>
-    <div class="summary-card">
-      <span class="label">Deductions</span>
-      <span class="value amount deduction">${{ summary.totalDeductions.toFixed(2) }}</span>
-    </div>
-    <div class="summary-card">
-      <span class="label">Taxes</span>
-      <span class="value amount">${{ summary.totalTaxes.toFixed(2) }}</span>
-    </div>
-    <div class="summary-card highlight">
-      <span class="label">Net Pay</span>
-      <span class="value amount net">${{ summary.totalNetPay.toFixed(2) }}</span>
-    </div>
-    <div class="summary-card employer">
-      <span class="label">Employer Contributions</span>
-      <span class="value amount">${{ summary.totalEmployerContributions.toFixed(2) }}</span>
-    </div>
-  </div>
-
-  <div class="info-card" *ngIf="accountPostings">
-    <i class="fas fa-check-circle"></i>
-    <div>
-      <strong>Account Postings Completed:</strong>
-      <ul>
-        <li>Salary Expenses: ${{ accountPostings.salaryExpenses?.toFixed(2) || '0.00' }}</li>
-        <li>Employer Contributions: ${{ accountPostings.employerContributions?.toFixed(2) || '0.00' }}</li>
-        <li>Loan Deductions: ${{ accountPostings.loanDeductions?.toFixed(2) || '0.00' }}</li>
-        <li>Tax Liabilities: ${{ accountPostings.taxLiabilities?.toFixed(2) || '0.00' }}</li>
-        <li>Net Payable: ${{ accountPostings.netPayable?.toFixed(2) || '0.00' }}</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="selection-info" *ngIf="selectedRecordIds.size > 0">
-    <i class="fas fa-info-circle"></i>
-    {{ selectedRecordIds.size }} employee(s) selected for processing
-  </div>
-
-  <div class="calculation-info">
-    <div class="info-header">
-      <i class="fas fa-calculator"></i>
-      <strong>Payroll Calculation Summary</strong>
-    </div>
-    <div class="formula-grid">
-      <div class="formula-item">
-        <span class="formula-label">Salaried:</span>
-        <span class="formula-text">Base Pay = Annual Salary ÷ Pay Periods; OT = Hourly Rate × OT Hours × 1.5</span>
-      </div>
-      <div class="formula-item">
-        <span class="formula-label">Hourly:</span>
-        <span class="formula-text">Regular Pay = Hours × Rate; OT = OT Hours × Rate × 1.5</span>
-      </div>
-      <div class="formula-item">
-        <span class="formula-label">Taxes:</span>
-        <span class="formula-text">SS (6.2%) + Medicare (1.45%) + Disability (0.9%) + Federal + State</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="table-container">
-    <h3>Employee Payroll Details {{ selectedRecordIds.size > 0 ? '(Selected: ' + selectedRecordIds.size + ')' : '' }}</h3>
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th class="checkbox-col">
-            <input 
-              type="checkbox" 
-              [checked]="isAllSelected()"
-              (change)="toggleSelectAll($event)"
-              title="Select all for processing">
-          </th>
-          <th>Employee Code</th>
-          <th>Employee Name</th>
-          <th>Project</th>
-          <th>Type</th>
-          <th class="number-col">Regular Hrs</th>
-          <th class="number-col">OT Hrs</th>
-          <th class="number-col">Base Pay</th>
-          <th class="number-col">OT Pay</th>
-          <th class="number-col">Reimburse</th>
-          <th class="number-col">Gross Pay</th>
-          <th class="number-col">Deductions</th>
-          <th class="number-col">Taxes</th>
-          <th class="number-col">Net Pay</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let record of payrollRecords" 
-            [class.selected]="isSelected(record)" 
-            [class.processed]="record.status === 'PROCESSED'">
-          <td class="checkbox-col">
-            <input 
-              type="checkbox" 
-              [checked]="isSelected(record)"
-              [disabled]="record.status === 'PROCESSED'"
-              (change)="toggleRecord(record)">
-          </td>
-          <td>{{ getEmployeeCode(record) }}</td>
-          <td class="employee-name">{{ getEmployeeName(record) }}</td>
-          <td>{{ record.projectCode || record.employee?.department?.name || 'General' }}</td>
-          <td><span class="badge type">{{ record.employeeType || 'SALARIED' }}</span></td>
-          <td class="number-col">{{ record.regularHours?.toFixed(2) || '0.00' }}</td>
-          <td class="number-col">{{ record.overtimeHours?.toFixed(2) || '0.00' }}</td>
-          <td class="number-col">${{ record.basePay?.toFixed(2) || '0.00' }}</td>
-          <td class="number-col">${{ record.overtimePay?.toFixed(2) || '0.00' }}</td>
-          <td class="number-col">${{ record.reimbursements?.toFixed(2) || '0.00' }}</td>
-          <td class="number-col amount">${{ record.grossPay?.toFixed(2) || '0.00' }}</td>
-          <td class="number-col amount deduction">${{ record.totalDeductions?.toFixed(2) || '0.00' }}</td>
-          <td class="number-col">${{ record.totalTaxes?.toFixed(2) || '0.00' }}</td>
-          <td class="number-col amount net">${{ record.netPay?.toFixed(2) || '0.00' }}</td>
-          <td>
-            <span class="status-badge" [ngClass]="getStatusClass(record.status || 'CALCULATED')">
-              {{ record.status || 'CALCULATED' }}
-            </span>
-          </td>
-          <td class="actions-col">
-            <button class="btn-icon" (click)="viewRecordDetails(record)" title="View Pay Stub">
-              <i class="fas fa-eye"></i>
-            </button>
-            <button class="btn-icon download" *ngIf="record.status === 'PROCESSED'" (click)="downloadPayslip(record)" title="Download Payslip">
-              <i class="fas fa-download"></i>
-            </button>
-          </td>
-        </tr>
-        <tr *ngIf="payrollRecords.length === 0">
-          <td colspan="16" class="no-data">No payroll records found. Calculate payroll first.</td>
-        </tr>
-      </tbody>
-      <tfoot *ngIf="payrollRecords.length > 0">
-        <tr class="totals-row">
-          <td colspan="7"><strong>Totals {{ selectedRecordIds.size > 0 ? '(Selected)' : '(All)' }}</strong></td>
-          <td class="number-col"><strong>${{ summary.totalBasePay.toFixed(2) }}</strong></td>
-          <td class="number-col"><strong>${{ summary.totalOvertimePay.toFixed(2) }}</strong></td>
-          <td class="number-col"><strong>${{ summary.totalReimbursements.toFixed(2) }}</strong></td>
-          <td class="number-col amount"><strong>${{ summary.totalGrossPay.toFixed(2) }}</strong></td>
-          <td class="number-col amount deduction"><strong>${{ summary.totalDeductions.toFixed(2) }}</strong></td>
-          <td class="number-col"><strong>${{ summary.totalTaxes.toFixed(2) }}</strong></td>
-          <td class="number-col amount net"><strong>${{ summary.totalNetPay.toFixed(2) }}</strong></td>
-          <td colspan="2"></td>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showDetailModal">
-  <div class="modal detail-modal" (click)="$event.stopPropagation()">
+<!-- Step 4: Process Payroll Modal -->
+<div class="modal-overlay" *ngIf="showProcessModal" (click)="closeProcessModal()">
+  <div class="modal process-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>Pay Stub - {{ getEmployeeName(selectedRecord!) }}</h3>
-      <button class="close-btn" (click)="closeDetailModal()">&times;</button>
+      <h3>Process Payroll</h3>
+      <button class="close-btn" (click)="closeProcessModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="process-info">
+        <p><strong>Employees to process:</strong> {{ selectedRecordIds.size > 0 ? selectedRecordIds.size : getUnprocessedCount() }}</p>
+      </div>
+      
+      <div class="form-group">
+        <label>Pay Date <span class="required">*</span></label>
+        <input type="date" [(ngModel)]="payDate" class="form-control" required />
+      </div>
+
+      <p class="warning-text">
+        <i class="fas fa-exclamation-triangle"></i>
+        Once processed, records will be marked as "Paid"
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeProcessModal()">Cancel</button>
+      <button class="btn btn-primary" (click)="processPayroll()" [disabled]="!payDate || processing">
+        <i class="fas fa-check"></i> {{ processing ? 'Processing...' : 'Process Payroll' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Pay Stub Modal -->
+<div class="modal-overlay" *ngIf="showPayStubModal && selectedRecord" (click)="closePayStubModal()">
+  <div class="modal paystub-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Pay Stub - {{ getEmployeeName(selectedRecord) }}</h3>
+      <button class="close-btn" (click)="closePayStubModal()">&times;</button>
     </div>
     <div class="modal-body" *ngIf="selectedRecord">
-      <div class="employee-info">
+      <div class="paystub-header">
+        <h4>PAY STUB</h4>
+        <p>Pay Period: {{ currentRun?.periodStartDate }} to {{ currentRun?.periodEndDate }}</p>
+      </div>
+
+      <div class="paystub-section">
         <div class="info-row">
-          <span>Employee Code:</span>
+          <span class="label">EMPLOYEE INFORMATION</span>
+        </div>
+        <div class="detail-row">
+          <span>Employee ID</span>
           <span>{{ getEmployeeCode(selectedRecord) }}</span>
         </div>
-        <div class="info-row">
-          <span>Employee Type:</span>
-          <span>{{ selectedRecord.employeeType || 'SALARIED' }}</span>
+        <div class="detail-row">
+          <span>Name</span>
+          <span>{{ getEmployeeName(selectedRecord) }}</span>
         </div>
-        <div class="info-row">
-          <span>Annual Salary:</span>
-          <span>${{ selectedRecord.annualSalary?.toFixed(2) || '0.00' }}</span>
-        </div>
-        <div class="info-row">
-          <span>Hourly Rate:</span>
-          <span>${{ selectedRecord.hourlyRate?.toFixed(2) || '0.00' }}</span>
+        <div class="detail-row">
+          <span>Department</span>
+          <span>{{ selectedRecord.employee?.department?.name || 'N/A' }}</span>
         </div>
       </div>
 
       <div class="paystub-section">
-        <h4>Earnings</h4>
+        <div class="info-row">
+          <span class="label">EARNINGS</span>
+        </div>
         <div class="detail-row">
-          <span>Base Pay</span>
+          <span>Regular Hours ({{ selectedRecord.regularHours?.toFixed(1) || '0.0' }} hrs)</span>
           <span>${{ selectedRecord.basePay?.toFixed(2) || '0.00' }}</span>
         </div>
-        <div class="detail-row" *ngIf="selectedRecord.overtimePay && selectedRecord.overtimePay > 0">
-          <span>Overtime Pay ({{ selectedRecord.overtimeHours?.toFixed(1) }} hrs × 1.5)</span>
+        <div class="detail-row" *ngIf="selectedRecord.overtimeHours && selectedRecord.overtimeHours > 0">
+          <span>Overtime ({{ selectedRecord.overtimeHours.toFixed(1) }} hrs × 1.5)</span>
           <span>${{ selectedRecord.overtimePay?.toFixed(2) || '0.00' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedRecord.bonuses && selectedRecord.bonuses > 0">
-          <span>Bonuses</span>
-          <span>${{ selectedRecord.bonuses?.toFixed(2) || '0.00' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedRecord.reimbursements && selectedRecord.reimbursements > 0">
-          <span>Reimbursements</span>
-          <span>${{ selectedRecord.reimbursements?.toFixed(2) || '0.00' }}</span>
         </div>
         <div class="detail-row total">
           <span>Gross Pay</span>
@@ -310,107 +263,43 @@
       </div>
 
       <div class="paystub-section">
-        <h4>Pre-Tax Deductions</h4>
-        <div class="detail-row" *ngIf="selectedRecord.healthInsurance && selectedRecord.healthInsurance > 0">
-          <span>Health Insurance</span>
-          <span>${{ selectedRecord.healthInsurance?.toFixed(2) || '0.00' }}</span>
+        <div class="info-row">
+          <span class="label">DEDUCTIONS</span>
         </div>
-        <div class="detail-row" *ngIf="selectedRecord.dentalInsurance && selectedRecord.dentalInsurance > 0">
-          <span>Dental Insurance</span>
-          <span>${{ selectedRecord.dentalInsurance?.toFixed(2) || '0.00' }}</span>
+        <div class="detail-row">
+          <span>Federal Tax</span>
+          <span>-${{ selectedRecord.federalTax?.toFixed(2) || '0.00' }}</span>
         </div>
-        <div class="detail-row" *ngIf="selectedRecord.visionInsurance && selectedRecord.visionInsurance > 0">
-          <span>Vision Insurance</span>
-          <span>${{ selectedRecord.visionInsurance?.toFixed(2) || '0.00' }}</span>
+        <div class="detail-row">
+          <span>State Tax</span>
+          <span>-${{ selectedRecord.stateTax?.toFixed(2) || '0.00' }}</span>
         </div>
-        <div class="detail-row" *ngIf="selectedRecord.retirement401k && selectedRecord.retirement401k > 0">
-          <span>401(k) Contribution</span>
-          <span>${{ selectedRecord.retirement401k?.toFixed(2) || '0.00' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedRecord.hsaContribution && selectedRecord.hsaContribution > 0">
-          <span>HSA Contribution</span>
-          <span>${{ selectedRecord.hsaContribution?.toFixed(2) || '0.00' }}</span>
-        </div>
-        <div class="detail-row total" *ngIf="selectedRecord.preTaxDeductions && selectedRecord.preTaxDeductions > 0">
-          <span>Total Pre-Tax</span>
-          <span>${{ selectedRecord.preTaxDeductions?.toFixed(2) || '0.00' }}</span>
-        </div>
-      </div>
-
-      <div class="paystub-section">
-        <h4>Taxes</h4>
-        <div class="detail-row" *ngIf="selectedRecord.federalTax">
-          <span>Federal Income Tax</span>
-          <span>${{ selectedRecord.federalTax?.toFixed(2) || '0.00' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedRecord.stateTax">
-          <span>State Income Tax</span>
-          <span>${{ selectedRecord.stateTax?.toFixed(2) || '0.00' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedRecord.socialSecurityTax">
+        <div class="detail-row">
           <span>Social Security (6.2%)</span>
-          <span>${{ selectedRecord.socialSecurityTax?.toFixed(2) || '0.00' }}</span>
+          <span>-${{ selectedRecord.socialSecurityTax?.toFixed(2) || '0.00' }}</span>
         </div>
-        <div class="detail-row" *ngIf="selectedRecord.medicareTax">
+        <div class="detail-row">
           <span>Medicare (1.45%)</span>
-          <span>${{ selectedRecord.medicareTax?.toFixed(2) || '0.00' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedRecord.disabilityTax">
-          <span>Disability (0.9%)</span>
-          <span>${{ selectedRecord.disabilityTax?.toFixed(2) || '0.00' }}</span>
+          <span>-${{ selectedRecord.medicareTax?.toFixed(2) || '0.00' }}</span>
         </div>
         <div class="detail-row total">
-          <span>Total Taxes</span>
-          <span>${{ selectedRecord.totalTaxes?.toFixed(2) || '0.00' }}</span>
-        </div>
-      </div>
-
-      <div class="paystub-section" *ngIf="selectedRecord.postTaxDeductions && selectedRecord.postTaxDeductions > 0">
-        <h4>Post-Tax Deductions</h4>
-        <div class="detail-row" *ngIf="selectedRecord.loanDeductions && selectedRecord.loanDeductions > 0">
-          <span>Loan Deductions</span>
-          <span>${{ selectedRecord.loanDeductions?.toFixed(2) || '0.00' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedRecord.garnishments && selectedRecord.garnishments > 0">
-          <span>Garnishments</span>
-          <span>${{ selectedRecord.garnishments?.toFixed(2) || '0.00' }}</span>
-        </div>
-        <div class="detail-row total">
-          <span>Total Post-Tax</span>
-          <span>${{ selectedRecord.postTaxDeductions?.toFixed(2) || '0.00' }}</span>
+          <span>Total Deductions</span>
+          <span>-${{ selectedRecord.totalDeductions?.toFixed(2) || '0.00' }}</span>
         </div>
       </div>
 
       <div class="paystub-section net-section">
-        <div class="detail-row net-pay">
+        <div class="net-pay-row">
           <span>NET PAY</span>
           <span>${{ selectedRecord.netPay?.toFixed(2) || '0.00' }}</span>
         </div>
       </div>
-
-      <div class="employer-section" *ngIf="selectedRecord.totalEmployerContributions && selectedRecord.totalEmployerContributions > 0">
-        <h4>Employer Contributions</h4>
-        <div class="detail-row" *ngIf="selectedRecord.employerSocialSecurity">
-          <span>Employer Social Security</span>
-          <span>${{ selectedRecord.employerSocialSecurity?.toFixed(2) || '0.00' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedRecord.employerMedicare">
-          <span>Employer Medicare</span>
-          <span>${{ selectedRecord.employerMedicare?.toFixed(2) || '0.00' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedRecord.employerHealthContribution">
-          <span>Employer Health Contribution</span>
-          <span>${{ selectedRecord.employerHealthContribution?.toFixed(2) || '0.00' }}</span>
-        </div>
-        <div class="detail-row" *ngIf="selectedRecord.employer401kMatch">
-          <span>Employer 401(k) Match</span>
-          <span>${{ selectedRecord.employer401kMatch?.toFixed(2) || '0.00' }}</span>
-        </div>
-        <div class="detail-row total">
-          <span>Total Employer Contributions</span>
-          <span>${{ selectedRecord.totalEmployerContributions?.toFixed(2) || '0.00' }}</span>
-        </div>
-      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closePayStubModal()">Close</button>
+      <button class="btn btn-primary" (click)="downloadPayslip(selectedRecord!)" *ngIf="selectedRecord">
+        <i class="fas fa-download"></i> Print
+      </button>
     </div>
   </div>
 </div>
