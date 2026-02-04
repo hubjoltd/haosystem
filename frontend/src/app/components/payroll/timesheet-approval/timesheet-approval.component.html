@@ -51,7 +51,6 @@
       </div>
       <div class="step-line" [class.completed]="currentStep > 0"></div>
       <div class="step-text">
-        <span class="step-number">Step 1:</span>
         <span class="step-title">Generate Payroll</span>
       </div>
     </div>
@@ -62,7 +61,6 @@
       </div>
       <div class="step-line" [class.completed]="currentStep > 1"></div>
       <div class="step-text">
-        <span class="step-number">Step 2:</span>
         <span class="step-title">Calculate Payroll</span>
       </div>
     </div>
@@ -73,7 +71,6 @@
       </div>
       <div class="step-line" [class.completed]="currentStep > 2"></div>
       <div class="step-text">
-        <span class="step-number">Step 3:</span>
         <span class="step-title">Process Payroll</span>
       </div>
     </div>
@@ -83,7 +80,6 @@
         <i class="fas fa-history"></i>
       </div>
       <div class="step-text">
-        <span class="step-number">Step 4:</span>
         <span class="step-title">Payroll History</span>
       </div>
     </div>
@@ -93,7 +89,7 @@
   <div class="step-content" *ngIf="currentStep === 0">
     <div class="section-box">
       <div class="step-header">
-        <h3>Step 1: Generate Payroll</h3>
+        <h3>Generate Payroll</h3>
         <p class="period-info">Period: {{ generateStartDate }} - {{ generateEndDate }} ({{ getPayPeriodTypeLabel() }})</p>
       </div>
 
@@ -301,7 +297,7 @@
       </div>
 
       <div class="step-header">
-        <h3>Step 2: Calculate Payroll</h3>
+        <h3>Calculate Payroll</h3>
         <p class="period-info">Period: {{ generateStartDate && generateEndDate ? generateStartDate + ' - ' + generateEndDate : '-' }}</p>
       </div>
 
@@ -399,7 +395,7 @@
   <div class="step-content" *ngIf="currentStep === 2">
     <div class="section-box">
       <div class="step-header">
-        <h3>Step 3: Process Payroll</h3>
+        <h3>Process Payroll</h3>
         <p class="period-info">Review and process payroll with pay date</p>
       </div>
 
