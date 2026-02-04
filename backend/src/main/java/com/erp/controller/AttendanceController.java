@@ -264,52 +264,92 @@ public class AttendanceController {
     }
 
     @PostMapping("/manual-entry")
-    public ResponseEntity<?> manualEntry(HttpServletRequest httpRequest, @RequestBody AttendanceRecord record) {
-        if (record.getEmployee() == null || record.getEmployee().getId() == null) {
+    public ResponseEntity<?> manualEntry(HttpServletRequest httpRequest, @RequestBody Map<String, Object> request) {
+        Long employeeId = null;
+        
+        if (request.containsKey("employeeId") && request.get("employeeId") != null) {
+            employeeId = Long.valueOf(request.get("employeeId").toString());
+        } else if (request.containsKey("employee") && request.get("employee") != null) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> empMap = (Map<String, Object>) request.get("employee");
+            if (empMap.containsKey("id") && empMap.get("id") != null) {
+                employeeId = Long.valueOf(empMap.get("id").toString());
+            }
+        }
+        
+        if (employeeId == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Employee ID is required"));
         }
+        
         Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(httpRequest);
-        if (!branchEmployeeIds.contains(record.getEmployee().getId())) {
+        if (!branchEmployeeIds.contains(employeeId)) {
             return ResponseEntity.notFound().build();
         }
 
-        Employee employee = employeeRepository.findById(record.getEmployee().getId()).orElse(null);
+        Employee employee = employeeRepository.findById(employeeId).orElse(null);
         if (employee == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Employee not found"));
         }
 
-        // Check for existing entry to prevent duplicates
-        Optional<AttendanceRecord> existing = attendanceRecordRepository.findByEmployeeIdAndAttendanceDate(
-            employee.getId(), record.getAttendanceDate());
-        if (existing.isPresent()) {
-            // Update existing record instead of creating duplicate
-            AttendanceRecord existingRecord = existing.get();
-            existingRecord.setClockIn(record.getClockIn());
-            existingRecord.setClockOut(record.getClockOut());
-            existingRecord.setStatus(record.getStatus());
-            existingRecord.setRemarks(record.getRemarks());
-            existingRecord.setCaptureMethod("MANUAL");
-            existingRecord.setApprovalStatus("PENDING");
-
-            if (record.getClockIn() != null && record.getClockOut() != null) {
-                long minutesWorked = ChronoUnit.MINUTES.between(record.getClockIn(), record.getClockOut());
-                BigDecimal hoursWorked = BigDecimal.valueOf(minutesWorked / 60.0);
-                existingRecord.setRegularHours(hoursWorked.compareTo(BigDecimal.valueOf(8)) > 0 ? BigDecimal.valueOf(8) : hoursWorked);
-                existingRecord.setOvertimeHours(hoursWorked.compareTo(BigDecimal.valueOf(8)) > 0 ? hoursWorked.subtract(BigDecimal.valueOf(8)) : BigDecimal.ZERO);
-            }
-
-            return ResponseEntity.ok(attendanceRecordRepository.save(existingRecord));
+        String attendanceDateStr = request.get("attendanceDate") != null ? request.get("attendanceDate").toString() : null;
+        if (attendanceDateStr == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Attendance date is required"));
         }
+        LocalDate attendanceDate = LocalDate.parse(attendanceDateStr);
+        
+        String clockInStr = request.get("clockIn") != null ? request.get("clockIn").toString().trim() : "";
+        String clockOutStr = request.get("clockOut") != null ? request.get("clockOut").toString().trim() : "";
+        String status = request.get("status") != null ? request.get("status").toString() : "PRESENT";
+        String remarks = request.get("remarks") != null ? request.get("remarks").toString() : null;
+        
+        LocalTime clockIn = clockInStr.isEmpty() ? null : LocalTime.parse(clockInStr);
+        LocalTime clockOut = clockOutStr.isEmpty() ? null : LocalTime.parse(clockOutStr);
 
-        record.setEmployee(employee);
+        Optional<AttendanceRecord> existing = attendanceRecordRepository.findByEmployeeIdAndAttendanceDate(employeeId, attendanceDate);
+        
+        AttendanceRecord record;
+        if (existing.isPresent()) {
+            record = existing.get();
+        } else {
+            record = new AttendanceRecord();
+            record.setEmployee(employee);
+            record.setAttendanceDate(attendanceDate);
+        }
+        
+        record.setClockIn(clockIn);
+        record.setClockOut(clockOut);
+        record.setStatus(status);
+        record.setRemarks(remarks);
         record.setCaptureMethod("MANUAL");
         record.setApprovalStatus("PENDING");
+        
+        if (employee.getProject() != null) {
+            record.setProjectCode(employee.getProject().getProjectCode());
+            record.setProjectName(employee.getProject().getName());
+        }
 
-        if (record.getClockIn() != null && record.getClockOut() != null) {
-            long minutesWorked = ChronoUnit.MINUTES.between(record.getClockIn(), record.getClockOut());
+        if (clockIn != null && clockOut != null) {
+            long minutesWorked = ChronoUnit.MINUTES.between(clockIn, clockOut);
             BigDecimal hoursWorked = BigDecimal.valueOf(minutesWorked / 60.0);
-            record.setRegularHours(hoursWorked.compareTo(BigDecimal.valueOf(8)) > 0 ? BigDecimal.valueOf(8) : hoursWorked);
-            record.setOvertimeHours(hoursWorked.compareTo(BigDecimal.valueOf(8)) > 0 ? hoursWorked.subtract(BigDecimal.valueOf(8)) : BigDecimal.ZERO);
+            
+            AttendanceRule rule = attendanceRuleRepository.findByIsDefaultTrue().orElse(null);
+            BigDecimal regularHoursLimit = rule != null && rule.getRegularHoursPerDay() != null
+                ? rule.getRegularHoursPerDay()
+                : BigDecimal.valueOf(8);
+            
+            if (rule != null && rule.getAutoDeductBreak() != null && rule.getAutoDeductBreak() && rule.getBreakDurationMinutes() != null) {
+                BigDecimal breakHours = rule.getBreakDurationMinutes().divide(BigDecimal.valueOf(60), 2, java.math.RoundingMode.HALF_UP);
+                hoursWorked = hoursWorked.subtract(breakHours);
+                record.setBreakDuration(rule.getBreakDurationMinutes());
+            }
+            
+            if (hoursWorked.compareTo(regularHoursLimit) > 0) {
+                record.setRegularHours(regularHoursLimit);
+                record.setOvertimeHours(hoursWorked.subtract(regularHoursLimit));
+            } else {
+                record.setRegularHours(hoursWorked.compareTo(BigDecimal.ZERO) > 0 ? hoursWorked : BigDecimal.ZERO);
+                record.setOvertimeHours(BigDecimal.ZERO);
+            }
         }
 
         return ResponseEntity.ok(attendanceRecordRepository.save(record));
