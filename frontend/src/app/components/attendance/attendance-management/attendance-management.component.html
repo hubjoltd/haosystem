@@ -32,6 +32,9 @@
           <input type="text" placeholder="Search employee..." [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" />
         </div>
         <input type="date" [(ngModel)]="selectedDate" (change)="onDateChange()" class="date-picker" />
+        <button class="btn-add-attendance" (click)="openManualEntryModal()">
+          <i class="fas fa-plus"></i> Add Attendance
+        </button>
       </div>
     </div>
 
@@ -73,6 +76,9 @@
             </span>
           </td>
           <td class="actions-cell">
+            <button class="btn-edit" (click)="openEditModal(record)" title="Edit">
+              <i class="fas fa-edit"></i>
+            </button>
             <button *ngIf="record.approvalStatus === 'PENDING'" 
                     class="btn-approve" 
                     (click)="approveRecord(record)"
@@ -103,6 +109,107 @@
       <span>{{ getSelectedRecords().length }} record(s) selected</span>
       <button class="btn-bulk-approve" (click)="bulkApprove()" [disabled]="bulkApproving">
         <i class="fas fa-check-double"></i> Approve Selected
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showManualEntryModal" (click)="closeManualEntryModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Add Attendance</h2>
+      <button class="close-btn" (click)="closeManualEntryModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Employee *</label>
+        <select [(ngModel)]="manualEntry.employeeId" class="form-control">
+          <option [ngValue]="null">-- Select Employee --</option>
+          <option *ngFor="let emp of employees" [ngValue]="emp.id">
+            {{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})
+          </option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date *</label>
+        <input type="date" [(ngModel)]="manualEntry.attendanceDate" class="form-control" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Clock In</label>
+          <input type="time" [(ngModel)]="manualEntry.clockIn" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Clock Out</label>
+          <input type="time" [(ngModel)]="manualEntry.clockOut" class="form-control" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select [(ngModel)]="manualEntry.status" class="form-control">
+          <option value="PRESENT">Present</option>
+          <option value="ABSENT">Absent</option>
+          <option value="HALF_DAY">Half Day</option>
+          <option value="ON_LEAVE">On Leave</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Remarks</label>
+        <textarea [(ngModel)]="manualEntry.remarks" class="form-control" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeManualEntryModal()">Cancel</button>
+      <button class="btn-save" (click)="saveManualEntry()" [disabled]="loading">
+        <i class="fas fa-save"></i> Save Attendance
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Edit Attendance</h2>
+      <button class="close-btn" (click)="closeEditModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="employee-info-display" *ngIf="editingRecord?.employee">
+        <span class="label">Employee:</span>
+        <span class="value">{{ getEmployeeName(editingRecord?.employee) }}</span>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Clock In</label>
+          <input type="time" [(ngModel)]="editForm.clockIn" (ngModelChange)="onEditTimeChange()" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Clock Out</label>
+          <input type="time" [(ngModel)]="editForm.clockOut" (ngModelChange)="onEditTimeChange()" class="form-control" />
+        </div>
+      </div>
+      <div class="calculated-hours" *ngIf="editForm.calculatedHours > 0">
+        <i class="fas fa-clock"></i>
+        <span>Calculated Hours: <strong>{{ editForm.calculatedHours }} hrs</strong></span>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select [(ngModel)]="editForm.status" class="form-control">
+          <option value="PRESENT">Present</option>
+          <option value="ABSENT">Absent</option>
+          <option value="HALF_DAY">Half Day</option>
+          <option value="ON_LEAVE">On Leave</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Remarks</label>
+        <textarea [(ngModel)]="editForm.remarks" class="form-control" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeEditModal()">Cancel</button>
+      <button class="btn-save" (click)="saveEditRecord()" [disabled]="loading">
+        <i class="fas fa-save"></i> Save Changes
       </button>
     </div>
   </div>

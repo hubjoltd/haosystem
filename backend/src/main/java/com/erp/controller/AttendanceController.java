@@ -424,12 +424,50 @@ public class AttendanceController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody AttendanceRecord record) {
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Map<String, Object> data) {
         return attendanceRecordRepository.findById(id)
             .map(existing -> {
-                record.setId(id);
-                record.setEmployee(existing.getEmployee());
-                return ResponseEntity.ok(attendanceRecordRepository.save(record));
+                if (data.containsKey("clockIn")) {
+                    String clockInStr = data.get("clockIn") != null ? data.get("clockIn").toString().trim() : "";
+                    existing.setClockIn(clockInStr.isEmpty() ? null : LocalTime.parse(clockInStr));
+                }
+                if (data.containsKey("clockOut")) {
+                    String clockOutStr = data.get("clockOut") != null ? data.get("clockOut").toString().trim() : "";
+                    existing.setClockOut(clockOutStr.isEmpty() ? null : LocalTime.parse(clockOutStr));
+                }
+                if (data.containsKey("status") && data.get("status") != null) {
+                    existing.setStatus(data.get("status").toString());
+                }
+                if (data.containsKey("remarks") && data.get("remarks") != null) {
+                    existing.setRemarks(data.get("remarks").toString());
+                }
+                
+                if (existing.getClockIn() != null && existing.getClockOut() != null) {
+                    long minutesWorked = ChronoUnit.MINUTES.between(existing.getClockIn(), existing.getClockOut());
+                    BigDecimal hoursWorked = BigDecimal.valueOf(minutesWorked / 60.0);
+                    
+                    AttendanceRule rule = attendanceRuleRepository.findByIsDefaultTrue().orElse(null);
+                    BigDecimal regularHoursLimit = rule != null && rule.getRegularHoursPerDay() != null
+                        ? rule.getRegularHoursPerDay()
+                        : BigDecimal.valueOf(8);
+                    
+                    if (rule != null && rule.getAutoDeductBreak() != null && rule.getAutoDeductBreak() && rule.getBreakDurationMinutes() != null) {
+                        BigDecimal breakHours = rule.getBreakDurationMinutes().divide(BigDecimal.valueOf(60), 2, java.math.RoundingMode.HALF_UP);
+                        hoursWorked = hoursWorked.subtract(breakHours);
+                        existing.setBreakDuration(rule.getBreakDurationMinutes());
+                    }
+                    
+                    if (hoursWorked.compareTo(regularHoursLimit) > 0) {
+                        existing.setRegularHours(regularHoursLimit);
+                        existing.setOvertimeHours(hoursWorked.subtract(regularHoursLimit));
+                    } else {
+                        existing.setRegularHours(hoursWorked.compareTo(BigDecimal.ZERO) > 0 ? hoursWorked : BigDecimal.ZERO);
+                        existing.setOvertimeHours(BigDecimal.ZERO);
+                    }
+                }
+                
+                existing.setCaptureMethod("EDITED");
+                return ResponseEntity.ok(attendanceRecordRepository.save(existing));
             })
             .orElse(ResponseEntity.notFound().build());
     }

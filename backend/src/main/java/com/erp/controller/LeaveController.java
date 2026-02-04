@@ -265,12 +265,25 @@ public class LeaveController {
                 int currentYear = request.getStartDate().getYear();
                 Optional<LeaveBalance> balanceOpt = leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndYear(
                     request.getEmployee().getId(), request.getLeaveType().getId(), currentYear);
+                LeaveBalance balance;
                 if (balanceOpt.isPresent()) {
-                    LeaveBalance balance = balanceOpt.get();
+                    balance = balanceOpt.get();
                     balance.setPending(balance.getPending().subtract(request.getTotalDays()));
-                    balance.setUsed(balance.getUsed().add(request.getTotalDays()));
-                    leaveBalanceRepository.save(balance);
+                } else {
+                    balance = new LeaveBalance();
+                    balance.setEmployee(request.getEmployee());
+                    balance.setLeaveType(request.getLeaveType());
+                    balance.setYear(currentYear);
+                    balance.setOpeningBalance(request.getLeaveType().getAnnualEntitlement() != null ? 
+                        request.getLeaveType().getAnnualEntitlement() : BigDecimal.ZERO);
+                    balance.setCredited(BigDecimal.ZERO);
+                    balance.setPending(BigDecimal.ZERO);
+                    balance.setLapsed(BigDecimal.ZERO);
+                    balance.setCarryForward(BigDecimal.ZERO);
+                    balance.setEncashed(BigDecimal.ZERO);
                 }
+                balance.setUsed((balance.getUsed() != null ? balance.getUsed() : BigDecimal.ZERO).add(request.getTotalDays()));
+                leaveBalanceRepository.save(balance);
 
                 return ResponseEntity.ok(leaveRequestRepository.save(request));
             })
@@ -418,12 +431,25 @@ public class LeaveController {
                 int currentYear = request.getStartDate().getYear();
                 Optional<LeaveBalance> balanceOpt = leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndYear(
                     request.getEmployee().getId(), request.getLeaveType().getId(), currentYear);
+                LeaveBalance balance;
                 if (balanceOpt.isPresent()) {
-                    LeaveBalance balance = balanceOpt.get();
+                    balance = balanceOpt.get();
                     balance.setPending(balance.getPending().subtract(request.getTotalDays()));
-                    balance.setUsed(balance.getUsed().add(request.getTotalDays()));
-                    leaveBalanceRepository.save(balance);
+                } else {
+                    balance = new LeaveBalance();
+                    balance.setEmployee(request.getEmployee());
+                    balance.setLeaveType(request.getLeaveType());
+                    balance.setYear(currentYear);
+                    balance.setOpeningBalance(request.getLeaveType().getAnnualEntitlement() != null ? 
+                        request.getLeaveType().getAnnualEntitlement() : BigDecimal.ZERO);
+                    balance.setCredited(BigDecimal.ZERO);
+                    balance.setPending(BigDecimal.ZERO);
+                    balance.setLapsed(BigDecimal.ZERO);
+                    balance.setCarryForward(BigDecimal.ZERO);
+                    balance.setEncashed(BigDecimal.ZERO);
                 }
+                balance.setUsed((balance.getUsed() != null ? balance.getUsed() : BigDecimal.ZERO).add(request.getTotalDays()));
+                leaveBalanceRepository.save(balance);
 
                 return ResponseEntity.ok(leaveRequestRepository.save(request));
             })

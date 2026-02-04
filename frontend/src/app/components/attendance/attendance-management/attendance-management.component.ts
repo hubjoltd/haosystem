@@ -42,6 +42,16 @@ export class AttendanceManagementComponent implements OnInit {
   selectAll = false;
   approvingId: number | null = null;
   bulkApproving = false;
+  
+  showEditModal = false;
+  editingRecord: AttendanceRecord | null = null;
+  editForm = {
+    clockIn: '',
+    clockOut: '',
+    status: 'PRESENT',
+    remarks: '',
+    calculatedHours: 0
+  };
 
   constructor(
     private attendanceService: AttendanceService,
@@ -359,6 +369,70 @@ export class AttendanceManagementComponent implements OnInit {
         this.toastService.error(err.error?.error || 'Bulk approval failed');
         this.bulkApproving = false;
         this.cdr.markForCheck();
+      }
+    });
+  }
+
+  openEditModal(record: AttendanceRecord): void {
+    this.editingRecord = record;
+    this.editForm = {
+      clockIn: record.clockIn || '',
+      clockOut: record.clockOut || '',
+      status: record.status || 'PRESENT',
+      remarks: record.remarks || '',
+      calculatedHours: this.calculateHoursFromTimes(record.clockIn, record.clockOut)
+    };
+    this.showEditModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeEditModal(): void {
+    this.showEditModal = false;
+    this.editingRecord = null;
+    this.cdr.markForCheck();
+  }
+
+  onEditTimeChange(): void {
+    this.editForm.calculatedHours = this.calculateHoursFromTimes(this.editForm.clockIn, this.editForm.clockOut);
+    this.cdr.markForCheck();
+  }
+
+  calculateHoursFromTimes(clockIn?: string, clockOut?: string): number {
+    if (!clockIn || !clockOut) return 0;
+    const [inH, inM] = clockIn.split(':').map(Number);
+    const [outH, outM] = clockOut.split(':').map(Number);
+    const inMinutes = inH * 60 + inM;
+    const outMinutes = outH * 60 + outM;
+    if (outMinutes <= inMinutes) return 0;
+    return Math.round((outMinutes - inMinutes) / 60 * 100) / 100;
+  }
+
+  saveEditRecord(): void {
+    if (!this.editingRecord?.id) return;
+
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    const updateData = {
+      clockIn: this.editForm.clockIn || null,
+      clockOut: this.editForm.clockOut || null,
+      status: this.editForm.status,
+      remarks: this.editForm.remarks
+    };
+
+    this.attendanceService.update(this.editingRecord.id, updateData as any).pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: (updated) => {
+        this.toastService.success('Attendance record updated successfully');
+        this.closeEditModal();
+        this.loadAttendanceRecords();
+      },
+      error: (err) => {
+        this.toastService.error(err.error?.error || 'Failed to update record');
       }
     });
   }

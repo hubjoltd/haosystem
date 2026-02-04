@@ -54,7 +54,7 @@
           
           <div class="status-card" *ngIf="isClockedOut()">
             <div class="status-badge clocked-out">
-              <i class="fas fa-check-circle"></i> Shift Completed
+              <i class="fas fa-check-circle"></i> Clocked Out
             </div>
             <div class="clock-time">
               <span class="label">Clock In:</span>
@@ -120,7 +120,7 @@
                 <span>Clock Out</span>
               </button>
               <div class="activity-status" *ngIf="record.clockOut" [class.completed]="record.clockOut">
-                Completed
+                Done
               </div>
             </div>
           </div>

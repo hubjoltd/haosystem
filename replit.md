@@ -29,9 +29,9 @@ Preferred communication style: Simple, everyday language.
 -   **Customer & Contract Management**: Standard CRUD operations with search and filtering.
 -   **Purchase Order Management**: Manages Purchase Requisition (PR), PR Fulfillment, Direct Purchase, and Purchase Invoice with workflow tracking.
 -   **HR Management**: Comprehensive module including Organization Structure, Employee Master, Document Management, Recruitment, Training & Development, Onboarding.
--   **Attendance Module** (Separate menu section): Time Clock with real-time running timer, Weekly Timesheet, Daily Attendance tracking, Attendance Approval workflow, and Attendance Dashboard.
+-   **Attendance Module** (Separate menu section): Time Clock with real-time running timer, Weekly Timesheet, Daily Attendance tracking, Attendance Approval workflow, Attendance Dashboard, Add Attendance button with employee selection for manual entry, and Edit Attendance modal with real-time auto-calculated hours.
 -   **Payroll Module** (Separate menu section): Process Payroll (4-step wizard: Generate Payroll, Calculate Payroll, Process Payroll with Pay Date, Payroll History), Payroll History with PDF/CSV export, Pay Slips (ESS), and Payroll Dashboard.
--   **Leave Management**: Leave types with approval workflows, holiday calendars, and leave requests.
+-   **Leave Management**: Leave types with approval workflows, holiday calendars, leave requests, and auto-creation of leave balance records when approving leaves if balance doesn't exist (using annual entitlement as opening balance).
 -   **Expense & Reimbursement Management**: Manages expense categories, request workflows, manager approval, and payroll integration.
 -   **Loans & Advances Management**: Handles loan applications, approval workflows, EMI configuration, auto-deduction, ledger, and repayment history.
 -   **Compensation & Benefits**: Sets up salary bands, revisions, bonus, health insurance, and allowances.
