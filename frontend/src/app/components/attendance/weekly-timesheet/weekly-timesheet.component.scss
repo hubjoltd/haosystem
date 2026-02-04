@@ -1,715 +1,558 @@
 .weekly-timesheet {
   padding: 24px;
-  background: #f5f7fa;
+  background: #f5f5f5;
   min-height: 100vh;
+}
 
-  .page-header {
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+  }
+
+  .header-right {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 24px;
+    gap: 12px;
+    align-items: center;
+  }
 
-    .header-left {
-      h1 {
-        color: #1a1a2e;
-        font-size: 24px;
-        margin: 0;
-        font-weight: 600;
-      }
+  .date-picker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
 
-      .subtitle {
-        color: #6b7280;
-        margin: 4px 0 0;
-        font-size: 14px;
-      }
-    }
+    i { color: #666; }
 
-    .header-right {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-
-      .date-picker {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        background: white;
-        padding: 10px 16px;
-        border-radius: 8px;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-
-        i { 
-          color: #6b7280;
-          font-size: 14px;
-        }
-
-        input {
-          border: none;
-          font-size: 14px;
-          color: #374151;
-          background: transparent;
-          
-          &:focus { 
-            outline: none; 
-          }
-        }
-      }
-
-      .btn-generate {
-        background: #008080;
-        color: white;
-        border: none;
-        padding: 10px 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: background 0.2s;
-
-        &:hover:not(:disabled) {
-          background: #006666;
-        }
-
-        &:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-      }
-
-      .btn-download-pdf {
-        background: #dc2626;
-        color: white;
-        border: none;
-        padding: 10px 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: background 0.2s;
-
-        &:hover:not(:disabled) {
-          background: #b91c1c;
-        }
-
-        &:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-      }
-
-      .btn-download-csv {
-        background: #059669;
-        color: white;
-        border: none;
-        padding: 10px 16px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: background 0.2s;
-
-        &:hover:not(:disabled) {
-          background: #047857;
-        }
-
-        &:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
-      }
+    input {
+      border: none;
+      outline: none;
+      font-size: 14px;
+      background: transparent;
     }
   }
 
-  .summary-cards {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 24px;
+  .btn-generate {
+    background: #008080;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
 
-    @media (max-width: 1024px) {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    @media (max-width: 600px) {
-      grid-template-columns: 1fr;
-    }
-
-    .summary-card {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 24px;
-      border-radius: 12px;
-      color: white;
-      min-height: 100px;
-
-      .card-content {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-
-        .card-label {
-          font-size: 13px;
-          font-weight: 500;
-          opacity: 0.9;
-        }
-
-        .card-value {
-          font-size: 36px;
-          font-weight: 700;
-          line-height: 1;
-        }
-      }
-
-      .card-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        i { 
-          font-size: 20px;
-          opacity: 0.9;
-        }
-      }
-
-      &.employees { 
-        background: linear-gradient(135deg, #4A90D9 0%, #3B7DD8 100%); 
-      }
-      
-      &.projects { 
-        background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%); 
-      }
-      
-      &.hours { 
-        background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); 
-      }
-      
-      &.overtime { 
-        background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); 
-      }
-    }
+    &:hover { background: #006666; }
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
   }
+}
 
-  .project-groups {
+.summary-cards {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  .summary-card {
+    flex: 1;
+    padding: 20px 24px;
+    border-radius: 8px;
+    color: white;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-  }
 
-  .project-group {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    &.purple { background: linear-gradient(135deg, #9c27b0, #7b1fa2); }
+    &.yellow { background: linear-gradient(135deg, #ffc107, #ff9800); }
+    &.orange { background: linear-gradient(135deg, #ff5722, #e64a19); }
 
-    .project-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 24px;
-      border-bottom: 1px solid transparent;
-      transition: border-color 0.2s;
-
-      .project-info {
-        .project-name {
-          margin: 0;
-          font-size: 16px;
-          font-weight: 600;
-          color: #1a1a2e;
-        }
-
-        .project-stats {
-          font-size: 13px;
-          color: #6b7280;
-          margin-top: 4px;
-          display: block;
-        }
-      }
-
-      .btn-expand {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 20px;
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
-        color: #374151;
-        cursor: pointer;
-        transition: all 0.2s;
-
-        &:hover {
-          background: #f9fafb;
-          border-color: #d1d5db;
-        }
-
-        i { 
-          font-size: 12px;
-          color: #6b7280;
-        }
-      }
+    .card-value {
+      font-size: 28px;
+      font-weight: 700;
     }
 
-    .project-employees {
-      border-top: 1px solid #f3f4f6;
+    .card-label {
+      font-size: 13px;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+  }
+}
 
-      .employees-table {
-        width: 100%;
-        border-collapse: collapse;
+.view-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  align-items: center;
 
-        th, td {
-          padding: 14px 20px;
-          text-align: left;
-        }
+  .toggle-btn {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #666;
+    transition: all 0.2s;
 
-        th {
-          background: #f9fafb;
-          color: #6b7280;
-          font-weight: 500;
-          font-size: 12px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          border-bottom: 1px solid #f3f4f6;
-        }
+    &.active {
+      background: #008080;
+      color: white;
+      border-color: #008080;
+    }
 
-        td {
-          font-size: 14px;
-          color: #374151;
-          border-bottom: 1px solid #f3f4f6;
-        }
+    &:hover:not(.active) {
+      border-color: #008080;
+      color: #008080;
+    }
+  }
 
-        tbody tr:last-child td {
-          border-bottom: none;
-        }
+  .period-info {
+    margin-left: auto;
+    .period-label {
+      font-size: 14px;
+      color: #666;
+      font-weight: 500;
+    }
+  }
+}
 
-        .emp-name {
-          font-weight: 500;
-          color: #1a1a2e;
-        }
+.timesheet-table {
+  width: 100%;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 
-        .no-records {
-          text-align: center;
-          color: #9ca3af;
-          padding: 40px;
-          font-style: italic;
-        }
+  thead {
+    background: #f8f9fa;
 
-        .status-badge {
-          display: inline-block;
-          padding: 6px 14px;
-          border-radius: 20px;
-          font-size: 12px;
-          font-weight: 500;
-          text-transform: capitalize;
+    th {
+      padding: 14px 16px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+      color: #555;
+      border-bottom: 1px solid #e0e0e0;
+    }
+  }
 
-          &.approved {
-            background: #FEF3C7;
-            color: #D97706;
-          }
+  tbody {
+    tr {
+      border-bottom: 1px solid #f0f0f0;
+      transition: background 0.2s;
 
-          &.pending {
-            background: #FEE2E2;
-            color: #DC2626;
-          }
-        }
+      &:hover { background: #fafafa; }
+      &:last-child { border-bottom: none; }
+    }
+
+    td {
+      padding: 14px 16px;
+      font-size: 14px;
+      color: #333;
+    }
+  }
+
+  .employee-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #008080, #00a0a0);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .name {
+      font-weight: 500;
+    }
+  }
+
+  .emp-id {
+    color: #666;
+    font-family: monospace;
+  }
+
+  .ot-hours {
+    color: #e65100;
+    font-weight: 500;
+  }
+
+  .total-hours {
+    font-weight: 600;
+    color: #008080;
+  }
+
+  .project-name {
+    font-weight: 500;
+  }
+
+  .actions-cell {
+    display: flex;
+    gap: 8px;
+
+    button {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+
+      &.btn-view {
+        background: #e3f2fd;
+        color: #1976d2;
+        &:hover { background: #bbdefb; }
+      }
+
+      &.btn-pdf {
+        background: #ffebee;
+        color: #c62828;
+        &:hover { background: #ffcdd2; }
       }
     }
   }
 
   .no-data {
     text-align: center;
-    padding: 60px 20px;
-    background: white;
-    border-radius: 12px;
-    color: #6b7280;
-
-    i { 
-      font-size: 48px; 
-      margin-bottom: 16px; 
-      opacity: 0.5;
-      display: block;
-    }
-    
-    p { 
-      margin: 0;
-      font-size: 15px;
-    }
-  }
-
-  .loading-indicator {
-    text-align: center;
-    padding: 60px;
-    color: #6b7280;
-    background: white;
-    border-radius: 12px;
-
-    i { 
-      margin-right: 8px; 
-    }
+    padding: 40px !important;
+    color: #999;
+    font-style: italic;
   }
 }
 
-// Action buttons in table
-.actions-cell {
+.export-buttons {
   display: flex;
-  gap: 8px;
+  gap: 12px;
+  margin-top: 20px;
 
-  .btn-action {
-    width: 32px;
-    height: 32px;
+  .btn-export {
+    padding: 10px 20px;
     border-radius: 6px;
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
     transition: all 0.2s;
 
-    i { font-size: 14px; }
-
-    &.view {
-      background: #E0F2FE;
-      color: #0284C7;
-
-      &:hover {
-        background: #BAE6FD;
-      }
+    &.pdf {
+      background: #c62828;
+      color: white;
+      &:hover { background: #b71c1c; }
     }
 
-    &.pdf {
-      background: #FEE2E2;
-      color: #DC2626;
-
-      &:hover {
-        background: #FECACA;
-      }
+    &.csv {
+      background: #2e7d32;
+      color: white;
+      &:hover { background: #1b5e20; }
     }
   }
 }
 
-// Employee Timesheet Modal
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px;
+  color: #666;
+  font-size: 16px;
+
+  i { font-size: 24px; color: #008080; }
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0,0,0,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+}
 
-  .modal-content {
-    background: white;
-    border-radius: 12px;
-    max-width: 800px;
-    width: 95%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  }
+.employee-timesheet-modal {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 
   .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: 20px 24px;
-    border-bottom: 1px solid #e5e7eb;
+    position: relative;
+
+    &.blue-header {
+      background: linear-gradient(135deg, #336699, #4a7eb5);
+      color: white;
+    }
 
     h2 {
       margin: 0;
       font-size: 18px;
-      color: #1a1a2e;
+      font-weight: 600;
+    }
+
+    .period-text {
+      margin: 4px 0 0;
+      font-size: 13px;
+      opacity: 0.9;
     }
 
     .btn-close {
-      background: none;
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(255,255,255,0.2);
       border: none;
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
       cursor: pointer;
-      padding: 8px;
-      color: #6b7280;
-      font-size: 16px;
-      
-      &:hover { color: #374151; }
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &:hover { background: rgba(255,255,255,0.3); }
     }
   }
 
   .modal-body {
-    padding: 24px;
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
 
-    .employee-info {
-      margin-bottom: 20px;
+  .employee-info-section {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e0e0e0;
 
-      h3 {
-        margin: 0;
-        font-size: 20px;
-        color: #1a1a2e;
-      }
-
-      .period {
-        margin: 4px 0 0;
-        color: #6b7280;
-        font-size: 14px;
-      }
+    h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin: 0 0 12px;
     }
 
-    .summary-row {
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .info-row {
       display: flex;
-      gap: 16px;
-      margin-bottom: 24px;
+      flex-direction: column;
+      gap: 2px;
 
-      .summary-item {
-        flex: 1;
-        background: #f9fafb;
-        padding: 16px;
-        border-radius: 8px;
-        text-align: center;
+      .label {
+        font-size: 12px;
+        color: #666;
+      }
 
-        .label {
-          display: block;
-          font-size: 12px;
-          color: #6b7280;
-          margin-bottom: 4px;
-        }
-
-        .value {
-          font-size: 24px;
-          font-weight: 600;
-          color: #008080;
-        }
+      .value {
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
       }
     }
+  }
 
-    .employee-records-table {
-      width: 100%;
-      border-collapse: collapse;
-      border-radius: 8px;
-      overflow: hidden;
-      border: 1px solid #e5e7eb;
+  .daily-timesheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
 
-      th, td {
-        padding: 12px 16px;
-        text-align: left;
-      }
+    thead {
+      background: #f5f5f5;
 
       th {
-        background: #f9fafb;
-        color: #6b7280;
-        font-weight: 500;
+        padding: 10px 12px;
+        text-align: left;
         font-size: 12px;
-        text-transform: uppercase;
+        font-weight: 600;
+        color: #555;
+        border-bottom: 2px solid #ddd;
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid #eee;
       }
 
       td {
-        font-size: 14px;
-        color: #374151;
-        border-top: 1px solid #e5e7eb;
-      }
-
-      tfoot td {
-        background: #f9fafb;
-        border-top: 2px solid #e5e7eb;
-      }
-
-      .status-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 500;
-
-        &.approved { background: #D1FAE5; color: #059669; }
-        &.pending { background: #FEF3C7; color: #D97706; }
-        &.rejected { background: #FEE2E2; color: #DC2626; }
+        padding: 10px 12px;
+        font-size: 13px;
+        color: #333;
       }
 
       .no-records {
         text-align: center;
-        color: #9ca3af;
-        padding: 40px;
+        padding: 30px !important;
+        color: #999;
+        font-style: italic;
+      }
+    }
+  }
+
+  .summary-section {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+
+    h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #336699;
+      margin: 0 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #336699;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .summary-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .label {
+        font-size: 11px;
+        color: #666;
+        text-transform: uppercase;
+      }
+
+      .value {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      &.highlight {
+        .value { color: #008080; }
       }
     }
   }
 
   .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #e0e0e0;
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    padding: 16px 24px;
-    border-top: 1px solid #e5e7eb;
 
     .btn-download {
-      background: #dc2626;
+      background: #c62828;
       color: white;
       border: none;
       padding: 10px 20px;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      font-size: 14px;
       display: flex;
       align-items: center;
       gap: 8px;
+      font-size: 14px;
 
-      &:hover { background: #b91c1c; }
+      &:hover { background: #b71c1c; }
     }
 
     .btn-secondary {
-      background: #f3f4f6;
-      color: #374151;
-      border: 1px solid #e5e7eb;
+      background: #f5f5f5;
+      color: #333;
+      border: 1px solid #ddd;
       padding: 10px 20px;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
       font-size: 14px;
 
-      &:hover { background: #e5e7eb; }
+      &:hover { background: #e0e0e0; }
     }
   }
 }
 
-// Single Employee Timesheet Modal
-.single-timesheet-modal {
-  max-width: 900px !important;
+@media (max-width: 768px) {
+  .weekly-timesheet {
+    padding: 16px;
+  }
 
-  .modal-header {
-    background: linear-gradient(135deg, #008080, #006666);
-    color: white;
-    border-radius: 12px 12px 0 0;
-    position: relative;
+  .page-header {
     flex-direction: column;
-    align-items: flex-start;
+    gap: 16px;
+    align-items: stretch;
 
-    h2 {
-      color: white;
-      margin-bottom: 4px;
-    }
-
-    .modal-subtitle {
-      margin: 0;
-      font-size: 12px;
-      opacity: 0.85;
-    }
-
-    .btn-close {
-      position: absolute;
-      right: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: white;
-      
-      &:hover { color: #e5e7eb; }
+    .header-right {
+      flex-wrap: wrap;
     }
   }
 
-  .single-timesheet-body {
-    padding: 24px;
+  .summary-cards {
+    flex-direction: column;
   }
 
-  .timesheet-layout {
-    display: flex;
-    gap: 24px;
-  }
+  .view-toggle {
+    flex-wrap: wrap;
 
-  .timesheet-table-section {
-    flex: 1;
-    max-width: 350px;
-  }
-
-  .single-timesheet-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-
-    th, td {
-      border: 1px solid #d4c8a8;
-      padding: 6px 8px;
-      text-align: center;
-    }
-
-    thead {
-      background: #f5ecd7;
-
-      th {
-        font-weight: 600;
-        color: #374151;
-      }
-    }
-
-    tbody tr:nth-child(even) {
-      background: #fafafa;
-    }
-
-    .day-col {
-      width: 40px;
-      font-weight: 500;
-    }
-
-    tfoot {
-      .total-row {
-        background: #f5ecd7;
-        font-weight: 600;
-      }
-    }
-
-    .no-records {
-      padding: 20px;
-      color: #9ca3af;
+    .period-info {
+      width: 100%;
+      margin-left: 0;
+      margin-top: 8px;
     }
   }
 
-  .employee-details-section {
-    flex: 1;
-    min-width: 280px;
+  .timesheet-table {
+    display: block;
+    overflow-x: auto;
   }
 
-  .detail-group {
-    margin-bottom: 20px;
+  .employee-timesheet-modal {
+    width: 95%;
+    max-height: 95vh;
 
-    &.notes-section {
-      .notes-box {
-        margin-top: 8px;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        height: 80px;
-        background: white;
-      }
+    .info-grid {
+      grid-template-columns: 1fr !important;
     }
-  }
 
-  .detail-row {
-    display: flex;
-    padding: 8px 0;
-    border-bottom: 1px solid #e5e7eb;
-
-    &:last-child {
-      border-bottom: none;
+    .summary-grid {
+      grid-template-columns: 1fr !important;
     }
-  }
-
-  .detail-label {
-    width: 120px;
-    font-weight: 600;
-    color: #374151;
-    font-size: 13px;
-  }
-
-  .detail-value {
-    flex: 1;
-    color: #1f2937;
-    font-size: 13px;
   }
 }

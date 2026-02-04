@@ -15,10 +15,7 @@ declare module 'jspdf' {
   }
 }
 
-interface TimesheetRecord {
-  employeeId: number;
-  employeeCode: string;
-  employeeName: string;
+interface DailyRecord {
   date: string;
   clockIn: string;
   clockOut: string;
@@ -27,13 +24,25 @@ interface TimesheetRecord {
   status: string;
 }
 
-interface ProjectGroup {
+interface EmployeeSummary {
+  employeeId: number;
+  employeeCode: string;
+  name: string;
+  department: string;
+  daysAttended: number;
+  regularHours: number;
+  overtimeHours: number;
+  totalHours: number;
+  records: DailyRecord[];
+}
+
+interface ProjectSummary {
   id: string;
   name: string;
   employeeCount: number;
+  regularHours: number;
+  overtimeHours: number;
   totalHours: number;
-  expanded: boolean;
-  records: TimesheetRecord[];
 }
 
 @Component({
@@ -53,19 +62,20 @@ export class WeeklyTimesheetComponent implements OnInit {
   periodStartDate: string = '';
   periodEndDate: string = '';
 
+  viewMode: 'employee' | 'project' = 'employee';
+
   employees: Employee[] = [];
   attendanceRecords: AttendanceRecord[] = [];
-  projectGroups: ProjectGroup[] = [];
+  employeeSummaries: EmployeeSummary[] = [];
+  projectSummaries: ProjectSummary[] = [];
 
   totalEmployees = 0;
-  totalProjects = 0;
   totalHours = 0;
   totalOvertime = 0;
 
-  // Employee timesheet modal
   showEmployeeModal = false;
-  selectedEmployee: TimesheetRecord | null = null;
-  employeeWeekRecords: TimesheetRecord[] = [];
+  selectedEmployeeSummary: EmployeeSummary | null = null;
+  employeeWeekRecords: DailyRecord[] = [];
 
   constructor(
     private attendanceService: AttendanceService,
@@ -146,8 +156,8 @@ export class WeeklyTimesheetComponent implements OnInit {
   }
 
   processData(): void {
-    const projectMap = new Map<string, ProjectGroup>();
-    const employeeSet = new Set<number>();
+    const employeeMap = new Map<number, EmployeeSummary>();
+    const projectMap = new Map<string, ProjectSummary>();
 
     this.attendanceRecords.forEach(record => {
       const empId = record.employee?.id || record.employeeId;
@@ -157,64 +167,85 @@ export class WeeklyTimesheetComponent implements OnInit {
       const empName = emp ? `${emp.firstName} ${emp.lastName}` : 
                       (record.employee ? `${record.employee.firstName} ${record.employee.lastName}` : 'Unknown');
       const empCode = emp?.employeeCode || record.employee?.employeeCode || '';
+      const deptName = emp?.department?.name || '';
       
-      const projectName = record.project?.name || record.projectName || 'Unknown';
-      const projectId = record.project?.id?.toString() || record.projectName || 'unknown';
+      const hours = record.regularHours || 0;
+      const overtime = record.overtimeHours || 0;
 
-      employeeSet.add(empId);
+      if (!employeeMap.has(empId)) {
+        employeeMap.set(empId, {
+          employeeId: empId,
+          employeeCode: empCode,
+          name: empName,
+          department: deptName,
+          daysAttended: 0,
+          regularHours: 0,
+          overtimeHours: 0,
+          totalHours: 0,
+          records: []
+        });
+      }
+
+      const empSummary = employeeMap.get(empId)!;
+      empSummary.daysAttended++;
+      empSummary.regularHours += hours;
+      empSummary.overtimeHours += overtime;
+      empSummary.totalHours += hours + overtime;
+      empSummary.records.push({
+        date: record.attendanceDate,
+        clockIn: record.clockIn ? record.clockIn.substring(0, 5) : '',
+        clockOut: record.clockOut ? record.clockOut.substring(0, 5) : '',
+        hours: hours,
+        overtime: overtime,
+        status: record.approvalStatus || 'approved'
+      });
+
+      const projectName = record.projectName || 'Unassigned';
+      const projectId = record.projectCode || 'unassigned';
 
       if (!projectMap.has(projectId)) {
         projectMap.set(projectId, {
           id: projectId,
           name: projectName,
           employeeCount: 0,
-          totalHours: 0,
-          expanded: false,
-          records: []
+          regularHours: 0,
+          overtimeHours: 0,
+          totalHours: 0
         });
       }
 
-      const group = projectMap.get(projectId)!;
-      const hours = record.regularHours || 0;
-      const overtime = record.overtimeHours || 0;
-
-      group.records.push({
-        employeeId: empId,
-        employeeCode: empCode,
-        employeeName: empName,
-        date: record.attendanceDate,
-        clockIn: record.clockIn || '',
-        clockOut: record.clockOut || '',
-        hours: hours,
-        overtime: overtime,
-        status: record.approvalStatus || 'approved'
-      });
-
-      group.totalHours += hours + overtime;
+      const projectSummary = projectMap.get(projectId)!;
+      projectSummary.regularHours += hours;
+      projectSummary.overtimeHours += overtime;
+      projectSummary.totalHours += hours + overtime;
     });
 
-    projectMap.forEach(group => {
-      const uniqueEmployees = new Set(group.records.map(r => r.employeeId));
-      group.employeeCount = uniqueEmployees.size;
-      group.records.sort((a, b) => {
-        const dateCompare = b.date.localeCompare(a.date);
-        if (dateCompare !== 0) return dateCompare;
-        return a.employeeName.localeCompare(b.employeeName);
-      });
+    projectMap.forEach(project => {
+      const uniqueEmployees = new Set<number>();
+      this.attendanceRecords
+        .filter(r => (r.projectCode || 'unassigned') === project.id)
+        .forEach(r => {
+          const empId = r.employee?.id || r.employeeId;
+          if (empId) uniqueEmployees.add(empId);
+        });
+      project.employeeCount = uniqueEmployees.size;
     });
 
-    this.projectGroups = Array.from(projectMap.values());
-    
-    this.totalEmployees = employeeSet.size;
-    this.totalProjects = this.projectGroups.length;
-    this.totalHours = this.attendanceRecords.reduce((sum, r) => sum + (r.regularHours || 0), 0);
-    this.totalOvertime = this.attendanceRecords.reduce((sum, r) => sum + (r.overtimeHours || 0), 0);
+    employeeMap.forEach(emp => {
+      emp.records.sort((a, b) => a.date.localeCompare(b.date));
+    });
 
-    this.cdr.detectChanges();
-  }
+    this.employeeSummaries = Array.from(employeeMap.values()).sort((a, b) => 
+      a.name.localeCompare(b.name)
+    );
+    this.projectSummaries = Array.from(projectMap.values()).sort((a, b) => 
+      a.name.localeCompare(b.name)
+    );
 
-  toggleGroup(group: ProjectGroup): void {
-    group.expanded = !group.expanded;
+    this.totalEmployees = this.employeeSummaries.length;
+    this.totalHours = this.employeeSummaries.reduce((sum, e) => sum + e.totalHours, 0);
+    this.totalOvertime = this.employeeSummaries.reduce((sum, e) => sum + e.overtimeHours, 0);
+
     this.cdr.detectChanges();
   }
 
@@ -232,9 +263,22 @@ export class WeeklyTimesheetComponent implements OnInit {
     return `${startStr} - ${endStr}`;
   }
 
-  formatDisplayDate(dateStr: string): string {
+  getInitials(name: string): string {
+    if (!name) return '??';
+    const parts = name.split(' ');
+    const first = parts[0]?.charAt(0) || '';
+    const last = parts[parts.length - 1]?.charAt(0) || '';
+    return (first + last).toUpperCase();
+  }
+
+  formatDateShort(dateStr: string): string {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+  }
+
+  getDayName(dateStr: string): string {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { weekday: 'short' });
   }
 
   generateTimesheet(): void {
@@ -274,6 +318,120 @@ export class WeeklyTimesheetComponent implements OnInit {
     });
   }
 
+  openEmployeeModal(emp: EmployeeSummary): void {
+    this.selectedEmployeeSummary = emp;
+    this.employeeWeekRecords = emp.records;
+    this.showEmployeeModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeEmployeeModal(): void {
+    this.showEmployeeModal = false;
+    this.selectedEmployeeSummary = null;
+    this.employeeWeekRecords = [];
+    this.cdr.markForCheck();
+  }
+
+  getEmployeeTotalRegular(): number {
+    return this.employeeWeekRecords.reduce((sum, r) => sum + r.hours, 0);
+  }
+
+  getEmployeeTotalOT(): number {
+    return this.employeeWeekRecords.reduce((sum, r) => sum + r.overtime, 0);
+  }
+
+  getEmployeeTotalHours(): number {
+    return this.getEmployeeTotalRegular() + this.getEmployeeTotalOT();
+  }
+
+  downloadCurrentEmployeePDF(): void {
+    if (!this.selectedEmployeeSummary) return;
+    this.downloadEmployeePDFFromSummary(this.selectedEmployeeSummary);
+  }
+
+  downloadEmployeePDFFromSummary(emp: EmployeeSummary): void {
+    const doc = new jsPDF('landscape');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    doc.setFillColor(51, 102, 153);
+    doc.rect(0, 0, pageWidth, 30, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('EMPLOYEE TIMESHEET', 14, 18);
+    doc.setFontSize(10);
+    doc.text(this.getWeekRangeDisplay(), pageWidth - 14, 18, { align: 'right' });
+    
+    doc.setTextColor(0, 0, 0);
+    
+    let yPos = 45;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Employee Information', 14, yPos);
+    yPos += 8;
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Employee Name: ${emp.name}`, 14, yPos);
+    doc.text(`Employee ID: ${emp.employeeCode || '-'}`, 120, yPos);
+    yPos += 6;
+    doc.text(`Department: ${emp.department || '-'}`, 14, yPos);
+    yPos += 12;
+
+    const tableData = emp.records.map(r => [
+      this.formatDateShort(r.date),
+      this.getDayName(r.date),
+      r.clockIn || '-',
+      r.clockOut || '-',
+      r.hours > 0 ? r.hours.toFixed(2) : '-',
+      r.overtime > 0 ? r.overtime.toFixed(2) : '-'
+    ]);
+
+    doc.autoTable({
+      startY: yPos,
+      head: [['Date', 'Day', 'Check In', 'Check Out', 'Regular Hrs', 'OT Hrs']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { 
+        fillColor: [200, 200, 200], 
+        textColor: [0, 0, 0],
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      bodyStyles: {
+        halign: 'center',
+        fontSize: 9
+      },
+      margin: { left: 14, right: 14 }
+    });
+
+    yPos = (doc as any).lastAutoTable.finalY + 15;
+    
+    doc.setFillColor(51, 102, 153);
+    doc.rect(14, yPos, pageWidth - 28, 8, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SUMMARY', 20, yPos + 6);
+    
+    yPos += 15;
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+    
+    const regularTotal = emp.regularHours.toFixed(1);
+    const otTotal = emp.overtimeHours.toFixed(1);
+    const grandTotal = emp.totalHours.toFixed(1);
+    
+    doc.text(`Regular Hours All: ${regularTotal}H`, 20, yPos);
+    doc.text(`Overtime Hours All: ${otTotal}H`, 100, yPos);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Total Hours All: ${grandTotal}H`, 180, yPos);
+
+    const fileName = `Timesheet_${emp.name.replace(/\s+/g, '_')}_${this.periodStartDate}.pdf`;
+    doc.save(fileName);
+    this.toastService.success('PDF downloaded');
+  }
+
   downloadPDF(): void {
     const doc = new jsPDF();
     
@@ -289,53 +447,59 @@ export class WeeklyTimesheetComponent implements OnInit {
     doc.text(`Total Hours: ${this.totalHours.toFixed(1)}h`, 80, 48);
     doc.text(`Total OT: ${this.totalOvertime.toFixed(1)}h`, 140, 48);
 
-    let yPosition = 58;
-    
-    this.projectGroups.forEach(group => {
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`${group.name} (${group.employeeCount} employees, ${group.totalHours.toFixed(2)}h)`, 14, yPosition);
-      yPosition += 6;
-      
-      const tableData = group.records.map(r => [
-        r.employeeCode || '-',
-        r.employeeName,
-        this.formatDisplayDate(r.date),
-        r.clockIn?.substring(0, 5) || '-',
-        r.clockOut?.substring(0, 5) || '-',
-        r.hours > 0 ? r.hours.toFixed(2) : '-',
-        r.overtime > 0 ? r.overtime.toFixed(2) : '-'
+    if (this.viewMode === 'employee') {
+      const tableData = this.employeeSummaries.map(emp => [
+        emp.name,
+        emp.employeeCode || '-',
+        emp.daysAttended.toString(),
+        emp.regularHours.toFixed(1),
+        emp.overtimeHours.toFixed(1),
+        emp.totalHours.toFixed(1)
       ]);
 
       doc.autoTable({
-        startY: yPosition,
-        head: [['ID', 'Employee', 'Date', 'Clock In', 'Clock Out', 'Hours', 'OT']],
+        startY: 55,
+        head: [['Employee', 'ID', 'Days', 'Regular', 'OT', 'Total']],
         body: tableData,
         theme: 'striped',
-        headStyles: { fillColor: [0, 128, 128] },
-        margin: { left: 14 }
+        headStyles: { fillColor: [0, 128, 128] }
       });
+    } else {
+      const tableData = this.projectSummaries.map(proj => [
+        proj.name,
+        proj.employeeCount.toString(),
+        proj.regularHours.toFixed(1),
+        proj.overtimeHours.toFixed(1),
+        proj.totalHours.toFixed(1)
+      ]);
 
-      yPosition = (doc as any).lastAutoTable.finalY + 10;
-      
-      if (yPosition > 260) {
-        doc.addPage();
-        yPosition = 20;
-      }
-    });
+      doc.autoTable({
+        startY: 55,
+        head: [['Project', 'Employees', 'Regular', 'OT', 'Total']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [0, 128, 128] }
+      });
+    }
 
     doc.save(`Weekly_Timesheet_${this.periodStartDate}_${this.periodEndDate}.pdf`);
     this.toastService.success('PDF downloaded');
   }
 
   downloadCSV(): void {
-    let csvContent = 'Project,Employee ID,Employee,Date,Clock In,Clock Out,Hours,Overtime,Status\n';
-
-    this.projectGroups.forEach(group => {
-      group.records.forEach(record => {
-        csvContent += `"${group.name}","${record.employeeCode || ''}","${record.employeeName}","${record.date}","${record.clockIn || ''}","${record.clockOut || ''}",${record.hours},${record.overtime},"${record.status}"\n`;
+    let csvContent = '';
+    
+    if (this.viewMode === 'employee') {
+      csvContent = 'Employee,Employee ID,Days Attended,Regular Hours,OT Hours,Total Hours\n';
+      this.employeeSummaries.forEach(emp => {
+        csvContent += `"${emp.name}","${emp.employeeCode || ''}",${emp.daysAttended},${emp.regularHours.toFixed(1)},${emp.overtimeHours.toFixed(1)},${emp.totalHours.toFixed(1)}\n`;
       });
-    });
+    } else {
+      csvContent = 'Project,Employees,Regular Hours,OT Hours,Total Hours\n';
+      this.projectSummaries.forEach(proj => {
+        csvContent += `"${proj.name}",${proj.employeeCount},${proj.regularHours.toFixed(1)},${proj.overtimeHours.toFixed(1)},${proj.totalHours.toFixed(1)}\n`;
+      });
+    }
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -348,143 +512,5 @@ export class WeeklyTimesheetComponent implements OnInit {
     document.body.removeChild(link);
     
     this.toastService.success('CSV downloaded');
-  }
-
-  viewEmployeeTimesheet(record: TimesheetRecord): void {
-    this.selectedEmployee = record;
-    this.employeeWeekRecords = [];
-    
-    // Get all records for this employee in the current period
-    this.projectGroups.forEach(group => {
-      const empRecords = group.records.filter(r => r.employeeId === record.employeeId);
-      this.employeeWeekRecords.push(...empRecords);
-    });
-    
-    // Sort by date
-    this.employeeWeekRecords.sort((a, b) => a.date.localeCompare(b.date));
-    
-    this.showEmployeeModal = true;
-    this.cdr.markForCheck();
-  }
-
-  closeEmployeeModal(): void {
-    this.showEmployeeModal = false;
-    this.selectedEmployee = null;
-    this.employeeWeekRecords = [];
-    this.cdr.markForCheck();
-  }
-
-  getEmployeeTotalHours(): number {
-    return this.employeeWeekRecords.reduce((sum, r) => sum + r.hours, 0);
-  }
-
-  getEmployeeTotalOT(): number {
-    return this.employeeWeekRecords.reduce((sum, r) => sum + r.overtime, 0);
-  }
-
-  getDayOfMonth(dateStr: string): number {
-    return new Date(dateStr).getDate();
-  }
-
-  downloadEmployeePDF(record: TimesheetRecord): void {
-    const empRecords: TimesheetRecord[] = [];
-    this.projectGroups.forEach(group => {
-      const records = group.records.filter(r => r.employeeId === record.employeeId);
-      empRecords.push(...records);
-    });
-    empRecords.sort((a, b) => a.date.localeCompare(b.date));
-
-    const doc = new jsPDF('landscape');
-    const pageWidth = doc.internal.pageSize.getWidth();
-    
-    doc.setFillColor(0, 128, 128);
-    doc.rect(0, 0, pageWidth, 25, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Single Employee Time Sheet', 14, 16);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Organization - Fiscal Year Period`, pageWidth - 14, 16, { align: 'right' });
-    
-    doc.setTextColor(0, 0, 0);
-    
-    const totalHours = empRecords.reduce((sum, r) => sum + r.hours, 0);
-    const totalOT = empRecords.reduce((sum, r) => sum + r.overtime, 0);
-
-    const tableData = empRecords.map(r => [
-      this.getDayOfMonth(r.date).toString(),
-      r.clockIn?.substring(0, 5) || '',
-      r.clockOut?.substring(0, 5) || '',
-      r.hours > 0 ? r.hours.toFixed(2) : '',
-      r.overtime > 0 ? r.overtime.toFixed(2) : ''
-    ]);
-
-    doc.autoTable({
-      startY: 35,
-      head: [['Day', 'In', 'Out', 'Hours', 'OT']],
-      body: tableData,
-      theme: 'grid',
-      headStyles: { 
-        fillColor: [240, 230, 200], 
-        textColor: [0, 0, 0],
-        fontStyle: 'bold',
-        halign: 'center'
-      },
-      bodyStyles: {
-        halign: 'center',
-        fontSize: 9
-      },
-      columnStyles: {
-        0: { cellWidth: 20 },
-        1: { cellWidth: 25 },
-        2: { cellWidth: 25 },
-        3: { cellWidth: 25 },
-        4: { cellWidth: 25 }
-      },
-      margin: { left: 14, right: pageWidth - 140 },
-      foot: [['Total', '', '', totalHours.toFixed(2), totalOT.toFixed(2)]],
-      footStyles: { 
-        fillColor: [240, 230, 200], 
-        textColor: [0, 0, 0],
-        fontStyle: 'bold',
-        halign: 'center'
-      }
-    });
-
-    const infoX = 160;
-    let infoY = 35;
-    const lineHeight = 8;
-    
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    
-    const infoFields = [
-      { label: 'Employee', value: record.employeeName },
-      { label: 'ID', value: `EMP-${record.employeeId}` },
-      { label: 'Pay Period', value: this.getWeekRangeDisplay() },
-      { label: 'Hours per Week', value: totalHours.toFixed(2) },
-      { label: 'Overtime', value: totalOT.toFixed(2) },
-      { label: 'Days Worked', value: empRecords.length.toString() }
-    ];
-
-    infoFields.forEach(field => {
-      doc.setFont('helvetica', 'bold');
-      doc.text(field.label, infoX, infoY);
-      doc.setFont('helvetica', 'normal');
-      doc.text(field.value, infoX + 50, infoY);
-      infoY += lineHeight;
-    });
-
-    infoY += 10;
-    doc.setFont('helvetica', 'bold');
-    doc.text('Notes', infoX, infoY);
-    infoY += 5;
-    doc.setDrawColor(200, 200, 200);
-    doc.rect(infoX, infoY, 110, 30);
-
-    const fileName = `Timesheet_${record.employeeName.replace(/\s+/g, '_')}_${this.periodStartDate}_${this.periodEndDate}.pdf`;
-    doc.save(fileName);
-    this.toastService.success('PDF downloaded');
   }
 }
