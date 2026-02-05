@@ -528,10 +528,39 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
   }
 
   loadExpenseCategories(): void {
-    this.expenseService.getCategories().subscribe({
-      next: (data) => this.expenseCategories = data,
-      error: (err) => console.error('Error loading expense categories:', err)
-    });
+    const stored = localStorage.getItem('expenseTypes');
+    if (stored) {
+      const expenseTypes = JSON.parse(stored);
+      this.expenseCategories = expenseTypes
+        .filter((t: any) => t.active)
+        .map((t: any) => ({
+          id: t.id,
+          name: t.name,
+          code: t.name.toUpperCase().replace(/\s+/g, '_'),
+          description: t.description || '',
+          maxAmount: t.maxAmount || null,
+          active: t.active
+        }));
+    } else {
+      this.expenseService.getCategories().subscribe({
+        next: (data) => {
+          this.expenseCategories = data;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.expenseCategories = [
+            { id: 1, name: 'Food Expense', code: 'FOOD_EXPENSE', active: true },
+            { id: 2, name: 'Travel Expense', code: 'TRAVEL_EXPENSE', active: true },
+            { id: 3, name: 'Accommodation', code: 'ACCOMMODATION', active: true },
+            { id: 4, name: 'Transportation', code: 'TRANSPORTATION', active: true },
+            { id: 5, name: 'Office Supplies', code: 'OFFICE_SUPPLIES', active: true },
+            { id: 6, name: 'Medical', code: 'MEDICAL', active: true }
+          ];
+          this.cdr.markForCheck();
+        }
+      });
+    }
+    this.cdr.markForCheck();
   }
 
   loadPolicies(): void {
