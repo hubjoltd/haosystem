@@ -102,4 +102,8 @@ export class SettingsService {
   previewPrefixId(type: string): Observable<string> {
     return this.http.get(`${this.baseUrl}/prefixes/preview/${type}`, { responseType: 'text' });
   }
+
+  incrementEmployeeNumber(): Observable<PrefixSettings> {
+    return this.http.post<PrefixSettings>(`${this.baseUrl}/prefixes/increment/employee`, {});
+  }
 }

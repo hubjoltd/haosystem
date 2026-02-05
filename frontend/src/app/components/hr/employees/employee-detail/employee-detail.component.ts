@@ -8,6 +8,7 @@ import { LeaveService, LeaveBalance } from '../../../../services/leave.service';
 import { PayrollService, PayrollRecord, Timesheet } from '../../../../services/payroll.service';
 import { AttendanceService, AttendanceRecord } from '../../../../services/attendance.service';
 import { ToastService } from '../../../../services/toast.service';
+import { SettingsService, PrefixSettings } from '../../../../services/settings.service';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
@@ -118,7 +119,8 @@ export class EmployeeDetailComponent implements OnInit {
     private payrollService: PayrollService,
     private attendanceService: AttendanceService,
     private cdr: ChangeDetectorRef,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private settingsService: SettingsService
   ) {
     const currentYear = new Date().getFullYear();
     this.availableYears = [currentYear - 1, currentYear, currentYear + 1];
@@ -136,6 +138,7 @@ export class EmployeeDetailComponent implements OnInit {
       this.loading = false;
       this.employee = this.getEmptyEmployee();
       this.loadDropdownData();
+      this.generateEmployeeCode();
     } else if (id) {
       this.isNewEmployee = false;
       this.employeeId = parseInt(id);
@@ -165,6 +168,23 @@ export class EmployeeDetailComponent implements OnInit {
     this.employeeService.getActive().subscribe(data => this.employees = data);
     this.documentService.getTypes().subscribe(data => this.documentTypes = data);
     this.documentService.getCategories().subscribe(data => this.documentCategories = data);
+  }
+
+  generateEmployeeCode(): void {
+    this.settingsService.getPrefixSettings().subscribe({
+      next: (settings: PrefixSettings) => {
+        if (settings) {
+          const prefix = settings.employeePrefix || 'EMP-';
+          const nextNum = settings.employeeNextNumber || 1;
+          this.employee.employeeCode = `${prefix}${nextNum.toString().padStart(4, '0')}`;
+          this.cdr.markForCheck();
+        }
+      },
+      error: () => {
+        this.employee.employeeCode = 'EMP-0001';
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   loadEmployee() {
@@ -705,6 +725,11 @@ export class EmployeeDetailComponent implements OnInit {
           this.saving = false;
           this.cdr.detectChanges();
           this.toastService.success('Employee created successfully!');
+          // Increment the employee prefix number for next creation
+          this.settingsService.incrementEmployeeNumber().subscribe({
+            next: () => console.log('Employee prefix number incremented'),
+            error: (err) => console.warn('Could not increment employee number:', err)
+          });
           // Initialize leave balances for the new employee
           if (created.id) {
             this.leaveService.initializeBalances(created.id).subscribe({
