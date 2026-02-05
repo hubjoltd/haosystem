@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { DashboardService, DashboardStats } from '../../services/dashboard.service';
 import { ItemService, Item } from '../../services/item.service';
 
@@ -26,7 +27,8 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private dashboardService: DashboardService,
-    private itemService: ItemService
+    private itemService: ItemService,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -51,12 +53,73 @@ export class DashboardComponent implements OnInit {
       this.daysInMonth.push(i);
     }
 
-    // Sample events
-    this.events = [
-      { day: 15, title: 'Payroll Process', type: 'warning' },
-      { day: 20, title: 'Tax Due', type: 'danger' },
-      { day: 25, title: 'Inventory Audit', type: 'info' }
-    ];
+    this.loadCalendarEvents();
+  }
+  
+  loadCalendarEvents(): void {
+    this.events = [];
+    const year = this.year;
+    const month = this.currentDate.getMonth();
+    
+    this.http.get<any[]>('/api/holidays').subscribe({
+      next: (holidays) => {
+        if (holidays && Array.isArray(holidays)) {
+          holidays.forEach(h => {
+            if (!h.date) return;
+            const hDate = new Date(h.date);
+            if (hDate.getMonth() === month && hDate.getFullYear() === year) {
+              this.events.push({
+                day: hDate.getDate(),
+                title: h.name || 'Holiday',
+                type: 'success'
+              });
+            }
+          });
+        }
+      },
+      error: () => {}
+    });
+    
+    this.http.get<any[]>('/api/leave-requests').subscribe({
+      next: (leaves) => {
+        if (leaves && Array.isArray(leaves)) {
+          const approvedLeaves = leaves.filter(l => l.status === 'APPROVED');
+          const leaveDays: { [key: number]: number } = {};
+          
+          approvedLeaves.forEach(l => {
+            if (!l.startDate || !l.endDate) return;
+            const startD = new Date(l.startDate);
+            const endD = new Date(l.endDate);
+            for (let d = new Date(startD); d <= endD; d.setDate(d.getDate() + 1)) {
+              if (d.getMonth() === month && d.getFullYear() === year) {
+                leaveDays[d.getDate()] = (leaveDays[d.getDate()] || 0) + 1;
+              }
+            }
+          });
+          
+          Object.keys(leaveDays).forEach(day => {
+            const dayNum = parseInt(day);
+            const count = leaveDays[dayNum];
+            this.events.push({
+              day: dayNum,
+              title: count > 1 ? `${count} on Leave` : 'Employee Leave',
+              type: 'info'
+            });
+          });
+        }
+      },
+      error: () => {}
+    });
+    
+    const payDay = 25;
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    if (payDay <= lastDay) {
+      this.events.push({
+        day: payDay,
+        title: 'Payroll Day',
+        type: 'warning'
+      });
+    }
   }
 
   getEventsForDay(day: number): any[] {

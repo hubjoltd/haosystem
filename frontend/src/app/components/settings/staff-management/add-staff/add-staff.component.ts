@@ -132,32 +132,23 @@ export class AddStaffComponent implements OnInit {
         this.roleService.getAll().subscribe({
           next: (allRoles: Role[]) => {
             const globalRoles = allRoles.filter(r => !r.branchId);
-            const merged = [...branchRoles];
+            const merged = [...(branchRoles || [])];
             globalRoles.forEach(gr => {
               if (!merged.find(r => r.id === gr.id)) {
-                merged.push({ ...gr });
+                merged.push({ ...gr, name: `${gr.name} (Global)` });
               }
             });
             this.roles = merged.length > 0 ? merged : globalRoles;
             this.cdr.markForCheck();
           },
           error: () => {
-            this.roles = branchRoles;
+            this.roles = branchRoles || [];
             this.cdr.markForCheck();
           }
         });
       },
       error: () => {
-        this.roleService.getAll().subscribe({
-          next: (allRoles: Role[]) => {
-            this.roles = allRoles.filter(r => !r.branchId);
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.roles = [];
-            this.cdr.markForCheck();
-          }
-        });
+        this.loadGlobalRoles();
       }
     });
   }
