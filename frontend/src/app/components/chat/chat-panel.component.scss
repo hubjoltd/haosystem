@@ -651,6 +651,9 @@
   right: 0;
   bottom: 0;
   z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   .modal-overlay {
     position: absolute;
@@ -659,13 +662,12 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
   }
 
   .modal-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: relative;
+    z-index: 2;
     width: 90%;
     max-width: 340px;
     max-height: 70vh;
