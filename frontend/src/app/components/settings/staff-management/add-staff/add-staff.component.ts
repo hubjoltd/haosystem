@@ -135,10 +135,10 @@ export class AddStaffComponent implements OnInit {
             const merged = [...branchRoles];
             globalRoles.forEach(gr => {
               if (!merged.find(r => r.id === gr.id)) {
-                merged.push({ ...gr, name: `${gr.name} (Global)` });
+                merged.push({ ...gr });
               }
             });
-            this.roles = merged;
+            this.roles = merged.length > 0 ? merged : globalRoles;
             this.cdr.markForCheck();
           },
           error: () => {
@@ -148,8 +148,16 @@ export class AddStaffComponent implements OnInit {
         });
       },
       error: () => {
-        this.roles = [];
-        this.cdr.markForCheck();
+        this.roleService.getAll().subscribe({
+          next: (allRoles: Role[]) => {
+            this.roles = allRoles.filter(r => !r.branchId);
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.roles = [];
+            this.cdr.markForCheck();
+          }
+        });
       }
     });
   }
