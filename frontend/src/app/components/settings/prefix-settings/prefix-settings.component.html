@@ -12,6 +12,24 @@
   <form  (ngSubmit)="saveSettings()" class="settings-form">
     <div class="settings-section">
       <h3 class="section-title">
+        <i class="fas fa-users"></i>
+        HR Prefixes
+      </h3>
+      
+      <div class="prefix-grid">
+        <div class="prefix-card">
+          <label>Employee Code</label>
+          <div class="prefix-inputs">
+            <input type="text" [(ngModel)]="settings.employeePrefix" name="employeePrefix" placeholder="EMP-" class="prefix-input">
+            <input type="number" [(ngModel)]="settings.employeeNextNumber" name="employeeNextNumber" min="1" class="number-input">
+          </div>
+          <span class="preview">Preview: {{ formatPreview(settings.employeePrefix, settings.employeeNextNumber) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3 class="section-title">
         <i class="fas fa-boxes"></i>
         Inventory Prefixes
       </h3>

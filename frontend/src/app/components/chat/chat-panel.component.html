@@ -86,14 +86,33 @@
     </div>
 
     <div class="message-input">
-      <input 
-        type="text" 
-        [(ngModel)]="newMessage" 
-        placeholder="Type a message..." 
-        (keyup.enter)="sendMessage()"
-        (input)="onTyping()"
-      />
-      <button class="send-btn" (click)="sendMessage()" [disabled]="!newMessage.trim()">
+      <div class="input-wrapper">
+        <input 
+          type="text" 
+          [(ngModel)]="newMessage" 
+          placeholder="Type a message..." 
+          (keyup.enter)="sendMessage()"
+          (input)="onTyping()"
+        />
+        <input 
+          type="file" 
+          #fileInput 
+          (change)="onFileSelected($event)" 
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+          style="display: none;"
+        />
+        <button class="attach-btn" (click)="fileInput.click()" title="Attach file">
+          <i class="fas fa-paperclip"></i>
+        </button>
+      </div>
+      <div class="attachment-preview" *ngIf="selectedFile">
+        <i class="fas" [ngClass]="getFileIcon(selectedFile.name)"></i>
+        <span>{{ selectedFile.name }}</span>
+        <button class="remove-file" (click)="removeFile()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <button class="send-btn" (click)="sendMessage()" [disabled]="!newMessage.trim() && !selectedFile">
         <i class="fas fa-paper-plane"></i>
       </button>
     </div>

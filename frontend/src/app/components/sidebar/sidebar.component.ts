@@ -100,13 +100,13 @@ export class SidebarComponent implements OnInit {
         },
         {
           icon: 'fas fa-file-invoice-dollar',
-          label: 'Expense Management',
-          labelKey: 'nav.expenses',
+          label: 'Reimbursement Management',
+          labelKey: 'nav.reimbursements',
           expanded: false,
           permissionKey: 'Expenses',
           children: [
-            { icon: 'fas fa-list', label: 'All Expenses', labelKey: 'nav.allExpenses', route: '/app/expenses' },
-            { icon: 'fas fa-plus-circle', label: 'New Expense', labelKey: 'nav.newExpense', route: '/app/expenses/new' }
+            { icon: 'fas fa-list', label: 'All Reimbursements', labelKey: 'nav.allReimbursements', route: '/app/expenses' },
+            { icon: 'fas fa-plus-circle', label: 'New Reimbursement', labelKey: 'nav.newReimbursement', route: '/app/expenses/new' }
           ]
         }
       ]
@@ -268,8 +268,7 @@ export class SidebarComponent implements OnInit {
       expanded: false,
       permissionKey: 'Attendance',
       children: [
-        { icon: 'fas fa-chart-bar', label: 'Attendance Dashboard', labelKey: 'nav.attendanceDashboard', route: '/app/mis/attendance-dashboard' },
-        { icon: 'fas fa-clock', label: 'Time Clock', labelKey: 'nav.timeClock', route: '/app/attendance/clock-in-out' },
+        { icon: 'fas fa-clock', label: 'Clock In / Clock Out', labelKey: 'nav.clockInOut', route: '/app/attendance/clock-in-out' },
         { icon: 'fas fa-calendar-day', label: 'Daily Attendance', labelKey: 'nav.dailyAttendance', route: '/app/attendance/management' },
         { icon: 'fas fa-calendar-week', label: 'Weekly Timesheet', labelKey: 'nav.weeklyTimesheet', route: '/app/attendance/weekly-timesheet' }
       ]
@@ -283,8 +282,22 @@ export class SidebarComponent implements OnInit {
       children: [
         { icon: 'fas fa-cog', label: 'Process Payroll', labelKey: 'nav.processPayroll', route: '/app/payroll/process' },
         { icon: 'fas fa-history', label: 'Payroll History', labelKey: 'nav.payrollHistory', route: '/app/payroll/history' },
-        { icon: 'fas fa-file-invoice-dollar', label: 'Pay Slips (ESS)', labelKey: 'nav.paySlips', route: '/app/payroll/self-service' },
         { icon: 'fas fa-chart-pie', label: 'Payroll Dashboard', labelKey: 'nav.payrollDashboard', route: '/app/mis/payroll-dashboard' }
+      ]
+    },
+    {
+      icon: 'fas fa-user-circle',
+      label: 'Employee Service Portal',
+      labelKey: 'nav.employeeServicePortal',
+      expanded: false,
+      permissionKey: 'ESS',
+      children: [
+        { icon: 'fas fa-file-invoice-dollar', label: 'Pay Slips', labelKey: 'nav.paySlips', route: '/app/payroll/self-service' },
+        { icon: 'fas fa-clock', label: 'My Attendance', labelKey: 'nav.myAttendance', route: '/app/ess/attendance' },
+        { icon: 'fas fa-umbrella-beach', label: 'My Leave', labelKey: 'nav.myLeave', route: '/app/ess/leave' },
+        { icon: 'fas fa-receipt', label: 'My Reimbursements', labelKey: 'nav.myReimbursements', route: '/app/ess/reimbursements' },
+        { icon: 'fas fa-laptop', label: 'My Assets', labelKey: 'nav.myAssets', route: '/app/ess/assets' },
+        { icon: 'fas fa-file-alt', label: 'HR Policies', labelKey: 'nav.hrPolicies', route: '/app/ess/policies' }
       ]
     },
     {

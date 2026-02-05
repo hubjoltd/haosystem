@@ -49,6 +49,7 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   messages: ChatMessage[] = [];
   newMessage: string = '';
   searchQuery: string = '';
+  selectedFile: File | null = null;
   
   activeTab: 'chats' | 'contacts' = 'chats';
   loading: boolean = false;
@@ -226,14 +227,36 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   }
 
   sendMessage(): void {
-    if (!this.newMessage.trim() || !this.selectedUser) return;
+    if ((!this.newMessage.trim() && !this.selectedFile) || !this.selectedUser) return;
 
+    let messageText = this.newMessage.trim();
+    
+    if (this.selectedFile) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const fileData = e.target?.result as string;
+        const attachmentMessage = `[Attachment: ${this.selectedFile!.name}]`;
+        const fullMessage = messageText ? `${messageText}\n${attachmentMessage}` : attachmentMessage;
+        
+        this.sendMessageWithContent(fullMessage, fileData);
+        this.selectedFile = null;
+        this.cdr.markForCheck();
+      };
+      reader.readAsDataURL(this.selectedFile);
+    } else {
+      this.sendMessageWithContent(messageText);
+    }
+  }
+
+  private sendMessageWithContent(content: string, attachmentData?: string): void {
+    if (!this.selectedUser) return;
+    
     const messagePayload: ChatMessagePayload = {
       id: Date.now(),
       senderId: this.currentUserId,
       senderName: this.currentUserName,
       receiverId: this.selectedUser.id,
-      message: this.newMessage.trim(),
+      message: content,
       timestamp: new Date()
     };
 
@@ -244,22 +267,62 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
       senderId: this.currentUserId,
       senderName: this.currentUserName,
       receiverId: this.selectedUser.id,
-      message: this.newMessage.trim(),
+      message: content,
       timestamp: new Date(),
       read: false,
       isOwn: true
     };
 
     this.messages.push(message);
-    this.selectedUser.lastMessage = this.newMessage.trim();
+    this.selectedUser.lastMessage = content.substring(0, 50);
     this.newMessage = '';
     this.cdr.markForCheck();
 
     setTimeout(() => this.scrollToBottom(), 100);
 
-    this.http.post('/api/chat/messages', messagePayload).subscribe({
+    const payload: any = { ...messagePayload };
+    if (attachmentData) {
+      payload.attachmentData = attachmentData;
+    }
+    
+    this.http.post('/api/chat/messages', payload).subscribe({
       error: (err) => console.error('Failed to persist message:', err)
     });
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        this.toastService.error('File size must be less than 5MB');
+        input.value = '';
+        return;
+      }
+      this.selectedFile = file;
+      this.cdr.markForCheck();
+    }
+  }
+
+  removeFile(): void {
+    this.selectedFile = null;
+    this.cdr.markForCheck();
+  }
+
+  getFileIcon(filename: string): string {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    switch (ext) {
+      case 'pdf': return 'fa-file-pdf';
+      case 'doc':
+      case 'docx': return 'fa-file-word';
+      case 'xls':
+      case 'xlsx': return 'fa-file-excel';
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif': return 'fa-file-image';
+      default: return 'fa-file';
+    }
   }
 
   onTyping(): void {

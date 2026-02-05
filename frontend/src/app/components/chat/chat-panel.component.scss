@@ -458,6 +458,81 @@
   font-weight: normal;
 }
 
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  background: #f5f7fa;
+  border-radius: 24px;
+  padding: 4px 12px;
+  border: 1px solid #e0e0e0;
+
+  input[type="text"] {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 8px 0;
+    font-size: 0.9rem;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  .attach-btn {
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #e0e0e0;
+      color: #00796b;
+    }
+  }
+}
+
+.attachment-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #e8f5e9;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #2e7d32;
+  margin-top: 8px;
+
+  i {
+    font-size: 1rem;
+  }
+
+  span {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 150px;
+  }
+
+  .remove-file {
+    background: none;
+    border: none;
+    color: #d32f2f;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+
+    &:hover {
+      background: rgba(211, 47, 47, 0.1);
+    }
+  }
+}
+
 @media (max-width: 480px) {
   .chat-panel {
     width: 100%;

@@ -10,6 +10,8 @@ import { NotificationService } from '../../../services/notification.service';
 })
 export class PrefixSettingsComponent implements OnInit {
   settings: PrefixSettings = {
+    employeePrefix: 'EMP-',
+    employeeNextNumber: 1,
     itemPrefix: 'ITM-',
     itemNextNumber: 1,
     groupPrefix: 'GRP-',

@@ -31,6 +31,9 @@ export interface FinanceSettings {
 
 export interface PrefixSettings {
   id?: number;
+  // Employee Prefixes
+  employeePrefix: string;
+  employeeNextNumber: number;
   // Inventory Prefixes
   itemPrefix: string;
   itemNextNumber: number;
