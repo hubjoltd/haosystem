@@ -56,6 +56,7 @@ interface GeneratedTimesheetSummary {
   firstName: string;
   lastName: string;
   department: string;
+  designation?: string;
   totalRegularHours: number;
   totalOvertimeHours: number;
   totalHours: number;
