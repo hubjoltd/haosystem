@@ -85,15 +85,15 @@
       <span>{{ typingUser }} is typing...</span>
     </div>
 
+    <div class="attachment-preview" *ngIf="selectedFile">
+      <i class="fas" [ngClass]="getFileIcon(selectedFile.name)"></i>
+      <span>{{ selectedFile.name }}</span>
+      <button class="remove-file" (click)="removeFile()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
     <div class="message-input">
       <div class="input-wrapper">
-        <input 
-          type="text" 
-          [(ngModel)]="newMessage" 
-          placeholder="Type a message..." 
-          (keyup.enter)="sendMessage()"
-          (input)="onTyping()"
-        />
         <input 
           type="file" 
           #fileInput 
@@ -104,13 +104,13 @@
         <button class="attach-btn" (click)="fileInput.click()" title="Attach file">
           <i class="fas fa-paperclip"></i>
         </button>
-      </div>
-      <div class="attachment-preview" *ngIf="selectedFile">
-        <i class="fas" [ngClass]="getFileIcon(selectedFile.name)"></i>
-        <span>{{ selectedFile.name }}</span>
-        <button class="remove-file" (click)="removeFile()">
-          <i class="fas fa-times"></i>
-        </button>
+        <input 
+          type="text" 
+          [(ngModel)]="newMessage" 
+          placeholder="Type a message..." 
+          (keyup.enter)="sendMessage()"
+          (input)="onTyping()"
+        />
       </div>
       <button class="send-btn" (click)="sendMessage()" [disabled]="!newMessage.trim() && !selectedFile">
         <i class="fas fa-paper-plane"></i>
