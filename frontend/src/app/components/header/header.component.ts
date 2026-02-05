@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Output, OnInit, OnDestroy, HostListener, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { UserNotificationService, UserNotification } from '../../services/user-notification.service';
@@ -18,6 +18,15 @@ interface Language {
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent implements OnInit, OnDestroy {
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!this.elementRef.nativeElement.contains(target)) {
+      this.showLanguageMenu = false;
+      this.showNotifications = false;
+      this.showProfile = false;
+    }
+  }
   @Output() toggleSidebar = new EventEmitter<void>();
   @Output() openChatPanel = new EventEmitter<void>();
 
@@ -44,7 +53,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private userNotificationService: UserNotificationService,
     private authService: AuthService,
     private router: Router,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private elementRef: ElementRef
   ) {
     this.translate.addLangs(['en', 'ko', 'es']);
     this.translate.setFallbackLang('en');
