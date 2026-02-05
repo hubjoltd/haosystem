@@ -652,6 +652,20 @@ tr.expired {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 
+  .data-table {
+    table-layout: fixed;
+    width: 100%;
+
+    th:nth-child(1), td:nth-child(1) { width: 15%; }
+    th:nth-child(2), td:nth-child(2) { width: 13%; }
+    th:nth-child(3), td:nth-child(3) { width: 11%; }
+    th:nth-child(4), td:nth-child(4) { width: 14%; }
+    th:nth-child(5), td:nth-child(5) { width: 10%; }
+    th:nth-child(6), td:nth-child(6) { width: 10%; }
+    th:nth-child(7), td:nth-child(7) { width: 12%; }
+    th:nth-child(8), td:nth-child(8) { width: 15%; }
+  }
+
   .balance-input {
     width: 80px;
     padding: 6px 8px;
