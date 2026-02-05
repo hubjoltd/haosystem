@@ -64,6 +64,8 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   typingUser: string = '';
 
   private subscriptions: Subscription[] = [];
+  private notificationSound: HTMLAudioElement | null = null;
+  private notificationPermission: NotificationPermission = 'default';
 
   constructor(
     private authService: AuthService,
@@ -80,8 +82,43 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
       this.currentUserName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User';
     }
     
+    this.initNotifications();
     this.loadUsers();
     this.initializeWebSocket();
+  }
+
+  private initNotifications(): void {
+    this.notificationSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU' + 
+      'FGT19' + 'AAAA'.repeat(50));
+    this.notificationSound.volume = 0.5;
+    
+    if ('Notification' in window) {
+      this.notificationPermission = Notification.permission;
+      if (this.notificationPermission === 'default') {
+        Notification.requestPermission().then(permission => {
+          this.notificationPermission = permission;
+        });
+      }
+    }
+  }
+
+  private playNotificationSound(): void {
+    if (this.notificationSound) {
+      this.notificationSound.currentTime = 0;
+      this.notificationSound.play().catch(() => {});
+    }
+  }
+
+  private showBrowserNotification(title: string, body: string): void {
+    if (this.notificationPermission === 'granted' && document.hidden) {
+      const notification = new Notification(title, {
+        body,
+        icon: '/favicon.ico',
+        tag: 'chat-message',
+        requireInteraction: false
+      });
+      setTimeout(() => notification.close(), 5000);
+    }
   }
 
   ngOnDestroy(): void {
@@ -130,6 +167,13 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   }
 
   private handleIncomingMessage(message: ChatMessagePayload): void {
+    if (this.messages.some(m => m.id === message.id)) {
+      return;
+    }
+
+    this.playNotificationSound();
+    this.showBrowserNotification(message.senderName, message.message.substring(0, 100));
+
     if (this.selectedUser && message.senderId === this.selectedUser.id) {
       const chatMessage: ChatMessage = {
         id: message.id,
@@ -150,6 +194,7 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
       if (user) {
         user.unreadCount++;
         user.lastMessage = message.message;
+        user.lastMessageTime = new Date(message.timestamp);
         this.toastService.info(`New message from ${message.senderName}: ${message.message.substring(0, 50)}${message.message.length > 50 ? '...' : ''}`);
         this.cdr.markForCheck();
       }
@@ -199,35 +244,34 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
 
   loadMessages(userId: number): void {
     this.loading = true;
+    this.messages = [];
     this.cdr.markForCheck();
 
     this.http.get<any[]>(`/api/chat/messages/${userId}`).subscribe({
       next: (messages) => {
-        this.messages = messages.map(m => ({
-          id: m.id,
-          senderId: m.senderId,
-          senderName: m.senderName,
-          receiverId: m.receiverId,
-          message: m.message,
-          timestamp: new Date(m.timestamp),
-          read: m.read,
-          isOwn: m.senderId === this.currentUserId
-        }));
+        const uniqueMessages = new Map<number, ChatMessage>();
+        messages.forEach(m => {
+          uniqueMessages.set(m.id, {
+            id: m.id,
+            senderId: m.senderId,
+            senderName: m.senderName,
+            receiverId: m.receiverId,
+            message: m.message,
+            timestamp: new Date(m.timestamp),
+            read: m.read,
+            isOwn: m.senderId === this.currentUserId,
+            status: m.senderId === this.currentUserId ? 'delivered' : undefined
+          });
+        });
+        this.messages = Array.from(uniqueMessages.values());
         this.loading = false;
         this.cdr.markForCheck();
         setTimeout(() => this.scrollToBottom(), 100);
       },
       error: () => {
-        this.messages = [
-          { id: 1, senderId: userId, senderName: this.selectedUser?.name || '', receiverId: this.currentUserId, message: 'Hi, how are you?', timestamp: new Date(Date.now() - 3600000), read: true, isOwn: false },
-          { id: 2, senderId: this.currentUserId, senderName: this.currentUserName, receiverId: userId, message: 'I\'m doing great, thanks for asking!', timestamp: new Date(Date.now() - 3000000), read: true, isOwn: true },
-          { id: 3, senderId: userId, senderName: this.selectedUser?.name || '', receiverId: this.currentUserId, message: 'Did you get a chance to review the report?', timestamp: new Date(Date.now() - 2400000), read: true, isOwn: false },
-          { id: 4, senderId: this.currentUserId, senderName: this.currentUserName, receiverId: userId, message: 'Yes, I reviewed it. Looks good!', timestamp: new Date(Date.now() - 1800000), read: true, isOwn: true },
-          { id: 5, senderId: userId, senderName: this.selectedUser?.name || '', receiverId: this.currentUserId, message: this.selectedUser?.lastMessage || 'Thanks!', timestamp: new Date(Date.now() - 600000), read: true, isOwn: false }
-        ];
+        this.messages = [];
         this.loading = false;
         this.cdr.markForCheck();
-        setTimeout(() => this.scrollToBottom(), 100);
       }
     });
   }
