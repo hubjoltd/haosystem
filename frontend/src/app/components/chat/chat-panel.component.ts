@@ -256,6 +256,17 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
               lastMessage: '',
               unreadCount: 0
             }));
+          if (this.users.length === 0 && employees.length > 0) {
+            this.users = employees.map(e => ({
+              id: e.id,
+              name: `${e.firstName || ''} ${e.lastName || ''}`.trim() || e.email || 'Unknown',
+              employeeCode: e.employeeCode,
+              avatar: this.getInitials(e.firstName, e.lastName),
+              online: false,
+              lastMessage: '',
+              unreadCount: 0
+            }));
+          }
           this.cdr.markForCheck();
         } else {
           this.loadUsersFromUsersEndpoint();
@@ -270,6 +281,11 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   private loadUsersFromUsersEndpoint(): void {
     this.http.get<any[]>('/api/users').subscribe({
       next: (users) => {
+        if (!users || users.length === 0) {
+          this.users = [];
+          this.cdr.markForCheck();
+          return;
+        }
         this.users = users
           .filter(u => u.id !== this.currentUserId)
           .map(u => ({
@@ -281,6 +297,17 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
             lastMessage: '',
             unreadCount: 0
           }));
+        if (this.users.length === 0 && users.length > 0) {
+          this.users = users.map(u => ({
+            id: u.id,
+            name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.username,
+            employeeCode: u.employeeCode || u.employee?.employeeCode,
+            avatar: this.getInitials(u.firstName, u.lastName),
+            online: false,
+            lastMessage: '',
+            unreadCount: 0
+          }));
+        }
         this.cdr.markForCheck();
       },
       error: () => {
