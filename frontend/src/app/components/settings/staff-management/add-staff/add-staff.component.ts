@@ -33,6 +33,7 @@ export class AddStaffComponent implements OnInit {
   };
   
   currentBranchName: string = '';
+  isSuperAdmin: boolean = false;
 
   password: string = '';
   roles: Role[] = [];
@@ -66,6 +67,7 @@ export class AddStaffComponent implements OnInit {
   initializeCurrentBranch(): void {
     const branchId = this.authService.getCurrentBranchId();
     if (branchId) {
+      this.isSuperAdmin = false;
       this.selectedBranchId = branchId;
       this.staff.branchId = branchId;
       this.branchService.getBranchById(branchId).subscribe({
@@ -80,6 +82,7 @@ export class AddStaffComponent implements OnInit {
       });
       this.loadRolesForBranch(branchId);
     } else {
+      this.isSuperAdmin = true;
       this.loadBranches();
     }
   }

@@ -67,18 +67,27 @@
         <small class="help-text">Minimum 6 characters</small>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" *ngIf="!isSuperAdmin">
         <label>Company</label>
         <input type="text" [value]="currentBranchName" class="form-control" disabled>
         <small class="help-text">Staff will be added to your current company</small>
       </div>
 
+      <div class="form-group" *ngIf="isSuperAdmin">
+        <label class="required">Company</label>
+        <select [(ngModel)]="selectedBranchId" (ngModelChange)="onBranchChange()" class="form-control">
+          <option [ngValue]="null">Select Company</option>
+          <option *ngFor="let branch of branches" [ngValue]="branch.id">{{ branch.name }}</option>
+        </select>
+      </div>
+
       <div class="form-group">
         <label>Role</label>
-        <select [(ngModel)]="staff.roleId" class="form-control">
+        <select [(ngModel)]="staff.roleId" class="form-control" [disabled]="isSuperAdmin && !selectedBranchId">
           <option [ngValue]="undefined">Select Role</option>
           <option *ngFor="let role of roles" [ngValue]="role.id">{{ role.name }}</option>
         </select>
+        <small class="help-text" *ngIf="isSuperAdmin && !selectedBranchId">Please select a company first</small>
       </div>
     </div>
 
