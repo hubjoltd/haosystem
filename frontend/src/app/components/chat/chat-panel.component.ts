@@ -17,6 +17,10 @@ interface ChatMessage {
   timestamp: Date;
   read: boolean;
   isOwn: boolean;
+  status?: 'sending' | 'sent' | 'delivered' | 'read';
+  attachmentType?: 'image' | 'document' | null;
+  attachmentUrl?: string;
+  attachmentName?: string;
 }
 
 interface ChatUser {
@@ -25,7 +29,9 @@ interface ChatUser {
   employeeCode?: string;
   avatar: string;
   online: boolean;
+  lastSeen?: Date;
   lastMessage?: string;
+  lastMessageTime?: Date;
   unreadCount: number;
 }
 
@@ -233,12 +239,12 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
     
     if (this.selectedFile) {
       const reader = new FileReader();
+      const fileName = this.selectedFile.name;
+      const fileType = this.getAttachmentType(fileName);
+      
       reader.onload = (e) => {
         const fileData = e.target?.result as string;
-        const attachmentMessage = `[Attachment: ${this.selectedFile!.name}]`;
-        const fullMessage = messageText ? `${messageText}\n${attachmentMessage}` : attachmentMessage;
-        
-        this.sendMessageWithContent(fullMessage, fileData);
+        this.sendMessageWithContent(messageText || '', fileData, fileName, fileType);
         this.selectedFile = null;
         this.cdr.markForCheck();
       };
@@ -248,7 +254,15 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
     }
   }
 
-  private sendMessageWithContent(content: string, attachmentData?: string): void {
+  private getAttachmentType(filename: string): 'image' | 'document' {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext || '')) {
+      return 'image';
+    }
+    return 'document';
+  }
+
+  private sendMessageWithContent(content: string, attachmentData?: string, attachmentName?: string, attachmentType?: 'image' | 'document'): void {
     if (!this.selectedUser) return;
     
     const messagePayload: ChatMessagePayload = {
@@ -270,11 +284,16 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
       message: content,
       timestamp: new Date(),
       read: false,
-      isOwn: true
+      isOwn: true,
+      status: 'sending',
+      attachmentType: attachmentType || null,
+      attachmentUrl: attachmentData,
+      attachmentName: attachmentName
     };
 
     this.messages.push(message);
-    this.selectedUser.lastMessage = content.substring(0, 50);
+    this.selectedUser.lastMessage = attachmentName ? `📎 ${attachmentName}` : content.substring(0, 50);
+    this.selectedUser.lastMessageTime = new Date();
     this.newMessage = '';
     this.cdr.markForCheck();
 
@@ -283,10 +302,24 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
     const payload: any = { ...messagePayload };
     if (attachmentData) {
       payload.attachmentData = attachmentData;
+      payload.attachmentName = attachmentName;
+      payload.attachmentType = attachmentType;
     }
     
     this.http.post('/api/chat/messages', payload).subscribe({
-      error: (err) => console.error('Failed to persist message:', err)
+      next: () => {
+        message.status = 'sent';
+        setTimeout(() => {
+          message.status = 'delivered';
+          this.cdr.markForCheck();
+        }, 1000);
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Failed to persist message:', err);
+        message.status = 'sent';
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -397,5 +430,43 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
       case 'connecting': return 'Connecting...';
       default: return 'Offline';
     }
+  }
+
+  getLastSeenText(user: ChatUser): string {
+    if (!user.lastSeen) return 'Offline';
+    const now = new Date();
+    const lastSeen = new Date(user.lastSeen);
+    const diffMs = now.getTime() - lastSeen.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'Last seen just now';
+    if (diffMins < 60) return `Last seen ${diffMins}m ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `Last seen ${diffHours}h ago`;
+    
+    return `Last seen ${lastSeen.toLocaleDateString()}`;
+  }
+
+  openImagePreview(imageUrl: string): void {
+    window.open(imageUrl, '_blank');
+  }
+
+  formatLastMessageTime(date: Date | undefined): string {
+    if (!date) return '';
+    const now = new Date();
+    const msgDate = new Date(date);
+    
+    if (msgDate.toDateString() === now.toDateString()) {
+      return msgDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+    
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (msgDate.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    }
+    
+    return msgDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 }

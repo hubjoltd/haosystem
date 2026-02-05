@@ -9,12 +9,12 @@
         <i class="fas fa-circle"></i> {{ getConnectionStatusText() }}
       </div>
       <div class="selected-user-info" *ngIf="selectedUser">
-        <div class="user-avatar">{{ selectedUser.avatar }}</div>
+        <div class="user-avatar" [class.online]="selectedUser.online">{{ selectedUser.avatar }}</div>
         <div class="user-details">
           <span class="user-name">{{ selectedUser.name }}</span>
           <span class="user-code" *ngIf="selectedUser.employeeCode">({{ selectedUser.employeeCode }})</span>
           <span class="user-status" [class.online]="selectedUser.online">
-            {{ selectedUser.online ? 'Online' : 'Offline' }}
+            {{ selectedUser.online ? 'Online' : getLastSeenText(selectedUser) }}
           </span>
         </div>
       </div>
@@ -50,9 +50,10 @@
         </div>
         <div class="user-info">
           <span class="user-name">{{ user.name }} <small *ngIf="user.employeeCode">({{ user.employeeCode }})</small></span>
-          <span class="last-message">{{ user.lastMessage }}</span>
+          <span class="last-message">{{ user.lastMessage || 'No messages yet' }}</span>
         </div>
         <div class="user-meta">
+          <span class="msg-time" *ngIf="user.lastMessageTime">{{ formatLastMessageTime(user.lastMessageTime) }}</span>
           <span class="unread-badge" *ngIf="user.unreadCount > 0">{{ user.unreadCount }}</span>
         </div>
       </div>
@@ -74,8 +75,26 @@
       <div class="messages-list" *ngIf="!loading">
         <div class="message-group" *ngFor="let msg of messages" [class.own]="msg.isOwn">
           <div class="message-bubble">
-            <p class="message-text">{{ msg.message }}</p>
-            <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
+            <div class="message-image" *ngIf="msg.attachmentType === 'image' && msg.attachmentUrl">
+              <img [src]="msg.attachmentUrl" [alt]="msg.attachmentName || 'Image'" (click)="openImagePreview(msg.attachmentUrl!)">
+            </div>
+            <div class="message-document" *ngIf="msg.attachmentType === 'document' && msg.attachmentName">
+              <i class="fas" [ngClass]="getFileIcon(msg.attachmentName)"></i>
+              <span class="doc-name">{{ msg.attachmentName }}</span>
+              <a *ngIf="msg.attachmentUrl" [href]="msg.attachmentUrl" [download]="msg.attachmentName" class="download-btn">
+                <i class="fas fa-download"></i>
+              </a>
+            </div>
+            <p class="message-text" *ngIf="msg.message">{{ msg.message }}</p>
+            <div class="message-meta">
+              <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
+              <span class="message-status" *ngIf="msg.isOwn">
+                <i class="fas fa-clock" *ngIf="msg.status === 'sending'" title="Sending"></i>
+                <i class="fas fa-check" *ngIf="msg.status === 'sent'" title="Sent"></i>
+                <i class="fas fa-check-double" *ngIf="msg.status === 'delivered'" title="Delivered"></i>
+                <i class="fas fa-check-double read" *ngIf="msg.status === 'read'" title="Read"></i>
+              </span>
+            </div>
           </div>
         </div>
       </div>

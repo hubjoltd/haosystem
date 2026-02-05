@@ -83,6 +83,19 @@
     justify-content: center;
     font-size: 0.85rem;
     font-weight: 600;
+    position: relative;
+
+    &.online::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 10px;
+      height: 10px;
+      background: #4caf50;
+      border-radius: 50%;
+      border: 2px solid #00796b;
+    }
   }
 
   .user-details {
@@ -98,14 +111,8 @@
       font-size: 0.75rem;
       opacity: 0.8;
 
-      &.online::before {
-        content: '';
-        display: inline-block;
-        width: 6px;
-        height: 6px;
-        background: #4caf50;
-        border-radius: 50%;
-        margin-right: 4px;
+      &.online {
+        color: #a5d6a7;
       }
     }
   }
@@ -252,6 +259,12 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    gap: 4px;
+
+    .msg-time {
+      font-size: 0.7rem;
+      color: #6c757d;
+    }
 
     .unread-badge {
       background: #00796b;
@@ -345,7 +358,7 @@
 
 .message-bubble {
   max-width: 80%;
-  padding: 8px 12px;
+  padding: 6px 8px 4px;
   background: white;
   border-radius: 8px;
   border-top-left-radius: 0;
@@ -362,19 +375,93 @@
     border-color: transparent white transparent transparent;
   }
 
+  .message-image {
+    margin: -2px -4px 6px;
+    border-radius: 6px;
+    overflow: hidden;
+    
+    img {
+      max-width: 220px;
+      max-height: 200px;
+      width: 100%;
+      height: auto;
+      display: block;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: opacity 0.2s;
+      
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+  }
+
+  .message-document {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    min-width: 180px;
+
+    i {
+      font-size: 1.4rem;
+      color: #00796b;
+    }
+
+    .doc-name {
+      flex: 1;
+      font-size: 0.85rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .download-btn {
+      color: #00796b;
+      padding: 4px;
+      border-radius: 50%;
+      transition: background 0.2s;
+
+      &:hover {
+        background: rgba(0, 121, 107, 0.1);
+      }
+    }
+  }
+
   .message-text {
     font-size: 0.9rem;
     line-height: 1.35;
-    margin: 0;
+    margin: 0 0 2px;
     word-wrap: break-word;
   }
 
+  .message-meta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-top: 2px;
+  }
+
   .message-time {
-    display: block;
     font-size: 0.68rem;
     color: rgba(0, 0, 0, 0.45);
-    margin-top: 2px;
-    text-align: right;
+  }
+
+  .message-status {
+    font-size: 0.7rem;
+    color: rgba(0, 0, 0, 0.45);
+    
+    i {
+      font-size: 0.65rem;
+    }
+    
+    .read {
+      color: #34b7f1;
+    }
   }
 }
 
