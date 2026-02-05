@@ -80,6 +80,9 @@ Preferred communication style: Simple, everyday language.
 -   Employee code prefix settings for auto-generating employee IDs (e.g., EMP-0001).
 -   Profile and account settings navigation in header dropdown for administrators.
 -   Leave and reimbursement request notifications - admins notified on new requests, employees notified on approval/rejection.
+-   Loan request notifications - admins notified on new applications, employees notified on approval/rejection.
+-   ESS (Employee Self-Service) expense/loan submission flow: requests created as DRAFT then submitted to trigger notification workflows.
+-   Admin employee selector in ESS portal - administrators can view any employee's ESS data via dropdown selector.
 
 ## External Dependencies
 
