@@ -5,9 +5,9 @@
         <i class="fas fa-arrow-left"></i>
       </button>
       <h3 *ngIf="!selectedUser">Messages</h3>
-      <div class="connection-status" *ngIf="!selectedUser" [ngClass]="getConnectionStatusClass()">
-        <i class="fas fa-circle"></i> {{ getConnectionStatusText() }}
-      </div>
+      <button class="new-chat-btn" *ngIf="!selectedUser" (click)="showNewChatModal = true" title="New Chat">
+        <i class="fas fa-plus"></i>
+      </button>
       <div class="selected-user-info" *ngIf="selectedUser">
         <div class="user-avatar" [class.online]="selectedUser.online">{{ selectedUser.avatar }}</div>
         <div class="user-details">
@@ -134,6 +134,37 @@
       <button class="send-btn" (click)="sendMessage()" [disabled]="!newMessage.trim() && !selectedFile">
         <i class="fas fa-paper-plane"></i>
       </button>
+    </div>
+  </div>
+
+  <!-- New Chat Modal -->
+  <div class="new-chat-modal" *ngIf="showNewChatModal">
+    <div class="modal-overlay" (click)="showNewChatModal = false"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4>New Conversation</h4>
+        <button class="close-modal" (click)="showNewChatModal = false">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="search-contact">
+          <i class="fas fa-search"></i>
+          <input type="text" [(ngModel)]="contactSearchQuery" placeholder="Search contacts..." />
+        </div>
+        <div class="contacts-list">
+          <div class="contact-item" *ngFor="let user of filteredContacts" (click)="startNewChat(user)">
+            <div class="contact-avatar">{{ user.avatar }}</div>
+            <div class="contact-info">
+              <span class="contact-name">{{ user.name }}</span>
+              <span class="contact-code" *ngIf="user.employeeCode">{{ user.employeeCode }}</span>
+            </div>
+          </div>
+          <div class="no-contacts" *ngIf="filteredContacts.length === 0">
+            <p>No contacts found</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

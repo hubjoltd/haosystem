@@ -62,6 +62,8 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   connectionStatus: 'connected' | 'connecting' | 'disconnected' = 'disconnected';
   isTyping: boolean = false;
   typingUser: string = '';
+  showNewChatModal: boolean = false;
+  contactSearchQuery: string = '';
 
   private subscriptions: Subscription[] = [];
   private notificationSound: HTMLAudioElement | null = null;
@@ -525,6 +527,21 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
       u.name.toLowerCase().includes(query) || 
       (u.employeeCode && u.employeeCode.toLowerCase().includes(query))
     );
+  }
+
+  get filteredContacts(): ChatUser[] {
+    if (!this.contactSearchQuery.trim()) return this.users;
+    const query = this.contactSearchQuery.toLowerCase();
+    return this.users.filter(u => 
+      u.name.toLowerCase().includes(query) || 
+      (u.employeeCode && u.employeeCode.toLowerCase().includes(query))
+    );
+  }
+
+  startNewChat(user: ChatUser): void {
+    this.showNewChatModal = false;
+    this.contactSearchQuery = '';
+    this.selectUser(user);
   }
 
   get totalUnread(): number {
