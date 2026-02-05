@@ -291,6 +291,32 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   }
 
   loadUsers(): void {
+    this.http.get<any[]>('/api/employees').subscribe({
+      next: (employees) => {
+        if (employees && employees.length > 0) {
+          this.users = employees
+            .filter(e => e.id !== this.currentUserId)
+            .map(e => ({
+              id: e.id,
+              name: `${e.firstName || ''} ${e.lastName || ''}`.trim() || e.email || 'Unknown',
+              employeeCode: e.employeeCode,
+              avatar: this.getInitials(e.firstName, e.lastName),
+              online: false,
+              lastMessage: '',
+              unreadCount: 0
+            }));
+          this.cdr.markForCheck();
+        } else {
+          this.loadUsersFromUsersEndpoint();
+        }
+      },
+      error: () => {
+        this.loadUsersFromUsersEndpoint();
+      }
+    });
+  }
+
+  private loadUsersFromUsersEndpoint(): void {
     this.http.get<any[]>('/api/users').subscribe({
       next: (users) => {
         this.users = users
