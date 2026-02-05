@@ -5,6 +5,7 @@ import com.erp.repository.*;
 import com.erp.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 
+import com.erp.service.UserNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +39,9 @@ public class LeaveController {
     
     @Autowired
     private JwtUtil jwtUtil;
+    
+    @Autowired
+    private UserNotificationService userNotificationService;
     
     private Long extractBranchId(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
@@ -243,6 +247,17 @@ public class LeaveController {
 
         LeaveRequest saved = leaveRequestRepository.save(request);
 
+        // Send notification to manager/HR about new leave request
+        String employeeName = employee.getFirstName() + " " + employee.getLastName();
+        String leaveTypeName = leaveType.getName();
+        userNotificationService.notifyAdmins(
+            "New Leave Request",
+            employeeName + " has submitted a " + leaveTypeName + " leave request for " + totalDays + " day(s)",
+            "LEAVE_REQUEST",
+            "LEAVE_REQUEST",
+            saved.getId()
+        );
+
         return ResponseEntity.ok(saved);
     }
 
@@ -285,7 +300,21 @@ public class LeaveController {
                 balance.setUsed((balance.getUsed() != null ? balance.getUsed() : BigDecimal.ZERO).add(request.getTotalDays()));
                 leaveBalanceRepository.save(balance);
 
-                return ResponseEntity.ok(leaveRequestRepository.save(request));
+                LeaveRequest saved = leaveRequestRepository.save(request);
+                
+                // Notify employee that their leave was approved
+                if (request.getEmployee() != null && request.getEmployee().getEmail() != null) {
+                    userNotificationService.createNotification(
+                        request.getEmployee().getEmail(),
+                        "Leave Request Approved",
+                        "Your " + request.getLeaveType().getName() + " leave request has been approved",
+                        "LEAVE_APPROVED",
+                        "LEAVE_REQUEST",
+                        saved.getId()
+                    );
+                }
+
+                return ResponseEntity.ok(saved);
             })
             .orElse(ResponseEntity.notFound().build());
     }
@@ -315,7 +344,21 @@ public class LeaveController {
                     leaveBalanceRepository.save(balance);
                 }
 
-                return ResponseEntity.ok(leaveRequestRepository.save(request));
+                LeaveRequest saved = leaveRequestRepository.save(request);
+                
+                // Notify employee that their leave was rejected
+                if (request.getEmployee() != null && request.getEmployee().getEmail() != null) {
+                    userNotificationService.createNotification(
+                        request.getEmployee().getEmail(),
+                        "Leave Request Rejected",
+                        "Your " + request.getLeaveType().getName() + " leave request has been rejected",
+                        "LEAVE_REJECTED",
+                        "LEAVE_REQUEST",
+                        saved.getId()
+                    );
+                }
+
+                return ResponseEntity.ok(saved);
             })
             .orElse(ResponseEntity.notFound().build());
     }

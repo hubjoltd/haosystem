@@ -79,6 +79,7 @@ Preferred communication style: Simple, everyday language.
 -   Chat panel with file attachment support (images, PDF, Word, Excel files up to 5MB) and real-time messaging.
 -   Employee code prefix settings for auto-generating employee IDs (e.g., EMP-0001).
 -   Profile and account settings navigation in header dropdown for administrators.
+-   Leave and reimbursement request notifications - admins notified on new requests, employees notified on approval/rejection.
 
 ## External Dependencies
 

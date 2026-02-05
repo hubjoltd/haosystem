@@ -31,6 +31,9 @@ public class ExpenseService {
 
     @Autowired
     private PayrollRecordRepository payrollRecordRepository;
+    
+    @Autowired
+    private UserNotificationService userNotificationService;
 
     public List<ExpenseCategory> findAllCategories() {
         return expenseCategoryRepository.findAll();
@@ -299,7 +302,20 @@ public class ExpenseService {
         request.setSubmittedAt(LocalDateTime.now());
         request.setReimbursementStatus("PENDING");
         
-        return expenseRequestRepository.save(request);
+        ExpenseRequest saved = expenseRequestRepository.save(request);
+        
+        // Notify admins about new reimbursement request
+        String employeeName = request.getEmployee() != null ? 
+            request.getEmployee().getFirstName() + " " + request.getEmployee().getLastName() : "Employee";
+        userNotificationService.notifyAdmins(
+            "New Reimbursement Request",
+            employeeName + " has submitted a reimbursement request for $" + request.getTotalAmount(),
+            "REIMBURSEMENT_REQUEST",
+            "EXPENSE_REQUEST",
+            saved.getId()
+        );
+        
+        return saved;
     }
 
     @Transactional
@@ -329,7 +345,21 @@ public class ExpenseService {
             item.setApprovedAmount(item.getAmount());
         }
         
-        return expenseRequestRepository.save(request);
+        ExpenseRequest saved = expenseRequestRepository.save(request);
+        
+        // Notify employee that their reimbursement was approved
+        if (request.getEmployee() != null && request.getEmployee().getEmail() != null) {
+            userNotificationService.createNotification(
+                request.getEmployee().getEmail(),
+                "Reimbursement Request Approved",
+                "Your reimbursement request for $" + approvedAmount + " has been approved",
+                "REIMBURSEMENT_APPROVED",
+                "EXPENSE_REQUEST",
+                saved.getId()
+            );
+        }
+        
+        return saved;
     }
 
     @Transactional
@@ -346,7 +376,21 @@ public class ExpenseService {
         request.setRejectionReason(rejectionReason);
         request.setReimbursementStatus("CANCELLED");
         
-        return expenseRequestRepository.save(request);
+        ExpenseRequest saved = expenseRequestRepository.save(request);
+        
+        // Notify employee that their reimbursement was rejected
+        if (request.getEmployee() != null && request.getEmployee().getEmail() != null) {
+            userNotificationService.createNotification(
+                request.getEmployee().getEmail(),
+                "Reimbursement Request Rejected",
+                "Your reimbursement request has been rejected. Reason: " + (rejectionReason != null ? rejectionReason : "No reason provided"),
+                "REIMBURSEMENT_REJECTED",
+                "EXPENSE_REQUEST",
+                saved.getId()
+            );
+        }
+        
+        return saved;
     }
 
     @Transactional
