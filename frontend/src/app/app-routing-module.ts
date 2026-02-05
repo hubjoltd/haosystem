@@ -289,7 +289,9 @@ const routes: Routes = [
       { path: 'accounting/reconciliation', component: ReconciliationComponent },
       { path: 'accounting/budgets', component: BudgetsComponent },
       { path: 'accounting/reports', component: FinancialReportsComponent },
-      { path: 'accounting/settings', component: AccountingSettingsComponent }
+      { path: 'accounting/settings', component: AccountingSettingsComponent },
+      { path: 'profile', component: EmployeeSelfServiceComponent },
+      { path: 'account-settings', component: GeneralSettingsComponent }
     ]
   },
   { path: ':companySlug', component: CompanyLoginComponent }

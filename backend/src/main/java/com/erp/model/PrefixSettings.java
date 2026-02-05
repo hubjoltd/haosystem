@@ -9,6 +9,13 @@ public class PrefixSettings {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Employee Prefixes
+    @Column(name = "employee_prefix")
+    private String employeePrefix = "EMP-";
+    
+    @Column(name = "employee_next_number")
+    private Integer employeeNextNumber = 1;
+
     // Inventory Prefixes
     @Column(name = "item_prefix")
     private String itemPrefix = "ITM-";
@@ -87,6 +94,11 @@ public class PrefixSettings {
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public String getEmployeePrefix() { return employeePrefix; }
+    public void setEmployeePrefix(String employeePrefix) { this.employeePrefix = employeePrefix; }
+    public Integer getEmployeeNextNumber() { return employeeNextNumber; }
+    public void setEmployeeNextNumber(Integer employeeNextNumber) { this.employeeNextNumber = employeeNextNumber; }
 
     public String getItemPrefix() { return itemPrefix; }
     public void setItemPrefix(String itemPrefix) { this.itemPrefix = itemPrefix; }
