@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, interval } from 'rxjs';
 import { tap, switchMap, startWith } from 'rxjs/operators';
+import { NotificationService } from './notification.service';
 
 export interface UserNotification {
   id: number;
@@ -23,8 +24,14 @@ export class UserNotificationService {
   private baseUrl = '/api/notifications';
   private unreadCountSubject = new BehaviorSubject<number>(0);
   public unreadCount$ = this.unreadCountSubject.asObservable();
+  private newNotificationSubject = new BehaviorSubject<UserNotification | null>(null);
+  public newNotification$ = this.newNotificationSubject.asObservable();
+  private lastKnownCount = 0;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private notificationService: NotificationService
+  ) {}
 
   getNotifications(): Observable<UserNotification[]> {
     return this.http.get<UserNotification[]>(this.baseUrl);
@@ -36,8 +43,31 @@ export class UserNotificationService {
 
   getUnreadCount(): Observable<{ count: number }> {
     return this.http.get<{ count: number }>(`${this.baseUrl}/count`).pipe(
-      tap(result => this.unreadCountSubject.next(result.count))
+      tap(result => {
+        const newCount = result.count;
+        if (newCount > this.lastKnownCount) {
+          this.notificationService.playNotificationSound();
+          this.notificationService.showBrowserNotification(
+            'New Notification',
+            newCount === 1 
+              ? 'You have a new notification'
+              : `You have ${newCount} unread notification(s)`
+          );
+        }
+        this.lastKnownCount = newCount;
+        this.unreadCountSubject.next(newCount);
+      })
     );
+  }
+
+  triggerNewNotificationAlert(notification: UserNotification): void {
+    this.newNotificationSubject.next(notification);
+    this.notificationService.playNotificationSound();
+    this.notificationService.showBrowserNotification(
+      notification.title,
+      notification.message
+    );
+    this.refreshCount();
   }
 
   markAsRead(id: number): Observable<UserNotification> {
