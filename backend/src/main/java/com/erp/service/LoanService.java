@@ -23,6 +23,9 @@ public class LoanService {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+    
+    @Autowired
+    private UserNotificationService userNotificationService;
 
     public List<LoanApplication> findAllLoans() {
         return loanRepository.findAll();
@@ -126,7 +129,20 @@ public class LoanService {
             .orElseThrow(() -> new RuntimeException("Loan application not found"));
         loan.setStatus("PENDING_APPROVAL");
         loan.setSubmittedAt(LocalDateTime.now());
-        return loanRepository.save(loan);
+        LoanApplication saved = loanRepository.save(loan);
+        
+        // Notify admins about new loan application
+        String employeeName = loan.getEmployee() != null ? 
+            loan.getEmployee().getFirstName() + " " + loan.getEmployee().getLastName() : "Employee";
+        userNotificationService.notifyAdmins(
+            "New Loan Application",
+            employeeName + " has submitted a loan application for $" + loan.getRequestedAmount(),
+            "LOAN_APPLICATION",
+            "LOAN_APPLICATION",
+            saved.getId()
+        );
+        
+        return saved;
     }
 
     @Transactional
@@ -146,7 +162,21 @@ public class LoanService {
             loan.setEmiAmount(emi);
         }
         
-        return loanRepository.save(loan);
+        LoanApplication saved = loanRepository.save(loan);
+        
+        // Notify employee that their loan was approved
+        if (loan.getEmployee() != null && loan.getEmployee().getEmail() != null) {
+            userNotificationService.createNotification(
+                loan.getEmployee().getEmail(),
+                "Loan Application Approved",
+                "Your loan application for $" + saved.getApprovedAmount() + " has been approved",
+                "LOAN_APPROVED",
+                "LOAN_APPLICATION",
+                saved.getId()
+            );
+        }
+        
+        return saved;
     }
 
     @Transactional
@@ -156,7 +186,21 @@ public class LoanService {
         loan.setRejectedAt(LocalDateTime.now());
         loan.setRejectionReason(reason);
         loan.setStatus("REJECTED");
-        return loanRepository.save(loan);
+        LoanApplication saved = loanRepository.save(loan);
+        
+        // Notify employee that their loan was rejected
+        if (loan.getEmployee() != null && loan.getEmployee().getEmail() != null) {
+            userNotificationService.createNotification(
+                loan.getEmployee().getEmail(),
+                "Loan Application Rejected",
+                "Your loan application has been rejected. Reason: " + (reason != null ? reason : "No reason provided"),
+                "LOAN_REJECTED",
+                "LOAN_APPLICATION",
+                saved.getId()
+            );
+        }
+        
+        return saved;
     }
 
     @Transactional

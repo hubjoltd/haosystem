@@ -18,7 +18,43 @@
   .employee-info {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    .employee-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .selector-label {
+        font-size: 0.85rem;
+        color: #666;
+        font-weight: 500;
+      }
+
+      .employee-dropdown {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        background: white;
+        color: #333;
+        min-width: 280px;
+        cursor: pointer;
+
+        &:focus {
+          outline: none;
+          border-color: #008080;
+          box-shadow: 0 0 0 2px rgba(0, 128, 128, 0.1);
+        }
+      }
+    }
+
+    .employee-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
     .employee-id-badge {
       font-family: 'Courier New', monospace;

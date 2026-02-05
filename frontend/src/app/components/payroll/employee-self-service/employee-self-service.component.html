@@ -1,11 +1,29 @@
 <div class="ess-container">
   <div class="page-header">
     <h2>Employee Self-Service Portal</h2>
-    <div class="employee-info" *ngIf="currentEmployee">
-      <span class="employee-id-badge">
-        <i class="fas fa-id-badge"></i> {{ currentEmployee.employeeCode }}
-      </span>
-      <span class="employee-name">{{ currentEmployee.firstName }} {{ currentEmployee.lastName }}</span>
+    <div class="employee-info">
+      <div class="employee-selector" *ngIf="isAdminUser && allEmployees.length > 0">
+        <label class="selector-label">View as:</label>
+        <select class="employee-dropdown" 
+                [ngModel]="selectedEmployeeId" 
+                (ngModelChange)="onEmployeeChange($event)">
+          <option *ngFor="let emp of allEmployees" [ngValue]="emp.id">
+            {{ emp.employeeCode }} - {{ emp.firstName }} {{ emp.lastName }}
+          </option>
+        </select>
+      </div>
+      <div class="employee-badge" *ngIf="currentEmployee && !isAdminUser">
+        <span class="employee-id-badge">
+          <i class="fas fa-id-badge"></i> {{ currentEmployee.employeeCode }}
+        </span>
+        <span class="employee-name">{{ currentEmployee.firstName }} {{ currentEmployee.lastName }}</span>
+      </div>
+      <div class="employee-badge" *ngIf="currentEmployee && isAdminUser">
+        <span class="employee-id-badge">
+          <i class="fas fa-id-badge"></i> {{ currentEmployee.employeeCode }}
+        </span>
+        <span class="employee-name">{{ currentEmployee.firstName }} {{ currentEmployee.lastName }}</span>
+      </div>
     </div>
   </div>
 

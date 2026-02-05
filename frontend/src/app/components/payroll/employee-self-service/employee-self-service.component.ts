@@ -81,6 +81,11 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
   showPaystubModal = false;
   payslipData: PayslipData | null = null;
   
+  // Admin employee selection
+  isAdminUser = false;
+  allEmployees: Employee[] = [];
+  selectedEmployeeId: number = 0;
+  
   showLeaveRequestModal = false;
   newLeaveRequest = {
     leaveTypeId: 0,
@@ -180,9 +185,16 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
     private toastService: ToastService
   ) {
     this.currentEmployeeId = this.authService.getCurrentUserId() || 0;
+    this.selectedEmployeeId = this.currentEmployeeId;
+    this.isAdminUser = this.authService.isAdmin();
   }
 
   ngOnInit(): void {
+    // Load all employees if admin
+    if (this.isAdminUser) {
+      this.loadAllEmployees();
+    }
+    
     this.loadCurrentEmployee();
     this.loadPaystubs();
     this.loadLeaveBalances();
@@ -205,6 +217,39 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
       this.updateElapsedTime();
       this.cdr.markForCheck();
     }, 1000);
+  }
+
+  loadAllEmployees(): void {
+    this.employeeService.getAll().subscribe({
+      next: (employees) => {
+        this.allEmployees = employees.sort((a, b) => {
+          const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+          const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('Error loading employees:', err)
+    });
+  }
+
+  onEmployeeChange(employeeId: number): void {
+    this.currentEmployeeId = employeeId;
+    this.selectedEmployeeId = employeeId;
+    
+    // Reload all employee-specific data
+    this.loadCurrentEmployee();
+    this.loadPaystubs();
+    this.loadLeaveBalances();
+    this.loadLeaveRequests();
+    this.loadLoans();
+    this.loadExpenses();
+    this.loadAttendance();
+    this.loadDocuments();
+    this.loadAssets();
+    this.loadTodayClockRecord();
+    
+    this.cdr.markForCheck();
   }
 
   ngOnDestroy(): void {
@@ -666,22 +711,33 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
       expenseDate: this.newExpenseRequest.expenseDate,
       receiptNumber: this.newExpenseRequest.receiptNumber,
       receiptUrl: receiptUrl,
-      status: 'PENDING_APPROVAL'
+      status: 'DRAFT'
     };
 
     this.expenseService.createRequest(request).subscribe({
-      next: () => {
-        this.submittingExpense = false;
-        this.closeExpenseRequestModal();
-        this.loadExpenses();
-        this.cdr.markForCheck();
-        this.toastService.success('Expense request submitted successfully!');
+      next: (created: any) => {
+        this.expenseService.submitRequest(created.id).subscribe({
+          next: () => {
+            this.submittingExpense = false;
+            this.closeExpenseRequestModal();
+            this.loadExpenses();
+            this.cdr.markForCheck();
+            this.toastService.success('Expense request submitted successfully!');
+          },
+          error: (err: any) => {
+            this.submittingExpense = false;
+            this.cdr.markForCheck();
+            console.error('Error submitting expense request:', err);
+            const message = err.error?.message || err.message || 'Error submitting expense request';
+            this.toastService.error(message);
+          }
+        });
       },
       error: (err: any) => {
         this.submittingExpense = false;
         this.cdr.markForCheck();
-        console.error('Error submitting expense request:', err);
-        const message = err.error?.message || err.message || 'Error submitting expense request';
+        console.error('Error creating expense request:', err);
+        const message = err.error?.message || err.message || 'Error creating expense request';
         this.toastService.error(message);
       }
     });
@@ -716,23 +772,33 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
       loanType: this.newLoanRequest.loanType,
       requestedAmount: this.newLoanRequest.amount,
       requestedTenureMonths: this.newLoanRequest.numberOfEmi,
-      purpose: this.newLoanRequest.reason,
-      status: 'PENDING'
+      purpose: this.newLoanRequest.reason
     };
 
     this.loanService.createApplication(request).subscribe({
-      next: () => {
-        this.submittingLoan = false;
-        this.cdr.markForCheck();
-        this.closeLoanRequestModal();
-        this.loadLoans();
-        this.toastService.success('Loan application submitted successfully!');
+      next: (created: any) => {
+        this.loanService.submitLoan(created.id).subscribe({
+          next: () => {
+            this.submittingLoan = false;
+            this.cdr.markForCheck();
+            this.closeLoanRequestModal();
+            this.loadLoans();
+            this.toastService.success('Loan application submitted successfully!');
+          },
+          error: (err: any) => {
+            this.submittingLoan = false;
+            this.cdr.markForCheck();
+            console.error('Error submitting loan application:', err);
+            const message = err.error?.message || err.message || 'Error submitting loan application';
+            this.toastService.error(message);
+          }
+        });
       },
       error: (err: any) => {
         this.submittingLoan = false;
         this.cdr.markForCheck();
-        console.error('Error submitting loan application:', err);
-        const message = err.error?.message || err.message || 'Error submitting loan application';
+        console.error('Error creating loan application:', err);
+        const message = err.error?.message || err.message || 'Error creating loan application';
         this.toastService.error(message);
       }
     });
