@@ -23,7 +23,7 @@
       <i class="fas fa-money-check-alt"></i> Loans
     </button>
     <button class="tab" [class.active]="activeTab === 'expenses'" (click)="activeTab = 'expenses'">
-      <i class="fas fa-receipt"></i> Expenses
+      <i class="fas fa-receipt"></i> Reimbursements
     </button>
     <button class="tab" [class.active]="activeTab === 'documents'" (click)="activeTab = 'documents'">
       <i class="fas fa-folder-open"></i> Documents
@@ -326,14 +326,14 @@
 
   <div class="tab-content" *ngIf="activeTab === 'expenses'">
     <div class="section-header">
-      <h3>My Expense Requests</h3>
+      <h3>My Reimbursement Requests</h3>
       <button class="btn btn-primary" (click)="openExpenseRequestModal()">
-        <i class="fas fa-plus"></i> Submit Expense
+        <i class="fas fa-plus"></i> Submit Request
       </button>
     </div>
 
     <div class="expense-categories-section" *ngIf="expenseCategories.length > 0">
-      <h4 class="subsection-title"><i class="fas fa-tags"></i> Expense Categories</h4>
+      <h4 class="subsection-title"><i class="fas fa-tags"></i> Reimbursement Categories</h4>
       <div class="expense-categories-grid">
         <div class="expense-category-card" *ngFor="let category of expenseCategories" [class.inactive]="!category.active">
           <div class="category-icon" [style.background]="getCategoryColor(category.code)">
@@ -351,7 +351,7 @@
       </div>
     </div>
 
-    <h4 class="subsection-title" style="margin-top: 24px;"><i class="fas fa-file-invoice-dollar"></i> My Expense Requests</h4>
+    <h4 class="subsection-title" style="margin-top: 24px;"><i class="fas fa-file-invoice-dollar"></i> Reimbursement History</h4>
     <div class="table-container">
       <table class="data-table">
         <thead>
@@ -418,7 +418,7 @@
             </td>
           </tr>
           <tr *ngIf="expenses.length === 0">
-            <td colspan="13" class="no-data-row">No expense requests found</td>
+            <td colspan="13" class="no-data-row">No reimbursement requests found</td>
           </tr>
         </tbody>
       </table>
@@ -807,12 +807,12 @@
 <div class="modal-overlay" *ngIf="showExpenseRequestModal">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h3>Submit Expense Request</h3>
+      <h3>Submit Reimbursement Request</h3>
       <button class="close-btn" (click)="closeExpenseRequestModal()">&times;</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label>Expense Category *</label>
+        <label>Reimbursement Category *</label>
         <select [(ngModel)]="newExpenseRequest.categoryId">
           <option *ngFor="let cat of expenseCategories" [value]="cat.id">{{ cat.name }}</option>
         </select>
@@ -879,7 +879,7 @@
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeExpenseRequestModal()" [disabled]="submittingExpense">Cancel</button>
       <button class="btn btn-primary" (click)="submitExpenseRequest()" [disabled]="submittingExpense">
-        <span *ngIf="!submittingExpense">Submit Expense</span>
+        <span *ngIf="!submittingExpense">Submit Request</span>
         <span *ngIf="submittingExpense">Submitting...</span>
       </button>
     </div>
