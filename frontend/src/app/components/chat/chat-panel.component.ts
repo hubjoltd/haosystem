@@ -88,9 +88,7 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   }
 
   private initNotifications(): void {
-    this.notificationSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU' + 
-      'FGT19' + 'AAAA'.repeat(50));
-    this.notificationSound.volume = 0.5;
+    this.createNotificationSound();
     
     if ('Notification' in window) {
       this.notificationPermission = Notification.permission;
@@ -100,6 +98,95 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
         });
       }
     }
+  }
+
+  private createNotificationSound(): void {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+      gainNode.gain.value = 0.3;
+      
+      const duration = 0.15;
+      const sampleRate = audioContext.sampleRate;
+      const buffer = audioContext.createBuffer(1, sampleRate * duration * 2, sampleRate);
+      const data = buffer.getChannelData(0);
+      
+      for (let i = 0; i < data.length; i++) {
+        const t = i / sampleRate;
+        if (t < duration) {
+          data[i] = Math.sin(2 * Math.PI * 880 * t) * Math.exp(-3 * t) * 0.5;
+        } else {
+          const t2 = t - duration;
+          data[i] = Math.sin(2 * Math.PI * 660 * t2) * Math.exp(-3 * t2) * 0.5;
+        }
+      }
+      
+      this.notificationSound = new Audio();
+      const offlineContext = new OfflineAudioContext(1, buffer.length, sampleRate);
+      const source = offlineContext.createBufferSource();
+      source.buffer = buffer;
+      source.connect(offlineContext.destination);
+      source.start();
+      
+      offlineContext.startRendering().then(renderedBuffer => {
+        const wav = this.audioBufferToWav(renderedBuffer);
+        const blob = new Blob([wav], { type: 'audio/wav' });
+        this.notificationSound = new Audio(URL.createObjectURL(blob));
+        this.notificationSound.volume = 0.5;
+      }).catch(() => {});
+    } catch (e) {
+      this.notificationSound = null;
+    }
+  }
+
+  private audioBufferToWav(buffer: AudioBuffer): ArrayBuffer {
+    const numChannels = buffer.numberOfChannels;
+    const sampleRate = buffer.sampleRate;
+    const format = 1;
+    const bitDepth = 16;
+    const bytesPerSample = bitDepth / 8;
+    const blockAlign = numChannels * bytesPerSample;
+    const data = buffer.getChannelData(0);
+    const dataLength = data.length * bytesPerSample;
+    const headerLength = 44;
+    const arrayBuffer = new ArrayBuffer(headerLength + dataLength);
+    const view = new DataView(arrayBuffer);
+    
+    const writeString = (offset: number, str: string) => {
+      for (let i = 0; i < str.length; i++) {
+        view.setUint8(offset + i, str.charCodeAt(i));
+      }
+    };
+    
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + dataLength, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, format, true);
+    view.setUint16(22, numChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * blockAlign, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bitDepth, true);
+    writeString(36, 'data');
+    view.setUint32(40, dataLength, true);
+    
+    let offset = 44;
+    for (let i = 0; i < data.length; i++) {
+      const sample = Math.max(-1, Math.min(1, data[i]));
+      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+      offset += 2;
+    }
+    
+    return arrayBuffer;
   }
 
   private playNotificationSound(): void {
@@ -218,13 +305,7 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.users = [
-          { id: 2, name: 'John Smith', employeeCode: 'EMP001', avatar: 'JS', online: true, lastMessage: 'Thanks for the update!', unreadCount: 2 },
-          { id: 3, name: 'Sarah Johnson', employeeCode: 'EMP002', avatar: 'SJ', online: true, lastMessage: 'Meeting at 3pm?', unreadCount: 0 },
-          { id: 4, name: 'Mike Wilson', employeeCode: 'EMP003', avatar: 'MW', online: false, lastMessage: 'Report submitted', unreadCount: 1 },
-          { id: 5, name: 'Emily Davis', employeeCode: 'EMP004', avatar: 'ED', online: true, lastMessage: 'Sounds good!', unreadCount: 0 },
-          { id: 6, name: 'HR Department', avatar: 'HR', online: true, lastMessage: 'Policy update attached', unreadCount: 3 }
-        ];
+        this.users = [];
         this.cdr.markForCheck();
       }
     });
