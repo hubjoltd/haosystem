@@ -104,94 +104,45 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
 
   private createNotificationSound(): void {
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
+      const base64Sound = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYZANQEzAAAAAAD/+1DEAAAFkANf9AAAIhIgaI8wYABEREREREREMQxDEMQxDEMQxDEMQxDEMQxDEMQxDEMQxDEMQ0RE/8QxDEMQ0REREf/EREREf//xEREREf///xEREf////8RERH/////8RERERERERERERERERERERERERERERERERERET//xEREf///////xERERERERH///////ERERERERERERERERERET//8RH///+IiP///8RH////iIj///8RH///+IiP///////xE//tQxAwAAADSAAAAAAAAANIAAAAARERERERERERET/xERERERERERH/8RERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERf/8REX//ERF//xERf/8RH//EREREREREREREREf/8REf/8REf/8REf/8REf/8REf/8REf//EREREf/8RERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERER';
       
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.value = 800;
-      oscillator.type = 'sine';
-      gainNode.gain.value = 0.3;
-      
-      const duration = 0.15;
-      const sampleRate = audioContext.sampleRate;
-      const buffer = audioContext.createBuffer(1, sampleRate * duration * 2, sampleRate);
-      const data = buffer.getChannelData(0);
-      
-      for (let i = 0; i < data.length; i++) {
-        const t = i / sampleRate;
-        if (t < duration) {
-          data[i] = Math.sin(2 * Math.PI * 880 * t) * Math.exp(-3 * t) * 0.5;
-        } else {
-          const t2 = t - duration;
-          data[i] = Math.sin(2 * Math.PI * 660 * t2) * Math.exp(-3 * t2) * 0.5;
-        }
-      }
-      
-      this.notificationSound = new Audio();
-      const offlineContext = new OfflineAudioContext(1, buffer.length, sampleRate);
-      const source = offlineContext.createBufferSource();
-      source.buffer = buffer;
-      source.connect(offlineContext.destination);
-      source.start();
-      
-      offlineContext.startRendering().then(renderedBuffer => {
-        const wav = this.audioBufferToWav(renderedBuffer);
-        const blob = new Blob([wav], { type: 'audio/wav' });
-        this.notificationSound = new Audio(URL.createObjectURL(blob));
-        this.notificationSound.volume = 0.5;
-      }).catch(() => {});
+      this.notificationSound = new Audio(base64Sound);
+      this.notificationSound.volume = 0.6;
     } catch (e) {
       this.notificationSound = null;
     }
   }
 
-  private audioBufferToWav(buffer: AudioBuffer): ArrayBuffer {
-    const numChannels = buffer.numberOfChannels;
-    const sampleRate = buffer.sampleRate;
-    const format = 1;
-    const bitDepth = 16;
-    const bytesPerSample = bitDepth / 8;
-    const blockAlign = numChannels * bytesPerSample;
-    const data = buffer.getChannelData(0);
-    const dataLength = data.length * bytesPerSample;
-    const headerLength = 44;
-    const arrayBuffer = new ArrayBuffer(headerLength + dataLength);
-    const view = new DataView(arrayBuffer);
-    
-    const writeString = (offset: number, str: string) => {
-      for (let i = 0; i < str.length; i++) {
-        view.setUint8(offset + i, str.charCodeAt(i));
+  private audioContext: AudioContext | null = null;
+
+  private playBeepSound(): void {
+    try {
+      if (!this.audioContext) {
+        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       }
-    };
-    
-    writeString(0, 'RIFF');
-    view.setUint32(4, 36 + dataLength, true);
-    writeString(8, 'WAVE');
-    writeString(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, format, true);
-    view.setUint16(22, numChannels, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * blockAlign, true);
-    view.setUint16(32, blockAlign, true);
-    view.setUint16(34, bitDepth, true);
-    writeString(36, 'data');
-    view.setUint32(40, dataLength, true);
-    
-    let offset = 44;
-    for (let i = 0; i < data.length; i++) {
-      const sample = Math.max(-1, Math.min(1, data[i]));
-      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
-      offset += 2;
+      
+      const oscillator = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(880, this.audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(660, this.audioContext.currentTime + 0.1);
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.3);
+      
+      oscillator.start(this.audioContext.currentTime);
+      oscillator.stop(this.audioContext.currentTime + 0.3);
+    } catch (e) {
+      console.log('Beep sound failed:', e);
     }
-    
-    return arrayBuffer;
   }
 
   private playNotificationSound(): void {
+    this.playBeepSound();
     if (this.notificationSound) {
       this.notificationSound.currentTime = 0;
       this.notificationSound.play().catch(() => {});
