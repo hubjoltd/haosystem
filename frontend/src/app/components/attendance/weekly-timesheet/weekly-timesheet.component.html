@@ -138,51 +138,47 @@
 
 <div class="modal-overlay" *ngIf="showEmployeeModal" (click)="closeEmployeeModal()">
   <div class="modal-content employee-timesheet-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header gradient-header">
-      <div class="modal-header-content">
-        <span class="modal-company-name">{{ companyName }}</span>
-        <h2>EMPLOYEE TIMESHEET</h2>
-        <p class="period-text">Period: {{ getWeekRangeDisplay() }}</p>
-      </div>
-      <button class="btn-close" (click)="closeEmployeeModal()">
-        <i class="fas fa-times"></i>
-      </button>
+    <div class="modal-header-emp">
+      <button class="modal-close-btn" (click)="closeEmployeeModal()"><i class="fas fa-times"></i></button>
+      <p class="header-company">{{ companyName }}</p>
+      <h2 class="header-title">EMPLOYEE TIMESHEET</h2>
+      <p class="header-period">Period: {{ getWeekRangeDisplay() }}</p>
     </div>
 
-    <div class="modal-body">
-      <div class="modal-export-buttons">
-        <button class="btn-excel" (click)="downloadCurrentEmployeeExcel()">
+    <div class="modal-body-emp">
+      <div class="export-row">
+        <button class="btn-export-excel" (click)="downloadCurrentEmployeeExcel()">
           <i class="fas fa-file-excel"></i> Download Excel
         </button>
-        <button class="btn-pdf-export" (click)="downloadCurrentEmployeePDF()">
+        <button class="btn-export-pdf" (click)="downloadCurrentEmployeePDF()">
           <i class="fas fa-file-pdf"></i> Download PDF
         </button>
       </div>
 
-      <div class="employee-info-section">
-        <h3>Employee Information</h3>
-        <div class="info-grid">
-          <div class="info-row">
-            <span class="label">Employee ID</span>
-            <span class="value">{{ selectedEmployeeSummary?.employeeCode || '-' }}</span>
+      <div class="emp-info-card">
+        <h3 class="info-heading">Employee Information</h3>
+        <div class="info-fields">
+          <div class="info-field">
+            <span class="field-label">Employee ID:</span>
+            <span class="field-value">{{ selectedEmployeeSummary?.employeeCode || '-' }}</span>
           </div>
-          <div class="info-row">
-            <span class="label">Department</span>
-            <span class="value">{{ selectedEmployeeSummary?.department || '-' }}</span>
+          <div class="info-field">
+            <span class="field-label">Department:</span>
+            <span class="field-value">{{ selectedEmployeeSummary?.department || '-' }}</span>
           </div>
-          <div class="info-row">
-            <span class="label">Name</span>
-            <span class="value">{{ selectedEmployeeSummary?.name }}</span>
+          <div class="info-field">
+            <span class="field-label">Name:</span>
+            <span class="field-value">{{ selectedEmployeeSummary?.name }}</span>
           </div>
-          <div class="info-row">
-            <span class="label">Status</span>
-            <span class="value"><span class="badge badge-approved">Approved</span></span>
+          <div class="info-field">
+            <span class="field-label">Status:</span>
+            <span class="field-value"><span class="status-badge approved">Approved</span></span>
           </div>
         </div>
       </div>
 
-      <div class="daily-table-container">
-        <table class="daily-timesheet-table">
+      <div class="timesheet-table-wrap">
+        <table class="ts-table">
           <thead>
             <tr>
               <th>#</th>
@@ -200,18 +196,18 @@
           <tbody>
             <tr *ngFor="let record of employeeWeekRecords; let i = index" [class.weekend-row]="isWeekend(record.date)">
               <td>{{ i + 1 }}</td>
-              <td>{{ formatDateFull(record.date) }}</td>
-              <td>{{ getDayFullName(record.date) }}</td>
+              <td>{{ formatDateShort(record.date) }}</td>
+              <td>{{ getDayName(record.date) }}</td>
               <td>{{ record.clockIn || '-' }}</td>
               <td>{{ record.clockOut || '-' }}</td>
-              <td>{{ record.lunchBreak ? record.lunchBreak + ' min' : '-' }}</td>
+              <td>{{ record.lunchBreak ? record.lunchBreak + ' min' : '—' }}</td>
               <td>{{ record.hours.toFixed(1) }}</td>
-              <td>{{ record.overtime.toFixed(1) }}</td>
-              <td>{{ getRecordTotal(record).toFixed(1) }}</td>
+              <td [class.ot-highlight]="record.overtime > 0">{{ record.overtime.toFixed(1) }}</td>
+              <td class="total-col">{{ getRecordTotal(record).toFixed(1) }}</td>
               <td>
-                <span *ngIf="record.status === 'Holiday'" class="badge badge-holiday">Holiday</span>
-                <span *ngIf="record.status !== 'Holiday' && record.hours > 0" class="badge badge-approved">approved</span>
-                <span *ngIf="record.status !== 'Holiday' && record.hours === 0 && !isWeekend(record.date)">-</span>
+                <span *ngIf="record.status === 'Holiday'" class="status-badge holiday">Holiday</span>
+                <span *ngIf="record.status !== 'Holiday' && record.hours > 0" class="status-badge approved">approved</span>
+                <span *ngIf="record.status !== 'Holiday' && record.hours === 0 && !isWeekend(record.date)" class="dash-text">-</span>
               </td>
             </tr>
             <tr *ngIf="employeeWeekRecords.length === 0">
@@ -221,18 +217,12 @@
         </table>
       </div>
 
-      <div class="summary-bar">
-        <div class="summary-item">
-          <span class="summary-label">Regular Hours:</span>
-          <span class="summary-value">{{ getEmployeeTotalRegular().toFixed(1) }}</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Overtime Hours:</span>
-          <span class="summary-value">{{ getEmployeeTotalOT().toFixed(1) }}</span>
-        </div>
-        <div class="summary-item">
-          <span class="summary-label">Total Hours:</span>
-          <span class="summary-value">{{ getEmployeeTotalHours().toFixed(1) }}</span>
+      <div class="ts-summary-bar">
+        <span class="summary-label-text">SUMMARY</span>
+        <div class="summary-values">
+          <span>Regular Hours: <strong>{{ getEmployeeTotalRegular().toFixed(1) }}</strong></span>
+          <span>Overtime Hours: <strong>{{ getEmployeeTotalOT().toFixed(1) }}</strong></span>
+          <span>Total Hours: <strong>{{ getEmployeeTotalHours().toFixed(1) }}</strong></span>
         </div>
       </div>
     </div>
@@ -241,31 +231,27 @@
 
 <div class="modal-overlay" *ngIf="showProjectModal" (click)="closeProjectModal()">
   <div class="modal-content project-detail-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header project-modal-header">
-      <div class="modal-header-content">
-        <span class="modal-company-name">{{ companyName }}</span>
-        <div class="project-title-row">
-          <i class="fas fa-project-diagram project-icon"></i>
-          <h2>{{ selectedProjectSummary?.name }}</h2>
-        </div>
+    <div class="modal-header-proj">
+      <button class="modal-close-btn" (click)="closeProjectModal()"><i class="fas fa-times"></i></button>
+      <p class="header-company">{{ companyName }}</p>
+      <div class="proj-name-row">
+        <i class="fas fa-clipboard-list proj-icon"></i>
+        <h2 class="proj-title">{{ selectedProjectSummary?.name }}</h2>
       </div>
-      <button class="btn-close" (click)="closeProjectModal()">
-        <i class="fas fa-times"></i>
-      </button>
     </div>
 
-    <div class="modal-body">
-      <div class="modal-export-buttons">
-        <button class="btn-excel" (click)="downloadProjectExcel()">
+    <div class="modal-body-proj">
+      <div class="export-row">
+        <button class="btn-export-excel" (click)="downloadProjectExcel()">
           <i class="fas fa-file-excel"></i> Download Excel
         </button>
-        <button class="btn-pdf-export" (click)="downloadProjectPDF()">
+        <button class="btn-export-pdf" (click)="downloadProjectPDF()">
           <i class="fas fa-file-pdf"></i> Download PDF
         </button>
       </div>
 
-      <div class="daily-table-container">
-        <table class="project-employees-table">
+      <div class="proj-table-wrap">
+        <table class="proj-table">
           <thead>
             <tr>
               <th>Employee ID</th>
@@ -274,19 +260,21 @@
               <th>Regular Hours</th>
               <th>OT Hours</th>
               <th>Total Hours</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let emp of projectEmployees">
-              <td class="emp-id">{{ emp.employeeCode || '-' }}</td>
-              <td>{{ emp.name }}</td>
+              <td class="emp-code">{{ emp.employeeCode || '-' }}</td>
+              <td class="emp-name-cell">{{ emp.name }}</td>
               <td>{{ getWeekRangeDisplay() }}</td>
-              <td>{{ emp.regularHours.toFixed(1) }} hrs</td>
-              <td class="ot-hours">{{ emp.overtimeHours.toFixed(1) }} hrs</td>
-              <td class="total-hours">{{ emp.totalHours.toFixed(1) }} hrs</td>
+              <td>{{ emp.regularHours.toFixed(1) }}h</td>
+              <td class="ot-val">{{ emp.overtimeHours.toFixed(1) }}h</td>
+              <td class="total-val">{{ emp.totalHours.toFixed(1) }}h</td>
+              <td><button class="btn-view-link" (click)="viewProjectEmployeeDetail(emp)">View Details</button></td>
             </tr>
             <tr *ngIf="projectEmployees.length === 0">
-              <td colspan="6" class="no-data">No employees found for this project</td>
+              <td colspan="7" class="no-data-cell">No employees found for this project</td>
             </tr>
           </tbody>
         </table>
