@@ -188,47 +188,48 @@ public class PayrollCalculationService {
         BigDecimal annualSalary = employee.getSalary() != null ? employee.getSalary() : BigDecimal.ZERO;
         record.setAnnualSalary(annualSalary);
         
-        BigDecimal hourlyRate;
-        if ("HOURLY".equalsIgnoreCase(employeeType) && employee.getHourlyRate() != null && employee.getHourlyRate().compareTo(BigDecimal.ZERO) > 0) {
-            hourlyRate = employee.getHourlyRate();
-        } else {
-            hourlyRate = calculateHourlyRate(annualSalary);
-        }
+        BigDecimal hourlyRate = employee.getHourlyRate() != null && employee.getHourlyRate().compareTo(BigDecimal.ZERO) > 0
+            ? employee.getHourlyRate()
+            : calculateHourlyRate(annualSalary);
         record.setHourlyRate(hourlyRate);
         
-        BigDecimal regularHours;
-        BigDecimal overtimeHours;
-        BigDecimal doubleTimeHours = BigDecimal.ZERO;
+        BigDecimal regularHours = BigDecimal.ZERO;
+        BigDecimal overtimeHours = BigDecimal.ZERO;
+        BigDecimal totalHours = BigDecimal.ZERO;
         
-        FLSAOvertimeService.WeeklyOvertimeResult flsaResult = flsaOvertimeService.aggregatePeriodOvertime(
-            employee.getId(), run.getPeriodStartDate(), run.getPeriodEndDate());
-        
-        regularHours = flsaResult.getRegularHours();
-        overtimeHours = flsaResult.getOvertimeHours();
-        doubleTimeHours = flsaResult.getDoubleTimeHours();
-        
-        if (regularHours.compareTo(BigDecimal.ZERO) == 0 && timesheet != null) {
+        if (timesheet != null) {
             regularHours = timesheet.getTotalRegularHours() != null ? timesheet.getTotalRegularHours() : BigDecimal.ZERO;
             overtimeHours = timesheet.getTotalOvertimeHours() != null ? timesheet.getTotalOvertimeHours() : BigDecimal.ZERO;
+            totalHours = timesheet.getTotalHours() != null ? timesheet.getTotalHours() : regularHours.add(overtimeHours);
+            logger.info("Employee {} - Using timesheet hours: total={}, regular={}, overtime={}", 
+                employee.getId(), totalHours, regularHours, overtimeHours);
+        } else {
+            FLSAOvertimeService.WeeklyOvertimeResult flsaResult = flsaOvertimeService.aggregatePeriodOvertime(
+                employee.getId(), run.getPeriodStartDate(), run.getPeriodEndDate());
+            regularHours = flsaResult.getRegularHours();
+            overtimeHours = flsaResult.getOvertimeHours();
+            totalHours = regularHours.add(overtimeHours).add(flsaResult.getDoubleTimeHours());
+            logger.info("Employee {} - Using attendance hours: total={}, regular={}, overtime={}", 
+                employee.getId(), totalHours, regularHours, overtimeHours);
         }
         
         record.setRegularHours(regularHours);
         record.setOvertimeHours(overtimeHours);
         
-        int periodsPerYear = getPeriodsPerYear(run.getPayFrequency());
-        
         BigDecimal basePay = regularHours.multiply(hourlyRate).setScale(2, RoundingMode.HALF_UP);
         record.setBasePay(basePay);
         
         BigDecimal overtimePay = overtimeHours.multiply(hourlyRate).multiply(FLSA_OVERTIME_MULTIPLIER).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal doubleTimePay = doubleTimeHours.multiply(hourlyRate).multiply(new BigDecimal("2.0")).setScale(2, RoundingMode.HALF_UP);
-        record.setOvertimePay(overtimePay.add(doubleTimePay));
+        record.setOvertimePay(overtimePay);
         
         record.setBonuses(BigDecimal.ZERO);
         record.setReimbursements(BigDecimal.ZERO);
         
-        BigDecimal grossPay = basePay.add(overtimePay).add(doubleTimePay).add(record.getBonuses()).add(record.getReimbursements());
+        BigDecimal grossPay = basePay.add(overtimePay).add(record.getBonuses()).add(record.getReimbursements());
         record.setGrossPay(grossPay);
+        
+        logger.info("Employee {} - Hourly rate: {}, Total hours: {}, Gross pay: {}", 
+            employee.getId(), hourlyRate, totalHours, grossPay);
         
         calculatePreTaxDeductions(record, employee);
         
