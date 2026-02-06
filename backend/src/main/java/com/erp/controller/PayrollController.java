@@ -217,9 +217,10 @@ public class PayrollController {
         run.setPeriodStartDate(LocalDate.parse(data.get("periodStartDate").toString()));
         run.setPeriodEndDate(LocalDate.parse(data.get("periodEndDate").toString()));
         
-        // PayDate is optional during creation - it will be set when processing
-        if (data.get("payDate") != null) {
+        if (data.get("payDate") != null && !data.get("payDate").toString().isEmpty()) {
             run.setPayDate(LocalDate.parse(data.get("payDate").toString()));
+        } else {
+            run.setPayDate(run.getPeriodEndDate());
         }
         
         run.setStatus("PENDING");

@@ -119,6 +119,10 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (!this.payDate) {
+      this.payDate = this.filterEndDate;
+    }
+
     this.calculating = true;
 
     const runData = {
