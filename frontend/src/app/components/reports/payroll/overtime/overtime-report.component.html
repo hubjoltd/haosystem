@@ -1,0 +1,167 @@
+<div class="report-container">
+  <div class="report-header">
+    <h2><i class="fas fa-clock"></i> Overtime Report</h2>
+    <p class="subtitle">View overtime hours and overtime pay by employee or department</p>
+  </div>
+
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Loading overtime data...</p>
+      <span class="loading-subtext">Please wait while we fetch your overtime information</span>
+    </div>
+  </div>
+
+  <ng-container>
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Payroll Run</label>
+        <select [(ngModel)]="selectedRunId" (change)="onRunChange()">
+          <option *ngFor="let run of payrollRuns" [ngValue]="run.id">
+            {{ run.payrollRunNumber }} ({{ formatDate(run.periodStartDate) }} - {{ formatDate(run.periodEndDate) }})
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Group By</label>
+        <select [(ngModel)]="groupBy" (change)="onGroupByChange()">
+          <option value="employee">Employee</option>
+          <option value="department">Department</option>
+        </select>
+      </div>
+
+      <div class="export-buttons">
+        <button class="btn-export pdf" (click)="exportToPDF()" [disabled]="!hasData()">
+          <i class="fas fa-file-pdf"></i> PDF
+        </button>
+        <button class="btn-export excel" (click)="exportToExcel()" [disabled]="!hasData()">
+          <i class="fas fa-file-excel"></i> Excel
+        </button>
+        <button class="btn-export csv" (click)="exportToCSV()" [disabled]="!hasData()">
+          <i class="fas fa-file-csv"></i> CSV
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-cards">
+    <div class="summary-card">
+      <div class="card-icon"><i class="fas fa-clock"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatNumber(summaryCards.totalOTHours) }}</span>
+        <span class="card-label">Total OT Hours</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon gross"><i class="fas fa-dollar-sign"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatCurrency(summaryCards.totalOTPay) }}</span>
+        <span class="card-label">Total OT Pay</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon deductions"><i class="fas fa-user-clock"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatNumber(summaryCards.avgOTHoursPerEmployee) }}</span>
+        <span class="card-label">Avg OT Hours / Employee</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon net"><i class="fas fa-percentage"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatNumber(summaryCards.otPercentOfTotalPay) }}%</span>
+        <span class="card-label">OT as % of Total Pay</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="loading && payrollRuns.length > 0">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Loading overtime records...</p>
+  </div>
+
+  <div class="table-container">
+    <table class="report-table" *ngIf="groupBy === 'employee' && employeeData.length > 0">
+      <thead>
+        <tr>
+          <th>Employee Name</th>
+          <th>Code</th>
+          <th>Department</th>
+          <th class="text-right">Regular Hours</th>
+          <th class="text-right">OT Hours</th>
+          <th class="text-right">OT Rate</th>
+          <th class="text-right">OT Pay</th>
+          <th class="text-right">Base Pay</th>
+          <th class="text-right">Total Pay</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of employeeData">
+          <td>{{ row.employeeName }}</td>
+          <td>{{ row.employeeCode }}</td>
+          <td>{{ row.department }}</td>
+          <td class="text-right">{{ formatNumber(row.regularHours) }}</td>
+          <td class="text-right">{{ formatNumber(row.overtimeHours) }}</td>
+          <td class="text-right">{{ formatCurrency(row.overtimeRate) }}</td>
+          <td class="text-right">{{ formatCurrency(row.overtimePay) }}</td>
+          <td class="text-right">{{ formatCurrency(row.basePay) }}</td>
+          <td class="text-right">{{ formatCurrency(row.totalPay) }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="totals-row">
+          <td><strong>Grand Total</strong></td>
+          <td></td>
+          <td></td>
+          <td class="text-right"><strong>{{ formatNumber(grandTotalsEmployee.regularHours) }}</strong></td>
+          <td class="text-right"><strong>{{ formatNumber(grandTotalsEmployee.overtimeHours) }}</strong></td>
+          <td class="text-right"></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotalsEmployee.overtimePay) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotalsEmployee.basePay) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotalsEmployee.totalPay) }}</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <table class="report-table" *ngIf="groupBy === 'department' && departmentData.length > 0">
+      <thead>
+        <tr>
+          <th>Department</th>
+          <th class="text-center">Employee Count</th>
+          <th class="text-right">Total Regular Hours</th>
+          <th class="text-right">Total OT Hours</th>
+          <th class="text-right">Total OT Pay</th>
+          <th class="text-right">OT % of Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of departmentData">
+          <td>{{ row.department }}</td>
+          <td class="text-center">{{ row.employeeCount }}</td>
+          <td class="text-right">{{ formatNumber(row.totalRegularHours) }}</td>
+          <td class="text-right">{{ formatNumber(row.totalOvertimeHours) }}</td>
+          <td class="text-right">{{ formatCurrency(row.totalOvertimePay) }}</td>
+          <td class="text-right">{{ formatNumber(row.overtimePercentage) }}%</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="totals-row">
+          <td><strong>Grand Total</strong></td>
+          <td class="text-center"><strong>{{ grandTotalsDepartment.employeeCount }}</strong></td>
+          <td class="text-right"><strong>{{ formatNumber(grandTotalsDepartment.totalRegularHours) }}</strong></td>
+          <td class="text-right"><strong>{{ formatNumber(grandTotalsDepartment.totalOvertimeHours) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotalsDepartment.totalOvertimePay) }}</strong></td>
+          <td class="text-right"><strong>{{ formatNumber(grandTotalsDepartment.overtimePercentage) }}%</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="empty-state" *ngIf="!hasData()">
+      <i class="fas fa-clock"></i>
+      <p>No overtime data available for the selected period</p>
+    </div>
+  </div>
+  </ng-container>
+</div>

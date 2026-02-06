@@ -1,0 +1,129 @@
+<div class="report-container">
+  <div class="report-header">
+    <h2><i class="fas fa-landmark"></i> Tax Liability Report</h2>
+    <p class="subtitle">View tax breakdown by employee for a selected payroll run</p>
+  </div>
+
+  <div class="loading-container" *ngIf="loading">
+    <div class="loading-spinner">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Loading tax liability data...</p>
+      <span class="loading-subtext">Please wait while we fetch your payroll information</span>
+    </div>
+  </div>
+
+  <ng-container>
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label>Payroll Run</label>
+        <select [(ngModel)]="selectedRunId" (change)="onRunChange()">
+          <option *ngFor="let run of payrollRuns" [ngValue]="run.id">
+            {{ run.payrollRunNumber }} ({{ formatDate(run.periodStartDate) }} - {{ formatDate(run.periodEndDate) }})
+          </option>
+        </select>
+      </div>
+
+      <div class="export-buttons">
+        <button class="btn-export pdf" (click)="exportToPDF()" [disabled]="taxData.length === 0">
+          <i class="fas fa-file-pdf"></i> PDF
+        </button>
+        <button class="btn-export excel" (click)="exportToExcel()" [disabled]="taxData.length === 0">
+          <i class="fas fa-file-excel"></i> Excel
+        </button>
+        <button class="btn-export csv" (click)="exportToCSV()" [disabled]="taxData.length === 0">
+          <i class="fas fa-file-csv"></i> CSV
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-cards">
+    <div class="summary-card">
+      <div class="card-icon"><i class="fas fa-university"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatCurrency(grandTotals.federalTax) }}</span>
+        <span class="card-label">Total Federal Tax</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon gross"><i class="fas fa-flag-usa"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatCurrency(grandTotals.stateTax) }}</span>
+        <span class="card-label">Total State Tax</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon deductions"><i class="fas fa-shield-alt"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatCurrency(totalFICA) }}</span>
+        <span class="card-label">Total FICA (SS + Medicare)</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon net"><i class="fas fa-receipt"></i></div>
+      <div class="card-content">
+        <span class="card-value">{{ formatCurrency(grandTotals.totalTaxes) }}</span>
+        <span class="card-label">Total All Taxes</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="loading && payrollRuns.length > 0">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Loading tax liability records...</p>
+  </div>
+
+  <div class="table-container">
+    <table class="report-table" *ngIf="taxData.length > 0">
+      <thead>
+        <tr>
+          <th>Employee Name</th>
+          <th>Code</th>
+          <th>Department</th>
+          <th class="text-right">Federal Tax</th>
+          <th class="text-right">State Tax</th>
+          <th class="text-right">Local Tax</th>
+          <th class="text-right">Social Security</th>
+          <th class="text-right">Medicare</th>
+          <th class="text-right">Disability Tax</th>
+          <th class="text-right">Total Taxes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of taxData">
+          <td>{{ row.employeeName }}</td>
+          <td>{{ row.employeeCode }}</td>
+          <td>{{ row.department }}</td>
+          <td class="text-right">{{ formatCurrency(row.federalTax) }}</td>
+          <td class="text-right">{{ formatCurrency(row.stateTax) }}</td>
+          <td class="text-right">{{ formatCurrency(row.localTax) }}</td>
+          <td class="text-right">{{ formatCurrency(row.socialSecurityTax) }}</td>
+          <td class="text-right">{{ formatCurrency(row.medicareTax) }}</td>
+          <td class="text-right">{{ formatCurrency(row.disabilityTax) }}</td>
+          <td class="text-right">{{ formatCurrency(row.totalTaxes) }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="totals-row">
+          <td><strong>Grand Total</strong></td>
+          <td></td>
+          <td></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.federalTax) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.stateTax) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.localTax) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.socialSecurityTax) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.medicareTax) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.disabilityTax) }}</strong></td>
+          <td class="text-right"><strong>{{ formatCurrency(grandTotals.totalTaxes) }}</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="empty-state" *ngIf="taxData.length === 0">
+      <i class="fas fa-landmark"></i>
+      <p>No tax liability data available for the selected period</p>
+    </div>
+  </div>
+  </ng-container>
+</div>

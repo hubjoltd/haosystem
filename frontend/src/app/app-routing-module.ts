@@ -109,6 +109,10 @@ import { PayrollHistoryComponent } from './components/payroll/payroll-history/pa
 import { PayrollSummaryReportComponent } from './components/reports/payroll/payroll-summary/payroll-summary-report.component';
 import { LaborCostAllocationReportComponent } from './components/reports/payroll/labor-cost-allocation/labor-cost-allocation-report.component';
 import { PayrollRegisterReportComponent } from './components/reports/payroll/payroll-register/payroll-register-report.component';
+import { TaxLiabilityReportComponent } from './components/reports/payroll/tax-liability/tax-liability-report.component';
+import { DeductionsReportComponent } from './components/reports/payroll/deductions/deductions-report.component';
+import { YtdEarningsReportComponent } from './components/reports/payroll/ytd-earnings/ytd-earnings-report.component';
+import { OvertimeReportComponent } from './components/reports/payroll/overtime/overtime-report.component';
 
 import { IntegrationsComponent } from './components/settings/integrations/integrations';
 import { ExpenseListComponent } from './components/expenses/expense-list/expense-list';
@@ -249,6 +253,10 @@ const routes: Routes = [
       { path: 'reports/payroll/summary', component: PayrollSummaryReportComponent },
       { path: 'reports/payroll/labor-cost', component: LaborCostAllocationReportComponent },
       { path: 'reports/payroll/register', component: PayrollRegisterReportComponent },
+      { path: 'reports/payroll/tax-liability', component: TaxLiabilityReportComponent },
+      { path: 'reports/payroll/deductions', component: DeductionsReportComponent },
+      { path: 'reports/payroll/ytd-earnings', component: YtdEarningsReportComponent },
+      { path: 'reports/payroll/overtime', component: OvertimeReportComponent },
       { path: 'expenses', component: ExpenseListComponent },
       { path: 'expenses/new', component: ExpenseFormComponent },
       { path: 'expenses/:id', component: ExpenseFormComponent },

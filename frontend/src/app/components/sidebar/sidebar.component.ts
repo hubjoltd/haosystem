@@ -386,8 +386,12 @@ export class SidebarComponent implements OnInit {
           children: [
             { icon: 'fas fa-file-invoice-dollar', label: 'Pay Slips', labelKey: 'nav.paySlips', route: '/app/payroll/self-service' },
             { icon: 'fas fa-chart-pie', label: 'Payroll Summary', labelKey: 'nav.payrollSummary', route: '/app/reports/payroll/summary' },
-            { icon: 'fas fa-chart-area', label: 'Labor Cost Allocation', labelKey: 'nav.laborCostAllocation', route: '/app/reports/payroll/labor-cost' },
-            { icon: 'fas fa-clipboard-list', label: 'Payroll Register', labelKey: 'nav.payrollRegister', route: '/app/reports/payroll/register' }
+            { icon: 'fas fa-clipboard-list', label: 'Payroll Register', labelKey: 'nav.payrollRegister', route: '/app/reports/payroll/register' },
+            { icon: 'fas fa-landmark', label: 'Tax Liability', labelKey: 'nav.taxLiability', route: '/app/reports/payroll/tax-liability' },
+            { icon: 'fas fa-file-invoice-dollar', label: 'Deductions', labelKey: 'nav.deductions', route: '/app/reports/payroll/deductions' },
+            { icon: 'fas fa-calendar-alt', label: 'YTD Earnings', labelKey: 'nav.ytdEarnings', route: '/app/reports/payroll/ytd-earnings' },
+            { icon: 'fas fa-clock', label: 'Overtime', labelKey: 'nav.overtime', route: '/app/reports/payroll/overtime' },
+            { icon: 'fas fa-chart-area', label: 'Labor Cost Allocation', labelKey: 'nav.laborCostAllocation', route: '/app/reports/payroll/labor-cost' }
           ]
         }
       ]

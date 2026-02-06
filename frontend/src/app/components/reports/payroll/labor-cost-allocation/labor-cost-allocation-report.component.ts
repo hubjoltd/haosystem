@@ -206,7 +206,7 @@ export class LaborCostAllocationReportComponent implements OnInit {
     this.exportService.exportToCSV(headers, data, 'labor_cost_allocation');
   }
   completeLoading(): void {
-    this.completeLoading();
+    this.loading = false;
     this.dataReady = true;
   }
 }
