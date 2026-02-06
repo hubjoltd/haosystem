@@ -85,20 +85,36 @@
               <span *ngIf="isOnSite(row) === false" class="geo-off">✗ Off Site</span>
               <span *ngIf="isOnSite(row) === null" class="geo-none">—</span>
             </td>
-            <td class="col-time">{{ getClockTime(row.record?.clockIn) }}</td>
-            <td class="col-time">{{ getClockTime(row.record?.clockOut) }}</td>
+            <td class="col-time">
+              <span class="time-with-edit">
+                {{ getClockTime(row.record?.clockIn) }}
+                <button *ngIf="row.selected && row.record?.clockIn" class="btn-edit-pencil" (click)="openEditModal(row)" title="Edit">
+                  <i class="fas fa-pencil-alt"></i>
+                </button>
+              </span>
+            </td>
+            <td class="col-time">
+              <span class="time-with-edit">
+                {{ getClockTime(row.record?.clockOut) }}
+                <button *ngIf="row.selected && row.record?.clockOut" class="btn-edit-pencil" (click)="openEditModal(row)" title="Edit">
+                  <i class="fas fa-pencil-alt"></i>
+                </button>
+              </span>
+            </td>
             <td class="col-lunch">—</td>
             <td class="col-hours">{{ getHours(row) }}</td>
             <td class="col-action">
-              <button *ngIf="getStatus(row) === 'not_clocked'" class="btn-action btn-clock-in" (click)="openClockInModal(row.employee)" [disabled]="isProcessing(row.employee.id)">
-                <i class="fas fa-spinner fa-spin" *ngIf="isProcessing(row.employee.id) && loadingClockIn"></i>
-                <span *ngIf="!isProcessing(row.employee.id) || !loadingClockIn">Clock In</span>
-              </button>
-              <button *ngIf="getStatus(row) === 'clocked_in'" class="btn-action btn-clock-out" (click)="clockOut(row.employee)" [disabled]="isProcessing(row.employee.id)">
-                <i class="fas fa-spinner fa-spin" *ngIf="isProcessing(row.employee.id) && loadingClockOut"></i>
-                <span *ngIf="!isProcessing(row.employee.id) || !loadingClockOut">Clock Out</span>
-              </button>
-              <span *ngIf="getStatus(row) === 'completed'" class="action-done">—</span>
+              <div class="action-group">
+                <button *ngIf="getStatus(row) === 'not_clocked'" class="btn-action btn-clock-in" (click)="openClockInModal(row.employee)" [disabled]="isProcessing(row.employee.id)">
+                  <i class="fas fa-spinner fa-spin" *ngIf="isProcessing(row.employee.id) && loadingClockIn"></i>
+                  <span *ngIf="!isProcessing(row.employee.id) || !loadingClockIn">Clock In</span>
+                </button>
+                <button *ngIf="getStatus(row) === 'clocked_in'" class="btn-action btn-clock-out" (click)="clockOut(row.employee)" [disabled]="isProcessing(row.employee.id)">
+                  <i class="fas fa-spinner fa-spin" *ngIf="isProcessing(row.employee.id) && loadingClockOut"></i>
+                  <span *ngIf="!isProcessing(row.employee.id) || !loadingClockOut">Clock Out</span>
+                </button>
+                <span *ngIf="getStatus(row) === 'completed'" class="action-done">—</span>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -120,6 +136,41 @@
     <div class="modal-actions">
       <button class="btn-cancel" (click)="cancelClockIn()">Cancel</button>
       <button class="btn-confirm" (click)="confirmClockIn()" [disabled]="loadingClockIn">Confirm Clock In</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showEditModal" (click)="cancelEdit()">
+  <div class="modal-content edit-modal" (click)="$event.stopPropagation()">
+    <div class="edit-modal-header">
+      <h3><i class="fas fa-edit"></i> Edit Attendance</h3>
+      <button class="btn-close-modal" (click)="cancelEdit()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="edit-modal-body" *ngIf="editEmployee">
+      <div class="edit-employee-info">
+        <span class="avatar" [style.background-color]="getAvatarColor(editEmployee.employee)">{{ getInitials(editEmployee.employee) }}</span>
+        <div>
+          <span class="edit-emp-name">{{ editEmployee.employee.firstName }} {{ editEmployee.employee.lastName }}</span>
+          <span class="edit-emp-code">{{ editEmployee.employee.employeeCode }}</span>
+        </div>
+      </div>
+      <div class="edit-form-row">
+        <div class="edit-form-group">
+          <label>Clock In</label>
+          <input type="time" class="edit-time-input" [(ngModel)]="editClockIn" />
+        </div>
+        <div class="edit-form-group">
+          <label>Clock Out</label>
+          <input type="time" class="edit-time-input" [(ngModel)]="editClockOut" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="cancelEdit()">Cancel</button>
+      <button class="btn-confirm" (click)="saveEdit()" [disabled]="savingEdit">
+        <i class="fas fa-spinner fa-spin" *ngIf="savingEdit"></i>
+        <span *ngIf="!savingEdit">Save Changes</span>
+      </button>
     </div>
   </div>
 </div>

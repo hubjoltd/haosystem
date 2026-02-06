@@ -45,6 +45,13 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
 
   selectAll = false;
 
+  editingRowId: number | null = null;
+  editClockIn: string = '';
+  editClockOut: string = '';
+  savingEdit = false;
+  showEditModal = false;
+  editEmployee: EmployeeRow | null = null;
+
   clockInterval: any = null;
   refreshInterval: any = null;
 
@@ -311,6 +318,55 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
 
   isProcessing(empId: number | undefined): boolean {
     return empId != null && this.processingEmployeeId === empId;
+  }
+
+  openEditModal(row: EmployeeRow): void {
+    if (!row.record) return;
+    this.editEmployee = row;
+    this.editClockIn = row.record.clockIn ? row.record.clockIn.substring(0, 5) : '';
+    this.editClockOut = row.record.clockOut ? row.record.clockOut.substring(0, 5) : '';
+    this.showEditModal = true;
+    this.cdr.markForCheck();
+  }
+
+  cancelEdit(): void {
+    this.showEditModal = false;
+    this.editEmployee = null;
+    this.editClockIn = '';
+    this.editClockOut = '';
+    this.cdr.markForCheck();
+  }
+
+  saveEdit(): void {
+    if (!this.editEmployee?.record?.id) return;
+    this.savingEdit = true;
+    this.cdr.markForCheck();
+
+    const updatedRecord: any = {
+      ...this.editEmployee.record,
+      clockIn: this.editClockIn ? this.editClockIn + ':00' : this.editEmployee.record.clockIn,
+      clockOut: this.editClockOut ? this.editClockOut + ':00' : this.editEmployee.record.clockOut
+    };
+
+    this.attendanceService.update(this.editEmployee.record.id, updatedRecord).subscribe({
+      next: () => {
+        this.showMessage('Attendance updated successfully', 'success');
+        this.savingEdit = false;
+        this.showEditModal = false;
+        this.editEmployee = null;
+        this.loadAttendanceRecords();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.showMessage(err.error?.error || 'Failed to update', 'error');
+        this.savingEdit = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  hasSelectedRows(): boolean {
+    return this.filteredRows.some(r => r.selected);
   }
 
   showMessage(msg: string, type: string): void {
