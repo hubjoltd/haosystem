@@ -23,9 +23,6 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
   filterEndDate = '';
 
   employees: Employee[] = [];
-  selectedEmployeeIds: Set<number> = new Set();
-  selectAllEmployees = true;
-  employeeSearchTerm = '';
 
   payrollRuns: PayrollRun[] = [];
   allPayrollRuns: PayrollRun[] = [];
@@ -113,63 +110,9 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
     this.setDefaultDates();
     this.periodType = 'BI_WEEKLY';
     this.selectedProject = '';
-    this.selectedEmployeeIds.clear();
-    this.selectAllEmployees = true;
-    this.employeeSearchTerm = '';
     this.showNewCalcModal = true;
-    this.loadEmployees();
   }
 
-  loadEmployees(): void {
-    this.employeeService.getAll().subscribe({
-      next: (emps) => {
-        this.employees = emps.filter((e: Employee) => e.active);
-        this.cdr.detectChanges();
-      },
-      error: (err) => console.error('Error loading employees:', err)
-    });
-  }
-
-  get filteredEmployees(): Employee[] {
-    if (!this.employeeSearchTerm) return this.employees;
-    const term = this.employeeSearchTerm.toLowerCase();
-    return this.employees.filter(e =>
-      `${e.firstName} ${e.lastName}`.toLowerCase().includes(term) ||
-      (e.employeeCode || '').toLowerCase().includes(term) ||
-      (e.department?.name || '').toLowerCase().includes(term)
-    );
-  }
-
-  toggleSelectAllEmployees(): void {
-    if (this.selectAllEmployees) {
-      this.selectAllEmployees = false;
-      this.selectedEmployeeIds.clear();
-    } else {
-      this.selectAllEmployees = true;
-      this.selectedEmployeeIds.clear();
-    }
-  }
-
-  toggleEmployeeSelection(id: number): void {
-    this.selectAllEmployees = false;
-    if (this.selectedEmployeeIds.has(id)) {
-      this.selectedEmployeeIds.delete(id);
-    } else {
-      this.selectedEmployeeIds.add(id);
-    }
-    if (this.selectedEmployeeIds.size === this.employees.length) {
-      this.selectAllEmployees = true;
-      this.selectedEmployeeIds.clear();
-    }
-  }
-
-  isEmployeeSelected(id: number): boolean {
-    return this.selectAllEmployees || this.selectedEmployeeIds.has(id);
-  }
-
-  getSelectedEmployeeCount(): number {
-    return this.selectAllEmployees ? this.employees.length : this.selectedEmployeeIds.size;
-  }
 
   closeNewCalcModal(): void {
     this.showNewCalcModal = false;
@@ -196,13 +139,11 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
       payDate: this.payDate || null
     };
 
-    const employeeIds = this.selectAllEmployees ? [] : Array.from(this.selectedEmployeeIds);
-
     this.payrollService.createPayrollRun(runData).subscribe({
       next: (run) => {
         this.currentRun = run;
         if (run.id) {
-          this.payrollService.calculatePayroll(run.id, employeeIds).subscribe({
+          this.payrollService.calculatePayroll(run.id).subscribe({
             next: (calculatedRun) => {
               this.currentRun = calculatedRun;
               this.payrollService.getPayrollRecordsByRun(run.id!).subscribe({
