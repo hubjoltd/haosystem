@@ -18,6 +18,11 @@
 
       <span class="day-badge">{{ dayName }}</span>
     </div>
+    <div class="filter-actions">
+      <button class="btn-pdf" (click)="downloadPDF()">
+        <i class="fas fa-file-pdf"></i> Download PDF
+      </button>
+    </div>
   </div>
 
   <div class="table-section">
@@ -30,7 +35,7 @@
         </div>
       </div>
       <div class="search-box">
-        <i class="fas fa-search"></i>
+        <i class="fas fa-search search-icon"></i>
         <input type="text" placeholder="Search employee..." [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" />
       </div>
     </div>
@@ -101,7 +106,7 @@
                 </button>
               </span>
             </td>
-            <td class="col-lunch">—</td>
+            <td class="col-lunch">{{ getLunchHour(row) }}</td>
             <td class="col-hours">{{ getHours(row) }}</td>
             <td class="col-action">
               <div class="action-group">

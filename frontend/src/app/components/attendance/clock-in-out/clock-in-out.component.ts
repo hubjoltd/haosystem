@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
 import { EmployeeService, Employee } from '../../../services/employee.service';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface EmployeeRow {
   employee: Employee;
@@ -210,26 +212,41 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     return `${parts[0]}:${parts[1]}`;
   }
 
-  getHours(row: EmployeeRow): string {
-    if (!row.record) return '—';
+  private getRawMinutes(row: EmployeeRow): number {
+    if (!row.record) return 0;
     if (row.record.regularHours != null && row.record.regularHours > 0) {
-      const total = row.record.regularHours + (row.record.overtimeHours || 0);
-      if (total < 1) {
-        return `${Math.round(total * 60)}m`;
-      }
-      return `${Math.round(total)}h`;
+      return Math.round((row.record.regularHours + (row.record.overtimeHours || 0)) * 60);
     }
     if (row.record.clockIn && row.record.clockOut) {
       const inParts = row.record.clockIn.split(':').map(Number);
       const outParts = row.record.clockOut.split(':').map(Number);
       const inMin = inParts[0] * 60 + inParts[1];
       const outMin = outParts[0] * 60 + outParts[1];
-      const diff = outMin - inMin;
-      if (diff <= 0) return '—';
-      if (diff < 60) return `${diff}m`;
-      return `${Math.round(diff / 60)}h`;
+      return outMin - inMin;
+    }
+    return 0;
+  }
+
+  getLunchHour(row: EmployeeRow): string {
+    const rawMin = this.getRawMinutes(row);
+    if (rawMin > 480) {
+      return '1h';
     }
     return '—';
+  }
+
+  getHours(row: EmployeeRow): string {
+    const rawMin = this.getRawMinutes(row);
+    if (rawMin <= 0) return '—';
+    let netMin = rawMin;
+    if (rawMin > 480) {
+      netMin = rawMin - 60;
+    }
+    if (netMin < 60) return `${netMin}m`;
+    const hrs = Math.floor(netMin / 60);
+    const mins = netMin % 60;
+    if (mins === 0) return `${hrs}h`;
+    return `${hrs}h ${mins}m`;
   }
 
   getAvatarColor(emp: Employee): string {
@@ -377,5 +394,65 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
       this.message = '';
       this.cdr.markForCheck();
     }, 5000);
+  }
+
+  downloadPDF(): void {
+    const doc = new jsPDF('landscape');
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    doc.setFillColor(0, 128, 128);
+    doc.rect(0, 0, pageWidth, 28, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Clock In / Clock Out Report', 14, 12);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Date: ${this.formattedDate} (${this.dayName})`, 14, 20);
+    doc.setFontSize(9);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth - 14, 18, { align: 'right' });
+
+    const tableData = this.filteredRows.map(row => [
+      row.employee.employeeCode || '-',
+      `${row.employee.firstName} ${row.employee.lastName}`,
+      row.employee.designation?.title || row.employee.jobRole?.title || '-',
+      row.employee.department?.name || '-',
+      this.getStatusLabel(row),
+      this.getClockTime(row.record?.clockIn),
+      this.getClockTime(row.record?.clockOut),
+      this.getLunchHour(row),
+      this.getHours(row)
+    ]);
+
+    autoTable(doc, {
+      startY: 34,
+      head: [['EMP ID', 'Employee', 'Position', 'Department', 'Status', 'Clock In', 'Clock Out', 'Lunch', 'Hours']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [0, 100, 100], fontSize: 9, fontStyle: 'bold' },
+      bodyStyles: { fontSize: 8 },
+      alternateRowStyles: { fillColor: [240, 253, 250] },
+      columnStyles: {
+        0: { cellWidth: 25 },
+        5: { halign: 'center' },
+        6: { halign: 'center' },
+        7: { halign: 'center' },
+        8: { halign: 'center', fontStyle: 'bold' }
+      },
+      margin: { left: 14, right: 14 }
+    });
+
+    const totalEmployees = this.filteredRows.length;
+    const clockedIn = this.filteredRows.filter(r => this.getStatus(r) === 'clocked_in').length;
+    const completed = this.filteredRows.filter(r => this.getStatus(r) === 'completed').length;
+    const notClocked = this.filteredRows.filter(r => this.getStatus(r) === 'not_clocked').length;
+
+    const finalY = (doc as any).lastAutoTable?.finalY || 60;
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Summary: ${totalEmployees} Total | ${completed} Completed | ${clockedIn} Clocked In | ${notClocked} Not Clocked`, 14, finalY + 10);
+
+    doc.save(`attendance_${this.selectedDate}.pdf`);
   }
 }
