@@ -122,10 +122,12 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
     this.calculating = true;
 
     const runData = {
+      description: this.selectedProject || 'Company Level',
       periodType: this.periodType,
       projectCode: this.selectedProject || null,
       periodStartDate: this.filterStartDate,
-      periodEndDate: this.filterEndDate
+      periodEndDate: this.filterEndDate,
+      payDate: this.payDate || null
     };
 
     this.payrollService.createPayrollRun(runData).subscribe({
