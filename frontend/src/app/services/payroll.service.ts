@@ -479,7 +479,7 @@ export class PayrollService {
 
   calculatePayroll(runId: number): Observable<PayrollRun> {
     return this.http.post<PayrollRun>(`${this.payrollUrl}/runs/${runId}/calculate`, {}).pipe(
-      timeout(120000)
+      timeout(300000)
     );
   }
 

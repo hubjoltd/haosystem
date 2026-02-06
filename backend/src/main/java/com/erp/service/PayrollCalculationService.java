@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -82,6 +83,9 @@ public class PayrollCalculationService {
         return timesheets;
     }
 
+    private static final BigDecimal LUNCH_BREAK_HOURS = new BigDecimal("1.0");
+    private static final BigDecimal MAX_REGULAR_HOURS_PER_DAY = new BigDecimal("8.0");
+
     private void calculateTimesheetFromAttendance(Timesheet timesheet) {
         List<AttendanceRecord> records = attendanceRecordRepository
             .findByEmployeeIdAndAttendanceDateBetween(
@@ -95,12 +99,48 @@ public class PayrollCalculationService {
         int present = 0, absent = 0, leave = 0, holiday = 0;
         
         for (AttendanceRecord record : records) {
-            if (record.getRegularHours() != null) {
-                totalRegular = totalRegular.add(record.getRegularHours());
+            BigDecimal dailyRegular = BigDecimal.ZERO;
+            BigDecimal dailyOT = BigDecimal.ZERO;
+            
+            if (record.getClockIn() != null && record.getClockOut() != null) {
+                long minutesWorked = Duration.between(record.getClockIn(), record.getClockOut()).toMinutes();
+                if (minutesWorked < 0) {
+                    minutesWorked += 24 * 60;
+                }
+                BigDecimal rawHours = new BigDecimal(minutesWorked).divide(new BigDecimal("60"), 2, RoundingMode.HALF_UP);
+                
+                BigDecimal effectiveHours;
+                if (rawHours.compareTo(LUNCH_BREAK_HOURS) > 0) {
+                    effectiveHours = rawHours.subtract(LUNCH_BREAK_HOURS);
+                } else {
+                    effectiveHours = rawHours;
+                }
+                
+                if (effectiveHours.compareTo(MAX_REGULAR_HOURS_PER_DAY) <= 0) {
+                    dailyRegular = effectiveHours;
+                } else {
+                    dailyRegular = MAX_REGULAR_HOURS_PER_DAY;
+                    dailyOT = effectiveHours.subtract(MAX_REGULAR_HOURS_PER_DAY);
+                }
+                
+                logger.info("Employee {} date {} - Raw: {}h, After lunch: {}h, Regular: {}h, OT: {}h",
+                    timesheet.getEmployee().getId(), record.getAttendanceDate(),
+                    rawHours, effectiveHours, dailyRegular, dailyOT);
+            } else {
+                if (record.getRegularHours() != null) {
+                    dailyRegular = record.getRegularHours();
+                }
+                if (record.getOvertimeHours() != null) {
+                    dailyOT = record.getOvertimeHours();
+                }
             }
-            if (record.getOvertimeHours() != null) {
-                totalOT = totalOT.add(record.getOvertimeHours());
-            }
+            
+            record.setRegularHours(dailyRegular);
+            record.setOvertimeHours(dailyOT);
+            record.setBreakDuration(LUNCH_BREAK_HOURS);
+            
+            totalRegular = totalRegular.add(dailyRegular);
+            totalOT = totalOT.add(dailyOT);
             
             if ("PRESENT".equals(record.getStatus())) present++;
             else if ("ABSENT".equals(record.getStatus())) absent++;
@@ -116,6 +156,9 @@ public class PayrollCalculationService {
         timesheet.setLeaveDays(leave);
         timesheet.setHolidayDays(holiday);
         timesheet.setStatus("PENDING_APPROVAL");
+        
+        logger.info("Timesheet {} - Total Regular: {}h, Total OT: {}h, Total: {}h, Present: {} days",
+            timesheet.getTimesheetNumber(), totalRegular, totalOT, totalRegular.add(totalOT), present);
     }
 
     @Transactional
