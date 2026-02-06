@@ -46,16 +46,16 @@
         </thead>
         <tbody>
           <tr *ngFor="let run of filteredRuns; let i = index">
-            <td>{{ i + 1 }}</td>
+            <td>{{ run.payrollRunNumber }}</td>
             <td>{{ formatDate(run.periodStartDate) }} to {{ formatDate(run.periodEndDate) }}</td>
             <td>{{ formatDate(run.payDate) }}</td>
             <td>
               <span class="type-badge" [ngClass]="getPeriodTypeBadgeClass(run)">{{ getPeriodTypeLabel(run) }}</span>
             </td>
             <td>{{ getRunTotalEmployees(run) }}</td>
-            <td class="amount green">{{ formatCurrency(run.totalGrossPay || 0) }}</td>
-            <td class="amount">{{ formatCurrency(run.totalTaxes || 0) }}</td>
-            <td class="amount green">{{ formatCurrency(run.totalNetPay || 0) }}</td>
+            <td class="amount green">{{ formatCurrency(run.processedGrossPay || run.totalGrossPay || 0) }}</td>
+            <td class="amount">{{ formatCurrency(run.processedTaxes || run.totalTaxes || 0) }}</td>
+            <td class="amount green">{{ formatCurrency(run.processedNetPay || run.totalNetPay || 0) }}</td>
             <td>
               <button class="btn-view" (click)="viewRunDetails(run)">
                 <i class="fas fa-eye"></i> View

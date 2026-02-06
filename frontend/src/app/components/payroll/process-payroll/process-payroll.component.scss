@@ -555,6 +555,7 @@
       .footer-left {
         display: flex;
         align-items: center;
+        gap: 12px;
       }
 
       .footer-right {
@@ -564,8 +565,8 @@
 
       .selected-count {
         font-size: 0.85rem;
-        color: #008080;
-        font-weight: 600;
+        color: #374151;
+        font-weight: 500;
       }
     }
 
@@ -601,6 +602,15 @@
         &:disabled {
           opacity: 0.5;
           cursor: not-allowed;
+        }
+      }
+
+      &.btn-process-selected {
+        background: #059669;
+        color: #fff;
+
+        &:hover {
+          background: #047857;
         }
       }
     }

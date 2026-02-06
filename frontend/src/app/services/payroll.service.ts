@@ -140,6 +140,10 @@ export interface PayrollRun {
   totalTaxes?: number;
   totalNetPay?: number;
   totalEmployerContributions?: number;
+  processedCount?: number;
+  processedGrossPay?: number;
+  processedTaxes?: number;
+  processedNetPay?: number;
   status: string;
   createdBy?: any;
   approvedBy?: any;

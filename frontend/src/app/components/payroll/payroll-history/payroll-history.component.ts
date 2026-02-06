@@ -64,9 +64,12 @@ export class PayrollHistoryComponent implements OnInit {
       next: (runs) => {
         this.payrollRuns = runs.filter(r => {
           const status = r.status?.toUpperCase();
-          return status === 'PROCESSED' ||
+          const hasProcessed = (r.processedCount || 0) > 0;
+          return hasProcessed ||
+                 status === 'PROCESSED' ||
                  status === 'COMPLETED' ||
-                 status === 'FULLY_PROCESSED';
+                 status === 'FULLY_PROCESSED' ||
+                 status === 'PARTIALLY_PROCESSED';
         });
         this.extractProjects();
         this.loading = false;
@@ -120,7 +123,7 @@ export class PayrollHistoryComponent implements OnInit {
     if (run.id) {
       this.payrollService.getPayrollRecordsByRun(run.id).subscribe({
         next: (records: PayrollRecord[]) => {
-          this.selectedRunRecords = records;
+          this.selectedRunRecords = records.filter(r => r.status === 'PROCESSED');
           this.calculateDetailSummary();
           this.cdr.markForCheck();
         },
@@ -138,10 +141,10 @@ export class PayrollHistoryComponent implements OnInit {
 
   calculateDetailSummary(): void {
     this.detailSummary = {
-      totalEmployees: this.selectedRunRecords.length || this.selectedRun?.totalEmployees || 0,
-      grossPay: this.selectedRunRecords.reduce((sum, r) => sum + (r.grossPay || 0), 0) || this.selectedRun?.totalGrossPay || 0,
-      totalTax: this.selectedRunRecords.reduce((sum, r) => sum + (r.totalTaxes || 0), 0) || this.selectedRun?.totalTaxes || 0,
-      netPay: this.selectedRunRecords.reduce((sum, r) => sum + (r.netPay || 0), 0) || this.selectedRun?.totalNetPay || 0
+      totalEmployees: this.selectedRunRecords.length,
+      grossPay: this.selectedRunRecords.reduce((sum, r) => sum + (r.grossPay || 0), 0),
+      totalTax: this.selectedRunRecords.reduce((sum, r) => sum + (r.totalTaxes || 0), 0),
+      netPay: this.selectedRunRecords.reduce((sum, r) => sum + (r.netPay || 0), 0)
     };
   }
 
@@ -153,16 +156,19 @@ export class PayrollHistoryComponent implements OnInit {
   }
 
   getRunTotalEmployees(run: PayrollRun): number {
-    return run.totalEmployees || 0;
+    return run.processedCount || 0;
   }
 
   getPeriodTypeLabel(run: PayrollRun): string {
-    const freq = run.payFrequency?.name?.toLowerCase() || '';
-    if (freq.includes('bi-weekly') || freq.includes('biweekly')) return 'Bi-Weekly';
-    if (freq.includes('semi')) return 'Semi-Monthly';
-    if (freq.includes('weekly')) return 'Weekly';
-    if (freq.includes('monthly')) return 'Monthly';
-    return run.payFrequency?.name || 'Monthly';
+    const pf = run.payFrequency;
+    if (!pf) return 'Regular';
+    const code = pf.code?.toUpperCase() || '';
+    const name = pf.name?.toLowerCase() || '';
+    if (code === 'BI_WEEKLY' || name.includes('bi-weekly') || name.includes('biweekly')) return 'Bi-Weekly';
+    if (code === 'SEMI_MONTHLY' || name.includes('semi')) return 'Semi-Monthly';
+    if (code === 'WEEKLY' || name.includes('weekly')) return 'Weekly';
+    if (code === 'MONTHLY' || name.includes('monthly')) return 'Monthly';
+    return pf.name || 'Regular';
   }
 
   getPeriodTypeBadgeClass(run: PayrollRun): string {

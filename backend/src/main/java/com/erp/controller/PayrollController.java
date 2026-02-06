@@ -194,7 +194,25 @@ public class PayrollController {
 
     @GetMapping("/runs")
     public ResponseEntity<List<PayrollRun>> getAllPayrollRuns(HttpServletRequest request) {
-        return ResponseEntity.ok(payrollRunRepository.findAllByOrderByCreatedAtDesc());
+        List<PayrollRun> runs = payrollRunRepository.findAllByOrderByCreatedAtDesc();
+        for (PayrollRun run : runs) {
+            if (run.getId() != null) {
+                List<PayrollRecord> processedRecords = payrollRecordRepository.findByPayrollRunIdAndStatus(run.getId(), "PROCESSED");
+                run.setProcessedCount(processedRecords.size());
+                BigDecimal pGross = BigDecimal.ZERO;
+                BigDecimal pTaxes = BigDecimal.ZERO;
+                BigDecimal pNet = BigDecimal.ZERO;
+                for (PayrollRecord pr : processedRecords) {
+                    pGross = pGross.add(pr.getGrossPay() != null ? pr.getGrossPay() : BigDecimal.ZERO);
+                    pTaxes = pTaxes.add(pr.getTotalTaxes() != null ? pr.getTotalTaxes() : BigDecimal.ZERO);
+                    pNet = pNet.add(pr.getNetPay() != null ? pr.getNetPay() : BigDecimal.ZERO);
+                }
+                run.setProcessedGrossPay(pGross);
+                run.setProcessedTaxes(pTaxes);
+                run.setProcessedNetPay(pNet);
+            }
+        }
+        return ResponseEntity.ok(runs);
     }
 
     @GetMapping("/runs/{id}")
@@ -233,10 +251,9 @@ public class PayrollController {
     }
 
     private String generatePayrollRunNumber() {
-        String prefix = "PAY";
-        String year = String.valueOf(LocalDate.now().getYear());
+        String now = LocalDate.now().toString().replace("-", "");
         long count = payrollRunRepository.count() + 1;
-        return prefix + "-" + year + "-" + String.format("%05d", count);
+        return "PR-" + now.substring(0, 8) + String.format("%02d", count % 100);
     }
 
     @PostMapping("/runs/{id}/calculate")
@@ -347,6 +364,11 @@ public class PayrollController {
                     run.setProcessedAt(LocalDateTime.now());
                     run.setIsPostedToAccounts(true);
                     run.setPostedAt(LocalDateTime.now());
+                } else {
+                    long processedRecordCount = allRecords.stream().filter(r -> "PROCESSED".equals(r.getStatus())).count();
+                    if (processedRecordCount > 0) {
+                        run.setStatus("PARTIALLY_PROCESSED");
+                    }
                 }
                 
                 if (data.containsKey("processedById")) {

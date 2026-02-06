@@ -312,13 +312,7 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
   }
 
   getProcessedCount(run: PayrollRun): number {
-    if (run.status === 'PROCESSED' || run.status === 'FULLY_PROCESSED' || run.status === 'COMPLETED') {
-      return run.totalEmployees || 0;
-    }
-    if (run.status === 'PARTIALLY_PROCESSED') {
-      return Math.floor((run.totalEmployees || 0) / 2);
-    }
-    return 0;
+    return run.processedCount || 0;
   }
 
   getProcessedFraction(run: PayrollRun): string {

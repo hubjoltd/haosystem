@@ -75,6 +75,18 @@ public class PayrollRun {
 
     private LocalDateTime postedAt;
 
+    @Transient
+    private Integer processedCount;
+
+    @Transient
+    private BigDecimal processedGrossPay;
+
+    @Transient
+    private BigDecimal processedTaxes;
+
+    @Transient
+    private BigDecimal processedNetPay;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -167,4 +179,16 @@ public class PayrollRun {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public Integer getProcessedCount() { return processedCount; }
+    public void setProcessedCount(Integer processedCount) { this.processedCount = processedCount; }
+
+    public BigDecimal getProcessedGrossPay() { return processedGrossPay; }
+    public void setProcessedGrossPay(BigDecimal processedGrossPay) { this.processedGrossPay = processedGrossPay; }
+
+    public BigDecimal getProcessedTaxes() { return processedTaxes; }
+    public void setProcessedTaxes(BigDecimal processedTaxes) { this.processedTaxes = processedTaxes; }
+
+    public BigDecimal getProcessedNetPay() { return processedNetPay; }
+    public void setProcessedNetPay(BigDecimal processedNetPay) { this.processedNetPay = processedNetPay; }
 }

@@ -24,4 +24,7 @@ public interface PayrollRecordRepository extends JpaRepository<PayrollRecord, Lo
     
     @Query("SELECT pr FROM PayrollRecord pr JOIN pr.payrollRun p WHERE pr.employee.id = :employeeId AND (p.status = 'PROCESSED' OR p.status = 'FULLY_PROCESSED' OR p.status = 'PARTIALLY_PROCESSED' OR p.status = 'COMPLETED' OR pr.status = 'PAID') ORDER BY p.payDate DESC")
     List<PayrollRecord> findProcessedPayrollRecordsByEmployee(@Param("employeeId") Long employeeId);
+
+    @Query("SELECT COUNT(pr) FROM PayrollRecord pr WHERE pr.payrollRun.id = :runId AND pr.status = 'PROCESSED'")
+    int countProcessedByRunId(@Param("runId") Long runId);
 }
