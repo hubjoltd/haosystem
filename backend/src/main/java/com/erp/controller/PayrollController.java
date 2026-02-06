@@ -7,6 +7,8 @@ import com.erp.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/payroll")
 @CrossOrigin(origins = "*")
 public class PayrollController {
+
+    private static final Logger logger = LoggerFactory.getLogger(PayrollController.class);
 
     @Autowired
     private PayrollRunRepository payrollRunRepository;
@@ -243,7 +247,14 @@ public class PayrollController {
                     PayrollRun calculatedRun = payrollCalculationService.calculatePayroll(run);
                     return ResponseEntity.ok(calculatedRun);
                 } catch (Exception e) {
-                    return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+                    logger.error("Error calculating payroll run {}: {}", id, e.getMessage(), e);
+                    String errorMsg = e.getMessage() != null ? e.getMessage() : "An unexpected error occurred during payroll calculation";
+                    if (e.getCause() != null && e.getCause().getMessage() != null) {
+                        errorMsg = e.getCause().getMessage();
+                    }
+                    Map<String, Object> errorResponse = new HashMap<>();
+                    errorResponse.put("error", errorMsg);
+                    return ResponseEntity.badRequest().body(errorResponse);
                 }
             })
             .orElse(ResponseEntity.notFound().build());
