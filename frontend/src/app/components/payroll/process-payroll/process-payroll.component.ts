@@ -160,7 +160,7 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
             error: (err) => {
               console.error('Error calculating payroll:', err);
               this.calculating = false;
-              this.toastService.error('Error calculating payroll: ' + (err.error?.message || 'Unknown error'));
+              this.toastService.error('Error calculating payroll: ' + (err.error?.error || err.error?.message || err.message || 'Unknown error'));
             }
           });
         } else {

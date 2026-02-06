@@ -244,8 +244,28 @@ public class PayrollController {
         return payrollRunRepository.findById(id)
             .map(run -> {
                 try {
+                    logger.info("Starting payroll calculation for run {}", id);
                     PayrollRun calculatedRun = payrollCalculationService.calculatePayroll(run);
-                    return ResponseEntity.ok(calculatedRun);
+                    logger.info("Payroll calculation completed for run {}, status: {}", id, calculatedRun.getStatus());
+                    
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("id", calculatedRun.getId());
+                    response.put("payrollRunNumber", calculatedRun.getPayrollRunNumber());
+                    response.put("description", calculatedRun.getDescription());
+                    response.put("status", calculatedRun.getStatus());
+                    response.put("periodStartDate", calculatedRun.getPeriodStartDate());
+                    response.put("periodEndDate", calculatedRun.getPeriodEndDate());
+                    response.put("payDate", calculatedRun.getPayDate());
+                    response.put("totalEmployees", calculatedRun.getTotalEmployees());
+                    response.put("totalGrossPay", calculatedRun.getTotalGrossPay());
+                    response.put("totalDeductions", calculatedRun.getTotalDeductions());
+                    response.put("totalTaxes", calculatedRun.getTotalTaxes());
+                    response.put("totalNetPay", calculatedRun.getTotalNetPay());
+                    response.put("totalEmployerContributions", calculatedRun.getTotalEmployerContributions());
+                    response.put("createdAt", calculatedRun.getCreatedAt());
+                    response.put("updatedAt", calculatedRun.getUpdatedAt());
+                    
+                    return ResponseEntity.ok(response);
                 } catch (Exception e) {
                     logger.error("Error calculating payroll run {}: {}", id, e.getMessage(), e);
                     String errorMsg = e.getMessage() != null ? e.getMessage() : "An unexpected error occurred during payroll calculation";
