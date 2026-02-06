@@ -165,44 +165,43 @@ public class PayrollCalculationService {
     public PayrollRun calculatePayroll(PayrollRun run) {
         run.setStatus("CALCULATING");
         payrollRunRepository.save(run);
+        payrollRunRepository.flush();
         
         try {
-            List<Timesheet> approvedTimesheets = timesheetRepository.findApprovedTimesheetsByPeriod(
+            logger.info("Looking for approved timesheets for period {} to {}", run.getPeriodStartDate(), run.getPeriodEndDate());
+            
+            List<Timesheet> timesheets = timesheetRepository.findApprovedTimesheetsByPeriod(
                 run.getPeriodStartDate(), run.getPeriodEndDate());
+            
+            logger.info("Found {} approved timesheets for period", timesheets.size());
+            
+            if (timesheets.isEmpty()) {
+                run.setStatus("ERROR");
+                payrollRunRepository.save(run);
+                throw new RuntimeException("No approved timesheets found for this period. Please approve timesheets first (they are auto-generated when attendance is approved).");
+            }
             
             int successCount = 0;
             int failCount = 0;
             
-            if (approvedTimesheets.isEmpty()) {
-                List<Employee> employees = employeeRepository.findByActiveTrue();
-                for (Employee employee : employees) {
-                    try {
-                        PayrollRecord record = calculateEmployeePayroll(run, employee, null);
-                        payrollRecordRepository.save(record);
-                        successCount++;
-                    } catch (Exception e) {
-                        failCount++;
-                        logger.error("Error calculating payroll for employee {}: {}", employee.getId(), e.getMessage());
-                    }
-                }
-            } else {
-                for (Timesheet timesheet : approvedTimesheets) {
-                    try {
-                        PayrollRecord record = calculateEmployeePayroll(run, timesheet.getEmployee(), timesheet);
-                        payrollRecordRepository.save(record);
-                        successCount++;
-                    } catch (Exception e) {
-                        failCount++;
-                        logger.error("Error calculating payroll for timesheet employee {}: {}", 
-                            timesheet.getEmployee() != null ? timesheet.getEmployee().getId() : "null", e.getMessage());
-                    }
+            for (Timesheet timesheet : timesheets) {
+                try {
+                    PayrollRecord record = calculateEmployeePayroll(run, timesheet.getEmployee(), timesheet);
+                    payrollRecordRepository.save(record);
+                    successCount++;
+                    logger.info("Calculated payroll for employee {} - Gross: {}", 
+                        timesheet.getEmployee().getId(), record.getGrossPay());
+                } catch (Exception e) {
+                    failCount++;
+                    logger.error("Error calculating payroll for employee {}: {}", 
+                        timesheet.getEmployee() != null ? timesheet.getEmployee().getId() : "null", e.getMessage(), e);
                 }
             }
             
-            if (successCount == 0 && failCount > 0) {
+            if (successCount == 0) {
                 run.setStatus("ERROR");
                 payrollRunRepository.save(run);
-                throw new RuntimeException("All employee payroll calculations failed");
+                throw new RuntimeException("No payroll records could be calculated. Ensure employees have attendance records for this period.");
             }
             
             aggregatePayrollTotals(run);

@@ -607,11 +607,21 @@ public class PayrollController {
         List<Object> generatedTimesheets = new ArrayList<>();
         
         if ("ATTENDANCE".equals(type)) {
+            final BigDecimal LUNCH_BREAK = new BigDecimal("1.0");
+            final BigDecimal MAX_REGULAR = new BigDecimal("8.0");
+            
             for (Employee employee : employees) {
                 List<AttendanceRecord> attendanceRecords = attendanceRecordRepository
                     .findApprovedAttendanceByEmployeeAndDateRange(employee.getId(), startDate, endDate);
                 
                 if (!attendanceRecords.isEmpty()) {
+                    Optional<Timesheet> existing = timesheetRepository.findByEmployeeIdAndPeriodStartDateAndPeriodEndDate(
+                        employee.getId(), startDate, endDate);
+                    if (existing.isPresent()) {
+                        generatedTimesheets.add(existing.get());
+                        continue;
+                    }
+                    
                     Timesheet timesheet = new Timesheet();
                     timesheet.setTimesheetNumber(generateTimesheetNumber());
                     timesheet.setEmployee(employee);
@@ -625,19 +635,39 @@ public class PayrollController {
                     int leaveDays = 0;
                     
                     for (AttendanceRecord record : attendanceRecords) {
-                        if (record.getRegularHours() != null) {
-                            totalRegular = totalRegular.add(record.getRegularHours());
+                        BigDecimal dailyRegular = BigDecimal.ZERO;
+                        BigDecimal dailyOT = BigDecimal.ZERO;
+                        
+                        if (record.getClockIn() != null && record.getClockOut() != null) {
+                            long minutes = java.time.Duration.between(record.getClockIn(), record.getClockOut()).toMinutes();
+                            if (minutes < 0) minutes += 24 * 60;
+                            BigDecimal rawHours = new BigDecimal(minutes).divide(new BigDecimal("60"), 2, java.math.RoundingMode.HALF_UP);
+                            
+                            BigDecimal effectiveHours = rawHours.compareTo(LUNCH_BREAK) > 0 
+                                ? rawHours.subtract(LUNCH_BREAK) : rawHours;
+                            
+                            if (effectiveHours.compareTo(MAX_REGULAR) <= 0) {
+                                dailyRegular = effectiveHours;
+                            } else {
+                                dailyRegular = MAX_REGULAR;
+                                dailyOT = effectiveHours.subtract(MAX_REGULAR);
+                            }
+                        } else {
+                            if (record.getRegularHours() != null) dailyRegular = record.getRegularHours();
+                            if (record.getOvertimeHours() != null) dailyOT = record.getOvertimeHours();
                         }
-                        if (record.getOvertimeHours() != null) {
-                            totalOT = totalOT.add(record.getOvertimeHours());
-                        }
-                        if ("PRESENT".equals(record.getStatus())) {
-                            presentDays++;
-                        } else if ("ABSENT".equals(record.getStatus())) {
-                            absentDays++;
-                        } else if ("ON_LEAVE".equals(record.getStatus())) {
-                            leaveDays++;
-                        }
+                        
+                        record.setRegularHours(dailyRegular);
+                        record.setOvertimeHours(dailyOT);
+                        record.setBreakDuration(LUNCH_BREAK);
+                        attendanceRecordRepository.save(record);
+                        
+                        totalRegular = totalRegular.add(dailyRegular);
+                        totalOT = totalOT.add(dailyOT);
+                        
+                        if ("PRESENT".equals(record.getStatus())) presentDays++;
+                        else if ("ABSENT".equals(record.getStatus())) absentDays++;
+                        else if ("ON_LEAVE".equals(record.getStatus())) leaveDays++;
                     }
                     
                     timesheet.setTotalRegularHours(totalRegular);
