@@ -48,6 +48,9 @@ public class PayrollController {
 
     @Autowired
     private AttendanceRecordRepository attendanceRecordRepository;
+
+    @Autowired
+    private PayFrequencyRepository payFrequencyRepository;
     
     @Autowired
     private JwtUtil jwtUtil;
@@ -243,6 +246,12 @@ public class PayrollController {
             run.setPayDate(LocalDate.parse(data.get("payDate").toString()));
         } else {
             run.setPayDate(run.getPeriodEndDate());
+        }
+        
+        String periodType = data.get("periodType") != null ? data.get("periodType").toString() : null;
+        if (periodType != null && !periodType.isEmpty()) {
+            String code = periodType.toUpperCase().replace("-", "_").replace(" ", "_");
+            payFrequencyRepository.findByCode(code).ifPresent(run::setPayFrequency);
         }
         
         run.setStatus("PENDING");

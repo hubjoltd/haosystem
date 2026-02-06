@@ -237,7 +237,8 @@
 .table-container {
   background: white;
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
@@ -576,9 +577,9 @@
 
   .timesheet-table-wrap {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     margin-bottom: 0;
     border-radius: 8px;
-    overflow: hidden;
     border: 1px solid #dee2e8;
   }
 
@@ -626,6 +627,7 @@
         color: #333;
         text-align: center;
         border: none;
+        white-space: nowrap;
       }
 
       .ot-highlight {

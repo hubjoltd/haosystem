@@ -3,6 +3,8 @@ package com.erp.service;
 import com.erp.model.*;
 import com.erp.repository.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +17,8 @@ import java.util.*;
 
 @Service
 public class PayrollCalculationService {
+
+    private static final Logger logger = LoggerFactory.getLogger(PayrollCalculationService.class);
 
     private static final BigDecimal HOURS_PER_YEAR = new BigDecimal("2080");
     private static final BigDecimal SOCIAL_SECURITY_RATE = new BigDecimal("0.062");
@@ -119,26 +123,57 @@ public class PayrollCalculationService {
         run.setStatus("CALCULATING");
         payrollRunRepository.save(run);
         
-        List<Timesheet> approvedTimesheets = timesheetRepository.findApprovedTimesheetsByPeriod(
-            run.getPeriodStartDate(), run.getPeriodEndDate());
-        
-        if (approvedTimesheets.isEmpty()) {
-            List<Employee> employees = employeeRepository.findByActiveTrue();
-            for (Employee employee : employees) {
-                PayrollRecord record = calculateEmployeePayroll(run, employee, null);
-                payrollRecordRepository.save(record);
+        try {
+            List<Timesheet> approvedTimesheets = timesheetRepository.findApprovedTimesheetsByPeriod(
+                run.getPeriodStartDate(), run.getPeriodEndDate());
+            
+            int successCount = 0;
+            int failCount = 0;
+            
+            if (approvedTimesheets.isEmpty()) {
+                List<Employee> employees = employeeRepository.findByActiveTrue();
+                for (Employee employee : employees) {
+                    try {
+                        PayrollRecord record = calculateEmployeePayroll(run, employee, null);
+                        payrollRecordRepository.save(record);
+                        successCount++;
+                    } catch (Exception e) {
+                        failCount++;
+                        logger.error("Error calculating payroll for employee {}: {}", employee.getId(), e.getMessage());
+                    }
+                }
+            } else {
+                for (Timesheet timesheet : approvedTimesheets) {
+                    try {
+                        PayrollRecord record = calculateEmployeePayroll(run, timesheet.getEmployee(), timesheet);
+                        payrollRecordRepository.save(record);
+                        successCount++;
+                    } catch (Exception e) {
+                        failCount++;
+                        logger.error("Error calculating payroll for timesheet employee {}: {}", 
+                            timesheet.getEmployee() != null ? timesheet.getEmployee().getId() : "null", e.getMessage());
+                    }
+                }
             }
-        } else {
-            for (Timesheet timesheet : approvedTimesheets) {
-                PayrollRecord record = calculateEmployeePayroll(run, timesheet.getEmployee(), timesheet);
-                payrollRecordRepository.save(record);
+            
+            if (successCount == 0 && failCount > 0) {
+                run.setStatus("ERROR");
+                payrollRunRepository.save(run);
+                throw new RuntimeException("All employee payroll calculations failed");
             }
+            
+            aggregatePayrollTotals(run);
+            
+            run.setStatus("CALCULATED");
+            logger.info("Payroll calculation completed: {} succeeded, {} failed", successCount, failCount);
+            return payrollRunRepository.save(run);
+        } catch (RuntimeException e) {
+            if (!"ERROR".equals(run.getStatus())) {
+                run.setStatus("ERROR");
+                payrollRunRepository.save(run);
+            }
+            throw e;
         }
-        
-        aggregatePayrollTotals(run);
-        
-        run.setStatus("CALCULATED");
-        return payrollRunRepository.save(run);
     }
 
     private PayrollRecord calculateEmployeePayroll(PayrollRun run, Employee employee, Timesheet timesheet) {

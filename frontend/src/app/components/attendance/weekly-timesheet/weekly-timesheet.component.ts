@@ -491,7 +491,12 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
 
   downloadCurrentEmployeePDF(): void {
     if (!this.selectedEmployeeSummary) return;
-    this.downloadEmployeePDFFromSummary(this.selectedEmployeeSummary);
+    try {
+      this.downloadEmployeePDFFromSummary(this.selectedEmployeeSummary);
+    } catch (err) {
+      console.error('PDF download error:', err);
+      this.toastService.error('Failed to generate PDF. Please try again.');
+    }
   }
 
   downloadEmployeePDFFromSummary(emp: EmployeeSummary): void {
@@ -663,8 +668,21 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
     doc.text(summaryText, pageWidth - margin - 8, yPos + 9.5, { align: 'right' });
 
     const fileName = `Timesheet_${emp.name.replace(/\s+/g, '_')}_${this.periodStartDate}.pdf`;
-    doc.save(fileName);
-    this.toastService.success('PDF downloaded successfully');
+    try {
+      const pdfBlob = doc.output('blob');
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      this.toastService.success('PDF downloaded successfully');
+    } catch (e) {
+      doc.save(fileName);
+      this.toastService.success('PDF downloaded successfully');
+    }
   }
 
   downloadCurrentEmployeeExcel(): void {
@@ -770,8 +788,22 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
       });
     }
 
-    doc.save(`Weekly_Timesheet_${this.periodStartDate}_${this.periodEndDate}.pdf`);
-    this.toastService.success('PDF downloaded');
+    const fileName = `Weekly_Timesheet_${this.periodStartDate}_${this.periodEndDate}.pdf`;
+    try {
+      const pdfBlob = doc.output('blob');
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      this.toastService.success('PDF downloaded');
+    } catch (e) {
+      doc.save(fileName);
+      this.toastService.success('PDF downloaded');
+    }
   }
 
   downloadExcel(): void {

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, timeout } from 'rxjs';
 
 export interface SalaryHead {
   id?: number;
@@ -478,7 +478,9 @@ export class PayrollService {
   }
 
   calculatePayroll(runId: number): Observable<PayrollRun> {
-    return this.http.post<PayrollRun>(`${this.payrollUrl}/runs/${runId}/calculate`, {});
+    return this.http.post<PayrollRun>(`${this.payrollUrl}/runs/${runId}/calculate`, {}).pipe(
+      timeout(120000)
+    );
   }
 
   processPayroll(runId: number, data: any): Observable<PayrollRun> {
