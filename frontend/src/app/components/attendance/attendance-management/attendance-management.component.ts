@@ -1,11 +1,11 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { AttendanceService, AttendanceRecord, AttendanceRule, ProjectTimeEntry } from '../../../services/attendance.service';
 import { EmployeeService, Employee } from '../../../services/employee.service';
 import { ToastService } from '../../../services/toast.service';
-import { finalize, forkJoin } from 'rxjs';
+import { finalize, forkJoin, Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-attendance-management',
@@ -15,7 +15,8 @@ import { finalize, forkJoin } from 'rxjs';
   styleUrls: ['./attendance-management.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AttendanceManagementComponent implements OnInit {
+export class AttendanceManagementComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   employees: Employee[] = [];
   attendanceRecords: AttendanceRecord[] = [];
   filteredRecords: AttendanceRecord[] = [];
@@ -25,6 +26,7 @@ export class AttendanceManagementComponent implements OnInit {
   selectedDate: string = new Date().toISOString().split('T')[0];
   selectedEmployeeId: number | null = null;
   filterStatus = '';
+  filterProject = '';
   searchTerm = '';
   loading = false;
   dataLoaded = false;
@@ -38,11 +40,11 @@ export class AttendanceManagementComponent implements OnInit {
   bulkFile: File | null = null;
   newRule: AttendanceRule = this.getEmptyRule();
   newProjectTime: ProjectTimeEntry = this.getEmptyProjectTime();
-  
+
   selectAll = false;
   approvingId: number | null = null;
   bulkApproving = false;
-  
+
   showEditModal = false;
   editingRecord: AttendanceRecord | null = null;
   editForm = {
@@ -52,6 +54,15 @@ export class AttendanceManagementComponent implements OnInit {
     remarks: '',
     calculatedHours: 0
   };
+
+  editingRowId: number | null = null;
+  editClockIn = '';
+  editClockOut = '';
+
+  showDeleteConfirm = false;
+  deletingRecord: AttendanceRecord | null = null;
+
+  projectList: string[] = [];
 
   currentPage = 1;
   pageSize = 10;
@@ -72,11 +83,12 @@ export class AttendanceManagementComponent implements OnInit {
     if (this.dataLoaded) return;
     this.loading = true;
     this.cdr.detectChanges();
-    
+
     forkJoin({
       employees: this.employeeService.getAll(),
       records: this.attendanceService.getByDate(this.selectedDate)
     }).pipe(
+      takeUntil(this.destroy$),
       finalize(() => {
         this.loading = false;
         this.dataLoaded = true;
@@ -86,6 +98,7 @@ export class AttendanceManagementComponent implements OnInit {
       next: (data) => {
         this.employees = data.employees;
         this.attendanceRecords = data.records;
+        this.buildProjectList();
         this.applyFilters();
         this.cdr.detectChanges();
       },
@@ -100,8 +113,9 @@ export class AttendanceManagementComponent implements OnInit {
   loadAttendanceRecords(): void {
     this.loading = true;
     this.cdr.detectChanges();
-    
+
     this.attendanceService.getByDate(this.selectedDate).pipe(
+      takeUntil(this.destroy$),
       finalize(() => {
         this.loading = false;
         this.cdr.detectChanges();
@@ -109,6 +123,7 @@ export class AttendanceManagementComponent implements OnInit {
     ).subscribe({
       next: (data) => {
         this.attendanceRecords = data;
+        this.buildProjectList();
         this.applyFilters();
         this.cdr.detectChanges();
       },
@@ -118,6 +133,15 @@ export class AttendanceManagementComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  buildProjectList(): void {
+    const projects = new Set<string>();
+    this.attendanceRecords.forEach(r => {
+      const name = r.projectName || r.project?.name;
+      if (name) projects.add(name);
+    });
+    this.projectList = Array.from(projects).sort();
   }
 
   onDateChange(): void {
@@ -142,7 +166,14 @@ export class AttendanceManagementComponent implements OnInit {
       const term = this.searchTerm.toLowerCase();
       records = records.filter(r => {
         const name = this.getEmployeeName(r.employee).toLowerCase();
-        return name.includes(term);
+        const code = (r.employee?.employeeCode || '').toLowerCase();
+        return name.includes(term) || code.includes(term);
+      });
+    }
+    if (this.filterProject) {
+      records = records.filter(r => {
+        const projName = r.projectName || r.project?.name || '';
+        return projName === this.filterProject;
       });
     }
     this.filteredRecords = records;
@@ -157,11 +188,10 @@ export class AttendanceManagementComponent implements OnInit {
   formatDisplayDate(dateStr: string): string {
     if (!dateStr) return '';
     const date = new Date(dateStr + 'T00:00:00');
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
     });
   }
 
@@ -197,10 +227,12 @@ export class AttendanceManagementComponent implements OnInit {
     this.manualEntry = this.getEmptyManualEntry();
     this.manualEntry.attendanceDate = this.selectedDate;
     this.showManualEntryModal = true;
+    this.cdr.markForCheck();
   }
 
   closeManualEntryModal(): void {
     this.showManualEntryModal = false;
+    this.cdr.markForCheck();
   }
 
   saveManualEntry(): void {
@@ -219,17 +251,21 @@ export class AttendanceManagementComponent implements OnInit {
     };
 
     this.loading = true;
+    this.cdr.markForCheck();
     this.attendanceService.manualEntry(record).pipe(
-      finalize(() => this.loading = false)
+      finalize(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      })
     ).subscribe({
       next: () => {
-        this.toastService.success('Manual entry saved successfully');
+        this.toastService.success('Attendance entry added successfully');
         this.closeManualEntryModal();
         this.loadAttendanceRecords();
       },
       error: (err) => {
         console.error('Error saving manual entry:', err);
-        this.toastService.error('Failed to save manual entry');
+        this.toastService.error('Failed to save attendance entry');
       }
     });
   }
@@ -241,7 +277,8 @@ export class AttendanceManagementComponent implements OnInit {
       clockIn: '',
       clockOut: '',
       status: 'PRESENT',
-      remarks: ''
+      remarks: '',
+      projectName: ''
     };
   }
 
@@ -312,7 +349,7 @@ export class AttendanceManagementComponent implements OnInit {
     if (!record.id) return;
     this.approvingId = record.id;
     this.cdr.markForCheck();
-    
+
     this.attendanceService.approve(record.id).subscribe({
       next: (updated) => {
         record.approvalStatus = 'APPROVED';
@@ -332,10 +369,10 @@ export class AttendanceManagementComponent implements OnInit {
   rejectRecord(record: AttendanceRecord): void {
     if (!record.id) return;
     const remarks = prompt('Enter rejection reason (optional):');
-    
+
     this.approvingId = record.id;
     this.cdr.markForCheck();
-    
+
     this.attendanceService.reject(record.id, remarks || undefined).subscribe({
       next: (updated) => {
         record.approvalStatus = 'REJECTED';
@@ -358,11 +395,11 @@ export class AttendanceManagementComponent implements OnInit {
       this.toastService.warning('No pending records selected');
       return;
     }
-    
+
     const ids = selected.map(r => r.id!).filter(id => id);
     this.bulkApproving = true;
     this.cdr.markForCheck();
-    
+
     this.attendanceService.bulkApprove(ids).subscribe({
       next: (result) => {
         this.toastService.success(`${result.approved} record(s) approved`);
@@ -415,6 +452,85 @@ export class AttendanceManagementComponent implements OnInit {
     const regular = record.regularHours || 0;
     const ot = record.overtimeHours || 0;
     return (regular + ot).toFixed(1);
+  }
+
+  startInlineEdit(record: AttendanceRecord): void {
+    this.editingRowId = record.id || null;
+    this.editClockIn = record.clockIn || '';
+    this.editClockOut = record.clockOut || '';
+    this.cdr.markForCheck();
+  }
+
+  cancelInlineEdit(): void {
+    this.editingRowId = null;
+    this.editClockIn = '';
+    this.editClockOut = '';
+    this.cdr.markForCheck();
+  }
+
+  saveInlineEdit(record: AttendanceRecord): void {
+    if (!record.id) return;
+
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    const updateData = {
+      clockIn: this.editClockIn || null,
+      clockOut: this.editClockOut || null,
+      status: record.status,
+      remarks: record.remarks
+    };
+
+    this.attendanceService.update(record.id, updateData as any).pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: () => {
+        this.toastService.success('Record updated successfully');
+        this.cancelInlineEdit();
+        this.loadAttendanceRecords();
+      },
+      error: (err) => {
+        this.toastService.error(err.error?.error || 'Failed to update record');
+      }
+    });
+  }
+
+  confirmDelete(record: AttendanceRecord): void {
+    this.deletingRecord = record;
+    this.showDeleteConfirm = true;
+    this.cdr.markForCheck();
+  }
+
+  cancelDelete(): void {
+    this.showDeleteConfirm = false;
+    this.deletingRecord = null;
+    this.cdr.markForCheck();
+  }
+
+  executeDelete(): void {
+    if (!this.deletingRecord?.id) return;
+
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    this.attendanceService.delete(this.deletingRecord.id).pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      })
+    ).subscribe({
+      next: () => {
+        this.toastService.success('Attendance record deleted');
+        this.cancelDelete();
+        this.loadAttendanceRecords();
+      },
+      error: (err) => {
+        this.toastService.error(err.error?.error || 'Failed to delete record');
+      }
+    });
   }
 
   openEditModal(record: AttendanceRecord): void {
@@ -470,7 +586,7 @@ export class AttendanceManagementComponent implements OnInit {
         this.cdr.markForCheck();
       })
     ).subscribe({
-      next: (updated) => {
+      next: () => {
         this.toastService.success('Attendance record updated successfully');
         this.closeEditModal();
         this.loadAttendanceRecords();
@@ -479,5 +595,10 @@ export class AttendanceManagementComponent implements OnInit {
         this.toastService.error(err.error?.error || 'Failed to update record');
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

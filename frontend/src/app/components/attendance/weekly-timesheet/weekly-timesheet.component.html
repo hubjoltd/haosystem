@@ -1,148 +1,167 @@
 <div class="weekly-timesheet">
-  <div class="page-header">
-    <div class="header-left">
-      <h1>Weekly Timesheets</h1>
+  <div class="company-banner">
+    <div class="banner-left">
+      <h1 class="company-name">{{ companyName }}</h1>
+      <p class="banner-subtitle">Weekly Timesheet Report</p>
     </div>
-    <div class="header-right">
-      <div class="date-picker">
-        <i class="fas fa-calendar"></i>
-        <input type="date" [(ngModel)]="selectedDate" (change)="onDateChange()" />
+    <div class="banner-right">
+      <span class="generated-date">Generated on {{ getCurrentDateFormatted() }}</span>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <div class="section-header">
+      <div class="section-title-area">
+        <h2 class="section-title">Timesheet Records</h2>
+        <p class="section-subtitle">View and manage employee time records</p>
       </div>
-      <button class="btn-generate" (click)="generateTimesheet()" [disabled]="generating">
-        <i class="fas" [ngClass]="generating ? 'fa-spinner fa-spin' : 'fa-sync-alt'"></i>
-        Generate
+      <div class="header-controls">
+        <div class="date-filters">
+          <div class="date-field">
+            <label>From:</label>
+            <input type="date" [(ngModel)]="fromDate" (change)="onFromDateChange()" />
+          </div>
+          <div class="date-field">
+            <label>To:</label>
+            <input type="date" [(ngModel)]="toDate" (change)="onToDateChange()" />
+          </div>
+        </div>
+        <div class="export-buttons-inline">
+          <button class="btn-excel" (click)="downloadExcel()">
+            <i class="fas fa-file-excel"></i> Excel
+          </button>
+          <button class="btn-pdf-export" (click)="downloadPDF()">
+            <i class="fas fa-file-pdf"></i> PDF
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="view-toggle">
+      <button class="toggle-btn" [class.active]="viewMode === 'employee'" (click)="viewMode = 'employee'">
+        Employee Wise
+      </button>
+      <button class="toggle-btn" [class.active]="viewMode === 'project'" (click)="viewMode = 'project'">
+        Project Wise
       </button>
     </div>
-  </div>
 
-  <div class="summary-cards">
-    <div class="summary-card purple">
-      <span class="card-value">{{ totalEmployees }}</span>
-      <span class="card-label">Total Employees</span>
+    <div class="loading-indicator" *ngIf="loading">
+      <i class="fas fa-spinner fa-spin"></i> Loading timesheet data...
     </div>
-    <div class="summary-card yellow">
-      <span class="card-value">{{ totalHours.toFixed(1) }}h</span>
-      <span class="card-label">Total Hours</span>
+
+    <div class="employee-view" *ngIf="!loading && viewMode === 'employee'">
+      <div class="filter-bar">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search by employee name or ID..." [(ngModel)]="searchQuery" />
+        </div>
+        <select class="employee-dropdown" [(ngModel)]="selectedEmployeeFilter">
+          <option value="all">All Employees</option>
+          <option *ngFor="let emp of employeeSummaries" [value]="emp.employeeId">{{ emp.name }}</option>
+        </select>
+      </div>
+
+      <div class="table-container">
+        <table class="timesheet-table">
+          <thead>
+            <tr>
+              <th>Employee ID</th>
+              <th>Employee</th>
+              <th>Project</th>
+              <th>Week Period</th>
+              <th>Regular Hours</th>
+              <th>OT Hours</th>
+              <th>Total Hours</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let emp of filteredEmployeeSummaries">
+              <td class="emp-id">{{ emp.employeeCode || '-' }}</td>
+              <td class="employee-cell">
+                <div class="avatar">{{ getInitials(emp.name) }}</div>
+                <span class="name">{{ emp.name }}</span>
+              </td>
+              <td>{{ emp.project || '-' }}</td>
+              <td>{{ getWeekRangeDisplay() }}</td>
+              <td>{{ emp.regularHours.toFixed(1) }} hrs</td>
+              <td class="ot-hours">{{ emp.overtimeHours.toFixed(1) }} hrs</td>
+              <td class="total-hours">{{ emp.totalHours.toFixed(1) }} hrs</td>
+              <td><span class="badge badge-approved">Approved</span></td>
+              <td class="actions-cell">
+                <button class="btn-view-details" (click)="openEmployeeModal(emp)">View Details</button>
+              </td>
+            </tr>
+            <tr *ngIf="filteredEmployeeSummaries.length === 0">
+              <td colspan="9" class="no-data">No attendance records found for this period</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div class="summary-card orange">
-      <span class="card-value">{{ totalOvertime.toFixed(1) }}h</span>
-      <span class="card-label">OT Hours</span>
+
+    <div class="project-view" *ngIf="!loading && viewMode === 'project'">
+      <div class="table-container">
+        <table class="timesheet-table">
+          <thead>
+            <tr>
+              <th>Project Name</th>
+              <th>Employees</th>
+              <th>Regular Hours</th>
+              <th>OT Hours</th>
+              <th>Total Hours</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let project of projectSummaries">
+              <td class="project-name">{{ project.name }}</td>
+              <td>{{ project.employeeCount }} employees</td>
+              <td>{{ project.regularHours.toFixed(0) }} hrs</td>
+              <td class="ot-hours">{{ project.overtimeHours.toFixed(0) }} hrs</td>
+              <td class="total-hours">{{ project.totalHours.toFixed(0) }} hrs</td>
+              <td class="actions-cell">
+                <button class="btn-view-details" (click)="openProjectModal(project)">View Details</button>
+              </td>
+            </tr>
+            <tr *ngIf="projectSummaries.length === 0">
+              <td colspan="6" class="no-data">No project data found for this period</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
-
-  <div class="view-toggle">
-    <button class="toggle-btn" [class.active]="viewMode === 'employee'" (click)="viewMode = 'employee'">
-      <i class="fas fa-users"></i> By Employee
-    </button>
-    <button class="toggle-btn" [class.active]="viewMode === 'project'" (click)="viewMode = 'project'">
-      <i class="fas fa-project-diagram"></i> By Project
-    </button>
-    <div class="period-info">
-      <span class="period-label">{{ getWeekRangeDisplay() }}</span>
-    </div>
-  </div>
-
-  <div class="loading-indicator" *ngIf="loading">
-    <i class="fas fa-spinner fa-spin"></i> Loading timesheet data...
-  </div>
-
-  <!-- Employee View -->
-  <div class="employee-view" *ngIf="!loading && viewMode === 'employee'">
-    <table class="timesheet-table">
-      <thead>
-        <tr>
-          <th>Employee</th>
-          <th>Employee ID</th>
-          <th>Period</th>
-          <th>Days Attended</th>
-          <th>OT Hours</th>
-          <th>Total Hours</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let emp of employeeSummaries">
-          <td class="employee-cell">
-            <div class="avatar">{{ getInitials(emp.name) }}</div>
-            <span class="name">{{ emp.name }}</span>
-          </td>
-          <td class="emp-id">{{ emp.employeeCode || '-' }}</td>
-          <td>{{ getWeekRangeDisplay() }}</td>
-          <td>{{ emp.daysAttended }}</td>
-          <td class="ot-hours">{{ emp.overtimeHours.toFixed(1) }}h</td>
-          <td class="total-hours">{{ emp.totalHours.toFixed(1) }}h</td>
-          <td class="actions-cell">
-            <button class="btn-view" (click)="openEmployeeModal(emp)" title="View Timesheet">
-              <i class="fas fa-eye"></i>
-            </button>
-            <button class="btn-pdf" (click)="downloadEmployeePDFFromSummary(emp)" title="Download PDF">
-              <i class="fas fa-file-pdf"></i>
-            </button>
-          </td>
-        </tr>
-        <tr *ngIf="employeeSummaries.length === 0">
-          <td colspan="7" class="no-data">No attendance records found for this period</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Project View -->
-  <div class="project-view" *ngIf="!loading && viewMode === 'project'">
-    <table class="timesheet-table">
-      <thead>
-        <tr>
-          <th>Project Name</th>
-          <th>Employees</th>
-          <th>Regular Hours</th>
-          <th>OT Hours</th>
-          <th>Total Hours</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let project of projectSummaries" class="project-row">
-          <td class="project-name">{{ project.name }}</td>
-          <td>{{ project.employeeCount }}</td>
-          <td>{{ project.regularHours.toFixed(1) }}h</td>
-          <td class="ot-hours">{{ project.overtimeHours.toFixed(1) }}h</td>
-          <td class="total-hours">{{ project.totalHours.toFixed(1) }}h</td>
-        </tr>
-        <tr *ngIf="projectSummaries.length === 0">
-          <td colspan="5" class="no-data">No project data found for this period</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="export-buttons" *ngIf="!loading && (employeeSummaries.length > 0 || projectSummaries.length > 0)">
-    <button class="btn-export pdf" (click)="downloadPDF()">
-      <i class="fas fa-file-pdf"></i> Export PDF
-    </button>
-    <button class="btn-export csv" (click)="downloadCSV()">
-      <i class="fas fa-file-csv"></i> Export CSV
-    </button>
   </div>
 </div>
 
-<!-- Employee Timesheet Modal -->
 <div class="modal-overlay" *ngIf="showEmployeeModal" (click)="closeEmployeeModal()">
   <div class="modal-content employee-timesheet-modal" (click)="$event.stopPropagation()">
-    <div class="modal-header blue-header">
-      <h2>EMPLOYEE TIMESHEET</h2>
-      <p class="period-text">{{ getWeekRangeDisplay() }}</p>
+    <div class="modal-header gradient-header">
+      <div class="modal-header-content">
+        <span class="modal-company-name">{{ companyName }}</span>
+        <h2>EMPLOYEE TIMESHEET</h2>
+        <p class="period-text">Period: {{ getWeekRangeDisplay() }}</p>
+      </div>
       <button class="btn-close" (click)="closeEmployeeModal()">
         <i class="fas fa-times"></i>
       </button>
     </div>
-    
+
     <div class="modal-body">
+      <div class="modal-export-buttons">
+        <button class="btn-excel" (click)="downloadCurrentEmployeeExcel()">
+          <i class="fas fa-file-excel"></i> Download Excel
+        </button>
+        <button class="btn-pdf-export" (click)="downloadCurrentEmployeePDF()">
+          <i class="fas fa-file-pdf"></i> Download PDF
+        </button>
+      </div>
+
       <div class="employee-info-section">
         <h3>Employee Information</h3>
         <div class="info-grid">
-          <div class="info-row">
-            <span class="label">Employee Name</span>
-            <span class="value">{{ selectedEmployeeSummary?.name }}</span>
-          </div>
           <div class="info-row">
             <span class="label">Employee ID</span>
             <span class="value">{{ selectedEmployeeSummary?.employeeCode || '-' }}</span>
@@ -151,59 +170,127 @@
             <span class="label">Department</span>
             <span class="value">{{ selectedEmployeeSummary?.department || '-' }}</span>
           </div>
+          <div class="info-row">
+            <span class="label">Name</span>
+            <span class="value">{{ selectedEmployeeSummary?.name }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Status</span>
+            <span class="value"><span class="badge badge-approved">Approved</span></span>
+          </div>
         </div>
       </div>
 
-      <table class="daily-timesheet-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Day</th>
-            <th>Check In</th>
-            <th>Check Out</th>
-            <th>Regular Hrs</th>
-            <th>OT Hrs</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let record of employeeWeekRecords">
-            <td>{{ formatDateShort(record.date) }}</td>
-            <td>{{ getDayName(record.date) }}</td>
-            <td>{{ record.clockIn || '-' }}</td>
-            <td>{{ record.clockOut || '-' }}</td>
-            <td>{{ record.hours > 0 ? record.hours.toFixed(2) : '-' }}</td>
-            <td>{{ record.overtime > 0 ? record.overtime.toFixed(2) : '-' }}</td>
-          </tr>
-          <tr *ngIf="employeeWeekRecords.length === 0">
-            <td colspan="6" class="no-records">No records for this period</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="daily-table-container">
+        <table class="daily-timesheet-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Day</th>
+              <th>Clock In</th>
+              <th>Clock Out</th>
+              <th>Lunch</th>
+              <th>Reg Hrs</th>
+              <th>OT Hrs</th>
+              <th>Total</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let record of employeeWeekRecords; let i = index" [class.weekend-row]="isWeekend(record.date)">
+              <td>{{ i + 1 }}</td>
+              <td>{{ formatDateFull(record.date) }}</td>
+              <td>{{ getDayFullName(record.date) }}</td>
+              <td>{{ record.clockIn || '-' }}</td>
+              <td>{{ record.clockOut || '-' }}</td>
+              <td>{{ record.lunchBreak ? record.lunchBreak + ' min' : '-' }}</td>
+              <td>{{ record.hours.toFixed(1) }}</td>
+              <td>{{ record.overtime.toFixed(1) }}</td>
+              <td>{{ getRecordTotal(record).toFixed(1) }}</td>
+              <td>
+                <span *ngIf="record.status === 'Holiday'" class="badge badge-holiday">Holiday</span>
+                <span *ngIf="record.status !== 'Holiday' && record.hours > 0" class="badge badge-approved">approved</span>
+                <span *ngIf="record.status !== 'Holiday' && record.hours === 0 && !isWeekend(record.date)">-</span>
+              </td>
+            </tr>
+            <tr *ngIf="employeeWeekRecords.length === 0">
+              <td colspan="10" class="no-records">No records for this period</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-      <div class="summary-section">
-        <h3>SUMMARY</h3>
-        <div class="summary-grid">
-          <div class="summary-item">
-            <span class="label">Regular Hours All</span>
-            <span class="value">{{ getEmployeeTotalRegular().toFixed(1) }}H</span>
-          </div>
-          <div class="summary-item">
-            <span class="label">Overtime Hours All</span>
-            <span class="value">{{ getEmployeeTotalOT().toFixed(1) }}H</span>
-          </div>
-          <div class="summary-item highlight">
-            <span class="label">Total Hours All</span>
-            <span class="value">{{ getEmployeeTotalHours().toFixed(1) }}H</span>
-          </div>
+      <div class="summary-bar">
+        <div class="summary-item">
+          <span class="summary-label">Regular Hours:</span>
+          <span class="summary-value">{{ getEmployeeTotalRegular().toFixed(1) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Overtime Hours:</span>
+          <span class="summary-value">{{ getEmployeeTotalOT().toFixed(1) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Total Hours:</span>
+          <span class="summary-value">{{ getEmployeeTotalHours().toFixed(1) }}</span>
         </div>
       </div>
     </div>
+  </div>
+</div>
 
-    <div class="modal-footer">
-      <button class="btn-download" (click)="downloadCurrentEmployeePDF()">
-        <i class="fas fa-file-pdf"></i> Download PDF
+<div class="modal-overlay" *ngIf="showProjectModal" (click)="closeProjectModal()">
+  <div class="modal-content project-detail-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header project-modal-header">
+      <div class="modal-header-content">
+        <span class="modal-company-name">{{ companyName }}</span>
+        <div class="project-title-row">
+          <i class="fas fa-project-diagram project-icon"></i>
+          <h2>{{ selectedProjectSummary?.name }}</h2>
+        </div>
+      </div>
+      <button class="btn-close" (click)="closeProjectModal()">
+        <i class="fas fa-times"></i>
       </button>
-      <button class="btn-secondary" (click)="closeEmployeeModal()">Close</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-export-buttons">
+        <button class="btn-excel" (click)="downloadProjectExcel()">
+          <i class="fas fa-file-excel"></i> Download Excel
+        </button>
+        <button class="btn-pdf-export" (click)="downloadProjectPDF()">
+          <i class="fas fa-file-pdf"></i> Download PDF
+        </button>
+      </div>
+
+      <div class="daily-table-container">
+        <table class="project-employees-table">
+          <thead>
+            <tr>
+              <th>Employee ID</th>
+              <th>Employee Name</th>
+              <th>Period</th>
+              <th>Regular Hours</th>
+              <th>OT Hours</th>
+              <th>Total Hours</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let emp of projectEmployees">
+              <td class="emp-id">{{ emp.employeeCode || '-' }}</td>
+              <td>{{ emp.name }}</td>
+              <td>{{ getWeekRangeDisplay() }}</td>
+              <td>{{ emp.regularHours.toFixed(1) }} hrs</td>
+              <td class="ot-hours">{{ emp.overtimeHours.toFixed(1) }} hrs</td>
+              <td class="total-hours">{{ emp.totalHours.toFixed(1) }} hrs</td>
+            </tr>
+            <tr *ngIf="projectEmployees.length === 0">
+              <td colspan="6" class="no-data">No employees found for this project</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>

@@ -1,29 +1,48 @@
 <div class="daily-attendance">
   <div class="page-header">
-    <h1>Daily Attendance</h1>
-    <p class="subtitle">View attendance records by date</p>
+    <div class="header-left">
+      <h1>Daily Attendance</h1>
+      <p class="subtitle">View attendance records by date</p>
+    </div>
+    <button class="btn-add-entry" (click)="openManualEntryModal()">
+      <i class="fas fa-plus"></i> Add Entry
+    </button>
   </div>
 
-  
   <div class="summary-cards">
     <div class="summary-card total">
-      <span class="card-label">Total Employees</span>
-      <span class="card-value">{{ employees.length }}</span>
+      <div class="card-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <div class="card-info">
+        <span class="card-label">Total Employees</span>
+        <span class="card-value">{{ employees.length }}</span>
+      </div>
     </div>
     <div class="summary-card present">
-      <span class="card-label">Present</span>
-      <span class="card-value">{{ countByStatus('PRESENT') + countWorking() }}</span>
+      <div class="card-icon">
+        <i class="fas fa-user-check"></i>
+      </div>
+      <div class="card-info">
+        <span class="card-label">Present</span>
+        <span class="card-value">{{ countByStatus('PRESENT') + countWorking() }}</span>
+      </div>
     </div>
     <div class="summary-card absent">
-      <span class="card-label">Absent</span>
-      <span class="card-value">{{ employees.length - (countByStatus('PRESENT') + countWorking()) }}</span>
+      <div class="card-icon">
+        <i class="fas fa-user-times"></i>
+      </div>
+      <div class="card-info">
+        <span class="card-label">Absent</span>
+        <span class="card-value">{{ employees.length - (countByStatus('PRESENT') + countWorking()) }}</span>
+      </div>
     </div>
   </div>
 
   <div class="attendance-table-section">
     <div class="table-header">
       <div class="date-label">
-        <i class="fas fa-calendar"></i>
+        <i class="fas fa-calendar-alt"></i>
         <span>Attendance for {{ formatDisplayDate(selectedDate) }}</span>
       </div>
       <div class="filters">
@@ -31,10 +50,11 @@
           <i class="fas fa-search"></i>
           <input type="text" placeholder="Search employee..." [(ngModel)]="searchTerm" (ngModelChange)="onSearchChange()" />
         </div>
+        <select class="filter-select" [(ngModel)]="filterProject" (ngModelChange)="applyFilters()">
+          <option value="">All Projects</option>
+          <option *ngFor="let proj of projectList" [value]="proj">{{ proj }}</option>
+        </select>
         <input type="date" [(ngModel)]="selectedDate" (change)="onDateChange()" class="date-picker" />
-        <button class="btn-add-attendance" (click)="openManualEntryModal()">
-          <i class="fas fa-plus"></i> Add Attendance
-        </button>
       </div>
     </div>
 
@@ -42,71 +62,69 @@
       <i class="fas fa-spinner fa-spin"></i> Loading...
     </div>
 
-    <table class="attendance-table" *ngIf="!loading">
-      <thead>
-        <tr>
-          <th><input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()" /></th>
-          <th>Employee</th>
-          <th>Employee ID</th>
-          <th>Clock In</th>
-          <th>Clock Out</th>
-          <th>Regular</th>
-          <th>OT</th>
-          <th>Work</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let record of paginatedRecords">
-          <td><input type="checkbox" [(ngModel)]="record.selected" /></td>
-          <td>
-            <div class="employee-cell">
-              <div class="avatar">{{ getInitials(record.employee) }}</div>
-              <span class="name">{{ getEmployeeName(record.employee) }}</span>
-            </div>
-          </td>
-          <td class="emp-id">{{ record.employee?.employeeCode || record.employee?.id || '-' }}</td>
-          <td>{{ formatTime(record.clockIn) }}</td>
-          <td>{{ formatTime(record.clockOut) }}</td>
-          <td class="hours-col">{{ record.regularHours?.toFixed(1) || '0.0' }}</td>
-          <td class="hours-col ot">{{ record.overtimeHours?.toFixed(1) || '0.0' }}</td>
-          <td class="hours-col total">{{ calculateTotalHours(record) }}</td>
-          <td>
-            <span class="status-badge" [ngClass]="getStatusBadgeClass(record)">
-              {{ getDisplayStatus(record) }}
-            </span>
-          </td>
-          <td class="actions-cell">
-            <button class="btn-edit" (click)="openEditModal(record)" title="Edit">
-              <i class="fas fa-edit"></i>
-            </button>
-            <button *ngIf="record.approvalStatus === 'PENDING'" 
-                    class="btn-approve" 
-                    (click)="approveRecord(record)"
-                    [disabled]="approvingId === record.id">
-              <i class="fas fa-check"></i>
-            </button>
-            <button *ngIf="record.approvalStatus === 'PENDING'" 
-                    class="btn-reject" 
-                    (click)="rejectRecord(record)"
-                    [disabled]="approvingId === record.id">
-              <i class="fas fa-times"></i>
-            </button>
-            <span *ngIf="record.approvalStatus === 'APPROVED'" class="approved-label">
-              <i class="fas fa-check-circle"></i>
-            </span>
-            <span *ngIf="record.approvalStatus === 'REJECTED'" class="rejected-label">
-              <i class="fas fa-times-circle"></i>
-            </span>
-          </td>
-        </tr>
-        <tr *ngIf="filteredRecords.length === 0">
-          <td colspan="10" class="no-data">No attendance records found for this date</td>
-        </tr>
-      </tbody>
-    </table>
-    
+    <div class="table-wrapper">
+      <table class="attendance-table" *ngIf="!loading">
+        <thead>
+          <tr>
+            <th class="col-check"><input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()" /></th>
+            <th>Employee ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Type</th>
+            <th>Clock In</th>
+            <th>Clock Out</th>
+            <th>Regular</th>
+            <th>OT</th>
+            <th>Project</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of paginatedRecords" [class.editing-row]="editingRowId === record.id">
+            <td class="col-check"><input type="checkbox" [(ngModel)]="record.selected" /></td>
+            <td>{{ record.employee?.employeeCode || record.employee?.id || '—' }}</td>
+            <td>{{ record.employee?.firstName || '—' }}</td>
+            <td>{{ record.employee?.lastName || '—' }}</td>
+            <td>
+              <span class="type-badge work">Work</span>
+            </td>
+            <td>
+              <span *ngIf="editingRowId !== record.id">{{ formatTime(record.clockIn) }}</span>
+              <input *ngIf="editingRowId === record.id" type="time" [(ngModel)]="editClockIn" class="inline-time-input" />
+            </td>
+            <td>
+              <span *ngIf="editingRowId !== record.id">{{ formatTime(record.clockOut) }}</span>
+              <input *ngIf="editingRowId === record.id" type="time" [(ngModel)]="editClockOut" class="inline-time-input" />
+            </td>
+            <td class="hours-col">{{ record.regularHours ? record.regularHours.toFixed(1) : '—' }}</td>
+            <td class="hours-col">{{ record.overtimeHours ? record.overtimeHours.toFixed(1) : '—' }}</td>
+            <td>{{ record.projectName || record.project?.name || '—' }}</td>
+            <td class="actions-cell">
+              <ng-container *ngIf="editingRowId !== record.id">
+                <button class="btn-action btn-edit" (click)="startInlineEdit(record)" title="Edit">
+                  <i class="fas fa-pencil-alt"></i>
+                </button>
+                <button class="btn-action btn-delete" (click)="confirmDelete(record)" title="Delete">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </ng-container>
+              <ng-container *ngIf="editingRowId === record.id">
+                <button class="btn-action btn-save-inline" (click)="saveInlineEdit(record)" title="Save">
+                  <i class="fas fa-check"></i>
+                </button>
+                <button class="btn-action btn-cancel-inline" (click)="cancelInlineEdit()" title="Cancel">
+                  <i class="fas fa-times"></i>
+                </button>
+              </ng-container>
+            </td>
+          </tr>
+          <tr *ngIf="filteredRecords.length === 0">
+            <td colspan="11" class="no-data">No attendance records found for this date</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <div class="pagination-bar" *ngIf="filteredRecords.length > 0">
       <div class="pagination-info">
         Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, filteredRecords.length) }} of {{ filteredRecords.length }}
@@ -115,15 +133,15 @@
         <button class="page-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
           <i class="fas fa-chevron-left"></i>
         </button>
-        <button class="page-btn" *ngFor="let page of getPageNumbers()" 
-                [class.active]="page === currentPage" 
+        <button class="page-btn" *ngFor="let page of getPageNumbers()"
+                [class.active]="page === currentPage"
                 (click)="goToPage(page)">{{ page }}</button>
         <button class="page-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
           <i class="fas fa-chevron-right"></i>
         </button>
       </div>
     </div>
-    
+
     <div class="bulk-actions" *ngIf="getSelectedRecords().length > 0">
       <span>{{ getSelectedRecords().length }} record(s) selected</span>
       <button class="btn-bulk-approve" (click)="bulkApprove()" [disabled]="bulkApproving">
@@ -136,51 +154,73 @@
 <div class="modal-overlay" *ngIf="showManualEntryModal" (click)="closeManualEntryModal()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>Add Attendance</h2>
+      <h2>Add Attendance Entry</h2>
       <button class="close-btn" (click)="closeManualEntryModal()"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label>Employee *</label>
+        <label>Employee</label>
         <select [(ngModel)]="manualEntry.employeeId" class="form-control">
-          <option [ngValue]="null">-- Select Employee --</option>
+          <option [ngValue]="null">Select employee</option>
           <option *ngFor="let emp of employees" [ngValue]="emp.id">
             {{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})
           </option>
         </select>
       </div>
       <div class="form-group">
-        <label>Date *</label>
+        <label>Date</label>
         <input type="date" [(ngModel)]="manualEntry.attendanceDate" class="form-control" />
       </div>
       <div class="form-row">
         <div class="form-group">
           <label>Clock In</label>
-          <input type="time" [(ngModel)]="manualEntry.clockIn" class="form-control" />
+          <div class="time-input-wrapper">
+            <i class="fas fa-clock"></i>
+            <input type="time" [(ngModel)]="manualEntry.clockIn" class="form-control time-input" />
+          </div>
         </div>
         <div class="form-group">
           <label>Clock Out</label>
-          <input type="time" [(ngModel)]="manualEntry.clockOut" class="form-control" />
+          <div class="time-input-wrapper">
+            <i class="fas fa-clock"></i>
+            <input type="time" [(ngModel)]="manualEntry.clockOut" class="form-control time-input" />
+          </div>
         </div>
       </div>
       <div class="form-group">
-        <label>Status</label>
-        <select [(ngModel)]="manualEntry.status" class="form-control">
-          <option value="PRESENT">Present</option>
-          <option value="ABSENT">Absent</option>
-          <option value="HALF_DAY">Half Day</option>
-          <option value="ON_LEAVE">On Leave</option>
+        <label>Project <span class="optional-label">(Optional)</span></label>
+        <select [(ngModel)]="manualEntry.projectName" class="form-control">
+          <option value="">Select project</option>
+          <option *ngFor="let proj of projectList" [value]="proj">{{ proj }}</option>
         </select>
       </div>
       <div class="form-group">
-        <label>Remarks</label>
-        <textarea [(ngModel)]="manualEntry.remarks" class="form-control" rows="2"></textarea>
+        <label>Notes <span class="optional-label">(Optional)</span></label>
+        <textarea [(ngModel)]="manualEntry.remarks" class="form-control" rows="3" placeholder="Add any notes"></textarea>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" (click)="closeManualEntryModal()">Cancel</button>
-      <button class="btn-save" (click)="saveManualEntry()" [disabled]="loading">
-        <i class="fas fa-save"></i> Save Attendance
+      <button class="btn-add" (click)="saveManualEntry()" [disabled]="loading">
+        Add Entry
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+  <div class="modal-content modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Confirm Delete</h2>
+      <button class="close-btn" (click)="cancelDelete()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text">Are you sure you want to delete this attendance record? This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cancelDelete()">Cancel</button>
+      <button class="btn-delete-confirm" (click)="executeDelete()" [disabled]="loading">
+        Delete
       </button>
     </div>
   </div>
@@ -227,7 +267,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" (click)="closeEditModal()">Cancel</button>
-      <button class="btn-save" (click)="saveEditRecord()" [disabled]="loading">
+      <button class="btn-add" (click)="saveEditRecord()" [disabled]="loading">
         <i class="fas fa-save"></i> Save Changes
       </button>
     </div>

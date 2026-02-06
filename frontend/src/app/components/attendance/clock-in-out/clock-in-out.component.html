@@ -1,136 +1,125 @@
-<div class="time-clock-container">
+<div class="clock-container">
   <div class="page-header">
-    <h1>Time Clock</h1>
-    <p class="subtitle">Clock in and out for your shift</p>
+    <h1>Clock In / Clock Out</h1>
+    <p class="subtitle">Employee time tracking</p>
   </div>
 
   <div *ngIf="message" class="alert" [class.success]="messageType === 'success'" [class.error]="messageType === 'error'">
     {{ message }}
   </div>
 
-  <div class="main-content">
-    <div class="left-panel">
-      <div class="date-time-card">
-        <div class="calendar-icon">
-          <i class="fas fa-calendar-alt"></i>
+  <div class="filters-row">
+    <div class="filter-group">
+      <select class="filter-select" [(ngModel)]="selectedProject">
+        <option value="all">All Projects</option>
+      </select>
+
+      <input type="date" class="filter-date" [(ngModel)]="selectedDate" (ngModelChange)="onDateChange()" />
+
+      <span class="day-badge">{{ dayName }}</span>
+    </div>
+  </div>
+
+  <div class="table-section">
+    <div class="section-header">
+      <div class="section-title">
+        <span class="green-dot"></span>
+        <div>
+          <h2>Employees</h2>
+          <p>Manage employee attendance</p>
         </div>
-        <div class="date-display">{{ formatDate(currentTime) }}</div>
-        <div class="time-label">Current Time</div>
-        <div class="time-display">{{ formatTime(currentTime) }}</div>
       </div>
-
-      <div class="employee-section">
-        <div class="section-label">
-          <i class="fas fa-user"></i>
-          <span>Select Employee</span>
-        </div>
-        
-        <select [(ngModel)]="selectedEmployeeId" (ngModelChange)="onEmployeeChange()" class="employee-select" [disabled]="loadingEmployees">
-          <option [ngValue]="null" *ngIf="loadingEmployees">Loading employees...</option>
-          <option [ngValue]="null" *ngIf="!loadingEmployees">-- Select Employee --</option>
-          <option *ngFor="let emp of employees" [ngValue]="emp.id">
-            {{ emp.firstName }} {{ emp.lastName }} ({{ emp.employeeCode }})
-          </option>
-        </select>
-
-        <div class="selected-employee-card" *ngIf="selectedEmployee">
-          <div class="employee-avatar">{{ getEmployeeInitials(selectedEmployee) }}</div>
-          <div class="employee-info">
-            <span class="employee-name">{{ selectedEmployee.firstName }} {{ selectedEmployee.lastName }}</span>
-            <span class="employee-role">{{ selectedEmployee.designation?.title || selectedEmployee.jobRole?.title || 'Employee' }}</span>
-          </div>
-        </div>
-
-        <div class="clock-status" *ngIf="selectedEmployee && !loadingRecord">
-          <div class="status-card" *ngIf="isClockedIn()">
-            <div class="status-badge clocked-in">
-              <i class="fas fa-check-circle"></i> Currently Clocked In
-            </div>
-            <div class="clock-time">
-              <span class="label">Clock In Time:</span>
-              <span class="time">{{ formatClockTime(todayRecord?.clockIn) }}</span>
-            </div>
-          </div>
-          
-          <div class="status-card" *ngIf="isClockedOut()">
-            <div class="status-badge clocked-out">
-              <i class="fas fa-check-circle"></i> Clocked Out
-            </div>
-            <div class="clock-time">
-              <span class="label">Clock In:</span>
-              <span class="time">{{ formatClockTime(todayRecord?.clockIn) }}</span>
-            </div>
-            <div class="clock-time">
-              <span class="label">Clock Out:</span>
-              <span class="time">{{ formatClockTime(todayRecord?.clockOut) }}</span>
-            </div>
-          </div>
-          
-          <div class="status-card" *ngIf="!todayRecord">
-            <div class="status-badge not-clocked">
-              <i class="fas fa-clock"></i> Not Clocked In
-            </div>
-          </div>
-        </div>
-
-        <div class="loading-record" *ngIf="loadingRecord">
-          <i class="fas fa-spinner fa-spin"></i> Loading...
-        </div>
-
-        <div class="clock-buttons">
-          <button class="btn-clock-in" (click)="clockIn()" [disabled]="loadingClockIn || loadingClockOut || loadingRecord || !selectedEmployeeId || isClockedIn()">
-            <i class="fas fa-sign-in-alt" *ngIf="!loadingClockIn"></i>
-            <i class="fas fa-spinner fa-spin" *ngIf="loadingClockIn"></i>
-            <span>Clock In</span>
-          </button>
-          <button class="btn-clock-out" (click)="clockOut()" [disabled]="loadingClockIn || loadingClockOut || loadingRecord || !selectedEmployeeId || !isClockedIn()">
-            <i class="fas fa-sign-out-alt" *ngIf="!loadingClockOut"></i>
-            <i class="fas fa-spinner fa-spin" *ngIf="loadingClockOut"></i>
-            <span>Clock Out</span>
-          </button>
-        </div>
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search employee..." [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()" />
       </div>
     </div>
 
-    <div class="right-panel">
-      <div class="activity-section">
-        <div class="section-label">
-          <i class="fas fa-clock"></i>
-          <span>Today's Activity</span>
-        </div>
-
-        <div class="activity-list" *ngIf="todayActivities.length > 0">
-          <div class="activity-item" *ngFor="let record of todayActivities" [class.active]="record.clockIn && !record.clockOut">
-            <div class="activity-avatar">{{ getEmployeeInitials(record) }}</div>
-            <div class="activity-details">
-              <span class="activity-name">{{ getEmployeeName(record) }}</span>
-              <div class="activity-times">
-                <span class="time-in"><i class="fas fa-arrow-right"></i> In: {{ formatClockTime(record.clockIn) }}</span>
-                <span class="time-out"><i class="fas fa-arrow-left"></i> Out: {{ record.clockOut ? formatClockTime(record.clockOut) : '-' }}</span>
+    <div class="table-wrapper">
+      <table class="employee-table">
+        <thead>
+          <tr>
+            <th class="col-select"><input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()" /></th>
+            <th class="col-id">EMP ID</th>
+            <th class="col-name">EMPLOYEE</th>
+            <th class="col-position">POSITION</th>
+            <th class="col-dept">DEPARTMENT</th>
+            <th class="col-status">STATUS</th>
+            <th class="col-geo">GEOFENCE</th>
+            <th class="col-time">CLOCK IN</th>
+            <th class="col-time">CLOCK OUT</th>
+            <th class="col-lunch">LUNCH</th>
+            <th class="col-hours">HOURS</th>
+            <th class="col-action">ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="loadingEmployees || loadingRecords">
+            <td colspan="12" class="loading-cell">
+              <i class="fas fa-spinner fa-spin"></i> Loading...
+            </td>
+          </tr>
+          <tr *ngIf="!loadingEmployees && !loadingRecords && filteredRows.length === 0">
+            <td colspan="12" class="empty-cell">No employees found</td>
+          </tr>
+          <tr *ngFor="let row of filteredRows" [class.row-active]="getStatus(row) === 'clocked_in'">
+            <td class="col-select"><input type="checkbox" [(ngModel)]="row.selected" (change)="onRowSelect()" /></td>
+            <td class="col-id">{{ row.employee.employeeCode }}</td>
+            <td class="col-name">
+              <div class="employee-cell">
+                <span class="avatar" [style.background-color]="getAvatarColor(row.employee)">{{ getInitials(row.employee) }}</span>
+                <span class="emp-name">{{ row.employee.firstName }} {{ row.employee.lastName }}</span>
               </div>
-            </div>
-            <div class="activity-actions">
-              <button class="quick-clock-out-btn" 
-                      *ngIf="record.clockIn && !record.clockOut"
-                      (click)="quickClockOut(record)" 
-                      [disabled]="loadingClockOut"
-                      title="Clock Out">
-                <i class="fas fa-sign-out-alt" *ngIf="!loadingClockOut"></i>
-                <i class="fas fa-spinner fa-spin" *ngIf="loadingClockOut"></i>
-                <span>Clock Out</span>
+            </td>
+            <td class="col-position">{{ row.employee.designation?.title || row.employee.jobRole?.title || '—' }}</td>
+            <td class="col-dept">{{ row.employee.department?.name || '—' }}</td>
+            <td class="col-status">
+              <span class="status-badge" [ngClass]="{
+                'status-completed': getStatus(row) === 'completed',
+                'status-clocked': getStatus(row) === 'clocked_in',
+                'status-not': getStatus(row) === 'not_clocked'
+              }">{{ getStatusLabel(row) }}</span>
+            </td>
+            <td class="col-geo">
+              <span *ngIf="isOnSite(row) === true" class="geo-on">✓ On Site</span>
+              <span *ngIf="isOnSite(row) === false" class="geo-off">✗ Off Site</span>
+              <span *ngIf="isOnSite(row) === null" class="geo-none">—</span>
+            </td>
+            <td class="col-time">{{ getClockTime(row.record?.clockIn) }}</td>
+            <td class="col-time">{{ getClockTime(row.record?.clockOut) }}</td>
+            <td class="col-lunch">—</td>
+            <td class="col-hours">{{ getHours(row) }}</td>
+            <td class="col-action">
+              <button *ngIf="getStatus(row) === 'not_clocked'" class="btn-action btn-clock-in" (click)="openClockInModal(row.employee)" [disabled]="isProcessing(row.employee.id)">
+                <i class="fas fa-spinner fa-spin" *ngIf="isProcessing(row.employee.id) && loadingClockIn"></i>
+                <span *ngIf="!isProcessing(row.employee.id) || !loadingClockIn">Clock In</span>
               </button>
-              <div class="activity-status" *ngIf="record.clockOut" [class.completed]="record.clockOut">
-                Done
-              </div>
-            </div>
-          </div>
-        </div>
+              <button *ngIf="getStatus(row) === 'clocked_in'" class="btn-action btn-clock-out" (click)="clockOut(row.employee)" [disabled]="isProcessing(row.employee.id)">
+                <i class="fas fa-spinner fa-spin" *ngIf="isProcessing(row.employee.id) && loadingClockOut"></i>
+                <span *ngIf="!isProcessing(row.employee.id) || !loadingClockOut">Clock Out</span>
+              </button>
+              <span *ngIf="getStatus(row) === 'completed'" class="action-done">—</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-        <div class="no-activity" *ngIf="todayActivities.length === 0">
-          <i class="fas fa-calendar-times"></i>
-          <p>No activity recorded today</p>
-        </div>
-      </div>
+<div class="modal-overlay" *ngIf="showClockInModal" (click)="cancelClockIn()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h3>Clock In - Select Location</h3>
+    <p class="modal-question">Where are you clocking in from?</p>
+    <select class="modal-select" [(ngModel)]="selectedLocation">
+      <option value="ON_SITE">On Site</option>
+      <option value="OFF_SITE">Off Site</option>
+      <option value="REMOTE">Remote</option>
+      <option value="FIELD">Field</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="cancelClockIn()">Cancel</button>
+      <button class="btn-confirm" (click)="confirmClockIn()" [disabled]="loadingClockIn">Confirm Clock In</button>
     </div>
   </div>
 </div>
