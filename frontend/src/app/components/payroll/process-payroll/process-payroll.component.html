@@ -186,10 +186,31 @@
           <input type="date" [(ngModel)]="payDate" class="form-control" />
         </div>
       </div>
+
+      <div class="section-label">EMPLOYEES ({{ getSelectedEmployeeCount() }} selected)</div>
+
+      <div class="employee-selection-area">
+        <div class="employee-search-row">
+          <input type="text" [(ngModel)]="employeeSearchTerm" placeholder="Search employees..." class="form-control search-input" />
+          <label class="select-all-check">
+            <input type="checkbox" [checked]="selectAllEmployees" (change)="toggleSelectAllEmployees()" />
+            Select All
+          </label>
+        </div>
+        <div class="employee-list-scroll">
+          <div *ngFor="let emp of filteredEmployees" class="employee-check-row" (click)="toggleEmployeeSelection(emp.id!)">
+            <input type="checkbox" [checked]="isEmployeeSelected(emp.id!)" (click)="$event.stopPropagation()" (change)="toggleEmployeeSelection(emp.id!)" />
+            <span class="emp-code">{{ emp.employeeCode || '-' }}</span>
+            <span class="emp-name">{{ emp.firstName }} {{ emp.lastName }}</span>
+            <span class="emp-dept">{{ emp.department?.name || '-' }}</span>
+          </div>
+          <div *ngIf="filteredEmployees.length === 0" class="no-employees">No employees found</div>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" (click)="closeNewCalcModal()">Cancel</button>
-      <button class="btn btn-primary" (click)="submitNewCalc()" [disabled]="calculating">
+      <button class="btn btn-primary" (click)="submitNewCalc()" [disabled]="calculating || (!selectAllEmployees && selectedEmployeeIds.size === 0)">
         <i class="fas fa-calculator"></i> {{ calculating ? 'Calculating...' : 'Calculate Payroll' }}
       </button>
     </div>

@@ -266,12 +266,21 @@ public class PayrollController {
     }
 
     @PostMapping("/runs/{id}/calculate")
-    public ResponseEntity<?> calculatePayroll(@PathVariable Long id) {
+    public ResponseEntity<?> calculatePayroll(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body) {
         return payrollRunRepository.findById(id)
             .map(run -> {
                 try {
-                    logger.info("Starting payroll calculation for run {}", id);
-                    PayrollRun calculatedRun = payrollCalculationService.calculatePayroll(run);
+                    List<Long> employeeIds = new ArrayList<>();
+                    if (body != null && body.containsKey("employeeIds")) {
+                        List<?> ids = (List<?>) body.get("employeeIds");
+                        if (ids != null) {
+                            for (Object eid : ids) {
+                                employeeIds.add(Long.valueOf(eid.toString()));
+                            }
+                        }
+                    }
+                    logger.info("Starting payroll calculation for run {} with {} selected employees", id, employeeIds.isEmpty() ? "ALL" : employeeIds.size());
+                    PayrollRun calculatedRun = payrollCalculationService.calculatePayroll(run, employeeIds);
                     logger.info("Payroll calculation completed for run {}, status: {}", id, calculatedRun.getStatus());
                     
                     Map<String, Object> response = new HashMap<>();

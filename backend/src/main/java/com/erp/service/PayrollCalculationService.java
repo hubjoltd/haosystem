@@ -162,7 +162,7 @@ public class PayrollCalculationService {
     }
 
     @Transactional
-    public PayrollRun calculatePayroll(PayrollRun run) {
+    public PayrollRun calculatePayroll(PayrollRun run, List<Long> selectedEmployeeIds) {
         run.setStatus("CALCULATING");
         payrollRunRepository.save(run);
         payrollRunRepository.flush();
@@ -170,10 +170,20 @@ public class PayrollCalculationService {
         try {
             logger.info("Looking for approved timesheets for period {} to {}", run.getPeriodStartDate(), run.getPeriodEndDate());
             
-            List<Timesheet> timesheets = timesheetRepository.findApprovedTimesheetsByPeriod(
-                run.getPeriodStartDate(), run.getPeriodEndDate());
-            
-            logger.info("Found {} approved timesheets for period", timesheets.size());
+            List<Timesheet> timesheets;
+            if (selectedEmployeeIds != null && !selectedEmployeeIds.isEmpty()) {
+                timesheets = new ArrayList<>();
+                for (Long empId : selectedEmployeeIds) {
+                    List<Timesheet> empTimesheets = timesheetRepository.findApprovedTimesheetsByEmployeeAndPeriod(
+                        empId, run.getPeriodStartDate(), run.getPeriodEndDate());
+                    timesheets.addAll(empTimesheets);
+                }
+                logger.info("Found {} approved timesheets for {} selected employees", timesheets.size(), selectedEmployeeIds.size());
+            } else {
+                timesheets = timesheetRepository.findApprovedTimesheetsByPeriod(
+                    run.getPeriodStartDate(), run.getPeriodEndDate());
+                logger.info("Found {} approved timesheets for all employees", timesheets.size());
+            }
             
             if (timesheets.isEmpty()) {
                 run.setStatus("ERROR");

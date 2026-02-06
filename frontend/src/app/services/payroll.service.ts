@@ -477,8 +477,8 @@ export class PayrollService {
     return this.http.post<PayrollRun>(`${this.payrollUrl}/runs`, run);
   }
 
-  calculatePayroll(runId: number): Observable<PayrollRun> {
-    return this.http.post<PayrollRun>(`${this.payrollUrl}/runs/${runId}/calculate`, {}).pipe(
+  calculatePayroll(runId: number, employeeIds: number[] = []): Observable<PayrollRun> {
+    return this.http.post<PayrollRun>(`${this.payrollUrl}/runs/${runId}/calculate`, { employeeIds }).pipe(
       timeout(300000)
     );
   }
