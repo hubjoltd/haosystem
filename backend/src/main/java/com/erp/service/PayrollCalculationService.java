@@ -320,9 +320,7 @@ public class PayrollCalculationService {
         BigDecimal annualSalary = employee.getSalary() != null ? employee.getSalary() : BigDecimal.ZERO;
         record.setAnnualSalary(annualSalary);
         
-        BigDecimal hourlyRate = employee.getHourlyRate() != null && employee.getHourlyRate().compareTo(BigDecimal.ZERO) > 0
-            ? employee.getHourlyRate()
-            : calculateHourlyRate(annualSalary);
+        BigDecimal hourlyRate = calculateHourlyRate(annualSalary);
         record.setHourlyRate(hourlyRate);
         
         BigDecimal regularHours = BigDecimal.ZERO;
