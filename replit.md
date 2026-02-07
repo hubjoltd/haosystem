@@ -84,6 +84,12 @@ Preferred communication style: Simple, everyday language.
 -   ESS (Employee Self-Service) expense/loan submission flow: requests created as DRAFT then submitted to trigger notification workflows.
 -   Admin employee selector in ESS portal - administrators can view any employee's ESS data via dropdown selector.
 
+## Recent Changes (Feb 2026)
+-   **Employee JSON Serialization Fix**: Added `@JsonIgnoreProperties` annotations on Employee, AttendanceRecord, and Timesheet models to prevent circular reference errors with lazy-loaded `@ManyToOne` relationships (branch, department, designation, reportingManager, etc.). This resolved API responses returning 500 errors instead of data.
+-   **Employee Update Data Preservation**: Rewrote `EmployeeController.update()` to use null-guarded field-by-field merging instead of full entity replacement, preventing existing data from being wiped when partial updates are sent.
+-   **Attendance Clock-In Logic Fix**: Fixed `AttendanceController.clockIn()` to properly differentiate between "awaiting clock out" (blocked) and "already completed" (blocked with different message) states, preventing false "already clocked in" errors.
+-   **Payroll Calculation Rules**: 8hr max regular per day, 1hr lunch deduction, overtime beyond 8hrs, timesheets auto-generated from approved attendance records.
+
 ## External Dependencies
 
 ### Frontend Dependencies
