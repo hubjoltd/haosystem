@@ -232,6 +232,15 @@ public class PayrollCalculationService {
                 throw new PayrollCalculationException("No attendance data could be found for this period. Please ensure employees have attendance records.");
             }
             
+            for (Timesheet ts : timesheets) {
+                logger.info("Refreshing timesheet {} for employee {} from current attendance data",
+                    ts.getTimesheetNumber(), ts.getEmployee().getId());
+                calculateTimesheetFromAttendance(ts);
+                timesheetRepository.save(ts);
+                logger.info("Refreshed timesheet {} - Regular: {}h, OT: {}h, Total: {}h",
+                    ts.getTimesheetNumber(), ts.getTotalRegularHours(), ts.getTotalOvertimeHours(), ts.getTotalHours());
+            }
+            
             int successCount = 0;
             int failCount = 0;
             
