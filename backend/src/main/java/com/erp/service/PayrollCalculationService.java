@@ -58,6 +58,9 @@ public class PayrollCalculationService {
     @Autowired
     private FLSAOvertimeService flsaOvertimeService;
 
+    @Autowired
+    private ExpenseRequestRepository expenseRequestRepository;
+
     @Transactional
     public List<Timesheet> generateTimesheets(LocalDate startDate, LocalDate endDate) {
         List<Employee> employees = employeeRepository.findByActiveTrue();
@@ -353,13 +356,15 @@ public class PayrollCalculationService {
         record.setOvertimePay(overtimePay);
         
         record.setBonuses(BigDecimal.ZERO);
-        record.setReimbursements(BigDecimal.ZERO);
+
+        BigDecimal reimbursementTotal = calculateReimbursements(employee, run);
+        record.setReimbursements(reimbursementTotal);
         
-        BigDecimal grossPay = basePay.add(overtimePay).add(record.getBonuses()).add(record.getReimbursements());
+        BigDecimal grossPay = basePay.add(overtimePay).add(record.getBonuses());
         record.setGrossPay(grossPay);
         
-        logger.info("Employee {} - Hourly rate: {}, Total hours: {}, Gross pay: {}", 
-            employee.getId(), hourlyRate, totalHours, grossPay);
+        logger.info("Employee {} - Hourly rate: {}, Total hours: {}, Gross pay: {}, Reimbursements: {}", 
+            employee.getId(), hourlyRate, totalHours, grossPay, reimbursementTotal);
         
         calculatePreTaxDeductions(record, employee);
         
@@ -375,12 +380,44 @@ public class PayrollCalculationService {
             .add(record.getPostTaxDeductions());
         record.setTotalDeductions(totalDeductions);
         
-        BigDecimal netPay = grossPay.subtract(totalDeductions);
+        BigDecimal netPay = grossPay.subtract(totalDeductions).add(reimbursementTotal);
         record.setNetPay(netPay);
         
         calculateEmployerContributions(record);
         
         return record;
+    }
+
+    private BigDecimal calculateReimbursements(Employee employee, PayrollRun run) {
+        BigDecimal total = BigDecimal.ZERO;
+        try {
+            List<ExpenseRequest> approvedExpenses = expenseRequestRepository
+                .findApprovedReimbursementsByExpenseDate(
+                    employee.getId(), run.getPeriodStartDate(), run.getPeriodEndDate());
+
+            if (approvedExpenses.isEmpty()) {
+                approvedExpenses = expenseRequestRepository
+                    .findApprovedReimbursementsForPayroll(
+                        employee.getId(), run.getPeriodStartDate(), run.getPeriodEndDate());
+            }
+
+            for (ExpenseRequest expense : approvedExpenses) {
+                BigDecimal amount = expense.getApprovedAmount() != null && expense.getApprovedAmount().compareTo(BigDecimal.ZERO) > 0
+                    ? expense.getApprovedAmount()
+                    : expense.getTotalAmount();
+                total = total.add(amount);
+
+                expense.setReimbursementStatus("PROCESSED");
+                expense.setReimbursedAt(LocalDateTime.now());
+                expenseRequestRepository.save(expense);
+
+                logger.info("Employee {} - Including reimbursement {} amount {} from expense request {}",
+                    employee.getId(), expense.getRequestNumber(), amount, expense.getId());
+            }
+        } catch (Exception e) {
+            logger.warn("Error fetching reimbursements for employee {}: {}", employee.getId(), e.getMessage());
+        }
+        return total.setScale(2, RoundingMode.HALF_UP);
     }
 
     private BigDecimal calculateHourlyRate(BigDecimal annualSalary) {

@@ -40,4 +40,10 @@ public interface ExpenseRequestRepository extends JpaRepository<ExpenseRequest, 
     
     @Query("SELECT SUM(e.totalAmount) FROM ExpenseRequest e WHERE e.employee = :employee AND e.status = 'APPROVED'")
     java.math.BigDecimal sumApprovedAmountByEmployee(@Param("employee") Employee employee);
+
+    @Query("SELECT e FROM ExpenseRequest e WHERE e.employee.id = :employeeId AND e.status = 'APPROVED' AND e.reimbursementRequired = true AND (e.reimbursementStatus IS NULL OR e.reimbursementStatus = 'PENDING') AND e.approvedAt IS NOT NULL AND CAST(e.approvedAt AS localdate) BETWEEN :startDate AND :endDate")
+    List<ExpenseRequest> findApprovedReimbursementsForPayroll(@Param("employeeId") Long employeeId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query("SELECT e FROM ExpenseRequest e WHERE e.employee.id = :employeeId AND e.status = 'APPROVED' AND e.reimbursementRequired = true AND (e.reimbursementStatus IS NULL OR e.reimbursementStatus = 'PENDING') AND e.expenseDate BETWEEN :startDate AND :endDate")
+    List<ExpenseRequest> findApprovedReimbursementsByExpenseDate(@Param("employeeId") Long employeeId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }
