@@ -114,7 +114,10 @@ export class AttendanceManagementComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.cdr.detectChanges();
 
-    this.attendanceService.getByDate(this.selectedDate).pipe(
+    forkJoin({
+      employees: this.employeeService.getAll(),
+      records: this.attendanceService.getByDate(this.selectedDate)
+    }).pipe(
       takeUntil(this.destroy$),
       finalize(() => {
         this.loading = false;
@@ -122,7 +125,8 @@ export class AttendanceManagementComponent implements OnInit, OnDestroy {
       })
     ).subscribe({
       next: (data) => {
-        this.attendanceRecords = data;
+        this.employees = data.employees;
+        this.attendanceRecords = data.records;
         this.buildProjectList();
         this.applyFilters();
         this.cdr.detectChanges();
@@ -155,28 +159,54 @@ export class AttendanceManagementComponent implements OnInit, OnDestroy {
   }
 
   applyFilters(): void {
-    let records = this.attendanceRecords;
+    const recordMap = new Map<number, AttendanceRecord>();
+    this.attendanceRecords.forEach(r => {
+      if (r.employee?.id) {
+        recordMap.set(r.employee.id, r);
+      }
+    });
+
+    let mergedRecords: AttendanceRecord[] = [];
+    this.employees.forEach(emp => {
+      const existing = recordMap.get(emp.id!);
+      if (existing) {
+        mergedRecords.push(existing);
+      } else {
+        mergedRecords.push({
+          employee: emp,
+          employeeId: emp.id,
+          attendanceDate: this.selectedDate,
+          status: 'ABSENT',
+          approvalStatus: '',
+          clockIn: null as any,
+          clockOut: null as any,
+          regularHours: 0,
+          overtimeHours: 0
+        } as AttendanceRecord);
+      }
+    });
+
     if (this.filterStatus) {
-      records = records.filter(r => r.status === this.filterStatus);
+      mergedRecords = mergedRecords.filter(r => r.status === this.filterStatus);
     }
     if (this.selectedEmployeeId) {
-      records = records.filter(r => r.employee?.id === this.selectedEmployeeId);
+      mergedRecords = mergedRecords.filter(r => r.employee?.id === this.selectedEmployeeId);
     }
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      records = records.filter(r => {
+      mergedRecords = mergedRecords.filter(r => {
         const name = this.getEmployeeName(r.employee).toLowerCase();
         const code = (r.employee?.employeeCode || '').toLowerCase();
         return name.includes(term) || code.includes(term);
       });
     }
     if (this.filterProject) {
-      records = records.filter(r => {
+      mergedRecords = mergedRecords.filter(r => {
         const projName = r.projectName || r.project?.name || '';
         return projName === this.filterProject;
       });
     }
-    this.filteredRecords = records;
+    this.filteredRecords = mergedRecords;
     this.currentPage = 1;
     this.cdr.detectChanges();
   }

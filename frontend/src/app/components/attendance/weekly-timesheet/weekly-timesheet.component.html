@@ -205,9 +205,11 @@
               <td [class.ot-highlight]="record.overtime > 0">{{ record.overtime.toFixed(1) }}</td>
               <td class="total-col">{{ getRecordTotal(record).toFixed(1) }}</td>
               <td>
+                <span *ngIf="record.status === 'Weekend Off'" class="status-badge holiday">Weekend Off</span>
                 <span *ngIf="record.status === 'Holiday'" class="status-badge holiday">Holiday</span>
-                <span *ngIf="record.status !== 'Holiday' && record.hours > 0" class="status-badge approved">approved</span>
-                <span *ngIf="record.status !== 'Holiday' && record.hours === 0 && !isWeekend(record.date)" class="dash-text">-</span>
+                <span *ngIf="record.status === 'leave'" class="status-badge pending">On Leave</span>
+                <span *ngIf="record.status !== 'Holiday' && record.status !== 'Weekend Off' && record.status !== 'leave' && record.hours > 0" class="status-badge approved">Approved</span>
+                <span *ngIf="record.status !== 'Holiday' && record.status !== 'Weekend Off' && record.status !== 'leave' && record.hours === 0 && !isWeekend(record.date)" class="dash-text">-</span>
               </td>
             </tr>
             <tr *ngIf="employeeWeekRecords.length === 0">

@@ -111,12 +111,12 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
   }
 
   calculatePeriodDates(): void {
-    const selected = new Date(this.selectedDate);
+    const selected = new Date(this.selectedDate + 'T12:00:00');
     const dayOfWeek = selected.getDay();
-    const sundayOffset = dayOfWeek === 0 ? 0 : -dayOfWeek;
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
 
     const periodStart = new Date(selected);
-    periodStart.setDate(selected.getDate() + sundayOffset);
+    periodStart.setDate(selected.getDate() + mondayOffset);
 
     const periodEnd = new Date(periodStart);
     periodEnd.setDate(periodStart.getDate() + 6);
@@ -315,22 +315,22 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
   }
 
   formatDateFull(dateStr: string): string {
-    const date = new Date(dateStr);
+    const date = new Date(dateStr + 'T12:00:00');
     return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
   }
 
   getDayName(dateStr: string): string {
-    const date = new Date(dateStr);
+    const date = new Date(dateStr + 'T12:00:00');
     return date.toLocaleDateString('en-US', { weekday: 'short' });
   }
 
   getDayFullName(dateStr: string): string {
-    const date = new Date(dateStr);
+    const date = new Date(dateStr + 'T12:00:00');
     return date.toLocaleDateString('en-US', { weekday: 'long' });
   }
 
   isWeekend(dateStr: string): boolean {
-    const date = new Date(dateStr);
+    const date = new Date(dateStr + 'T12:00:00');
     const day = date.getDay();
     return day === 0 || day === 6;
   }
@@ -409,8 +409,8 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
   }
 
   buildFullWeekRecords(emp: EmployeeSummary): DailyRecord[] {
-    const startDate = new Date(this.fromDate || this.periodStartDate);
-    const endDate = new Date(this.toDate || this.periodEndDate);
+    const startDate = new Date((this.fromDate || this.periodStartDate) + 'T12:00:00');
+    const endDate = new Date((this.toDate || this.periodEndDate) + 'T12:00:00');
     const records: DailyRecord[] = [];
     const existingMap = new Map<string, DailyRecord>();
 
@@ -429,11 +429,11 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
         const isWeekend = day === 0 || day === 6;
         records.push({
           date: dateStr,
-          clockIn: isWeekend ? 'Not a day' : '',
-          clockOut: isWeekend ? 'Not a day' : '',
+          clockIn: isWeekend ? '-' : '',
+          clockOut: isWeekend ? '-' : '',
           hours: 0,
           overtime: 0,
-          status: isWeekend ? 'Holiday' : 'absent',
+          status: isWeekend ? 'Weekend Off' : 'absent',
           lunchBreak: 0
         });
       }
@@ -584,7 +584,7 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
       r.hours.toFixed(1),
       r.overtime.toFixed(1),
       (r.hours + r.overtime).toFixed(1),
-      r.status === 'Holiday' ? 'Holiday' : (r.hours > 0 ? 'approved' : '-')
+      r.status === 'Weekend Off' ? 'Weekend Off' : (r.status === 'Holiday' ? 'Holiday' : (r.status === 'leave' ? 'On Leave' : (r.hours > 0 ? 'Approved' : '-')))
     ]);
 
     doc.autoTable({
@@ -629,11 +629,14 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
       didParseCell: (data: any) => {
         if (data.section === 'body' && data.column.index === 9) {
           const val = data.cell.raw;
-          if (val === 'approved') {
+          if (val === 'Approved') {
             data.cell.styles.textColor = [26, 158, 92];
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Holiday') {
+          } else if (val === 'Holiday' || val === 'Weekend Off') {
             data.cell.styles.textColor = [133, 100, 4];
+            data.cell.styles.fontStyle = 'bold';
+          } else if (val === 'On Leave') {
+            data.cell.styles.textColor = [231, 76, 60];
             data.cell.styles.fontStyle = 'bold';
           }
         }

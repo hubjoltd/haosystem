@@ -703,16 +703,26 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
       receiptUrl = this.newExpenseRequest.receiptPreview;
     }
     
-    const request = {
+    const request: any = {
       employeeId: this.currentEmployeeId,
-      categoryId: this.newExpenseRequest.categoryId,
       totalAmount: this.newExpenseRequest.amount,
       description: this.newExpenseRequest.description,
-      expenseDate: this.newExpenseRequest.expenseDate,
       receiptNumber: this.newExpenseRequest.receiptNumber,
       receiptUrl: receiptUrl,
       status: 'DRAFT'
     };
+    if (this.newExpenseRequest.categoryId && this.newExpenseRequest.categoryId > 0) {
+      request.categoryId = this.newExpenseRequest.categoryId;
+    }
+    if (this.newExpenseRequest.expenseDate) {
+      request.expenseDate = this.newExpenseRequest.expenseDate;
+    }
+    if (this.newExpenseRequest.payeeName) {
+      request.payeeName = this.newExpenseRequest.payeeName;
+    }
+    if (this.newExpenseRequest.projectId && this.newExpenseRequest.projectId > 0) {
+      request.projectId = this.newExpenseRequest.projectId;
+    }
 
     this.expenseService.createRequest(request).subscribe({
       next: (created: any) => {

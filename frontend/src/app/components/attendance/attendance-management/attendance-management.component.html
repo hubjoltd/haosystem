@@ -86,7 +86,8 @@
             <td>{{ record.employee?.firstName || '—' }}</td>
             <td>{{ record.employee?.lastName || '—' }}</td>
             <td>
-              <span class="type-badge work">Work</span>
+              <span *ngIf="record.status !== 'ABSENT'" class="type-badge work">Work</span>
+              <span *ngIf="record.status === 'ABSENT'" class="type-badge absent">Absent</span>
             </td>
             <td>
               <span *ngIf="editingRowId !== record.id">{{ formatTime(record.clockIn) }}</span>

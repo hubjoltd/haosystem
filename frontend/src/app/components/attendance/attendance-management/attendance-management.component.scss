@@ -271,6 +271,11 @@
           background: #e0f2f1;
           color: #009688;
         }
+
+        &.absent {
+          background: #fef2f2;
+          color: #dc2626;
+        }
       }
 
       .hours-col {

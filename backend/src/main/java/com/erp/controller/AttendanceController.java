@@ -169,10 +169,10 @@ public class AttendanceController {
         LocalDate today = clientDate != null ? LocalDate.parse(clientDate) : LocalDate.now();
         Optional<AttendanceRecord> existing = attendanceRecordRepository.findByEmployeeIdAndAttendanceDate(employeeId, today);
         if (existing.isPresent() && existing.get().getClockIn() != null && existing.get().getClockOut() == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Already clocked in today. Please clock out first."));
+            return ResponseEntity.badRequest().body(Map.of("error", "Already clocked in for " + today + ". Please clock out first."));
         }
         if (existing.isPresent() && existing.get().getClockIn() != null && existing.get().getClockOut() != null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Already completed attendance for today (clocked in and out)."));
+            return ResponseEntity.badRequest().body(Map.of("error", "Attendance already completed for " + today + ". Use 'Add Entry' for corrections."));
         }
 
         AttendanceRecord record = existing.orElse(new AttendanceRecord());

@@ -36,6 +36,7 @@
             <th class="number-col">Hours</th>
             <th class="number-col">Gross Pay</th>
             <th class="number-col">Reimb.</th>
+            <th class="number-col">Deductions</th>
             <th class="number-col">Total Tax</th>
             <th class="number-col">Net Pay</th>
           </tr>
@@ -49,11 +50,12 @@
             <td class="number-col">{{ getRecordHours(record) | number:'1.2-2' }}</td>
             <td class="number-col">${{ record.grossPay?.toFixed(2) || '0.00' }}</td>
             <td class="number-col">${{ record.reimbursements?.toFixed(2) || '0.00' }}</td>
+            <td class="number-col">${{ record.totalDeductions?.toFixed(2) || '0.00' }}</td>
             <td class="number-col">${{ getRecordTotalTax(record) | number:'1.2-2' }}</td>
             <td class="number-col amount-green">${{ record.netPay?.toFixed(2) || '0.00' }}</td>
           </tr>
           <tr *ngIf="calculatedRecords.length === 0">
-            <td colspan="9" class="no-data">No payroll records found</td>
+            <td colspan="10" class="no-data">No payroll records found</td>
           </tr>
         </tbody>
       </table>

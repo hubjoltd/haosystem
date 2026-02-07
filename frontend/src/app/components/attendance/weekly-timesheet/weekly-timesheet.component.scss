@@ -496,6 +496,11 @@
     background: #fff3cd;
     color: #856404;
   }
+
+  &.pending {
+    background: #fef2f2;
+    color: #e74c3c;
+  }
 }
 
 .employee-timesheet-modal {
