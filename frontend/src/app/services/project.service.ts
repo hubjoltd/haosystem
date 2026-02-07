@@ -10,25 +10,31 @@ export class ProjectService {
   private apiUrl = '/api/projects';
   private projectsSubject = new BehaviorSubject<Project[]>([]);
   projects$ = this.projectsSubject.asObservable();
+  private loaded = false;
+  private loading = false;
 
-  constructor(private http: HttpClient) {
-    this.loadProjects();
-  }
+  constructor(private http: HttpClient) {}
 
   private loadProjects(): void {
+    if (this.loading) return;
+    this.loading = true;
     this.http.get<Project[]>(this.apiUrl).pipe(
       tap(projects => {
         const mapped = projects.map(p => this.mapProjectFromApi(p));
         this.projectsSubject.next(mapped);
+        this.loaded = true;
+        this.loading = false;
       }),
       catchError(err => {
         console.error('Error loading projects from API:', err);
+        this.loading = false;
         return of([]);
       })
     ).subscribe();
   }
 
   refreshProjects(): void {
+    this.loaded = false;
     this.loadProjects();
   }
 
@@ -49,6 +55,9 @@ export class ProjectService {
   }
 
   getAll(): Observable<Project[]> {
+    if (!this.loaded && !this.loading) {
+      this.loadProjects();
+    }
     return this.projects$;
   }
 
