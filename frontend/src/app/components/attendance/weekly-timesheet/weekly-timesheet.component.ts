@@ -510,172 +510,242 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
     const doc = new jsPDF('portrait');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 16;
+    const margin = 14;
     const contentWidth = pageWidth - margin * 2;
 
-    const blue = [74, 94, 232] as [number, number, number];
-    const teal = [0, 128, 128] as [number, number, number];
-    const white = [255, 255, 255] as [number, number, number];
+    const teal: [number, number, number] = [0, 128, 128];
+    const darkTeal: [number, number, number] = [0, 102, 102];
+    const lightGray: [number, number, number] = [245, 247, 250];
+    const white: [number, number, number] = [255, 255, 255];
 
-    doc.setFillColor(...blue);
-    doc.rect(0, 0, pageWidth, 42, 'F');
+    doc.setFillColor(...teal);
+    doc.rect(0, 0, pageWidth, 36, 'F');
+
+    doc.setFillColor(...darkTeal);
+    doc.rect(0, 36, pageWidth, 3, 'F');
 
     doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(this.companyName.toUpperCase(), margin, 12);
+
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Employee Timesheet', margin, 24);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Period: ${this.getWeekRangeDisplay()}`, margin, 33);
+
+    doc.setFontSize(8);
+    doc.text(this.getCurrentDateFormatted(), pageWidth - margin, 12, { align: 'right' });
+
+    let yPos = 48;
+
+    doc.setFillColor(...lightGray);
+    doc.roundedRect(margin, yPos, contentWidth, 28, 2, 2, 'F');
+
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(120, 120, 120);
+    const col1 = margin + 6;
+    const col2 = margin + contentWidth * 0.5;
+
+    doc.text('EMPLOYEE ID', col1, yPos + 8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(30, 30, 30);
     doc.setFontSize(10);
+    doc.text(emp.employeeCode || '-', col1, yPos + 14);
+
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.text(this.companyName, pageWidth / 2, 12, { align: 'center' });
-
-    doc.setFontSize(18);
+    doc.setTextColor(120, 120, 120);
+    doc.text('DEPARTMENT', col2, yPos + 8);
     doc.setFont('helvetica', 'bold');
-    doc.text('EMPLOYEE TIMESHEET', pageWidth / 2, 25, { align: 'center' });
-
+    doc.setTextColor(30, 30, 30);
     doc.setFontSize(10);
+    doc.text(emp.department || '-', col2, yPos + 14);
+
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Period: ${this.getWeekRangeDisplay()}`, pageWidth / 2, 35, { align: 'center' });
-
-    let yPos = 52;
-
-    doc.setFontSize(13);
+    doc.setTextColor(120, 120, 120);
+    doc.text('EMPLOYEE NAME', col1, yPos + 22);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(30, 30, 30);
-    doc.text('Employee Information', margin, yPos);
-    yPos += 8;
-
     doc.setFontSize(10);
+    doc.text(emp.name, col1, yPos + 28);
+
+    doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(80, 80, 80);
-
-    doc.text(`Employee ID:`, margin, yPos);
+    doc.setTextColor(120, 120, 120);
+    doc.text('STATUS', col2, yPos + 22);
+    doc.setFillColor(16, 185, 129);
+    doc.roundedRect(col2, yPos + 24, 22, 6, 1.5, 1.5, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(30, 30, 30);
-    doc.text(`${emp.employeeCode || '-'}`, margin + 32, yPos);
+    doc.text('Approved', col2 + 2.5, yPos + 28.5);
 
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(80, 80, 80);
-    doc.text(`Department:`, pageWidth / 2, yPos);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(30, 30, 30);
-    doc.text(`${emp.department || '-'}`, pageWidth / 2 + 28, yPos);
-
-    yPos += 6;
-
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(80, 80, 80);
-    doc.text(`Name:`, margin, yPos);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(30, 30, 30);
-    doc.text(`${emp.name}`, margin + 15, yPos);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(80, 80, 80);
-    doc.text(`Status:`, pageWidth / 2, yPos);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(26, 158, 92);
-    doc.text(`Approved`, pageWidth / 2 + 17, yPos);
-
-    yPos += 10;
-
-    doc.setDrawColor(220, 220, 220);
-    doc.setLineWidth(0.3);
-    doc.line(margin, yPos, pageWidth - margin, yPos);
-    yPos += 6;
+    yPos += 36;
 
     const allRecords = this.buildFullWeekRecords(emp);
-    const tableData = allRecords.map((r, i) => [
-      (i + 1).toString(),
-      r.date,
-      this.getDayName(r.date),
-      r.clockIn || '-',
-      r.clockOut || '-',
-      r.lunchBreak ? r.lunchBreak + ' min' : '—',
-      r.hours.toFixed(1),
-      r.overtime.toFixed(1),
-      (r.hours + r.overtime).toFixed(1),
-      r.status === 'Weekend Off' ? 'Weekend Off' : (r.status === 'Holiday' ? 'Holiday' : (r.status === 'leave' ? 'On Leave' : (r.hours > 0 ? 'Approved' : '-')))
-    ]);
+    const tableData = allRecords.map((r, i) => {
+      const isWknd = r.status === 'Weekend Off';
+      const statusLabel = isWknd ? 'Weekend Off' :
+        r.status === 'Holiday' ? 'Holiday' :
+        r.status === 'leave' ? 'On Leave' :
+        r.hours > 0 ? 'Present' : '-';
+      return [
+        (i + 1).toString(),
+        this.formatDateFull(r.date),
+        this.getDayName(r.date),
+        isWknd ? '-' : (r.clockIn || '-'),
+        isWknd ? '-' : (r.clockOut || '-'),
+        isWknd ? '-' : (r.lunchBreak ? r.lunchBreak + ' min' : '-'),
+        isWknd ? '-' : r.hours.toFixed(1),
+        isWknd ? '-' : r.overtime.toFixed(1),
+        isWknd ? '-' : (r.hours + r.overtime).toFixed(1),
+        statusLabel
+      ];
+    });
 
     autoTable(doc, {
       startY: yPos,
-      head: [['#', 'Date', 'Day', 'Clock In', 'Clock Out', 'Lunch', 'Reg Hrs', 'OT Hrs', 'Total', 'Status']],
+      head: [['#', 'Date', 'Day', 'In', 'Out', 'Lunch', 'Regular', 'OT', 'Total', 'Status']],
       body: tableData,
-      theme: 'grid',
+      theme: 'plain',
       headStyles: {
-        fillColor: blue,
+        fillColor: darkTeal,
         textColor: white,
         fontStyle: 'bold',
         halign: 'center',
-        fontSize: 8.5,
-        cellPadding: 4.5
+        fontSize: 7.5,
+        cellPadding: { top: 4, bottom: 4, left: 2, right: 2 }
       },
       bodyStyles: {
         halign: 'center',
-        fontSize: 9,
-        cellPadding: 4,
-        textColor: [50, 50, 50]
+        fontSize: 8,
+        cellPadding: { top: 3.5, bottom: 3.5, left: 2, right: 2 },
+        textColor: [60, 60, 60],
+        lineColor: [230, 232, 236],
+        lineWidth: { bottom: 0.2, top: 0, left: 0, right: 0 }
       },
       alternateRowStyles: {
-        fillColor: [248, 249, 255]
+        fillColor: [250, 251, 253]
       },
       columnStyles: {
         0: { cellWidth: 8 },
-        1: { cellWidth: 22 },
+        1: { cellWidth: 24, halign: 'left' },
         2: { cellWidth: 12 },
-        3: { cellWidth: 16 },
-        4: { cellWidth: 16 },
-        5: { cellWidth: 16 },
+        3: { cellWidth: 14 },
+        4: { cellWidth: 14 },
+        5: { cellWidth: 14 },
         6: { cellWidth: 16 },
-        7: { cellWidth: 16 },
+        7: { cellWidth: 14 },
         8: { cellWidth: 16, fontStyle: 'bold' },
-        9: { cellWidth: 'auto' }
+        9: { cellWidth: 'auto', halign: 'center' }
       },
       styles: {
-        lineColor: [210, 215, 225],
-        lineWidth: 0.3
+        overflow: 'ellipsize'
       },
       margin: { left: margin, right: margin },
       didParseCell: (data: any) => {
         if (data.section === 'body' && data.column.index === 9) {
           const val = data.cell.raw;
-          if (val === 'Approved') {
-            data.cell.styles.textColor = [26, 158, 92];
+          if (val === 'Present') {
+            data.cell.styles.textColor = [16, 185, 129];
             data.cell.styles.fontStyle = 'bold';
-          } else if (val === 'Holiday' || val === 'Weekend Off') {
-            data.cell.styles.textColor = [133, 100, 4];
+          } else if (val === 'Weekend Off') {
+            data.cell.styles.textColor = [156, 163, 175];
+            data.cell.styles.fontStyle = 'italic';
+          } else if (val === 'Holiday') {
+            data.cell.styles.textColor = [245, 158, 11];
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'On Leave') {
-            data.cell.styles.textColor = [231, 76, 60];
+            data.cell.styles.textColor = [239, 68, 68];
             data.cell.styles.fontStyle = 'bold';
           }
         }
         if (data.section === 'body' && data.column.index === 7) {
           const val = parseFloat(data.cell.raw);
-          if (val > 0) {
-            data.cell.styles.textColor = [231, 76, 60];
+          if (!isNaN(val) && val > 0) {
+            data.cell.styles.textColor = [239, 68, 68];
             data.cell.styles.fontStyle = 'bold';
+          }
+        }
+        if (data.section === 'body') {
+          const statusVal = data.row.raw?.[9];
+          if (statusVal === 'Weekend Off') {
+            data.cell.styles.fillColor = [243, 244, 246];
+            if (data.column.index !== 9) {
+              data.cell.styles.textColor = [180, 180, 180];
+            }
           }
         }
       }
     });
 
-    yPos = (doc as any).lastAutoTable.finalY;
+    yPos = (doc as any).lastAutoTable.finalY + 4;
 
-    const barHeight = 14;
-    if (yPos + barHeight + 10 > pageHeight) {
+    if (yPos + 30 > pageHeight) {
       doc.addPage();
       yPos = 20;
     }
 
-    doc.setFillColor(...teal);
-    doc.rect(margin, yPos, contentWidth, barHeight, 'F');
+    const boxW = contentWidth / 3 - 3;
+    const boxH = 18;
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
+    doc.setFillColor(240, 253, 244);
+    doc.roundedRect(margin, yPos, boxW, boxH, 2, 2, 'F');
+    doc.setDrawColor(16, 185, 129);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(margin, yPos, boxW, boxH, 2, 2, 'S');
+
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    doc.text('REGULAR HOURS', margin + boxW / 2, yPos + 6, { align: 'center' });
+    doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
-    doc.text('SUMMARY', margin + 8, yPos + 9.5);
+    doc.setTextColor(16, 185, 129);
+    doc.text(emp.regularHours.toFixed(1) + 'h', margin + boxW / 2, yPos + 14, { align: 'center' });
 
-    doc.setFontSize(9);
-    const summaryText = `Regular Hours: ${emp.regularHours.toFixed(1)}     Overtime Hours: ${emp.overtimeHours.toFixed(1)}     Total Hours: ${emp.totalHours.toFixed(1)}`;
-    doc.text(summaryText, pageWidth - margin - 8, yPos + 9.5, { align: 'right' });
+    const box2X = margin + boxW + 4.5;
+    doc.setFillColor(254, 243, 199);
+    doc.roundedRect(box2X, yPos, boxW, boxH, 2, 2, 'F');
+    doc.setDrawColor(245, 158, 11);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(box2X, yPos, boxW, boxH, 2, 2, 'S');
+
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    doc.text('OVERTIME HOURS', box2X + boxW / 2, yPos + 6, { align: 'center' });
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(245, 158, 11);
+    doc.text(emp.overtimeHours.toFixed(1) + 'h', box2X + boxW / 2, yPos + 14, { align: 'center' });
+
+    const box3X = box2X + boxW + 4.5;
+    doc.setFillColor(224, 242, 254);
+    doc.roundedRect(box3X, yPos, boxW, boxH, 2, 2, 'F');
+    doc.setDrawColor(0, 128, 128);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(box3X, yPos, boxW, boxH, 2, 2, 'S');
+
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    doc.text('TOTAL HOURS', box3X + boxW / 2, yPos + 6, { align: 'center' });
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 102, 102);
+    doc.text(emp.totalHours.toFixed(1) + 'h', box3X + boxW / 2, yPos + 14, { align: 'center' });
+
+    doc.setFontSize(7);
+    doc.setTextColor(180, 180, 180);
+    doc.setFont('helvetica', 'normal');
+    doc.text('This is a system-generated document.', pageWidth / 2, pageHeight - 8, { align: 'center' });
 
     const fileName = `Timesheet_${emp.name.replace(/\s+/g, '_')}_${this.periodStartDate}.pdf`;
     try {
@@ -712,7 +782,7 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
       'Regular Hours': r.hours.toFixed(1),
       'OT Hours': r.overtime.toFixed(1),
       'Total Hours': (r.hours + r.overtime).toFixed(1),
-      'Status': r.status === 'Holiday' ? 'Holiday' : (r.hours > 0 ? 'Approved' : '-')
+      'Status': r.status === 'Weekend Off' ? 'Weekend Off' : (r.status === 'Holiday' ? 'Holiday' : (r.status === 'leave' ? 'On Leave' : (r.hours > 0 ? 'Approved' : '-')))
     }));
 
     data.push({
@@ -923,7 +993,7 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
       emp.totalHours.toFixed(1) + ' hrs'
     ]);
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: 55,
       head: [['Employee ID', 'Employee Name', 'Period', 'Regular Hours', 'OT Hours', 'Total Hours']],
       body: tableData,
