@@ -52,7 +52,7 @@ export class YtdEarningsReportComponent implements OnInit {
 
     this.payrollService.getPayrollRuns().subscribe({
       next: (data) => {
-        this.payrollRuns = data.filter(run => run.status === 'PROCESSED' || run.status === 'APPROVED');
+        this.payrollRuns = data.filter(run => ['PROCESSED', 'APPROVED', 'CALCULATED', 'PARTIALLY_PROCESSED'].includes(run.status || ''));
         this.loadYtdData();
       },
       error: (err) => {

@@ -60,7 +60,7 @@ export class TaxLiabilityReportComponent implements OnInit {
   loadPayrollRuns(): void {
     this.payrollService.getPayrollRuns().subscribe({
       next: (data) => {
-        this.payrollRuns = data.filter(run => run.status === 'PROCESSED' || run.status === 'APPROVED');
+        this.payrollRuns = data.filter(run => ['PROCESSED', 'APPROVED', 'CALCULATED', 'PARTIALLY_PROCESSED'].includes(run.status || ''));
         if (this.payrollRuns.length > 0) {
           this.selectedRunId = this.payrollRuns[0].id!;
           this.loadPayrollRecords();
