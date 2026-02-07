@@ -1,11 +1,13 @@
 package com.erp.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "employees")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,42 +52,52 @@ public class Employee {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "branch_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "employees"})
     private Branch branch;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Department department;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "designation_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Designation designation;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_role_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private JobRole jobRole;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "grade_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Grade grade;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "location_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Location location;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporting_manager_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "reportingManager", "department", "designation", "branch"})
     private Employee reportingManager;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cost_center_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private CostCenter costCenter;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "expense_center_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private ExpenseCenter expenseCenter;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Project project;
     
     private LocalDate joiningDate;

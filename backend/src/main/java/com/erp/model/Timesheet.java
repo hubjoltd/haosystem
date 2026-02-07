@@ -1,6 +1,7 @@
 package com.erp.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,10 +19,12 @@ public class Timesheet {
 
     @ManyToOne
     @JoinColumn(name = "employee_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "reportingManager"})
     private Employee employee;
 
     @ManyToOne
     @JoinColumn(name = "pay_frequency_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private PayFrequency payFrequency;
 
     @Column(nullable = false)
@@ -51,6 +54,7 @@ public class Timesheet {
 
     @ManyToOne
     @JoinColumn(name = "approved_by")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "reportingManager"})
     private Employee approvedBy;
 
     private LocalDateTime approvedAt;

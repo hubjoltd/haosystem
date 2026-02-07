@@ -2,6 +2,7 @@ package com.erp.model;
 
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -18,6 +19,7 @@ public class AttendanceRecord {
 
     @ManyToOne
     @JoinColumn(name = "employee_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "reportingManager"})
     private Employee employee;
 
     @Column(nullable = false)
@@ -49,6 +51,7 @@ public class AttendanceRecord {
 
     @ManyToOne
     @JoinColumn(name = "approved_by")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "reportingManager"})
     private Employee approvedBy;
 
     private LocalDateTime approvedAt;

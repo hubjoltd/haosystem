@@ -139,12 +139,75 @@ public class EmployeeController {
                 .filter(existing -> isSuperAdmin(request) || branchId == null || 
                        (existing.getBranch() != null && existing.getBranch().getId().equals(branchId)))
                 .map(existing -> {
-                    employee.setId(id);
-                    employee.setCreatedAt(existing.getCreatedAt());
-                    employee.setCreatedBy(existing.getCreatedBy());
-                    employee.setBranch(existing.getBranch());
-                    employee.setUpdatedBy(auth != null ? auth.getName() : "system");
-                    return ResponseEntity.ok(employeeRepository.save(employee));
+                    if (employee.getFirstName() != null) existing.setFirstName(employee.getFirstName());
+                    if (employee.getMiddleName() != null) existing.setMiddleName(employee.getMiddleName());
+                    if (employee.getLastName() != null) existing.setLastName(employee.getLastName());
+                    if (employee.getEmail() != null) existing.setEmail(employee.getEmail());
+                    if (employee.getPhone() != null) existing.setPhone(employee.getPhone());
+                    if (employee.getAlternatePhone() != null) existing.setAlternatePhone(employee.getAlternatePhone());
+                    if (employee.getDateOfBirth() != null) existing.setDateOfBirth(employee.getDateOfBirth());
+                    if (employee.getGender() != null) existing.setGender(employee.getGender());
+                    if (employee.getMaritalStatus() != null) existing.setMaritalStatus(employee.getMaritalStatus());
+                    if (employee.getBloodGroup() != null) existing.setBloodGroup(employee.getBloodGroup());
+                    if (employee.getNationality() != null) existing.setNationality(employee.getNationality());
+                    if (employee.getProfilePhoto() != null) existing.setProfilePhoto(employee.getProfilePhoto());
+                    if (employee.getEmployeeCode() != null) existing.setEmployeeCode(employee.getEmployeeCode());
+                    
+                    existing.setPermanentAddress(employee.getPermanentAddress());
+                    existing.setPermanentCity(employee.getPermanentCity());
+                    existing.setPermanentState(employee.getPermanentState());
+                    existing.setPermanentCountry(employee.getPermanentCountry());
+                    existing.setPermanentZipCode(employee.getPermanentZipCode());
+                    existing.setCurrentAddress(employee.getCurrentAddress());
+                    existing.setCurrentCity(employee.getCurrentCity());
+                    existing.setCurrentState(employee.getCurrentState());
+                    existing.setCurrentCountry(employee.getCurrentCountry());
+                    existing.setCurrentZipCode(employee.getCurrentZipCode());
+                    
+                    existing.setEmergencyContactName(employee.getEmergencyContactName());
+                    existing.setEmergencyContactRelation(employee.getEmergencyContactRelation());
+                    existing.setEmergencyContactPhone(employee.getEmergencyContactPhone());
+                    
+                    if (employee.getDepartment() != null) existing.setDepartment(employee.getDepartment());
+                    if (employee.getDesignation() != null) existing.setDesignation(employee.getDesignation());
+                    if (employee.getJobRole() != null) existing.setJobRole(employee.getJobRole());
+                    if (employee.getGrade() != null) existing.setGrade(employee.getGrade());
+                    if (employee.getLocation() != null) existing.setLocation(employee.getLocation());
+                    if (employee.getReportingManager() != null) existing.setReportingManager(employee.getReportingManager());
+                    if (employee.getCostCenter() != null) existing.setCostCenter(employee.getCostCenter());
+                    if (employee.getExpenseCenter() != null) existing.setExpenseCenter(employee.getExpenseCenter());
+                    if (employee.getProject() != null) existing.setProject(employee.getProject());
+                    
+                    if (employee.getJoiningDate() != null) existing.setJoiningDate(employee.getJoiningDate());
+                    if (employee.getConfirmationDate() != null) existing.setConfirmationDate(employee.getConfirmationDate());
+                    if (employee.getProbationEndDate() != null) existing.setProbationEndDate(employee.getProbationEndDate());
+                    existing.setResignationDate(employee.getResignationDate());
+                    existing.setLastWorkingDate(employee.getLastWorkingDate());
+                    
+                    if (employee.getEmploymentType() != null) existing.setEmploymentType(employee.getEmploymentType());
+                    if (employee.getEmploymentStatus() != null) existing.setEmploymentStatus(employee.getEmploymentStatus());
+                    
+                    existing.setPanNumber(employee.getPanNumber());
+                    existing.setAadharNumber(employee.getAadharNumber());
+                    existing.setPassportNumber(employee.getPassportNumber());
+                    existing.setPassportExpiry(employee.getPassportExpiry());
+                    existing.setSsn(employee.getSsn());
+                    existing.setNationalId(employee.getNationalId());
+                    existing.setCitizenship(employee.getCitizenship());
+                    existing.setVisaType(employee.getVisaType());
+                    existing.setVisaExpiry(employee.getVisaExpiry());
+                    existing.setI9Status(employee.getI9Status());
+                    existing.setI9ExpiryDate(employee.getI9ExpiryDate());
+                    existing.setWorkAuthorizationType(employee.getWorkAuthorizationType());
+                    
+                    if (employee.getProbationMonths() != null) existing.setProbationMonths(employee.getProbationMonths());
+                    if (employee.getNoticePeriodDays() != null) existing.setNoticePeriodDays(employee.getNoticePeriodDays());
+                    if (employee.getSalary() != null) existing.setSalary(employee.getSalary());
+                    if (employee.getHourlyRate() != null) existing.setHourlyRate(employee.getHourlyRate());
+                    if (employee.getActive() != null) existing.setActive(employee.getActive());
+                    
+                    existing.setUpdatedBy(auth != null ? auth.getName() : "system");
+                    return ResponseEntity.ok(employeeRepository.save(existing));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
