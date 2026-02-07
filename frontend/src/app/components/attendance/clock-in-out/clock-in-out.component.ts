@@ -292,7 +292,7 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     this.showClockInModal = false;
     this.cdr.markForCheck();
 
-    this.attendanceService.clockIn(this.clockInEmployee.id, this.selectedLocation).subscribe({
+    this.attendanceService.clockIn(this.clockInEmployee.id, this.selectedLocation, this.selectedDate).subscribe({
       next: () => {
         this.showMessage(`${this.clockInEmployee?.firstName} ${this.clockInEmployee?.lastName} clocked in successfully!`, 'success');
         this.loadingClockIn = false;
@@ -316,7 +316,7 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     this.processingEmployeeId = emp.id;
     this.cdr.markForCheck();
 
-    this.attendanceService.clockOut(emp.id).subscribe({
+    this.attendanceService.clockOut(emp.id, this.selectedDate).subscribe({
       next: () => {
         this.showMessage(`${emp.firstName} ${emp.lastName} clocked out successfully!`, 'success');
         this.loadingClockOut = false;

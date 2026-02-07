@@ -107,10 +107,10 @@ export class AttendanceService {
     });
   }
 
-  clockIn(employeeId: number, captureMethod: string = 'WEB'): Observable<AttendanceRecord> {
+  clockIn(employeeId: number, captureMethod: string = 'WEB', selectedDate?: string): Observable<AttendanceRecord> {
     const now = new Date();
     const clientTime = now.toTimeString().substring(0, 5);
-    const clientDate = now.toISOString().split('T')[0];
+    const clientDate = selectedDate || now.toISOString().split('T')[0];
     return this.http.post<AttendanceRecord>(`${this.baseUrl}/clock-in`, { 
       employeeId, 
       captureMethod,
@@ -119,10 +119,10 @@ export class AttendanceService {
     });
   }
 
-  clockOut(employeeId: number): Observable<AttendanceRecord> {
+  clockOut(employeeId: number, selectedDate?: string): Observable<AttendanceRecord> {
     const now = new Date();
     const clientTime = now.toTimeString().substring(0, 5);
-    const clientDate = now.toISOString().split('T')[0];
+    const clientDate = selectedDate || now.toISOString().split('T')[0];
     return this.http.post<AttendanceRecord>(`${this.baseUrl}/clock-out`, { 
       employeeId,
       clientTime,
