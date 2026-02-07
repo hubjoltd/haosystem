@@ -153,20 +153,20 @@ public class EmployeeController {
                     if (employee.getProfilePhoto() != null) existing.setProfilePhoto(employee.getProfilePhoto());
                     if (employee.getEmployeeCode() != null) existing.setEmployeeCode(employee.getEmployeeCode());
                     
-                    existing.setPermanentAddress(employee.getPermanentAddress());
-                    existing.setPermanentCity(employee.getPermanentCity());
-                    existing.setPermanentState(employee.getPermanentState());
-                    existing.setPermanentCountry(employee.getPermanentCountry());
-                    existing.setPermanentZipCode(employee.getPermanentZipCode());
-                    existing.setCurrentAddress(employee.getCurrentAddress());
-                    existing.setCurrentCity(employee.getCurrentCity());
-                    existing.setCurrentState(employee.getCurrentState());
-                    existing.setCurrentCountry(employee.getCurrentCountry());
-                    existing.setCurrentZipCode(employee.getCurrentZipCode());
+                    if (employee.getPermanentAddress() != null) existing.setPermanentAddress(employee.getPermanentAddress());
+                    if (employee.getPermanentCity() != null) existing.setPermanentCity(employee.getPermanentCity());
+                    if (employee.getPermanentState() != null) existing.setPermanentState(employee.getPermanentState());
+                    if (employee.getPermanentCountry() != null) existing.setPermanentCountry(employee.getPermanentCountry());
+                    if (employee.getPermanentZipCode() != null) existing.setPermanentZipCode(employee.getPermanentZipCode());
+                    if (employee.getCurrentAddress() != null) existing.setCurrentAddress(employee.getCurrentAddress());
+                    if (employee.getCurrentCity() != null) existing.setCurrentCity(employee.getCurrentCity());
+                    if (employee.getCurrentState() != null) existing.setCurrentState(employee.getCurrentState());
+                    if (employee.getCurrentCountry() != null) existing.setCurrentCountry(employee.getCurrentCountry());
+                    if (employee.getCurrentZipCode() != null) existing.setCurrentZipCode(employee.getCurrentZipCode());
                     
-                    existing.setEmergencyContactName(employee.getEmergencyContactName());
-                    existing.setEmergencyContactRelation(employee.getEmergencyContactRelation());
-                    existing.setEmergencyContactPhone(employee.getEmergencyContactPhone());
+                    if (employee.getEmergencyContactName() != null) existing.setEmergencyContactName(employee.getEmergencyContactName());
+                    if (employee.getEmergencyContactRelation() != null) existing.setEmergencyContactRelation(employee.getEmergencyContactRelation());
+                    if (employee.getEmergencyContactPhone() != null) existing.setEmergencyContactPhone(employee.getEmergencyContactPhone());
                     
                     if (employee.getDepartment() != null) existing.setDepartment(employee.getDepartment());
                     if (employee.getDesignation() != null) existing.setDesignation(employee.getDesignation());
@@ -181,24 +181,24 @@ public class EmployeeController {
                     if (employee.getJoiningDate() != null) existing.setJoiningDate(employee.getJoiningDate());
                     if (employee.getConfirmationDate() != null) existing.setConfirmationDate(employee.getConfirmationDate());
                     if (employee.getProbationEndDate() != null) existing.setProbationEndDate(employee.getProbationEndDate());
-                    existing.setResignationDate(employee.getResignationDate());
-                    existing.setLastWorkingDate(employee.getLastWorkingDate());
+                    if (employee.getResignationDate() != null) existing.setResignationDate(employee.getResignationDate());
+                    if (employee.getLastWorkingDate() != null) existing.setLastWorkingDate(employee.getLastWorkingDate());
                     
                     if (employee.getEmploymentType() != null) existing.setEmploymentType(employee.getEmploymentType());
                     if (employee.getEmploymentStatus() != null) existing.setEmploymentStatus(employee.getEmploymentStatus());
                     
-                    existing.setPanNumber(employee.getPanNumber());
-                    existing.setAadharNumber(employee.getAadharNumber());
-                    existing.setPassportNumber(employee.getPassportNumber());
-                    existing.setPassportExpiry(employee.getPassportExpiry());
-                    existing.setSsn(employee.getSsn());
-                    existing.setNationalId(employee.getNationalId());
-                    existing.setCitizenship(employee.getCitizenship());
-                    existing.setVisaType(employee.getVisaType());
-                    existing.setVisaExpiry(employee.getVisaExpiry());
-                    existing.setI9Status(employee.getI9Status());
-                    existing.setI9ExpiryDate(employee.getI9ExpiryDate());
-                    existing.setWorkAuthorizationType(employee.getWorkAuthorizationType());
+                    if (employee.getPanNumber() != null) existing.setPanNumber(employee.getPanNumber());
+                    if (employee.getAadharNumber() != null) existing.setAadharNumber(employee.getAadharNumber());
+                    if (employee.getPassportNumber() != null) existing.setPassportNumber(employee.getPassportNumber());
+                    if (employee.getPassportExpiry() != null) existing.setPassportExpiry(employee.getPassportExpiry());
+                    if (employee.getSsn() != null) existing.setSsn(employee.getSsn());
+                    if (employee.getNationalId() != null) existing.setNationalId(employee.getNationalId());
+                    if (employee.getCitizenship() != null) existing.setCitizenship(employee.getCitizenship());
+                    if (employee.getVisaType() != null) existing.setVisaType(employee.getVisaType());
+                    if (employee.getVisaExpiry() != null) existing.setVisaExpiry(employee.getVisaExpiry());
+                    if (employee.getI9Status() != null) existing.setI9Status(employee.getI9Status());
+                    if (employee.getI9ExpiryDate() != null) existing.setI9ExpiryDate(employee.getI9ExpiryDate());
+                    if (employee.getWorkAuthorizationType() != null) existing.setWorkAuthorizationType(employee.getWorkAuthorizationType());
                     
                     if (employee.getProbationMonths() != null) existing.setProbationMonths(employee.getProbationMonths());
                     if (employee.getNoticePeriodDays() != null) existing.setNoticePeriodDays(employee.getNoticePeriodDays());
