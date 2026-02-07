@@ -192,6 +192,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/model/Holiday.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/TrainingSessionRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/service/GoodsIssueService.java
+/home/runner/workspace/backend/src/main/java/com/erp/service/PayrollCalculationException.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/BudgetLine.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/JobPosting.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Warehouse.java

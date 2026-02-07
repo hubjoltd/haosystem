@@ -161,7 +161,7 @@ public class PayrollCalculationService {
             timesheet.getTimesheetNumber(), totalRegular, totalOT, totalRegular.add(totalOT), present);
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = PayrollCalculationException.class)
     public PayrollRun calculatePayroll(PayrollRun run) {
         run.setStatus("CALCULATING");
         payrollRunRepository.save(run);
@@ -175,9 +175,58 @@ public class PayrollCalculationService {
             logger.info("Found {} approved timesheets for period", timesheets.size());
             
             if (timesheets.isEmpty()) {
+                logger.info("No approved timesheets found. Checking for exact-period timesheets...");
+                List<Timesheet> exactTimesheets = timesheetRepository.findByPeriodStartDateAndPeriodEndDate(
+                    run.getPeriodStartDate(), run.getPeriodEndDate());
+                logger.info("Found {} timesheets (any status) for exact period", exactTimesheets.size());
+                
+                if (!exactTimesheets.isEmpty()) {
+                    for (Timesheet ts : exactTimesheets) {
+                        if (!"APPROVED".equals(ts.getStatus())) {
+                            ts.setStatus("APPROVED");
+                            ts.setApprovedAt(java.time.LocalDateTime.now());
+                            timesheetRepository.save(ts);
+                            logger.info("Auto-approved timesheet {} for employee {}", ts.getTimesheetNumber(), ts.getEmployee().getId());
+                        }
+                    }
+                    timesheets = exactTimesheets;
+                } else {
+                    logger.info("No timesheets at all. Auto-generating from attendance records...");
+                    List<Timesheet> generated = generateTimesheets(run.getPeriodStartDate(), run.getPeriodEndDate());
+                    logger.info("Auto-generated {} timesheets from attendance", generated.size());
+                    
+                    if (generated.isEmpty()) {
+                        List<AttendanceRecord> attendanceRecords = attendanceRecordRepository.findByAttendanceDateBetween(
+                            run.getPeriodStartDate(), run.getPeriodEndDate());
+                        logger.info("Found {} attendance records (any status) in period", attendanceRecords.size());
+                        
+                        if (attendanceRecords.isEmpty()) {
+                            run.setStatus("ERROR");
+                            payrollRunRepository.save(run);
+                            throw new PayrollCalculationException("No attendance records found for this period (" + 
+                                run.getPeriodStartDate() + " to " + run.getPeriodEndDate() + 
+                                "). Please ensure employees have clocked in/out for this period.");
+                        }
+                        
+                        generated = generateTimesheetsFromAllAttendance(run.getPeriodStartDate(), run.getPeriodEndDate());
+                        logger.info("Generated {} timesheets from all attendance (including non-approved)", generated.size());
+                    }
+                    
+                    for (Timesheet ts : generated) {
+                        ts.setStatus("APPROVED");
+                        ts.setApprovedAt(java.time.LocalDateTime.now());
+                        timesheetRepository.save(ts);
+                        logger.info("Auto-approved generated timesheet {} for employee {}", ts.getTimesheetNumber(), 
+                            ts.getEmployee() != null ? ts.getEmployee().getId() : "null");
+                    }
+                    timesheets = generated;
+                }
+            }
+            
+            if (timesheets.isEmpty()) {
                 run.setStatus("ERROR");
                 payrollRunRepository.save(run);
-                throw new RuntimeException("No approved timesheets found for this period. Please approve timesheets first (they are auto-generated when attendance is approved).");
+                throw new PayrollCalculationException("No attendance data could be found for this period. Please ensure employees have attendance records.");
             }
             
             int successCount = 0;
@@ -200,7 +249,7 @@ public class PayrollCalculationService {
             if (successCount == 0) {
                 run.setStatus("ERROR");
                 payrollRunRepository.save(run);
-                throw new RuntimeException("No payroll records could be calculated. Ensure employees have attendance records for this period.");
+                throw new PayrollCalculationException("No payroll records could be calculated. Ensure employees have salary/hourly rate configured.");
             }
             
             aggregatePayrollTotals(run);
@@ -208,13 +257,55 @@ public class PayrollCalculationService {
             run.setStatus("CALCULATED");
             logger.info("Payroll calculation completed: {} succeeded, {} failed", successCount, failCount);
             return payrollRunRepository.save(run);
-        } catch (RuntimeException e) {
-            if (!"ERROR".equals(run.getStatus())) {
-                run.setStatus("ERROR");
-                payrollRunRepository.save(run);
-            }
+        } catch (PayrollCalculationException e) {
             throw e;
+        } catch (Exception e) {
+            run.setStatus("ERROR");
+            payrollRunRepository.save(run);
+            throw new PayrollCalculationException("Unexpected error during payroll calculation: " + e.getMessage());
         }
+    }
+    
+    @Transactional
+    public List<Timesheet> generateTimesheetsFromAllAttendance(LocalDate startDate, LocalDate endDate) {
+        List<AttendanceRecord> allRecords = attendanceRecordRepository.findByAttendanceDateBetween(startDate, endDate);
+        
+        Map<Long, List<AttendanceRecord>> byEmployee = new HashMap<>();
+        for (AttendanceRecord record : allRecords) {
+            if (record.getEmployee() != null && record.getClockIn() != null && record.getClockOut() != null) {
+                byEmployee.computeIfAbsent(record.getEmployee().getId(), k -> new ArrayList<>()).add(record);
+            }
+        }
+        
+        List<Timesheet> timesheets = new ArrayList<>();
+        for (Map.Entry<Long, List<AttendanceRecord>> entry : byEmployee.entrySet()) {
+            Long employeeId = entry.getKey();
+            List<AttendanceRecord> records = entry.getValue();
+            
+            Optional<Timesheet> existing = timesheetRepository.findByEmployeeIdAndPeriodStartDateAndPeriodEndDate(
+                employeeId, startDate, endDate);
+            if (existing.isPresent()) {
+                timesheets.add(existing.get());
+                continue;
+            }
+            
+            Optional<Employee> empOpt = employeeRepository.findById(employeeId);
+            if (empOpt.isEmpty()) continue;
+            
+            Timesheet timesheet = new Timesheet();
+            timesheet.setEmployee(empOpt.get());
+            timesheet.setTimesheetNumber(generateTimesheetNumber());
+            timesheet.setPeriodStartDate(startDate);
+            timesheet.setPeriodEndDate(endDate);
+            
+            calculateTimesheetFromAttendance(timesheet);
+            
+            timesheets.add(timesheetRepository.save(timesheet));
+            logger.info("Generated timesheet from all attendance for employee {} - Regular: {}h, OT: {}h", 
+                employeeId, timesheet.getTotalRegularHours(), timesheet.getTotalOvertimeHours());
+        }
+        
+        return timesheets;
     }
 
     private PayrollRecord calculateEmployeePayroll(PayrollRun run, Employee employee, Timesheet timesheet) {

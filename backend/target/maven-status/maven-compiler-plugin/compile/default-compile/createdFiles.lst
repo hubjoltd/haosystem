@@ -262,6 +262,7 @@ com/erp/repository/StockAdjustmentRepository.class
 com/erp/model/Branch.class
 com/erp/service/InventoryLedgerService.class
 com/erp/model/AttendanceRule.class
+com/erp/service/PayrollCalculationException.class
 com/erp/service/ItemGroupService.class
 com/erp/model/BankingRule.class
 com/erp/model/PRStockFulfillmentItem.class

@@ -23,9 +23,14 @@ public interface TimesheetRepository extends JpaRepository<Timesheet, Long> {
     
     Optional<Timesheet> findByEmployeeIdAndPeriodStartDateAndPeriodEndDate(Long employeeId, LocalDate startDate, LocalDate endDate);
     
+    List<Timesheet> findByPeriodStartDateAndPeriodEndDate(LocalDate startDate, LocalDate endDate);
+    
     @Query("SELECT t FROM Timesheet t WHERE t.employee.id = :employeeId AND t.status = 'APPROVED' AND t.periodStartDate >= :startDate AND t.periodEndDate <= :endDate")
     List<Timesheet> findApprovedTimesheetsByEmployeeAndPeriod(@Param("employeeId") Long employeeId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
     
     @Query("SELECT t FROM Timesheet t WHERE t.status = 'APPROVED' AND t.periodStartDate >= :startDate AND t.periodEndDate <= :endDate")
     List<Timesheet> findApprovedTimesheetsByPeriod(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    
+    @Query("SELECT t FROM Timesheet t WHERE t.periodStartDate <= :endDate AND t.periodEndDate >= :startDate")
+    List<Timesheet> findByPeriodOverlapping(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }
