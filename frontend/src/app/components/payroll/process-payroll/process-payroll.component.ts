@@ -5,6 +5,8 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { PayrollService, PayrollRun, PayrollRecord } from '../../../services/payroll.service';
 import { EmployeeService, Employee } from '../../../services/employee.service';
+import { ProjectService } from '../../../services/project.service';
+import { Project } from '../../../models/project.model';
 import { ToastService } from '../../../services/toast.service';
 import { Subscription } from 'rxjs';
 import jsPDF from 'jspdf';
@@ -57,12 +59,14 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
   };
 
   private routeSub: Subscription | null = null;
+  projectList: Project[] = [];
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private payrollService: PayrollService,
     private employeeService: EmployeeService,
+    private projectService: ProjectService,
     private toastService: ToastService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -70,6 +74,10 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.setDefaultDates();
     this.loadAllPayrollRuns();
+    this.projectService.getAll().subscribe(projects => {
+      this.projectList = projects;
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnDestroy(): void {

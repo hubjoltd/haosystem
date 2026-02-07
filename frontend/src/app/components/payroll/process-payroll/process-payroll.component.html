@@ -150,6 +150,7 @@
           <label><i class="fas fa-users field-icon blue-icon"></i> Pay Group</label>
           <select [(ngModel)]="selectedProject" class="form-control">
             <option value="">All Projects (Company Level)</option>
+            <option *ngFor="let proj of projectList" [value]="proj.name">{{ proj.name }}</option>
           </select>
         </div>
         <div class="form-group">

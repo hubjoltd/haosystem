@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { AttendanceService, AttendanceRecord } from '../../../services/attendance.service';
 import { EmployeeService, Employee } from '../../../services/employee.service';
+import { ProjectService } from '../../../services/project.service';
+import { Project } from '../../../models/project.model';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -64,9 +66,12 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     '#7f8c8d', '#34495e', '#e91e63', '#673ab7', '#ff5722'
   ];
 
+  projectList: Project[] = [];
+
   constructor(
     private attendanceService: AttendanceService,
     private employeeService: EmployeeService,
+    private projectService: ProjectService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -80,6 +85,10 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     }, 1000);
 
     this.loadData();
+    this.projectService.getAll().subscribe(projects => {
+      this.projectList = projects;
+      this.cdr.markForCheck();
+    });
 
     this.refreshInterval = setInterval(() => {
       this.loadAttendanceRecords();

@@ -12,6 +12,7 @@
     <div class="filter-group">
       <select class="filter-select" [(ngModel)]="selectedProject">
         <option value="all">All Projects</option>
+        <option *ngFor="let proj of projectList" [value]="proj.name">{{ proj.name }}</option>
       </select>
 
       <input type="date" class="filter-date" [(ngModel)]="selectedDate" (ngModelChange)="onDateChange()" />
