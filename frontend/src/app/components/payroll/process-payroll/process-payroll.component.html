@@ -35,6 +35,7 @@
             <th class="number-col">Hourly Rate</th>
             <th class="number-col">Hours</th>
             <th class="number-col">Gross Pay</th>
+            <th class="number-col">Reimb.</th>
             <th class="number-col">Total Tax</th>
             <th class="number-col">Net Pay</th>
           </tr>
@@ -47,11 +48,12 @@
             <td class="number-col">${{ record.hourlyRate?.toFixed(2) || '0.00' }}</td>
             <td class="number-col">{{ getRecordHours(record) | number:'1.2-2' }}</td>
             <td class="number-col">${{ record.grossPay?.toFixed(2) || '0.00' }}</td>
+            <td class="number-col">${{ record.reimbursements?.toFixed(2) || '0.00' }}</td>
             <td class="number-col">${{ getRecordTotalTax(record) | number:'1.2-2' }}</td>
             <td class="number-col amount-green">${{ record.netPay?.toFixed(2) || '0.00' }}</td>
           </tr>
           <tr *ngIf="calculatedRecords.length === 0">
-            <td colspan="8" class="no-data">No payroll records found</td>
+            <td colspan="9" class="no-data">No payroll records found</td>
           </tr>
         </tbody>
       </table>
@@ -217,6 +219,7 @@
               <th>Type</th>
               <th class="number-col">Hours</th>
               <th class="number-col">Gross</th>
+              <th class="number-col">Reimb.</th>
               <th class="number-col">Federal Tax</th>
               <th class="number-col">State Tax</th>
               <th class="number-col">Soc. Sec</th>
@@ -244,6 +247,7 @@
               </td>
               <td class="number-col">{{ getRecordHours(record) | number:'1.1-1' }}h</td>
               <td class="number-col amount-green">${{ record.grossPay?.toFixed(2) || '0.00' }}</td>
+              <td class="number-col">${{ record.reimbursements?.toFixed(2) || '0.00' }}</td>
               <td class="number-col">${{ record.federalTax?.toFixed(2) || '0.00' }}</td>
               <td class="number-col">${{ record.stateTax?.toFixed(2) || '0.00' }}</td>
               <td class="number-col">${{ record.socialSecurityTax?.toFixed(2) || '0.00' }}</td>
@@ -260,13 +264,14 @@
               </td>
             </tr>
             <tr *ngIf="viewRunRecords.length === 0">
-              <td colspan="15" class="no-data">No records found</td>
+              <td colspan="16" class="no-data">No records found</td>
             </tr>
           </tbody>
           <tfoot *ngIf="viewRunRecords.length > 0">
             <tr class="totals-row">
               <td colspan="6"><strong>TOTAL</strong></td>
               <td class="number-col amount-green"><strong>${{ getViewRecordTotalGross() | number:'1.2-2' }}</strong></td>
+              <td class="number-col"><strong>${{ getViewRecordTotalReimbursements() | number:'1.2-2' }}</strong></td>
               <td class="number-col"><strong>${{ getViewRecordTotalFederal() | number:'1.2-2' }}</strong></td>
               <td class="number-col"><strong>${{ getViewRecordTotalState() | number:'1.2-2' }}</strong></td>
               <td class="number-col"><strong>${{ getViewRecordTotalSocSec() | number:'1.2-2' }}</strong></td>

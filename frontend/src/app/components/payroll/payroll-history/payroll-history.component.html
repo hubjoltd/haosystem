@@ -119,6 +119,7 @@
             <th>Type</th>
             <th>Hours</th>
             <th>Gross</th>
+            <th>Reimb.</th>
             <th>Federal Tax</th>
             <th>State Tax</th>
             <th>Soc. Sec</th>
@@ -137,6 +138,7 @@
             </td>
             <td>{{ getTotalHours(record) }}h</td>
             <td class="amount green">{{ formatCurrency(record.grossPay || 0) }}</td>
+            <td class="amount">{{ formatCurrency(record.reimbursements || 0) }}</td>
             <td class="amount">{{ formatCurrency(record.federalTax || 0) }}</td>
             <td class="amount">{{ formatCurrency(record.stateTax || 0) }}</td>
             <td class="amount">{{ formatCurrency(record.socialSecurityTax || 0) }}</td>
@@ -145,7 +147,7 @@
             <td class="amount green">{{ formatCurrency(record.netPay || 0) }}</td>
           </tr>
           <tr *ngIf="selectedRunRecords.length === 0">
-            <td colspan="12" class="no-data">No employee records found</td>
+            <td colspan="13" class="no-data">No employee records found</td>
           </tr>
         </tbody>
         <tfoot *ngIf="selectedRunRecords.length > 0">
@@ -153,6 +155,7 @@
             <td colspan="4"><strong>TOTAL</strong></td>
             <td><strong>{{ getDetailRecordTotals().hours }}h</strong></td>
             <td class="amount green"><strong>{{ formatCurrency(getDetailRecordTotals().gross) }}</strong></td>
+            <td class="amount"><strong>{{ formatCurrency(getDetailRecordTotals().reimbursements) }}</strong></td>
             <td class="amount"><strong>{{ formatCurrency(getDetailRecordTotals().federal) }}</strong></td>
             <td class="amount"><strong>{{ formatCurrency(getDetailRecordTotals().state) }}</strong></td>
             <td class="amount"><strong>{{ formatCurrency(getDetailRecordTotals().socSec) }}</strong></td>

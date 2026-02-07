@@ -216,10 +216,11 @@ export class PayrollHistoryComponent implements OnInit {
     return (record.regularHours || 0) + (record.overtimeHours || 0);
   }
 
-  getDetailRecordTotals(): { gross: number; federal: number; state: number; socSec: number; medicare: number; totalTax: number; netPay: number; hours: number } {
-    const totals = { gross: 0, federal: 0, state: 0, socSec: 0, medicare: 0, totalTax: 0, netPay: 0, hours: 0 };
+  getDetailRecordTotals(): { gross: number; reimbursements: number; federal: number; state: number; socSec: number; medicare: number; totalTax: number; netPay: number; hours: number } {
+    const totals = { gross: 0, reimbursements: 0, federal: 0, state: 0, socSec: 0, medicare: 0, totalTax: 0, netPay: 0, hours: 0 };
     this.selectedRunRecords.forEach(r => {
       totals.gross += r.grossPay || 0;
+      totals.reimbursements += r.reimbursements || 0;
       totals.federal += r.federalTax || 0;
       totals.state += r.stateTax || 0;
       totals.socSec += r.socialSecurityTax || 0;
