@@ -7,14 +7,8 @@ import { EmployeeService, Employee } from '../../../services/employee.service';
 import { ToastService } from '../../../services/toast.service';
 import { finalize, Subject, takeUntil } from 'rxjs';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
-
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
 
 interface DailyRecord {
   date: string;
@@ -421,21 +415,34 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
     const current = new Date(startDate);
     while (current <= endDate) {
       const dateStr = this.formatDate(current);
-      const existing = existingMap.get(dateStr);
-      if (existing) {
-        records.push(existing);
-      } else {
-        const day = current.getDay();
-        const isWeekend = day === 0 || day === 6;
+      const day = current.getDay();
+      const isWeekend = day === 0 || day === 6;
+
+      if (isWeekend) {
         records.push({
           date: dateStr,
-          clockIn: isWeekend ? '-' : '',
-          clockOut: isWeekend ? '-' : '',
+          clockIn: '-',
+          clockOut: '-',
           hours: 0,
           overtime: 0,
-          status: isWeekend ? 'Weekend Off' : 'absent',
+          status: 'Weekend Off',
           lunchBreak: 0
         });
+      } else {
+        const existing = existingMap.get(dateStr);
+        if (existing) {
+          records.push(existing);
+        } else {
+          records.push({
+            date: dateStr,
+            clockIn: '',
+            clockOut: '',
+            hours: 0,
+            overtime: 0,
+            status: 'absent',
+            lunchBreak: 0
+          });
+        }
       }
       current.setDate(current.getDate() + 1);
     }
@@ -587,7 +594,7 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
       r.status === 'Weekend Off' ? 'Weekend Off' : (r.status === 'Holiday' ? 'Holiday' : (r.status === 'leave' ? 'On Leave' : (r.hours > 0 ? 'Approved' : '-')))
     ]);
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: yPos,
       head: [['#', 'Date', 'Day', 'Clock In', 'Clock Out', 'Lunch', 'Reg Hrs', 'OT Hrs', 'Total', 'Status']],
       body: tableData,
@@ -766,7 +773,7 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
         'Approved'
       ]);
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: 55,
         head: [['Emp ID', 'Employee', 'Project', 'Period', 'Regular', 'OT', 'Total', 'Status']],
         body: tableData,
@@ -782,7 +789,7 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
         proj.totalHours.toFixed(0) + ' hrs'
       ]);
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: 55,
         head: [['Project', 'Employees', 'Regular', 'OT', 'Total']],
         body: tableData,
