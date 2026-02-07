@@ -126,6 +126,8 @@ export class ProjectManagementComponent implements OnInit {
       invoiceProject: false,
       invoiceTasks: false,
       invoiceTimesheets: true,
+      locationTrackingEnabled: false,
+      locationRadiusMeters: 100,
       tags: [],
       tasks: [],
       milestones: [],
@@ -280,7 +282,12 @@ export class ProjectManagementComponent implements OnInit {
       invoiceProject: this.selectedProject.invoiceProject,
       invoiceTasks: this.selectedProject.invoiceTasks,
       invoiceTimesheets: this.selectedProject.invoiceTimesheets,
-      tags: this.tagsInput.split(',').map(t => t.trim()).filter(t => t).join(',')
+      tags: this.tagsInput.split(',').map(t => t.trim()).filter(t => t).join(','),
+      locationTrackingEnabled: this.selectedProject.locationTrackingEnabled || false,
+      locationLatitude: this.selectedProject.locationLatitude,
+      locationLongitude: this.selectedProject.locationLongitude,
+      locationRadiusMeters: this.selectedProject.locationRadiusMeters,
+      locationAddress: this.selectedProject.locationAddress
     };
     
     if (this.editMode && this.selectedProject.id) {
@@ -651,6 +658,25 @@ export class ProjectManagementComponent implements OnInit {
         alert('Failed to add time log. Please try again.');
       }
     });
+  }
+
+  getCurrentLocation(): void {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          this.selectedProject.locationLatitude = parseFloat(position.coords.latitude.toFixed(6));
+          this.selectedProject.locationLongitude = parseFloat(position.coords.longitude.toFixed(6));
+          this.cdr.markForCheck();
+        },
+        (error) => {
+          alert('Unable to get your location. Please ensure location access is allowed in your browser settings.');
+          console.error('Geolocation error:', error);
+        },
+        { enableHighAccuracy: true }
+      );
+    } else {
+      alert('Geolocation is not supported by this browser.');
+    }
   }
 
   deleteTimeLog(index: number): void {

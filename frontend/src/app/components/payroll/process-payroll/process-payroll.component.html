@@ -82,6 +82,7 @@
             <th class="number-col">Employees</th>
             <th>Processed</th>
             <th class="number-col">Gross</th>
+            <th class="number-col">Deductions</th>
             <th class="number-col">Taxes</th>
             <th class="number-col">Net Payment</th>
             <th>Actions</th>
@@ -104,6 +105,7 @@
               </span>
             </td>
             <td class="number-col amount-green">${{ (run.totalGrossPay || 0) | number:'1.2-2' }}</td>
+            <td class="number-col">${{ (run.totalDeductions || 0) | number:'1.2-2' }}</td>
             <td class="number-col">${{ (run.totalTaxes || 0) | number:'1.2-2' }}</td>
             <td class="number-col amount-green">${{ (run.totalNetPay || 0) | number:'1.2-2' }}</td>
             <td>
@@ -223,6 +225,7 @@
               <th class="number-col">Hours</th>
               <th class="number-col">Gross</th>
               <th class="number-col">Reimb.</th>
+              <th class="number-col">Deductions</th>
               <th class="number-col">Federal Tax</th>
               <th class="number-col">State Tax</th>
               <th class="number-col">Soc. Sec</th>
@@ -251,6 +254,7 @@
               <td class="number-col">{{ getRecordHours(record) | number:'1.1-1' }}h</td>
               <td class="number-col amount-green">${{ record.grossPay?.toFixed(2) || '0.00' }}</td>
               <td class="number-col">${{ record.reimbursements?.toFixed(2) || '0.00' }}</td>
+              <td class="number-col">${{ record.totalDeductions?.toFixed(2) || '0.00' }}</td>
               <td class="number-col">${{ record.federalTax?.toFixed(2) || '0.00' }}</td>
               <td class="number-col">${{ record.stateTax?.toFixed(2) || '0.00' }}</td>
               <td class="number-col">${{ record.socialSecurityTax?.toFixed(2) || '0.00' }}</td>
@@ -275,6 +279,7 @@
               <td colspan="6"><strong>TOTAL</strong></td>
               <td class="number-col amount-green"><strong>${{ getViewRecordTotalGross() | number:'1.2-2' }}</strong></td>
               <td class="number-col"><strong>${{ getViewRecordTotalReimbursements() | number:'1.2-2' }}</strong></td>
+              <td class="number-col"><strong>${{ getViewRecordTotalDeductions() | number:'1.2-2' }}</strong></td>
               <td class="number-col"><strong>${{ getViewRecordTotalFederal() | number:'1.2-2' }}</strong></td>
               <td class="number-col"><strong>${{ getViewRecordTotalState() | number:'1.2-2' }}</strong></td>
               <td class="number-col"><strong>${{ getViewRecordTotalSocSec() | number:'1.2-2' }}</strong></td>

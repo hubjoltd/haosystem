@@ -421,6 +421,10 @@ export class ProcessPayrollComponent implements OnInit, OnDestroy {
     return this.viewRunRecords.reduce((sum, r) => sum + (r.reimbursements || 0), 0);
   }
 
+  getViewRecordTotalDeductions(): number {
+    return this.viewRunRecords.reduce((sum, r) => sum + (r.totalDeductions || 0), 0);
+  }
+
   getViewRecordTotalFederal(): number {
     return this.viewRunRecords.reduce((sum, r) => sum + (r.federalTax || 0), 0);
   }

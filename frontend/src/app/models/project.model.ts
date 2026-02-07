@@ -47,6 +47,12 @@ export interface Project {
   projectCost?: number;
   projectExpenses?: number;
   
+  locationTrackingEnabled?: boolean;
+  locationLatitude?: number;
+  locationLongitude?: number;
+  locationRadiusMeters?: number;
+  locationAddress?: string;
+
   lastActivity?: string;
   archived?: boolean;
   deleted?: boolean;

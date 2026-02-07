@@ -216,11 +216,12 @@ export class PayrollHistoryComponent implements OnInit {
     return (record.regularHours || 0) + (record.overtimeHours || 0);
   }
 
-  getDetailRecordTotals(): { gross: number; reimbursements: number; federal: number; state: number; socSec: number; medicare: number; totalTax: number; netPay: number; hours: number } {
-    const totals = { gross: 0, reimbursements: 0, federal: 0, state: 0, socSec: 0, medicare: 0, totalTax: 0, netPay: 0, hours: 0 };
+  getDetailRecordTotals(): { gross: number; reimbursements: number; deductions: number; federal: number; state: number; socSec: number; medicare: number; totalTax: number; netPay: number; hours: number } {
+    const totals = { gross: 0, reimbursements: 0, deductions: 0, federal: 0, state: 0, socSec: 0, medicare: 0, totalTax: 0, netPay: 0, hours: 0 };
     this.selectedRunRecords.forEach(r => {
       totals.gross += r.grossPay || 0;
       totals.reimbursements += r.reimbursements || 0;
+      totals.deductions += r.totalDeductions || 0;
       totals.federal += r.federalTax || 0;
       totals.state += r.stateTax || 0;
       totals.socSec += r.socialSecurityTax || 0;
@@ -272,12 +273,13 @@ export class PayrollHistoryComponent implements OnInit {
       this.getPeriodTypeLabel(run),
       run.totalEmployees || 0,
       this.formatCurrency(run.totalGrossPay || 0),
+      this.formatCurrency(run.totalDeductions || 0),
       this.formatCurrency(run.totalTaxes || 0),
       this.formatCurrency(run.totalNetPay || 0)
     ]);
 
     autoTable(doc, {
-      head: [['#', 'Pay Period', 'Pay Date', 'Type', 'Employees', 'Gross', 'Taxes', 'Net Payment']],
+      head: [['#', 'Pay Period', 'Pay Date', 'Type', 'Employees', 'Gross', 'Deductions', 'Taxes', 'Net Payment']],
       body: tableData,
       startY: 35,
       styles: { fontSize: 9, cellPadding: 3 },
@@ -290,7 +292,7 @@ export class PayrollHistoryComponent implements OnInit {
   }
 
   exportToCSV(): void {
-    const headers = ['#', 'Pay Period Start', 'Pay Period End', 'Pay Date', 'Type', 'Employees', 'Gross', 'Taxes', 'Net Payment'];
+    const headers = ['#', 'Pay Period Start', 'Pay Period End', 'Pay Date', 'Type', 'Employees', 'Gross', 'Deductions', 'Taxes', 'Net Payment'];
 
     const csvContent = [
       headers.join(','),
@@ -302,6 +304,7 @@ export class PayrollHistoryComponent implements OnInit {
         this.getPeriodTypeLabel(run),
         run.totalEmployees || 0,
         (run.totalGrossPay || 0).toFixed(2),
+        (run.totalDeductions || 0).toFixed(2),
         (run.totalTaxes || 0).toFixed(2),
         (run.totalNetPay || 0).toFixed(2)
       ].join(','))

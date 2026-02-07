@@ -85,6 +85,14 @@ public class Project {
     @Column(length = 500)
     private String tags;
 
+    private Boolean locationTrackingEnabled;
+    private Double locationLatitude;
+    private Double locationLongitude;
+    private Integer locationRadiusMeters;
+
+    @Column(length = 500)
+    private String locationAddress;
+
     private Boolean archived;
     private Boolean deleted;
 
@@ -113,6 +121,8 @@ public class Project {
         if (billingType == null) billingType = "FIXED_RATE";
         if (totalLoggedTime == null) totalLoggedTime = BigDecimal.ZERO;
         if (totalBillableTime == null) totalBillableTime = BigDecimal.ZERO;
+        if (locationTrackingEnabled == null) locationTrackingEnabled = false;
+        if (locationRadiusMeters == null) locationRadiusMeters = 100;
         if (archived == null) archived = false;
         if (deleted == null) deleted = false;
     }
@@ -223,6 +233,21 @@ public class Project {
 
     public Boolean getInvoiceTimesheets() { return invoiceTimesheets; }
     public void setInvoiceTimesheets(Boolean invoiceTimesheets) { this.invoiceTimesheets = invoiceTimesheets; }
+
+    public Boolean getLocationTrackingEnabled() { return locationTrackingEnabled; }
+    public void setLocationTrackingEnabled(Boolean locationTrackingEnabled) { this.locationTrackingEnabled = locationTrackingEnabled; }
+
+    public Double getLocationLatitude() { return locationLatitude; }
+    public void setLocationLatitude(Double locationLatitude) { this.locationLatitude = locationLatitude; }
+
+    public Double getLocationLongitude() { return locationLongitude; }
+    public void setLocationLongitude(Double locationLongitude) { this.locationLongitude = locationLongitude; }
+
+    public Integer getLocationRadiusMeters() { return locationRadiusMeters; }
+    public void setLocationRadiusMeters(Integer locationRadiusMeters) { this.locationRadiusMeters = locationRadiusMeters; }
+
+    public String getLocationAddress() { return locationAddress; }
+    public void setLocationAddress(String locationAddress) { this.locationAddress = locationAddress; }
 
     public String getTags() { return tags; }
     public void setTags(String tags) { this.tags = tags; }
