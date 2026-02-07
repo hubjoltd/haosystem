@@ -304,7 +304,12 @@ public class EmployeeController {
                     salary.setEmployee(emp);
                     salary.setIsCurrent(true);
                     salary.setCreatedBy(auth != null ? auth.getName() : "system");
-                    return ResponseEntity.ok(salaryRepository.save(salary));
+                    EmployeeSalary saved = salaryRepository.save(salary);
+                    if (saved.getBasicSalary() != null) {
+                        emp.setSalary(saved.getBasicSalary());
+                        employeeRepository.save(emp);
+                    }
+                    return ResponseEntity.ok(saved);
                 })
                 .orElse(ResponseEntity.notFound().build());
     }

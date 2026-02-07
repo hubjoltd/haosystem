@@ -61,6 +61,9 @@ public class PayrollCalculationService {
     @Autowired
     private ExpenseRequestRepository expenseRequestRepository;
 
+    @Autowired
+    private EmployeeSalaryRepository employeeSalaryRepository;
+
     @Transactional
     public List<Timesheet> generateTimesheets(LocalDate startDate, LocalDate endDate) {
         List<Employee> employees = employeeRepository.findByActiveTrue();
@@ -329,10 +332,13 @@ public class PayrollCalculationService {
         String employeeType = employee.getEmploymentType() != null ? employee.getEmploymentType() : "SALARIED";
         record.setEmployeeType(employeeType);
         
-        BigDecimal annualSalary = employee.getSalary() != null ? employee.getSalary() : BigDecimal.ZERO;
+        BigDecimal annualSalary = resolveAnnualSalary(employee);
         record.setAnnualSalary(annualSalary);
         
         BigDecimal hourlyRate = calculateHourlyRate(annualSalary);
+        if (hourlyRate.compareTo(BigDecimal.ZERO) == 0) {
+            logger.warn("Employee {} - No salary found (checked salary records and employee record), gross will be 0", employee.getId());
+        }
         record.setHourlyRate(hourlyRate);
         
         BigDecimal regularHours = BigDecimal.ZERO;
@@ -427,6 +433,24 @@ public class PayrollCalculationService {
             logger.warn("Error fetching reimbursements for employee {}: {}", employee.getId(), e.getMessage());
         }
         return total.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal resolveAnnualSalary(Employee employee) {
+        Optional<EmployeeSalary> currentSalary = employeeSalaryRepository.findByEmployeeIdAndIsCurrentTrue(employee.getId());
+        if (currentSalary.isPresent() && currentSalary.get().getBasicSalary() != null 
+                && currentSalary.get().getBasicSalary().compareTo(BigDecimal.ZERO) > 0) {
+            logger.info("Employee {} - Using salary from EmployeeSalary record: {}", 
+                employee.getId(), currentSalary.get().getBasicSalary());
+            return currentSalary.get().getBasicSalary();
+        }
+        
+        BigDecimal employeeSalary = employee.getSalary();
+        if (employeeSalary != null && employeeSalary.compareTo(BigDecimal.ZERO) > 0) {
+            logger.info("Employee {} - Using salary from Employee record: {}", employee.getId(), employeeSalary);
+            return employeeSalary;
+        }
+        
+        return BigDecimal.ZERO;
     }
 
     private BigDecimal calculateHourlyRate(BigDecimal annualSalary) {
