@@ -513,43 +513,42 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
     const margin = 16;
     const contentWidth = pageWidth - margin * 2;
 
-    const blue: [number, number, number] = [49, 78, 163];
-    const darkBlue: [number, number, number] = [30, 55, 130];
+    const purple: [number, number, number] = [74, 94, 232];
     const teal: [number, number, number] = [0, 128, 128];
 
-    doc.setFillColor(...blue);
-    doc.rect(0, 0, pageWidth, 44, 'F');
+    doc.setFillColor(...purple);
+    doc.rect(0, 0, pageWidth, 38, 'F');
 
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text(this.companyName, pageWidth / 2, 13, { align: 'center' });
+    doc.text(this.companyName, pageWidth / 2, 11, { align: 'center' });
 
-    doc.setFontSize(20);
+    doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text('EMPLOYEE TIMESHEET', pageWidth / 2, 27, { align: 'center' });
+    doc.text('EMPLOYEE TIMESHEET', pageWidth / 2, 23, { align: 'center' });
 
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Period: ${this.getWeekRangeDisplay()}`, pageWidth / 2, 37, { align: 'center' });
+    doc.text(`Period: ${this.getWeekRangeDisplay()}`, pageWidth / 2, 32, { align: 'center' });
 
-    let yPos = 54;
+    let yPos = 46;
 
-    doc.setFontSize(12);
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(30, 30, 30);
     doc.text('Employee Information', margin, yPos);
-    yPos += 8;
+    yPos += 5;
 
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.3);
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.2);
     doc.line(margin, yPos, pageWidth - margin, yPos);
-    yPos += 6;
+    yPos += 5;
 
     const labelX1 = margin;
-    const valueX1 = margin + 30;
+    const valueX1 = margin + 28;
     const labelX2 = pageWidth / 2 + 5;
-    const valueX2 = pageWidth / 2 + 35;
+    const valueX2 = pageWidth / 2 + 33;
 
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
@@ -566,7 +565,7 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
     doc.setTextColor(30, 30, 30);
     doc.text(emp.department || '-', valueX2, yPos);
 
-    yPos += 7;
+    yPos += 6;
 
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100, 100, 100);
@@ -579,10 +578,10 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
     doc.setTextColor(100, 100, 100);
     doc.text('Status:', labelX2, yPos);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(22, 163, 74);
+    doc.setTextColor(26, 158, 92);
     doc.text('Approved', valueX2, yPos);
 
-    yPos += 10;
+    yPos += 7;
 
     const allRecords = this.buildFullWeekRecords(emp);
     const tableData = allRecords.map((r, i) => {
@@ -611,21 +610,21 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
       body: tableData,
       theme: 'grid',
       headStyles: {
-        fillColor: blue,
+        fillColor: purple,
         textColor: [255, 255, 255],
         fontStyle: 'bold',
         halign: 'center',
-        fontSize: 8,
-        cellPadding: 4
+        fontSize: 7.5,
+        cellPadding: 2.5
       },
       bodyStyles: {
         halign: 'center',
-        fontSize: 8.5,
-        cellPadding: 3.5,
-        textColor: [40, 40, 40]
+        fontSize: 8,
+        cellPadding: 2,
+        textColor: [50, 50, 50]
       },
       alternateRowStyles: {
-        fillColor: [240, 244, 255]
+        fillColor: [248, 249, 255]
       },
       columnStyles: {
         0: { cellWidth: 8 },
@@ -640,8 +639,8 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
         9: { cellWidth: 'auto' }
       },
       styles: {
-        lineColor: [200, 210, 230],
-        lineWidth: 0.3,
+        lineColor: [220, 225, 235],
+        lineWidth: 0.2,
         overflow: 'ellipsize'
       },
       margin: { left: margin, right: margin },
@@ -649,88 +648,59 @@ export class WeeklyTimesheetComponent implements OnInit, OnDestroy {
         if (data.section === 'body' && data.column.index === 9) {
           const val = data.cell.raw;
           if (val === 'Approved') {
-            data.cell.styles.textColor = [22, 163, 74];
+            data.cell.styles.textColor = [26, 158, 92];
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'Weekend Off') {
-            data.cell.styles.textColor = [161, 138, 36];
+            data.cell.styles.textColor = [133, 100, 4];
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'Holiday') {
-            data.cell.styles.textColor = [161, 138, 36];
+            data.cell.styles.textColor = [133, 100, 4];
             data.cell.styles.fontStyle = 'bold';
           } else if (val === 'On Leave') {
-            data.cell.styles.textColor = [220, 38, 38];
+            data.cell.styles.textColor = [231, 76, 60];
             data.cell.styles.fontStyle = 'bold';
           }
         }
         if (data.section === 'body' && data.column.index === 7) {
           const val = parseFloat(data.cell.raw);
           if (!isNaN(val) && val > 0) {
-            data.cell.styles.textColor = [220, 38, 38];
+            data.cell.styles.textColor = [231, 76, 60];
             data.cell.styles.fontStyle = 'bold';
           }
         }
         if (data.section === 'body') {
           const statusVal = data.row.raw?.[9];
           if (statusVal === 'Weekend Off') {
-            data.cell.styles.fillColor = [245, 245, 235];
+            data.cell.styles.fillColor = [250, 250, 240];
+            if (data.column.index !== 9) {
+              data.cell.styles.textColor = [170, 170, 170];
+            }
           }
         }
       }
     });
 
-    yPos = (doc as any).lastAutoTable.finalY + 2;
+    yPos = (doc as any).lastAutoTable.finalY;
 
-    if (yPos + 24 > pageHeight) {
+    if (yPos + 18 > pageHeight) {
       doc.addPage();
       yPos = 20;
     }
 
-    doc.setFillColor(...darkBlue);
-    doc.rect(margin, yPos, contentWidth, 12, 'F');
+    doc.setFillColor(...teal);
+    doc.rect(margin, yPos, contentWidth, 14, 'F');
+
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    doc.text('SUMMARY', margin + 6, yPos + 8);
+    doc.text('SUMMARY', margin + 6, yPos + 9);
 
-    yPos += 14;
-
-    const colW = contentWidth / 3;
-
-    doc.setFillColor(245, 247, 250);
-    doc.rect(margin, yPos, colW, 14, 'F');
-    doc.rect(margin + colW, yPos, colW, 14, 'F');
-    doc.rect(margin + colW * 2, yPos, colW, 14, 'F');
-
-    doc.setDrawColor(200, 210, 230);
-    doc.setLineWidth(0.3);
-    doc.rect(margin, yPos, colW, 14, 'S');
-    doc.rect(margin + colW, yPos, colW, 14, 'S');
-    doc.rect(margin + colW * 2, yPos, colW, 14, 'S');
-
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100, 100, 100);
-    doc.text('Regular Hours (Hrs)', margin + colW / 2, yPos + 5, { align: 'center' });
-    doc.text('Overtime Hours (Hrs)', margin + colW + colW / 2, yPos + 5, { align: 'center' });
-    doc.text('Total Hours (Hrs)', margin + colW * 2 + colW / 2, yPos + 5, { align: 'center' });
-
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(30, 30, 30);
-    doc.text(emp.regularHours.toFixed(1), margin + colW / 2, yPos + 12, { align: 'center' });
-    doc.setTextColor(220, 38, 38);
-    doc.text(emp.overtimeHours.toFixed(1), margin + colW + colW / 2, yPos + 12, { align: 'center' });
-    doc.setTextColor(...darkBlue);
-    doc.text(emp.totalHours.toFixed(1), margin + colW * 2 + colW / 2, yPos + 12, { align: 'center' });
-
-    yPos += 20;
-
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.2);
-    doc.line(margin, yPos, pageWidth - margin, yPos);
+    const summaryText = `Regular Hours: ${emp.regularHours.toFixed(1)}          Overtime Hours: ${emp.overtimeHours.toFixed(1)}          Total Hours: ${emp.totalHours.toFixed(1)}`;
+    doc.setFontSize(8.5);
+    doc.text(summaryText, pageWidth - margin - 6, yPos + 9, { align: 'right' });
 
     doc.setFontSize(7);
-    doc.setTextColor(150, 150, 150);
+    doc.setTextColor(170, 170, 170);
     doc.setFont('helvetica', 'italic');
     doc.text('Generated by Hao System | Confidential', pageWidth / 2, pageHeight - 8, { align: 'center' });
 
