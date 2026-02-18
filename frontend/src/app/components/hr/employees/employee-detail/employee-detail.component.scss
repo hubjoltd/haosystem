@@ -455,6 +455,29 @@
   border-top: 1px solid #eee;
 }
 
+.login-password-group {
+  background: #f0f7f7;
+  border: 1px dashed #008080;
+  border-radius: 8px;
+  padding: 12px !important;
+
+  label {
+    color: #008080;
+    font-weight: 600;
+
+    i {
+      margin-right: 4px;
+    }
+  }
+
+  .field-hint {
+    display: block;
+    margin-top: 4px;
+    color: #666;
+    font-size: 11px;
+  }
+}
+
 .text-warning {
   color: #f0ad4e;
 }

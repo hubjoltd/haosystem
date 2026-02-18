@@ -67,10 +67,10 @@
           <label>Last Name *</label>
           <input type="text" [(ngModel)]="employee.lastName" [disabled]="!isEditMode" />
         </div>
-        <div class="form-group">
-          <label>Login Password</label>
+        <div class="form-group login-password-group">
+          <label><i class="fas fa-key"></i> Login Password</label>
           <input type="password" [(ngModel)]="employee.loginPassword" [disabled]="!isEditMode" placeholder="Set password for employee login" />
-          <small *ngIf="isEditMode" class="field-hint">Employee will login using Employee Code as username</small>
+          <small class="field-hint">Employee will login using Employee Code as username</small>
         </div>
         <div class="form-group">
           <label>Date of Birth</label>
