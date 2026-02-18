@@ -87,8 +87,11 @@ public class AuthService {
         userRepository.save(user);
         
         Long employeeId = null;
-        if (user.getEmail() != null) {
-            Optional<Employee> employeeOpt = employeeRepository.findByEmail(user.getEmail());
+        Optional<Employee> employeeOpt = employeeRepository.findByEmployeeCode(user.getUsername());
+        if (employeeOpt.isPresent()) {
+            employeeId = employeeOpt.get().getId();
+        } else if (user.getEmail() != null) {
+            employeeOpt = employeeRepository.findByEmail(user.getEmail());
             if (employeeOpt.isPresent()) {
                 employeeId = employeeOpt.get().getId();
             }

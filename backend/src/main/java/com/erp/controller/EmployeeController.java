@@ -9,8 +9,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/employees")
@@ -37,6 +40,15 @@ public class EmployeeController {
     
     @Autowired
     private BranchRepository branchRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private RoleRepository roleRepository;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     
     @Autowired
     private JwtUtil jwtUtil;
@@ -152,7 +164,12 @@ public class EmployeeController {
             }
             employee.setEmployeeCode(generateEmployeeCode(prefix));
         }
-        return employeeRepository.save(employee);
+        String loginPassword = employee.getLoginPassword();
+        Employee saved = employeeRepository.save(employee);
+        if (loginPassword != null && !loginPassword.isEmpty()) {
+            createOrUpdateUserForEmployee(saved, loginPassword);
+        }
+        return saved;
     }
 
     @PutMapping("/{id}")
@@ -230,9 +247,45 @@ public class EmployeeController {
                     if (employee.getActive() != null) existing.setActive(employee.getActive());
                     
                     existing.setUpdatedBy(auth != null ? auth.getName() : "system");
-                    return ResponseEntity.ok(employeeRepository.save(existing));
+                    Employee saved = employeeRepository.save(existing);
+                    if (employee.getLoginPassword() != null && !employee.getLoginPassword().isEmpty()) {
+                        createOrUpdateUserForEmployee(saved, employee.getLoginPassword());
+                    }
+                    return ResponseEntity.ok(saved);
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+    
+    private void createOrUpdateUserForEmployee(Employee employee, String password) {
+        String username = employee.getEmployeeCode();
+        if (username == null || username.isEmpty()) return;
+        
+        Optional<User> existingUser = userRepository.findByUsername(username);
+        if (existingUser.isPresent()) {
+            User user = existingUser.get();
+            user.setPassword(passwordEncoder.encode(password));
+            user.setFirstName(employee.getFirstName());
+            user.setLastName(employee.getLastName());
+            if (employee.getEmail() != null) user.setEmail(employee.getEmail());
+            if (employee.getBranch() != null) user.setBranch(employee.getBranch());
+            userRepository.save(user);
+        } else {
+            Role staffRole = roleRepository.findByName("STAFF")
+                .orElseGet(() -> roleRepository.save(new Role("STAFF", "Standard staff member", "read,create,update")));
+            
+            User user = new User();
+            user.setUsername(username);
+            user.setPassword(passwordEncoder.encode(password));
+            user.setFirstName(employee.getFirstName());
+            user.setLastName(employee.getLastName() != null ? employee.getLastName() : "");
+            user.setEmail(employee.getEmail() != null ? employee.getEmail() : username + "@employee.local");
+            user.setRole(staffRole);
+            user.setActive(true);
+            user.setIsSuperAdmin(false);
+            user.setCreatedAt(LocalDateTime.now());
+            if (employee.getBranch() != null) user.setBranch(employee.getBranch());
+            userRepository.save(user);
+        }
     }
 
     @DeleteMapping("/{id}")

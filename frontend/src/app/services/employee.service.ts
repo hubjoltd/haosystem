@@ -58,6 +58,7 @@ export interface Employee {
   lastWorkingDate?: string;
   employmentStatus?: string;
   employmentType?: string;
+  loginPassword?: string;
   noticePeriodDays?: number;
   probationMonths?: number;
   salary?: number;

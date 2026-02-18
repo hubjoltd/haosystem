@@ -131,6 +131,10 @@ public class Employee {
     
     private Boolean active = true;
     
+    @Transient
+    @com.fasterxml.jackson.annotation.JsonProperty(access = com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY)
+    private String loginPassword;
+    
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String createdBy;
@@ -279,6 +283,8 @@ public class Employee {
     public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
     public String getUpdatedBy() { return updatedBy; }
     public void setUpdatedBy(String updatedBy) { this.updatedBy = updatedBy; }
+    public String getLoginPassword() { return loginPassword; }
+    public void setLoginPassword(String loginPassword) { this.loginPassword = loginPassword; }
     
     public String getFullName() {
         StringBuilder name = new StringBuilder();

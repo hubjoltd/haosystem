@@ -449,11 +449,16 @@ export class SidebarComponent implements OnInit {
   }
 
   filterMenuByPermissions(): void {
-    // Only super admin sees all items without filtering
     if (this.authService.isSuperAdmin()) {
       this.menuItems = JSON.parse(JSON.stringify(this.allMenuItems));
+    } else if (this.authService.hasRole('STAFF')) {
+      this.menuItems = JSON.parse(JSON.stringify(this.allMenuItems)).filter(
+        (item: MenuItem) => item.permissionKey === 'ESS'
+      );
+      if (this.menuItems.length > 0) {
+        this.menuItems[0].expanded = true;
+      }
     } else {
-      // All other users (including company admins) get filtered menu
       this.menuItems = this.filterItems(JSON.parse(JSON.stringify(this.allMenuItems)));
     }
   }

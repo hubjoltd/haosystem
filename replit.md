@@ -37,6 +37,7 @@ Preferred communication style: Simple, everyday language.
 - In production, the Spring Boot JAR serves both the API and the static Angular frontend on port 5000
 
 ## Recent Changes
+- **Employee login feature**: Employees can now log in using their Employee Code as username and a password set in the employee form. When a password is set, a User account with STAFF role is automatically created/updated. STAFF role users see only the Employee Service Portal (ESS) section.
 - **Login page redesign**: HAO logo with dark blue/navy gradient, service category cards (Electrical, Access Control, CCTV, Networking, Servers, Communications), "Welcome Back" heading, "Email Address" label, "Sign in to Dashboard" button, removed company logos and "Remember Me" checkbox
 - **Employee list columns reordered**: Employee Code, Name, Designation, Department, Project, Email, Status, Actions
 - **Employee code auto-generation**: Uses branch code as prefix (or "EMP" default), generates sequential 4-digit codes via native SQL query
