@@ -40,29 +40,33 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        seedLocations();
-        seedCostCenters();
-        seedGrades();
-        seedDepartments();
-        seedDesignations();
-        seedEmployees();
-        seedCustomers();
-        seedSuppliers();
-        seedUnitOfMeasures();
-        seedItemGroups();
-        seedItems();
-        seedWarehouses();
-        seedLeaveTypes();
-        seedProjects();
-        seedContracts();
-        seedExpenseCategories();
-        seedTrainingPrograms();
-        seedChartOfAccounts();
-        seedBankAccounts();
-        seedHolidays();
-        seedSalaryBands();
-        
-        System.out.println("Sample data seeding completed!");
+        try {
+            seedLocations();
+            seedCostCenters();
+            seedGrades();
+            seedDepartments();
+            seedDesignations();
+            seedEmployees();
+            seedCustomers();
+            seedSuppliers();
+            seedUnitOfMeasures();
+            seedItemGroups();
+            seedItems();
+            seedWarehouses();
+            seedLeaveTypes();
+            seedProjects();
+            seedContracts();
+            seedExpenseCategories();
+            seedTrainingPrograms();
+            seedChartOfAccounts();
+            seedBankAccounts();
+            seedHolidays();
+            seedSalaryBands();
+            
+            System.out.println("Sample data seeding completed!");
+        } catch (Exception e) {
+            System.out.println("Data seeding skipped or partially completed: " + e.getMessage());
+        }
     }
 
     private void seedLocations() {

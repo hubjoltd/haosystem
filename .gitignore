@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.angular/
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+backend/target/
+*.class
+*.jar
+*.war
+*.log
+.env
+.DS_Store
