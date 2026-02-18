@@ -39,5 +39,5 @@ externalPort = 8080
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["java", "-jar", "backend/target/erp-backend-1.0.0.jar", "--server.port=5000"]
+run = ["bash", "-c", '''if [ -n "$DATABASE_URL" ] && [ -z "$PGHOST" ]; then export PGHOST=$(echo $DATABASE_URL | sed -n 's|.*@\([^:]*\):.*|\1|p'); export PGPORT=$(echo $DATABASE_URL | sed -n 's|.*:\([0-9]*\)/.*|\1|p'); export PGDATABASE=$(echo $DATABASE_URL | sed -n 's|.*/\([^?]*\).*|\1|p'); export PGUSER=$(echo $DATABASE_URL | sed -n 's|.*://\([^:]*\):.*|\1|p'); export PGPASSWORD=$(echo $DATABASE_URL | sed -n 's|.*://[^:]*:\([^@]*\)@.*|\1|p'); fi; java -jar backend/target/erp-backend-1.0.0.jar --server.port=5000''']
 build = ["bash", "build.sh"]
