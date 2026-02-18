@@ -45,15 +45,23 @@ public class StaffService {
     }
     
     public User create(Map<String, Object> staffData) {
+        String email = staffData.get("email") != null ? ((String) staffData.get("email")).trim().toLowerCase() : null;
+        if (email == null || email.isEmpty()) {
+            throw new RuntimeException("Email is required");
+        }
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("A staff member with email '" + email + "' already exists");
+        }
+
         User user = new User();
         user.setFirstName((String) staffData.get("firstName"));
         user.setLastName((String) staffData.get("lastName"));
-        user.setEmail((String) staffData.get("email"));
+        user.setEmail(email);
         user.setPhone((String) staffData.get("phone"));
         user.setActive(staffData.get("active") != null ? (Boolean) staffData.get("active") : true);
         user.setCreatedAt(LocalDateTime.now());
         
-        String username = user.getEmail().split("@")[0];
+        String username = email.contains("@") ? email.split("@")[0] : email;
         int suffix = 1;
         String baseUsername = username;
         while (userRepository.existsByUsername(username)) {

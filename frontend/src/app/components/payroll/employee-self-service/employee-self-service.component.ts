@@ -967,6 +967,19 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
     return null;
   }
 
+  getExpenseSubmittedBy(expense: any): string {
+    if (expense.employee?.firstName) {
+      return `${expense.employee.firstName} ${expense.employee.lastName || ''}`.trim();
+    }
+    if (expense.submittedBy?.firstName) {
+      return `${expense.submittedBy.firstName} ${expense.submittedBy.lastName || ''}`.trim();
+    }
+    if (expense.submittedByName) {
+      return expense.submittedByName;
+    }
+    return '-';
+  }
+
   getExpenseApproverName(expense: any): string {
     if (expense.approver?.firstName) {
       return `${expense.approver.firstName} ${expense.approver.lastName || ''}`.trim();

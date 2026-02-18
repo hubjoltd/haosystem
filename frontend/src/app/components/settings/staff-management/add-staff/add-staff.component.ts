@@ -203,6 +203,16 @@ export class AddStaffComponent implements OnInit {
       return;
     }
 
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(this.staff.email.trim())) {
+      this.notificationService.error('Please enter a valid email address');
+      return;
+    }
+
+    if (this.saving) {
+      return;
+    }
+
     if (!this.editMode && (!this.password || this.password.length < 6)) {
       this.notificationService.error('Password must be at least 6 characters');
       return;
