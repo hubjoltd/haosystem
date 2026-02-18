@@ -13,7 +13,7 @@ Preferred communication style: Simple, everyday language.
 - **Port**: 5000 (dev server with `ng serve --host 0.0.0.0 --port 5000`)
 - **Proxy**: `/api` requests proxied to backend at `http://127.0.0.1:8080`
 - **Config**: `frontend/angular.json` with `allowedHosts: true` for Replit proxy compatibility
-- **Styling**: SCSS with dark teal (#008080) theme
+- **Styling**: SCSS with dark navy/blue theme on login, teal (#008080) theme on dashboard
 
 ### Backend
 - **Framework**: Spring Boot 3.2.0 with Java 17+ (runs on Java 19)
@@ -37,6 +37,14 @@ Preferred communication style: Simple, everyday language.
 - In production, the Spring Boot JAR serves both the API and the static Angular frontend on port 5000
 
 ## Recent Changes
+- **Login page redesign**: HAO logo with dark blue/navy gradient, service category cards (Electrical, Access Control, CCTV, Networking, Servers, Communications), "Welcome Back" heading, "Email Address" label, "Sign in to Dashboard" button, removed company logos and "Remember Me" checkbox
+- **Employee list columns reordered**: Employee Code, Name, Designation, Department, Project, Email, Status, Actions
+- **Employee code auto-generation**: Uses branch code as prefix (or "EMP" default), generates sequential 4-digit codes via native SQL query
+- **Employee delete fix**: Cascade deletes related records (bank details, salary, education, experience, assets) before deleting employee
+- **Employee list sorting**: Changed from DESC to ASC order
+- **Onboarding assets**: Added asset endpoints to OnboardingController (GET /assets/employee/{id}, POST /assets, POST /assets/{id}/return)
+- **Leave date fix**: Timezone-safe date parsing using component parts instead of new Date(string)
+- **completeTask endpoint**: Made request body optional (@RequestBody(required = false))
 - Wrapped DataSeeder.run() in try-catch to prevent Hibernate compatibility issues from crashing the application
 - Created start.sh for development workflow (backend on 8080 + frontend dev server on 5000)
 - Created .gitignore for Java and Node.js artifacts

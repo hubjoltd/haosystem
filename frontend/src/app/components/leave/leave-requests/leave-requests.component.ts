@@ -309,6 +309,12 @@ export class LeaveRequestsComponent implements OnInit {
   }
 
   formatDate(date: string): string {
+    if (!date) return '-';
+    const parts = date.split('-');
+    if (parts.length === 3) {
+      const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
     return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 

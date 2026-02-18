@@ -15,6 +15,13 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     
     List<Employee> findAllByOrderByIdDesc();
     
+    List<Employee> findAllByOrderByIdAsc();
+    
+    List<Employee> findByBranchIdOrderByIdAsc(Long branchId);
+    
+    @Query(value = "SELECT e.employee_code FROM employees e WHERE e.employee_code LIKE CONCAT(:prefix, '%') ORDER BY e.employee_code DESC LIMIT 1", nativeQuery = true)
+    String findLastEmployeeCodeByPrefix(@Param("prefix") String prefix);
+    
     Optional<Employee> findByEmail(String email);
     
     List<Employee> findByActiveTrue();

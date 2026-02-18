@@ -5,132 +5,98 @@
 
 .login-left {
   flex: 1;
-  background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+  background: linear-gradient(135deg, #1a237e 0%, #0d1b4a 50%, #0a1628 100%);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  justify-content: space-between;
   padding: 40px;
   color: white;
 
   .brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 40px;
-
-    i {
-      font-size: 2.5rem;
-    }
-
-    h1 {
-      font-size: 1.75rem;
-      font-weight: 600;
+    .brand-logo {
+      height: 50px;
+      object-fit: contain;
     }
   }
 
-  .illustration {
-    text-align: center;
-    max-width: 400px;
-    margin-bottom: 40px;
+  .tagline {
+    max-width: 480px;
 
-    i {
-      font-size: 5rem;
-      margin-bottom: 24px;
-      opacity: 0.9;
-    }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 16px;
 
-    h2 {
-      font-size: 1.5rem;
-      margin-bottom: 12px;
-      font-weight: 600;
+      .highlight {
+        color: #42a5f5;
+      }
     }
 
     p {
-      font-size: 0.95rem;
-      opacity: 0.9;
+      font-size: 1rem;
+      opacity: 0.8;
       line-height: 1.6;
+      margin-bottom: 40px;
     }
   }
 
-  .branch-list {
-    width: 100%;
-    max-width: 500px;
+  .service-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 480px;
+    margin-bottom: 40px;
+  }
 
-    h3 {
-      font-size: 1rem;
-      font-weight: 500;
-      margin-bottom: 16px;
+  .service-card {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+    cursor: default;
+    transition: background 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .service-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 10px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      font-size: 1.25rem;
+
+      &.electrical { background: rgba(239, 83, 80, 0.2); color: #ef5350; }
+      &.access { background: rgba(76, 175, 80, 0.2); color: #4caf50; }
+      &.cctv { background: rgba(0, 188, 212, 0.2); color: #00bcd4; }
+      &.networking { background: rgba(66, 165, 245, 0.2); color: #42a5f5; }
+      &.servers { background: rgba(239, 83, 80, 0.2); color: #ef5350; }
+      &.comms { background: rgba(171, 71, 188, 0.2); color: #ab47bc; }
+    }
+
+    span {
+      font-size: 0.85rem;
+      font-weight: 500;
       opacity: 0.9;
-
-      i {
-        font-size: 1rem;
-      }
     }
+  }
 
-    .branch-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 12px;
-    }
+  .footer-text {
+    font-size: 0.85rem;
+    opacity: 0.6;
 
-    .branch-card {
-      background: rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      padding: 16px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
-      text-align: center;
+    a {
+      color: #42a5f5;
+      text-decoration: none;
 
       &:hover {
-        background: rgba(255, 255, 255, 0.25);
-        transform: translateY(-2px);
-      }
-
-      &.selected {
-        border-color: white;
-        background: rgba(255, 255, 255, 0.3);
-      }
-
-      .branch-logo {
-        width: 48px;
-        height: 48px;
-        margin: 0 auto 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 10px;
-
-        img {
-          max-width: 100%;
-          max-height: 100%;
-          object-fit: contain;
-        }
-
-        i {
-          font-size: 1.5rem;
-        }
-      }
-
-      .branch-info {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-
-        .branch-name {
-          font-weight: 600;
-          font-size: 0.9rem;
-        }
-
-        .branch-code {
-          font-size: 0.75rem;
-          opacity: 0.8;
-        }
+        text-decoration: underline;
       }
     }
   }
@@ -142,7 +108,7 @@
   align-items: center;
   justify-content: center;
   padding: 40px;
-  background: #f5f7fa;
+  background: #f8f9fc;
 }
 
 .login-box {
@@ -151,17 +117,16 @@
   background: white;
   padding: 40px;
   border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 
 .login-header {
-  text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 
   h2 {
     font-size: 1.75rem;
-    font-weight: 600;
-    color: #2c3e50;
+    font-weight: 700;
+    color: #1a1a2e;
     margin-bottom: 8px;
   }
 
@@ -175,8 +140,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
-  border: 1px solid #00796b;
+  background: #e8eaf6;
+  border: 1px solid #3f51b5;
   border-radius: 10px;
   padding: 12px 16px;
   margin-bottom: 20px;
@@ -187,7 +152,7 @@
     gap: 12px;
 
     > i {
-      color: #00796b;
+      color: #3f51b5;
       font-size: 1.25rem;
     }
 
@@ -197,13 +162,13 @@
 
       .label {
         font-size: 0.75rem;
-        color: #00796b;
+        color: #3f51b5;
         opacity: 0.8;
       }
 
       .branch-name {
         font-weight: 600;
-        color: #00796b;
+        color: #3f51b5;
         font-size: 0.95rem;
       }
     }
@@ -212,14 +177,52 @@
   .clear-branch {
     background: none;
     border: none;
-    color: #00796b;
+    color: #3f51b5;
     cursor: pointer;
     padding: 4px;
     border-radius: 4px;
     transition: background 0.2s;
 
     &:hover {
-      background: rgba(0, 121, 107, 0.1);
+      background: rgba(63, 81, 181, 0.1);
+    }
+  }
+}
+
+.branch-selector {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    font-weight: 500;
+    color: #1a1a2e;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+
+  .branch-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .branch-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    color: #333;
+
+    i { color: #3f51b5; }
+
+    &:hover {
+      border-color: #3f51b5;
+      background: #f5f5ff;
     }
   }
 }
@@ -231,8 +234,19 @@
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
-    color: #2c3e50;
+    color: #1a1a2e;
     font-size: 0.9rem;
+  }
+}
+
+.password-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+
+  label {
+    margin-bottom: 0;
   }
 }
 
@@ -241,11 +255,11 @@
   display: flex;
   align-items: center;
 
-  i {
+  > i:first-child {
     position: absolute;
     left: 16px;
-    color: #6c757d;
-    font-size: 1rem;
+    color: #9e9e9e;
+    font-size: 0.95rem;
   }
 
   .form-control {
@@ -255,15 +269,17 @@
     border-radius: 10px;
     font-size: 0.95rem;
     transition: all 0.3s ease;
+    background: #fafafa;
 
     &:focus {
       outline: none;
-      border-color: #00796b;
-      box-shadow: 0 0 0 3px rgba(0, 121, 107, 0.1);
+      border-color: #3f51b5;
+      box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.1);
+      background: white;
     }
 
     &::placeholder {
-      color: #adb5bd;
+      color: #bdbdbd;
     }
   }
 
@@ -273,41 +289,19 @@
     background: none;
     border: none;
     cursor: pointer;
-    color: #6c757d;
+    color: #9e9e9e;
     padding: 0;
 
     &:hover {
-      color: #00796b;
+      color: #3f51b5;
     }
   }
 }
 
-.form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  color: #6c757d;
-
-  input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: #00796b;
-  }
-}
-
 .forgot-link {
-  color: #00796b;
+  color: #3f51b5;
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 500;
 
   &:hover {
@@ -315,22 +309,10 @@
   }
 }
 
-.error-message {
-  background: #fef2f2;
-  color: #dc3545;
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9rem;
-}
-
 .btn-login {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -338,32 +320,16 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-top: 4px;
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 121, 107, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(21, 101, 192, 0.3);
   }
 
   &:disabled {
     opacity: 0.7;
     cursor: not-allowed;
-  }
-}
-
-.login-footer {
-  text-align: center;
-  margin-top: 24px;
-  color: #6c757d;
-  font-size: 0.9rem;
-
-  a {
-    color: #00796b;
-    font-weight: 500;
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
   }
 }
 

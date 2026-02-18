@@ -93,10 +93,10 @@
         <tr>
           <th>Employee Code</th>
           <th>Name</th>
+          <th>Designation</th>
+          <th>Department</th>
           <th>Project</th>
           <th>Email</th>
-          <th>Department</th>
-          <th>Designation</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -110,10 +110,10 @@
               <span>{{ emp.firstName }} {{ emp.lastName }}</span>
             </div>
           </td>
+          <td>{{ emp.designation?.title || '-' }}</td>
+          <td>{{ emp.department?.name || '-' }}</td>
           <td>{{ emp.project?.name || '-' }}</td>
           <td>{{ emp.email }}</td>
-          <td>{{ emp.department?.name || '-' }}</td>
-          <td>{{ emp.designation?.title || '-' }}</td>
           <td>
             <span class="status-badge" [ngClass]="getStatusClass(emp)">
               {{ emp.active ? (emp.employmentStatus || 'Active') : 'Inactive' }}

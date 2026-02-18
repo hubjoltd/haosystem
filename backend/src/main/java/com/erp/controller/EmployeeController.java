@@ -71,13 +71,13 @@ public class EmployeeController {
     @GetMapping
     public List<Employee> getAll(HttpServletRequest request) {
         if (isSuperAdmin(request)) {
-            return employeeRepository.findAllByOrderByIdDesc();
+            return employeeRepository.findAllByOrderByIdAsc();
         }
         Long branchId = extractBranchId(request);
         if (branchId != null) {
-            return employeeRepository.findByBranchIdOrderByIdDesc(branchId);
+            return employeeRepository.findByBranchIdOrderByIdAsc(branchId);
         }
-        return employeeRepository.findAllByOrderByIdDesc();
+        return employeeRepository.findAllByOrderByIdAsc();
     }
     
     @GetMapping("/active")
@@ -122,12 +122,35 @@ public class EmployeeController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    private String generateEmployeeCode(String prefix) {
+        if (prefix == null || prefix.isEmpty()) {
+            prefix = "EMP";
+        }
+        String lastCode = employeeRepository.findLastEmployeeCodeByPrefix(prefix);
+        int nextNumber = 1;
+        if (lastCode != null && lastCode.length() > prefix.length()) {
+            try {
+                nextNumber = Integer.parseInt(lastCode.substring(prefix.length())) + 1;
+            } catch (NumberFormatException e) {
+                nextNumber = 1;
+            }
+        }
+        return prefix + String.format("%04d", nextNumber);
+    }
+
     @PostMapping
     public Employee create(@RequestBody Employee employee, Authentication auth, HttpServletRequest request) {
         employee.setCreatedBy(auth != null ? auth.getName() : "system");
         Long branchId = extractBranchId(request);
         if (branchId != null && employee.getBranch() == null) {
             branchRepository.findById(branchId).ifPresent(employee::setBranch);
+        }
+        if (employee.getEmployeeCode() == null || employee.getEmployeeCode().isEmpty()) {
+            String prefix = "EMP";
+            if (employee.getBranch() != null && employee.getBranch().getCode() != null) {
+                prefix = employee.getBranch().getCode();
+            }
+            employee.setEmployeeCode(generateEmployeeCode(prefix));
         }
         return employeeRepository.save(employee);
     }
@@ -213,14 +236,25 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<?> delete(@PathVariable Long id, HttpServletRequest request) {
         Long branchId = extractBranchId(request);
         return employeeRepository.findById(id)
                 .filter(existing -> isSuperAdmin(request) || branchId == null || 
                        (existing.getBranch() != null && existing.getBranch().getId().equals(branchId)))
                 .map(employee -> {
-                    employeeRepository.delete(employee);
-                    return ResponseEntity.ok().<Void>build();
+                    try {
+                        bankDetailRepository.findByEmployeeId(id).forEach(bankDetailRepository::delete);
+                        salaryRepository.findByEmployeeId(id).forEach(salaryRepository::delete);
+                        educationRepository.findByEmployeeId(id).forEach(educationRepository::delete);
+                        experienceRepository.findByEmployeeId(id).forEach(experienceRepository::delete);
+                        assetRepository.findByEmployeeId(id).forEach(assetRepository::delete);
+                        employeeRepository.delete(employee);
+                        return ResponseEntity.ok().<Void>build();
+                    } catch (Exception e) {
+                        java.util.Map<String, String> error = new java.util.HashMap<>();
+                        error.put("error", "Failed to delete employee. The employee may have associated records that prevent deletion.");
+                        return ResponseEntity.status(500).body(error);
+                    }
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
