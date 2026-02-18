@@ -3,35 +3,39 @@ set -e
 
 echo "=== Starting build process ==="
 
-cd frontend
+WORKSPACE="/home/runner/workspace"
+
 echo "Installing frontend dependencies..."
+cd "$WORKSPACE/frontend"
 npm install
 
 echo "Building Angular frontend..."
-npm run build
+npx ng build --configuration production
 
 echo "Finding Angular output..."
-STATIC_DIR="../backend/src/main/resources/static"
+STATIC_DIR="$WORKSPACE/backend/src/main/resources/static"
+rm -rf "$STATIC_DIR"
 mkdir -p "$STATIC_DIR"
 
-if [ -f "dist/frontend/browser/index.html" ]; then
-    echo "Found files in dist/frontend/browser/"
-    cp -r dist/frontend/browser/* "$STATIC_DIR/"
-elif [ -f "dist/frontend/index.html" ]; then
-    echo "Found files in dist/frontend/"
-    cp -r dist/frontend/* "$STATIC_DIR/"
+BUILD_DIR="$WORKSPACE/frontend/dist/frontend/browser"
+if [ ! -f "$BUILD_DIR/index.html" ]; then
+    BUILD_DIR="$WORKSPACE/frontend/dist/frontend"
+fi
+
+if [ -f "$BUILD_DIR/index.html" ]; then
+    echo "Found build output in $BUILD_DIR"
+    cp -r "$BUILD_DIR"/* "$STATIC_DIR/"
 else
-    echo "ERROR: Could not find index.html in Angular output"
-    echo "Contents of dist/frontend/:"
-    ls -la dist/frontend/ 2>/dev/null || echo "dist/frontend/ does not exist"
-    ls -la dist/frontend/browser/ 2>/dev/null || echo "dist/frontend/browser/ does not exist"
+    echo "ERROR: Angular build output not found"
+    echo "Searching for index.html..."
+    find "$WORKSPACE/frontend/dist" -name "index.html" 2>/dev/null || echo "No index.html found"
     exit 1
 fi
 
 echo "Static files copied to backend:"
 ls -la "$STATIC_DIR/"
 
-cd ../backend
+cd "$WORKSPACE/backend"
 echo "Building Spring Boot backend..."
 mvn clean package -DskipTests
 
