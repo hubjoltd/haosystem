@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService, LoginRequest, Branch } from '../../services/auth.service';
+import { AuthService, LoginRequest, Branch, CurrentUser } from '../../services/auth.service';
 import { BranchService } from '../../services/branch.service';
 import { NotificationService } from '../../services/notification.service';
 
@@ -77,7 +77,12 @@ export class LoginComponent implements OnInit {
       next: () => {
         this.isLoading = false;
         this.notificationService.success('Login successful!');
-        this.router.navigate(['/app/dashboard']);
+        const user: CurrentUser | null = this.authService.getCurrentUser();
+        if (user?.role === 'STAFF') {
+          this.router.navigate(['/app/payroll/self-service']);
+        } else {
+          this.router.navigate(['/app/dashboard']);
+        }
       },
       error: (err) => {
         this.isLoading = false;

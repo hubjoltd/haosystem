@@ -50,6 +50,7 @@
             <th class="col-name">EMPLOYEE</th>
             <th class="col-position">POSITION</th>
             <th class="col-dept">DEPARTMENT</th>
+            <th class="col-project">PROJECT</th>
             <th class="col-status">STATUS</th>
             <th class="col-geo">GEOFENCE</th>
             <th class="col-time">CLOCK IN</th>
@@ -61,12 +62,12 @@
         </thead>
         <tbody>
           <tr *ngIf="loadingEmployees || loadingRecords">
-            <td colspan="12" class="loading-cell">
+            <td colspan="13" class="loading-cell">
               <i class="fas fa-spinner fa-spin"></i> Loading...
             </td>
           </tr>
           <tr *ngIf="!loadingEmployees && !loadingRecords && filteredRows.length === 0">
-            <td colspan="12" class="empty-cell">No employees found</td>
+            <td colspan="13" class="empty-cell">No employees found</td>
           </tr>
           <tr *ngFor="let row of filteredRows" [class.row-active]="getStatus(row) === 'clocked_in'">
             <td class="col-select"><input type="checkbox" [(ngModel)]="row.selected" (change)="onRowSelect()" /></td>
@@ -79,6 +80,7 @@
             </td>
             <td class="col-position">{{ row.employee.designation?.title || row.employee.jobRole?.title || '—' }}</td>
             <td class="col-dept">{{ row.employee.department?.name || '—' }}</td>
+            <td class="col-project">{{ row.employee.project?.name || row.record?.projectName || '—' }}</td>
             <td class="col-status">
               <span class="status-badge" [ngClass]="{
                 'status-completed': getStatus(row) === 'completed',
