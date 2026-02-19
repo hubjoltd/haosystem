@@ -5,7 +5,6 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
-import { WebSocketService, ChatMessagePayload } from '../../services/websocket.service';
 import { ToastService } from '../../services/toast.service';
 
 interface ChatMessage {
@@ -68,10 +67,11 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
   private notificationSound: HTMLAudioElement | null = null;
   private notificationPermission: NotificationPermission = 'default';
+  private pollingTimer: any = null;
+  private lastMessageId: number = 0;
 
   constructor(
     private authService: AuthService,
-    private websocketService: WebSocketService,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
     private toastService: ToastService
@@ -80,13 +80,13 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const user = this.authService.getCurrentUser();
     if (user) {
-      this.currentUserId = (user as any).id || 1;
+      this.currentUserId = (user as any).userId || (user as any).id || 1;
       this.currentUserName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User';
     }
     
     this.initNotifications();
     this.loadUsers();
-    this.initializeWebSocket();
+    this.startPolling();
   }
 
   private initNotifications(): void {
@@ -137,7 +137,6 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
       oscillator.start(this.audioContext.currentTime);
       oscillator.stop(this.audioContext.currentTime + 0.3);
     } catch (e) {
-      console.log('Beep sound failed:', e);
     }
   }
 
@@ -163,82 +162,113 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => sub.unsubscribe());
-    this.websocketService.disconnect();
+    this.stopPolling();
   }
 
-  private initializeWebSocket(): void {
-    this.websocketService.connect(this.currentUserId);
+  private startPolling(): void {
+    this.connectionStatus = 'connected';
+    this.cdr.markForCheck();
+    
+    this.pollingTimer = setInterval(() => {
+      this.pollUnreadCounts();
+      if (this.selectedUser) {
+        this.pollNewMessages();
+      }
+    }, 3000);
+  }
 
-    const connectionSub = this.websocketService.connectionStatus.subscribe(status => {
-      this.connectionStatus = status;
-      this.cdr.markForCheck();
-    });
-    this.subscriptions.push(connectionSub);
+  private stopPolling(): void {
+    if (this.pollingTimer) {
+      clearInterval(this.pollingTimer);
+      this.pollingTimer = null;
+    }
+  }
 
-    const messageSub = this.websocketService.incomingMessages.subscribe(message => {
-      this.handleIncomingMessage(message);
-    });
-    this.subscriptions.push(messageSub);
-
-    const typingSub = this.websocketService.typingIndicator.subscribe(typing => {
-      if (this.selectedUser && typing.userId === this.selectedUser.id) {
-        this.isTyping = typing.isTyping;
-        this.typingUser = typing.userName;
-        this.cdr.markForCheck();
-        
-        if (typing.isTyping) {
-          setTimeout(() => {
-            this.isTyping = false;
-            this.cdr.markForCheck();
-          }, 3000);
+  private pollUnreadCounts(): void {
+    this.http.get<any>('/api/chat/unread').subscribe({
+      next: (result) => {
+        if (result && typeof result.count === 'number') {
+          if (result.count === 0) {
+            let changed = false;
+            for (const user of this.users) {
+              if (user.unreadCount > 0) {
+                user.unreadCount = 0;
+                changed = true;
+              }
+            }
+            if (changed) this.cdr.markForCheck();
+          } else {
+            for (const user of this.users) {
+              if (this.selectedUser && user.id === this.selectedUser.id) continue;
+              this.http.get<any>(`/api/chat/unread/${user.id}`).subscribe({
+                next: (unreadResult) => {
+                  if (unreadResult && typeof unreadResult.count === 'number') {
+                    const prevCount = user.unreadCount;
+                    user.unreadCount = unreadResult.count;
+                    if (unreadResult.count !== prevCount) {
+                      this.cdr.markForCheck();
+                    }
+                  }
+                }
+              });
+            }
+          }
         }
       }
     });
-    this.subscriptions.push(typingSub);
-
-    const statusSub = this.websocketService.userOnlineStatus.subscribe(status => {
-      const user = this.users.find(u => u.id === status.userId);
-      if (user) {
-        user.online = status.online;
-        this.cdr.markForCheck();
-      }
-    });
-    this.subscriptions.push(statusSub);
   }
 
-  private handleIncomingMessage(message: ChatMessagePayload): void {
-    if (this.messages.some(m => m.id === message.id)) {
-      return;
-    }
+  private pollNewMessages(): void {
+    if (!this.selectedUser) return;
 
-    this.playNotificationSound();
-    this.showBrowserNotification(message.senderName, message.message.substring(0, 100));
-
-    if (this.selectedUser && message.senderId === this.selectedUser.id) {
-      const chatMessage: ChatMessage = {
-        id: message.id,
-        senderId: message.senderId,
-        senderName: message.senderName,
-        receiverId: message.receiverId,
-        message: message.message,
-        timestamp: new Date(message.timestamp),
-        read: true,
-        isOwn: false
-      };
-      this.messages.push(chatMessage);
-      this.websocketService.markAsRead(message.id, this.currentUserId);
-      this.cdr.markForCheck();
-      setTimeout(() => this.scrollToBottom(), 100);
-    } else {
-      const user = this.users.find(u => u.id === message.senderId);
-      if (user) {
-        user.unreadCount++;
-        user.lastMessage = message.message;
-        user.lastMessageTime = new Date(message.timestamp);
-        this.toastService.info(`New message from ${message.senderName}: ${message.message.substring(0, 50)}${message.message.length > 50 ? '...' : ''}`);
-        this.cdr.markForCheck();
-      }
-    }
+    this.http.get<any[]>(`/api/chat/messages/${this.selectedUser.id}`).subscribe({
+      next: (serverMessages) => {
+        if (!serverMessages || serverMessages.length === 0) return;
+        
+        let hasNew = false;
+        const existingIds = new Set(this.messages.map(m => m.id));
+        
+        for (const m of serverMessages) {
+          if (!existingIds.has(m.id)) {
+            const isOwn = m.senderId === this.currentUserId;
+            const chatMessage: ChatMessage = {
+              id: m.id,
+              senderId: m.senderId,
+              senderName: m.senderName,
+              receiverId: m.receiverId,
+              message: m.message,
+              timestamp: new Date(m.timestamp),
+              read: isOwn ? m.read : true,
+              isOwn: isOwn,
+              status: isOwn ? 'delivered' : undefined
+            };
+            this.messages.push(chatMessage);
+            hasNew = true;
+            
+            if (!isOwn) {
+              this.playNotificationSound();
+              this.showBrowserNotification(m.senderName, m.message.substring(0, 100));
+            }
+          }
+        }
+        
+        if (hasNew) {
+          this.messages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+          
+          if (this.selectedUser) {
+            const lastMsg = serverMessages[serverMessages.length - 1];
+            if (lastMsg) {
+              this.selectedUser.lastMessage = lastMsg.message?.substring(0, 50) || '';
+              this.selectedUser.lastMessageTime = new Date(lastMsg.timestamp);
+            }
+          }
+          
+          this.cdr.markForCheck();
+          setTimeout(() => this.scrollToBottom(), 100);
+        }
+      },
+      error: () => {}
+    });
   }
 
   loadUsers(): void {
@@ -398,19 +428,9 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   private sendMessageWithContent(content: string, attachmentData?: string, attachmentName?: string, attachmentType?: 'image' | 'document'): void {
     if (!this.selectedUser) return;
     
-    const messagePayload: ChatMessagePayload = {
-      id: Date.now(),
-      senderId: this.currentUserId,
-      senderName: this.currentUserName,
-      receiverId: this.selectedUser.id,
-      message: content,
-      timestamp: new Date()
-    };
-
-    this.websocketService.sendMessage(messagePayload);
-
+    const tempId = Date.now();
     const message: ChatMessage = {
-      id: messagePayload.id,
+      id: tempId,
       senderId: this.currentUserId,
       senderName: this.currentUserName,
       receiverId: this.selectedUser.id,
@@ -432,37 +452,33 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
 
     setTimeout(() => this.scrollToBottom(), 100);
 
-    const payload: any = { ...messagePayload };
+    const payload: any = {
+      senderId: this.currentUserId,
+      senderName: this.currentUserName,
+      receiverId: this.selectedUser.id,
+      message: content,
+      timestamp: new Date()
+    };
     if (attachmentData) {
       payload.attachmentData = attachmentData;
       payload.attachmentName = attachmentName;
       payload.attachmentType = attachmentType;
     }
     
-    if (this.connectionStatus !== 'connected' || !this.websocketService) {
-      this.http.post('/api/chat/messages', payload).subscribe({
-        next: () => {
-          message.status = 'sent';
-          setTimeout(() => {
-            message.status = 'delivered';
-            this.cdr.markForCheck();
-          }, 1000);
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          console.error('Failed to persist message:', err);
-          message.status = 'sent';
-          this.cdr.markForCheck();
-        }
-      });
-    } else {
-      message.status = 'sent';
-      setTimeout(() => {
+    this.http.post<any>('/api/chat/messages', payload).subscribe({
+      next: (savedMsg) => {
         message.status = 'delivered';
+        if (savedMsg && savedMsg.id) {
+          message.id = savedMsg.id;
+        }
         this.cdr.markForCheck();
-      }, 500);
-      this.cdr.markForCheck();
-    }
+      },
+      error: (err) => {
+        console.error('Failed to send message:', err);
+        message.status = 'sent';
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   onFileSelected(event: Event): void {
@@ -501,14 +517,6 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   }
 
   onTyping(): void {
-    if (this.selectedUser) {
-      this.websocketService.sendTypingStatus(
-        this.currentUserId,
-        this.currentUserName,
-        true,
-        this.selectedUser.id
-      );
-    }
   }
 
   scrollToBottom(): void {

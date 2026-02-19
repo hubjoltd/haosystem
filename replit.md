@@ -56,3 +56,5 @@ Preferred communication style: Simple, everyday language.
 - **Leave date display fix**: formatDate() now handles both array `[2026, 2, 11]` and string `"2026-02-11"` formats with invalid date fallback
 - **Company creation form**: Moved Company Name/Code to the top of the form (before logo and admin sections)
 - **Chat security**: WebSocket now requires JWT token authentication only (removed userId query param fallback), with username-based user lookup for backward compatibility with old tokens
+- **Employee code robust fallback**: 3-tier fallback: server `/api/employees/next-code` → prefix settings → employee list scan → default EMP-0001
+- **Chat real-time via HTTP polling**: Replaced WebSocket with HTTP polling (3s interval) for reliable real-time chat. Polls `/api/chat/unread` for badge counts and `/api/chat/messages/{userId}` for conversation updates. Messages sent via REST POST with server-generated IDs.

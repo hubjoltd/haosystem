@@ -186,28 +186,51 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private Long authenticateAndExtractUserId(WebSocketSession session) {
         String query = session.getUri() != null ? session.getUri().getQuery() : null;
-        if (query == null) return null;
+        if (query == null) {
+            System.err.println("WebSocket auth failed: no query string");
+            return null;
+        }
 
         String token = null;
         if (query.contains("token=")) {
             try {
                 token = query.split("token=")[1].split("&")[0];
             } catch (Exception e) {
+                System.err.println("WebSocket auth failed: error parsing token from query");
                 return null;
             }
         }
 
-        if (token != null && !token.isEmpty() && jwtUtil.validateToken(token)) {
-            Long userId = jwtUtil.extractUserId(token);
-            if (userId != null) return userId;
-            String username = jwtUtil.extractUsername(token);
-            if (username != null) {
-                return userRepository.findByUsername(username)
-                    .map(User::getId)
-                    .orElse(null);
-            }
+        if (token == null || token.isEmpty()) {
+            System.err.println("WebSocket auth failed: token is null or empty");
+            return null;
         }
 
+        if (!jwtUtil.validateToken(token)) {
+            System.err.println("WebSocket auth failed: token validation failed");
+            return null;
+        }
+
+        Long userId = jwtUtil.extractUserId(token);
+        if (userId != null) {
+            System.out.println("WebSocket auth success: userId from token claim = " + userId);
+            return userId;
+        }
+
+        String username = jwtUtil.extractUsername(token);
+        if (username != null) {
+            System.out.println("WebSocket auth: looking up user by username = " + username);
+            Long id = userRepository.findByUsername(username)
+                .map(User::getId)
+                .orElse(null);
+            if (id != null) {
+                System.out.println("WebSocket auth success: userId from DB lookup = " + id);
+                return id;
+            }
+            System.err.println("WebSocket auth failed: user not found by username = " + username);
+        }
+
+        System.err.println("WebSocket auth failed: could not extract userId or username");
         return null;
     }
 

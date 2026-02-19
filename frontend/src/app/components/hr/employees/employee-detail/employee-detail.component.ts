@@ -176,27 +176,57 @@ export class EmployeeDetailComponent implements OnInit {
         if (result && result.code) {
           this.employee.employeeCode = result.code;
         } else {
-          this.employee.employeeCode = 'EMP-0001';
+          this.fallbackGenerateCode();
         }
         this.cdr.markForCheck();
       },
       error: () => {
-        this.settingsService.getPrefixSettings().subscribe({
-          next: (settings: PrefixSettings) => {
-            if (settings) {
-              const prefix = settings.employeePrefix || 'EMP-';
-              const nextNum = settings.employeeNextNumber || 1;
-              this.employee.employeeCode = `${prefix}${nextNum.toString().padStart(4, '0')}`;
-            } else {
-              this.employee.employeeCode = 'EMP-0001';
+        this.fallbackGenerateCode();
+      }
+    });
+  }
+
+  private fallbackGenerateCode(): void {
+    this.settingsService.getPrefixSettings().subscribe({
+      next: (settings: PrefixSettings) => {
+        if (settings && settings.employeePrefix) {
+          const prefix = settings.employeePrefix;
+          const nextNum = settings.employeeNextNumber || 1;
+          this.employee.employeeCode = `${prefix}${nextNum.toString().padStart(4, '0')}`;
+        } else {
+          this.calculateNextCodeFromList();
+        }
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.calculateNextCodeFromList();
+      }
+    });
+  }
+
+  private calculateNextCodeFromList(): void {
+    this.employeeService.getAll().subscribe({
+      next: (employees: any[]) => {
+        let maxNum = 0;
+        if (employees && employees.length > 0) {
+          for (const emp of employees) {
+            if (emp.employeeCode) {
+              const match = emp.employeeCode.match(/(\d+)$/);
+              if (match) {
+                const num = parseInt(match[1], 10);
+                if (num > maxNum) {
+                  maxNum = num;
+                }
+              }
             }
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.employee.employeeCode = 'EMP-0001';
-            this.cdr.markForCheck();
           }
-        });
+        }
+        this.employee.employeeCode = `EMP-${(maxNum + 1).toString().padStart(4, '0')}`;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.employee.employeeCode = 'EMP-0001';
+        this.cdr.markForCheck();
       }
     });
   }
