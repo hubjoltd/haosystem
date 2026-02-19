@@ -14,7 +14,6 @@ import { NotificationService } from '../../services/notification.service';
 export class CompanyLoginComponent implements OnInit {
   username: string = '';
   password: string = '';
-  rememberMe: boolean = false;
   showPassword: boolean = false;
   isLoading: boolean = false;
   isLoadingCompany: boolean = true;
