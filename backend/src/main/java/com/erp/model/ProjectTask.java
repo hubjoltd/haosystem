@@ -1,5 +1,6 @@
 package com.erp.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,6 +16,7 @@ public class ProjectTask {
 
     @ManyToOne
     @JoinColumn(name = "project_id", nullable = false)
+    @JsonBackReference
     private Project project;
 
     @Column(nullable = false, length = 200)
