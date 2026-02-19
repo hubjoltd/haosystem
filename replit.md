@@ -52,3 +52,7 @@ Preferred communication style: Simple, everyday language.
 - Created start.sh for development workflow (backend on 8080 + frontend dev server on 5000)
 - Created .gitignore for Java and Node.js artifacts
 - Configured deployment for autoscale with build step
+- **Employee code fix**: Added dash separator in auto-generation (EMP-0004 format), added `/api/employees/next-code` endpoint for frontend to get the correct next available code
+- **Leave date display fix**: formatDate() now handles both array `[2026, 2, 11]` and string `"2026-02-11"` formats with invalid date fallback
+- **Company creation form**: Moved Company Name/Code to the top of the form (before logo and admin sections)
+- **Chat security**: WebSocket now requires JWT token authentication only (removed userId query param fallback), with username-based user lookup for backward compatibility with old tokens
