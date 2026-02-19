@@ -184,6 +184,11 @@ export class EmployeeService {
     return this.http.get<Employee[]>(`${this.baseUrl}/active`);
   }
 
+  getNextCode(prefix?: string): Observable<any> {
+    const params = prefix ? `?prefix=${prefix}` : '';
+    return this.http.get<any>(`${this.baseUrl}/next-code${params}`);
+  }
+
   search(query: string): Observable<Employee[]> {
     return this.http.get<Employee[]>(`${this.baseUrl}/search`, { params: { query } });
   }

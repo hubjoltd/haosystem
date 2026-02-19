@@ -334,6 +334,8 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
     this.messages = [];
     this.cdr.markForCheck();
 
+    this.http.post('/api/chat/read', { senderId: userId }).subscribe();
+
     this.http.get<any[]>(`/api/chat/messages/${userId}`).subscribe({
       next: (messages) => {
         const uniqueMessages = new Map<number, ChatMessage>();
@@ -437,21 +439,30 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
       payload.attachmentType = attachmentType;
     }
     
-    this.http.post('/api/chat/messages', payload).subscribe({
-      next: () => {
-        message.status = 'sent';
-        setTimeout(() => {
-          message.status = 'delivered';
+    if (this.connectionStatus !== 'connected' || !this.websocketService) {
+      this.http.post('/api/chat/messages', payload).subscribe({
+        next: () => {
+          message.status = 'sent';
+          setTimeout(() => {
+            message.status = 'delivered';
+            this.cdr.markForCheck();
+          }, 1000);
           this.cdr.markForCheck();
-        }, 1000);
+        },
+        error: (err) => {
+          console.error('Failed to persist message:', err);
+          message.status = 'sent';
+          this.cdr.markForCheck();
+        }
+      });
+    } else {
+      message.status = 'sent';
+      setTimeout(() => {
+        message.status = 'delivered';
         this.cdr.markForCheck();
-      },
-      error: (err) => {
-        console.error('Failed to persist message:', err);
-        message.status = 'sent';
-        this.cdr.markForCheck();
-      }
-    });
+      }, 500);
+      this.cdr.markForCheck();
+    }
   }
 
   onFileSelected(event: Event): void {

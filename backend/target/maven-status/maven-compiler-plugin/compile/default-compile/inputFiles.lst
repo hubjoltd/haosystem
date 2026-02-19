@@ -35,6 +35,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/DesignationRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Candidate.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/BranchController.java
+/home/runner/workspace/backend/src/main/java/com/erp/model/ChatMessage.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/TrainingController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/Branch.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/ExpenseRequestRepository.java
@@ -114,9 +115,11 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/TimesheetRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/GradeRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/AccountTransfer.java
+/home/runner/workspace/backend/src/main/java/com/erp/websocket/ChatWebSocketHandler.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/MisDashboardController.java
 /home/runner/workspace/backend/src/main/java/com/erp/security/JwtUtil.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/ExpenseCategory.java
+/home/runner/workspace/backend/src/main/java/com/erp/config/WebSocketConfig.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/PRFulfillmentRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/controller/RoleController.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/AccountMapping.java
@@ -162,6 +165,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/FiscalPeriodRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/IntegrationConfig.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/TrainingProgramRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/repository/ChatMessageRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/ProjectMilestone.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/InventoryLedger.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/ItemGroup.java
@@ -294,6 +298,7 @@
 /home/runner/workspace/backend/src/main/java/com/erp/repository/JobRoleRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/LoanApplicationRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/PRStockFulfillmentRepository.java
+/home/runner/workspace/backend/src/main/java/com/erp/controller/ChatController.java
 /home/runner/workspace/backend/src/main/java/com/erp/repository/ProjectRepository.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/IntegrationSyncLog.java
 /home/runner/workspace/backend/src/main/java/com/erp/model/OfferLetter.java

@@ -65,8 +65,9 @@ export class WebSocketService implements OnDestroy {
 
     this.connectionStatus$.next('connecting');
     
+    const token = localStorage.getItem('token') || '';
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws?userId=${userId}`;
+    const wsUrl = `${protocol}//${window.location.host}/ws?userId=${userId}&token=${token}`;
     
     try {
       this.socket = new WebSocket(wsUrl);

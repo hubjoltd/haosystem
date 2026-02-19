@@ -97,7 +97,7 @@ public class AuthService {
             }
         }
         
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().getName(), branchId, isSuperAdmin, employeeId);
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().getName(), branchId, isSuperAdmin, employeeId, user.getId());
         
         return new AuthResponse(
             token,

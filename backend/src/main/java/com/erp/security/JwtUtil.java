@@ -26,6 +26,10 @@ public class JwtUtil {
     }
     
     public String generateToken(String username, String role, Long branchId, boolean isSuperAdmin, Long employeeId) {
+        return generateToken(username, role, branchId, isSuperAdmin, employeeId, null);
+    }
+    
+    public String generateToken(String username, String role, Long branchId, boolean isSuperAdmin, Long employeeId, Long userId) {
         var builder = Jwts.builder()
             .subject(username)
             .claim("role", role)
@@ -39,8 +43,19 @@ public class JwtUtil {
         if (employeeId != null) {
             builder.claim("employeeId", employeeId);
         }
+        if (userId != null) {
+            builder.claim("userId", userId);
+        }
         
         return builder.signWith(secretKey).compact();
+    }
+    
+    public Long extractUserId(String token) {
+        Object userId = getClaims(token).get("userId");
+        if (userId == null) return null;
+        if (userId instanceof Long) return (Long) userId;
+        if (userId instanceof Integer) return ((Integer) userId).longValue();
+        return null;
     }
     
     public String extractUsername(String token) {

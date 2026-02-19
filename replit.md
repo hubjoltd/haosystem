@@ -46,6 +46,7 @@ Preferred communication style: Simple, everyday language.
 - **Onboarding assets**: Added asset endpoints to OnboardingController (GET /assets/employee/{id}, POST /assets, POST /assets/{id}/return)
 - **Leave date fix**: Timezone-safe date parsing using component parts instead of new Date(string). Added WRITE_DATES_AS_TIMESTAMPS=false to serialize LocalDate as ISO strings instead of arrays.
 - **HR Dashboard moved**: Moved from MIS & Dashboards section to HR Management as the first option in sidebar navigation
+- **Real-time chat**: Added full backend support for employee chat with WebSocket (Spring WebSocket) for real-time messaging, ChatMessage entity stored in PostgreSQL, ChatController REST API for message history/send/read, JWT-authenticated WebSocket connections, typing indicators, and online status broadcasting
 - **completeTask endpoint**: Made request body optional (@RequestBody(required = false))
 - Wrapped DataSeeder.run() in try-catch to prevent Hibernate compatibility issues from crashing the application
 - Created start.sh for development workflow (backend on 8080 + frontend dev server on 5000)

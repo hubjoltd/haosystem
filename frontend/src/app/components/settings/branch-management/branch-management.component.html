@@ -414,32 +414,15 @@
     </div>
     <div class="modal-body">
       <div class="form-section">
-        <h3><i class="fas fa-image"></i> Company Logo</h3>
-        <div class="logo-upload-inline">
-          <div class="logo-preview-small">
-            <img *ngIf="logoPreview" [src]="logoPreview" alt="Company Logo" />
-            <i *ngIf="!logoPreview" class="fas fa-building"></i>
-          </div>
-          <div class="logo-upload-actions">
-            <input type="file" accept="image/*" (change)="onBranchLogoChange($event)" id="branchLogoInput" class="file-input" />
-            <label for="branchLogoInput" class="btn btn-sm btn-secondary">
-              <i class="fas fa-upload"></i> {{ logoPreview ? 'Change Logo' : 'Upload Logo' }}
-            </label>
-            <small class="hint">Recommended: 200x200px, PNG or JPG, max 5MB</small>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-section">
         <h3><i class="fas fa-building"></i> Company Details</h3>
         <div class="form-row">
           <div class="form-group">
-            <label>Company Code *</label>
-            <input type="text" [(ngModel)]="branchForm.code" placeholder="e.g., CO001" [disabled]="editMode" />
-          </div>
-          <div class="form-group">
             <label>Company Name *</label>
             <input type="text" [(ngModel)]="branchForm.name" placeholder="Company name" />
+          </div>
+          <div class="form-group">
+            <label>Company Code *</label>
+            <input type="text" [(ngModel)]="branchForm.code" placeholder="e.g., CO001" [disabled]="editMode" />
           </div>
         </div>
         <div class="form-group">
@@ -463,6 +446,23 @@
               <input type="color" [(ngModel)]="branchForm.secondaryColor" class="color-input" />
               <input type="text" [(ngModel)]="branchForm.secondaryColor" placeholder="#14919b" class="color-text" />
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3><i class="fas fa-image"></i> Company Logo</h3>
+        <div class="logo-upload-inline">
+          <div class="logo-preview-small">
+            <img *ngIf="logoPreview" [src]="logoPreview" alt="Company Logo" />
+            <i *ngIf="!logoPreview" class="fas fa-building"></i>
+          </div>
+          <div class="logo-upload-actions">
+            <input type="file" accept="image/*" (change)="onBranchLogoChange($event)" id="branchLogoInput" class="file-input" />
+            <label for="branchLogoInput" class="btn btn-sm btn-secondary">
+              <i class="fas fa-upload"></i> {{ logoPreview ? 'Change Logo' : 'Upload Logo' }}
+            </label>
+            <small class="hint">Recommended: 200x200px, PNG or JPG, max 5MB</small>
           </div>
         </div>
       </div>

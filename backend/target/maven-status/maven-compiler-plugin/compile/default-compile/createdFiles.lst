@@ -71,6 +71,7 @@ com/erp/model/JobRequisition.class
 com/erp/service/FinalSettlementService.class
 com/erp/model/IntegrationSyncLog.class
 com/erp/repository/ReconciliationRepository.class
+com/erp/model/ChatMessage.class
 com/erp/model/InventoryLedger.class
 com/erp/controller/AccountingReportsController.class
 com/erp/repository/ProjectTaskRepository.class
@@ -84,6 +85,7 @@ com/erp/repository/EmployeeAssetRepository.class
 com/erp/repository/TrainingSessionRepository.class
 com/erp/repository/EmployeeRepository.class
 com/erp/repository/JobPostingRepository.class
+com/erp/controller/ChatController.class
 com/erp/repository/ChartOfAccountRepository.class
 com/erp/service/ItemService.class
 com/erp/repository/ExpenseCategoryRepository.class
@@ -154,6 +156,7 @@ com/erp/model/PurchaseRequisitionItem.class
 com/erp/model/BranchSettings.class
 com/erp/model/Project.class
 com/erp/ErpApplication.class
+com/erp/config/WebSocketConfig.class
 com/erp/service/ValuationService$InsufficientInventoryException.class
 com/erp/controller/StockMovementController.class
 com/erp/repository/BankTransactionRepository.class
@@ -264,6 +267,7 @@ com/erp/service/InventoryLedgerService.class
 com/erp/model/AttendanceRule.class
 com/erp/service/PayrollCalculationException.class
 com/erp/service/ItemGroupService.class
+com/erp/repository/ChatMessageRepository.class
 com/erp/model/BankingRule.class
 com/erp/model/PRStockFulfillmentItem.class
 com/erp/service/AuthService.class
@@ -279,6 +283,7 @@ com/erp/service/UserNotificationService$NotificationNotFoundException.class
 com/erp/model/ItemGroup.class
 com/erp/controller/AuthController.class
 com/erp/repository/EmployeeBenefitRepository.class
+com/erp/websocket/ChatWebSocketHandler.class
 com/erp/service/PurchaseRequisitionService.class
 com/erp/service/PRFulfillmentService.class
 com/erp/repository/GoodsIssueRepository.class

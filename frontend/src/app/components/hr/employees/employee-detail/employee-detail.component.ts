@@ -171,18 +171,32 @@ export class EmployeeDetailComponent implements OnInit {
   }
 
   generateEmployeeCode(): void {
-    this.settingsService.getPrefixSettings().subscribe({
-      next: (settings: PrefixSettings) => {
-        if (settings) {
-          const prefix = settings.employeePrefix || 'EMP-';
-          const nextNum = settings.employeeNextNumber || 1;
-          this.employee.employeeCode = `${prefix}${nextNum.toString().padStart(4, '0')}`;
-          this.cdr.markForCheck();
+    this.employeeService.getNextCode().subscribe({
+      next: (result: any) => {
+        if (result && result.code) {
+          this.employee.employeeCode = result.code;
+        } else {
+          this.employee.employeeCode = 'EMP-0001';
         }
+        this.cdr.markForCheck();
       },
       error: () => {
-        this.employee.employeeCode = 'EMP-0001';
-        this.cdr.markForCheck();
+        this.settingsService.getPrefixSettings().subscribe({
+          next: (settings: PrefixSettings) => {
+            if (settings) {
+              const prefix = settings.employeePrefix || 'EMP-';
+              const nextNum = settings.employeeNextNumber || 1;
+              this.employee.employeeCode = `${prefix}${nextNum.toString().padStart(4, '0')}`;
+            } else {
+              this.employee.employeeCode = 'EMP-0001';
+            }
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.employee.employeeCode = 'EMP-0001';
+            this.cdr.markForCheck();
+          }
+        });
       }
     });
   }

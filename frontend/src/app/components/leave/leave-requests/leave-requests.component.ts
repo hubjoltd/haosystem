@@ -308,14 +308,23 @@ export class LeaveRequestsComponent implements OnInit {
     }
   }
 
-  formatDate(date: string): string {
+  formatDate(date: any): string {
     if (!date) return '-';
-    const parts = date.split('-');
-    if (parts.length === 3) {
-      const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
-      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    let d: Date;
+    if (Array.isArray(date)) {
+      d = new Date(date[0], date[1] - 1, date[2]);
+    } else if (typeof date === 'string') {
+      const parts = date.split('-');
+      if (parts.length === 3) {
+        d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      } else {
+        d = new Date(date);
+      }
+    } else {
+      d = new Date(date);
     }
-    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   // 2-level approval methods

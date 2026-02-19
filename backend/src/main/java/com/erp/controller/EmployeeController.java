@@ -116,6 +116,15 @@ public class EmployeeController {
         return employeeRepository.searchEmployees(query);
     }
 
+    @GetMapping("/next-code")
+    public ResponseEntity<java.util.Map<String, String>> getNextCode(@RequestParam(required = false) String prefix, HttpServletRequest request) {
+        if (prefix == null || prefix.isEmpty()) {
+            prefix = "EMP";
+        }
+        String nextCode = generateEmployeeCode(prefix);
+        return ResponseEntity.ok(java.util.Map.of("code", nextCode));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Employee> getById(@PathVariable Long id, HttpServletRequest request) {
         if (isSuperAdmin(request)) {
@@ -150,7 +159,7 @@ public class EmployeeController {
                 nextNumber = 1;
             }
         }
-        return prefix + String.format("%04d", nextNumber);
+        return prefix + "-" + String.format("%04d", nextNumber);
     }
 
     @PostMapping
