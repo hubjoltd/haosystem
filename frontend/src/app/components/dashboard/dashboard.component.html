@@ -1,21 +1,47 @@
 <div class="dashboard">
-  <div class="page-header">
-    <div>
-      <h1>Dashboard</h1>
-      <div class="breadcrumb">
-        <a routerLink="/app">Home</a>
-        <span>/</span>
-        <span>Dashboard</span>
+  <div class="greeting-section">
+    <div class="greeting-content">
+      <div class="greeting-text">
+        <h1>{{ getGreeting() }}, {{ getUserName() }}! 👋</h1>
+        <p class="greeting-date">{{ currentDate | date:'EEEE, MMMM d, yyyy' }}</p>
+      </div>
+      <div class="greeting-actions">
+        <span class="live-indicator"><span class="pulse-dot"></span> Live</span>
       </div>
     </div>
   </div>
 
+  <div class="section-header">
+    <h2><i class="fas fa-th-large"></i> Quick Access</h2>
+    <p>Navigate to your favorite modules</p>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-card" *ngFor="let feature of features" (click)="navigateTo(feature.route)">
+      <div class="feature-icon" [style.background]="feature.gradient">
+        <i [class]="feature.icon"></i>
+      </div>
+      <div class="feature-info">
+        <h4>{{ feature.label }}</h4>
+        <p>{{ feature.desc }}</p>
+      </div>
+      <div class="feature-arrow">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <h2><i class="fas fa-chart-pie"></i> Overview</h2>
+    <p>Key metrics at a glance</p>
+  </div>
+
   <div class="stats-grid">
     <div class="stat-card" *ngFor="let stat of stats">
-      <div class="icon" [ngClass]="stat.type">
+      <div class="stat-icon" [style.background]="stat.gradient">
         <i [class]="stat.icon"></i>
       </div>
-      <div class="info">
+      <div class="stat-info">
         <h3>{{ stat.value }}</h3>
         <p>{{ stat.label }}</p>
       </div>
@@ -23,24 +49,6 @@
   </div>
 
   <div class="dashboard-grid">
-    <div class="card chart-card">
-      <div class="card-header">
-        <h3>Revenue Overview</h3>
-      </div>
-      <div class="chart-container">
-        <div class="chart-placeholder">
-          <div class="bar-chart">
-            <div class="bar" [style.height.%]="60"><span class="bar-label">Jan</span></div>
-            <div class="bar" [style.height.%]="75"><span class="bar-label">Feb</span></div>
-            <div class="bar" [style.height.%]="45"><span class="bar-label">Mar</span></div>
-            <div class="bar" [style.height.%]="80"><span class="bar-label">Apr</span></div>
-            <div class="bar" [style.height.%]="65"><span class="bar-label">May</span></div>
-            <div class="bar" [style.height.%]="90"><span class="bar-label">Jun</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <div class="card calendar-card">
       <div class="card-header">
         <h3><i class="fas fa-calendar-alt"></i> {{ monthName }} {{ year }}</h3>
@@ -61,44 +69,44 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="card">
-    <div class="card-header">
-      <h3>Low Stock Alerts</h3>
-      <a routerLink="/app/reports/reorder-level" class="btn btn-primary btn-sm">View All</a>
-    </div>
-    <div class="table-container">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Item Code</th>
-            <th>Item Name</th>
-            <th>Current Stock</th>
-            <th>Reorder Level</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngIf="lowStockItems.length === 0">
-            <td colspan="5" class="empty-state">
-              <i class="fas fa-check-circle" style="color: #4caf50;"></i>
-              <p>No low stock alerts</p>
-            </td>
-          </tr>
-          <tr *ngFor="let item of lowStockItems">
-            <td>{{ item.code }}</td>
-            <td>{{ item.name }}</td>
-            <td>{{ item.currentStock }}</td>
-            <td>{{ item.reorderLevel }}</td>
-            <td>
-              <span class="badge" [ngClass]="getStatusClass(item.currentStock <= 0 ? 'Critical' : 'Low')">
-                {{ item.currentStock <= 0 ? 'Out of Stock' : 'Low Stock' }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="card low-stock-card">
+      <div class="card-header">
+        <h3><i class="fas fa-exclamation-triangle"></i> Low Stock Alerts</h3>
+        <a routerLink="/app/reports/reorder-level" class="btn-view-all">View All <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Item Code</th>
+              <th>Item Name</th>
+              <th>Current Stock</th>
+              <th>Reorder Level</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="lowStockItems.length === 0">
+              <td colspan="5" class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                <p>No low stock alerts</p>
+              </td>
+            </tr>
+            <tr *ngFor="let item of lowStockItems">
+              <td>{{ item.code }}</td>
+              <td>{{ item.name }}</td>
+              <td>{{ item.currentStock }}</td>
+              <td>{{ item.reorderLevel }}</td>
+              <td>
+                <span class="badge" [ngClass]="getStatusClass(item.currentStock <= 0 ? 'Critical' : 'Low')">
+                  {{ item.currentStock <= 0 ? 'Out of Stock' : 'Low Stock' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>

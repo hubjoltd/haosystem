@@ -221,6 +221,7 @@
               <th>#</th>
               <th>Employee ID</th>
               <th>Name</th>
+              <th>Project</th>
               <th>Type</th>
               <th class="number-col">Hours</th>
               <th class="number-col">Gross</th>
@@ -248,6 +249,7 @@
               <td>{{ i + 1 }}</td>
               <td>{{ getEmployeeCode(record) }}</td>
               <td class="employee-name">{{ getEmployeeName(record) }}</td>
+              <td>{{ $any(record).projectName || $any(record.employee)?.project?.name || '-' }}</td>
               <td>
                 <span class="emp-type">{{ record.employeeType || 'Full-Time' }}</span>
               </td>
@@ -271,12 +273,12 @@
               </td>
             </tr>
             <tr *ngIf="viewRunRecords.length === 0">
-              <td colspan="16" class="no-data">No records found</td>
+              <td colspan="17" class="no-data">No records found</td>
             </tr>
           </tbody>
           <tfoot *ngIf="viewRunRecords.length > 0">
             <tr class="totals-row">
-              <td colspan="6"><strong>TOTAL</strong></td>
+              <td colspan="7"><strong>TOTAL</strong></td>
               <td class="number-col amount-green"><strong>${{ getViewRecordTotalGross() | number:'1.2-2' }}</strong></td>
               <td class="number-col"><strong>${{ getViewRecordTotalReimbursements() | number:'1.2-2' }}</strong></td>
               <td class="number-col"><strong>${{ getViewRecordTotalDeductions() | number:'1.2-2' }}</strong></td>

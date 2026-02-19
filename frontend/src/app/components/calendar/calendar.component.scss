@@ -256,6 +256,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
 }
 
 .calendar-header {
@@ -555,7 +556,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
   background: #fff;
 }
 
@@ -585,7 +586,7 @@
     flex: 1;
     display: flex;
     border-bottom: 1px solid #f1f5f9;
-    min-height: 80px;
+    min-height: 100px;
   }
 
   .month-cell {
@@ -595,6 +596,9 @@
     cursor: pointer;
     transition: background 0.15s;
     overflow: hidden;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
 
     &:first-child {
       border-left: none;

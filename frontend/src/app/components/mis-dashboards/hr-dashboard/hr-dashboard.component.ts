@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MisDashboardService, HRDashboardStats } from '../../../services/mis-dashboard.service';
 
 @Component({
@@ -7,31 +7,109 @@ import { MisDashboardService, HRDashboardStats } from '../../../services/mis-das
   templateUrl: './hr-dashboard.component.html',
   styleUrls: ['./hr-dashboard.component.scss']
 })
-export class HRDashboardComponent implements OnInit {
+export class HRDashboardComponent implements OnInit, OnDestroy {
   stats: HRDashboardStats | null = null;
   loading = false;
   error = '';
   selectedPeriod = 'month';
+  refreshInterval: any;
+  isRefreshing = false;
+  dataLoaded = false;
+
+  animatedStats = {
+    totalHeadcount: 0,
+    activeEmployees: 0,
+    newHiresThisMonth: 0,
+    exitsThisMonth: 0,
+    attritionRate: 0,
+    avgTenure: 0,
+    onLeave: 0
+  };
+
+  recentActivities = [
+    { icon: 'fas fa-user-plus', message: 'John Doe joined Engineering department', time: '2 hours ago', type: 'hire' },
+    { icon: 'fas fa-check-circle', message: 'Leave approved for Jane Smith (3 days)', time: '3 hours ago', type: 'leave' },
+    { icon: 'fas fa-graduation-cap', message: 'Training completed: React Advanced - 12 participants', time: '5 hours ago', type: 'training' },
+    { icon: 'fas fa-award', message: 'Sarah Johnson promoted to Senior Developer', time: '1 day ago', type: 'promotion' },
+    { icon: 'fas fa-user-minus', message: 'Exit interview scheduled for Mike Wilson', time: '1 day ago', type: 'exit' },
+    { icon: 'fas fa-file-alt', message: 'Offer letter sent to Emily Davis - Marketing', time: '2 days ago', type: 'offer' },
+    { icon: 'fas fa-calendar-check', message: 'Quarterly performance review cycle started', time: '3 days ago', type: 'review' },
+    { icon: 'fas fa-user-plus', message: 'Alex Chen joined Finance department', time: '3 days ago', type: 'hire' }
+  ];
 
   constructor(private dashboardService: MisDashboardService) {}
 
   ngOnInit(): void {
     this.loadStats();
+    this.refreshInterval = setInterval(() => this.loadStats(), 30000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
   }
 
   loadStats(): void {
-    this.loading = true;
+    if (!this.stats) {
+      this.loading = true;
+    }
+    this.isRefreshing = true;
     this.dashboardService.getHRStats().subscribe({
       next: (data) => {
         this.stats = data;
         this.loading = false;
+        this.isRefreshing = false;
+        this.triggerAnimations();
       },
       error: (err) => {
         console.error('Error loading HR dashboard', err);
         this.stats = this.getMockStats();
         this.loading = false;
+        this.isRefreshing = false;
+        this.triggerAnimations();
       }
     });
+  }
+
+  triggerAnimations(): void {
+    if (!this.stats) return;
+    this.dataLoaded = false;
+    setTimeout(() => {
+      this.dataLoaded = true;
+    }, 50);
+    this.animateValue(0, this.stats.totalHeadcount, 1200, (v: number) => this.animatedStats.totalHeadcount = v);
+    this.animateValue(0, this.stats.activeEmployees, 1200, (v: number) => this.animatedStats.activeEmployees = v);
+    this.animateValue(0, this.stats.newHiresThisMonth, 800, (v: number) => this.animatedStats.newHiresThisMonth = v);
+    this.animateValue(0, this.stats.exitsThisMonth, 800, (v: number) => this.animatedStats.exitsThisMonth = v);
+    this.animateValue(0, this.stats.attritionRate * 10, 1000, (v: number) => this.animatedStats.attritionRate = v / 10);
+    this.animateValue(0, this.stats.avgTenure * 10, 1000, (v: number) => this.animatedStats.avgTenure = v / 10);
+    this.animateValue(0, this.stats.onLeave, 800, (v: number) => this.animatedStats.onLeave = v);
+  }
+
+  animateValue(start: number, end: number, duration: number, callback: (value: number) => void): void {
+    const startTime = performance.now();
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(start + (end - start) * eased);
+      callback(current);
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+    requestAnimationFrame(animate);
+  }
+
+  getAttritionRingOffset(): number {
+    if (!this.stats) return 0;
+    const circumference = 2 * Math.PI * 54;
+    return circumference - (this.stats.attritionRate / 100) * circumference;
+  }
+
+  getAttritionCircumference(): number {
+    return 2 * Math.PI * 54;
   }
 
   getMockStats(): HRDashboardStats {
@@ -79,7 +157,7 @@ export class HRDashboardComponent implements OnInit {
   getGenderPercentage(gender: string): number {
     if (!this.stats) return 0;
     const total = this.stats.genderDiversity.male + this.stats.genderDiversity.female + this.stats.genderDiversity.other;
-    const value = gender === 'male' ? this.stats.genderDiversity.male : 
+    const value = gender === 'male' ? this.stats.genderDiversity.male :
                   gender === 'female' ? this.stats.genderDiversity.female : this.stats.genderDiversity.other;
     return Math.round((value / total) * 100);
   }
@@ -87,6 +165,11 @@ export class HRDashboardComponent implements OnInit {
   getMaxDepartmentCount(): number {
     if (!this.stats) return 0;
     return Math.max(...this.stats.departmentDistribution.map(d => d.count));
+  }
+
+  getMaxHires(): number {
+    if (!this.stats) return 15;
+    return Math.max(...this.stats.monthlyHiringTrend.map(d => Math.max(d.hires, d.exits))) + 2;
   }
 
   exportDashboard(format: string): void {
