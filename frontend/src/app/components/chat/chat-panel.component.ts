@@ -240,7 +240,10 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
               timestamp: new Date(m.timestamp),
               read: isOwn ? m.read : true,
               isOwn: isOwn,
-              status: isOwn ? 'delivered' : undefined
+              status: isOwn ? 'delivered' : undefined,
+              attachmentType: m.attachmentType || null,
+              attachmentUrl: m.attachmentUrl || undefined,
+              attachmentName: m.attachmentName || undefined
             };
             this.messages.push(chatMessage);
             hasNew = true;
@@ -326,7 +329,10 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
             timestamp: new Date(m.timestamp),
             read: m.read,
             isOwn: m.senderId === this.currentUserId,
-            status: m.senderId === this.currentUserId ? 'delivered' : undefined
+            status: m.senderId === this.currentUserId ? 'delivered' : undefined,
+            attachmentType: m.attachmentType || null,
+            attachmentUrl: m.attachmentUrl || undefined,
+            attachmentName: m.attachmentName || undefined
           });
         });
         this.messages = Array.from(uniqueMessages.values());

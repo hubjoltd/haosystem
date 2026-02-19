@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import com.erp.service.UserNotificationService;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,9 @@ public class ChatController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserNotificationService userNotificationService;
 
     private Long getCurrentUserId(Authentication auth) {
         if (auth == null) return null;
@@ -93,6 +97,31 @@ public class ChatController {
         }
 
         ChatMessage saved = chatMessageRepository.save(msg);
+
+        try {
+            Long receiverId = saved.getReceiverId();
+            if (receiverId != null) {
+                Optional<User> receiver = userRepository.findById(receiverId);
+                receiver.ifPresent(r -> {
+                    String senderName = saved.getSenderName() != null ? saved.getSenderName() : "Someone";
+                    String preview = saved.getMessage() != null ? saved.getMessage() : "";
+                    if (saved.getAttachmentName() != null) {
+                        preview = "📎 " + saved.getAttachmentName();
+                    }
+                    if (preview.length() > 100) preview = preview.substring(0, 100) + "...";
+                    userNotificationService.createNotification(
+                        r.getUsername(),
+                        "New message from " + senderName,
+                        preview,
+                        "CHAT",
+                        "ChatMessage",
+                        saved.getId()
+                    );
+                });
+            }
+        } catch (Exception e) {
+        }
+
         return ResponseEntity.ok(saved);
     }
 

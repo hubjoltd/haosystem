@@ -51,7 +51,7 @@ export class OnboardingService {
   }
 
   getTasksByPlan(planId: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/tasks/plan/${planId}`);
+    return this.http.get<any[]>(`${this.baseUrl}/plans/${planId}/tasks`);
   }
 
   getPendingTasks(): Observable<any[]> {

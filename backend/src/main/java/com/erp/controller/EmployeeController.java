@@ -309,7 +309,11 @@ public class EmployeeController {
         }
     }
 
+    @Autowired
+    private jakarta.persistence.EntityManager entityManager;
+
     @DeleteMapping("/{id}")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> delete(@PathVariable Long id, HttpServletRequest request) {
         Long branchId = extractBranchId(request);
         return employeeRepository.findById(id)
@@ -317,16 +321,64 @@ public class EmployeeController {
                        (existing.getBranch() != null && existing.getBranch().getId().equals(branchId)))
                 .map(employee -> {
                     try {
-                        bankDetailRepository.findByEmployeeId(id).forEach(bankDetailRepository::delete);
-                        salaryRepository.findByEmployeeId(id).forEach(salaryRepository::delete);
-                        educationRepository.findByEmployeeId(id).forEach(educationRepository::delete);
-                        experienceRepository.findByEmployeeId(id).forEach(experienceRepository::delete);
-                        assetRepository.findByEmployeeId(id).forEach(assetRepository::delete);
+                        entityManager.createNativeQuery("DELETE FROM employee_bank_details WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM employee_salaries WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM employee_education WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM employee_experience WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM employee_assets WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM employee_benefits WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM employee_documents WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM leave_requests WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM leave_balances WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM attendance_records WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM payroll_records WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM project_time_entries WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM project_timesheets WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM timesheets WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM project_members WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM expense_requests WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM loan_applications WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM hr_letters WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM final_settlements WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM training_enrollments WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE onboarding_tasks SET assigned_to_id = NULL WHERE assigned_to_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE onboarding_tasks SET completed_by_id = NULL WHERE completed_by_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("DELETE FROM onboarding_plans WHERE employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE candidates SET converted_employee_id = NULL WHERE converted_employee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE attendance_records SET approved_by = NULL WHERE approved_by = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE leave_requests SET approved_by = NULL WHERE approved_by = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE leave_requests SET manager_approved_by = NULL WHERE manager_approved_by = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE leave_requests SET hr_approved_by = NULL WHERE hr_approved_by = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE employees SET reporting_manager_id = NULL WHERE reporting_manager_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE projects SET project_manager_id = NULL WHERE project_manager_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE job_requisitions SET requested_by_id = NULL WHERE requested_by_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE job_requisitions SET approved_by_id = NULL WHERE approved_by_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE job_requisitions SET reporting_to_id = NULL WHERE reporting_to_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE interviews SET interviewer_id = NULL WHERE interviewer_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE training_sessions SET trainer_id = NULL WHERE trainer_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE offer_letters SET approved_by_id = NULL WHERE approved_by_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE offer_letters SET reporting_to_id = NULL WHERE reporting_to_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE hr_letters SET approved_by_id = NULL WHERE approved_by_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE hr_letters SET generated_by_id = NULL WHERE generated_by_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE expense_requests SET approver_id = NULL WHERE approver_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE payroll_runs SET created_by = NULL WHERE created_by = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE payroll_runs SET processed_by = NULL WHERE processed_by = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE payroll_runs SET approved_by = NULL WHERE approved_by = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE project_time_entries SET approved_by = NULL WHERE approved_by = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE project_timesheets SET approved_by = NULL WHERE approved_by = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE project_tasks SET assignee_id = NULL WHERE assignee_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE timesheets SET approved_by = NULL WHERE approved_by = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE onboarding_plans SET buddy_id = NULL WHERE buddy_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE onboarding_plans SET manager_id = NULL WHERE manager_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE onboarding_plans SET hr_coordinator_id = NULL WHERE hr_coordinator_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE candidates SET assigned_recruiter_id = NULL WHERE assigned_recruiter_id = :id").setParameter("id", id).executeUpdate();
+                        entityManager.createNativeQuery("UPDATE loan_applications SET approved_by_id = NULL WHERE approved_by_id = :id").setParameter("id", id).executeUpdate();
+
                         employeeRepository.delete(employee);
                         return ResponseEntity.ok().<Void>build();
                     } catch (Exception e) {
                         java.util.Map<String, String> error = new java.util.HashMap<>();
-                        error.put("error", "Failed to delete employee. The employee may have associated records that prevent deletion.");
+                        error.put("error", "Failed to delete employee: " + e.getMessage());
                         return ResponseEntity.status(500).body(error);
                     }
                 })

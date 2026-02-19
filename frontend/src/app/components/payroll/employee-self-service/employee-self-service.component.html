@@ -163,8 +163,8 @@
         <tbody>
           <tr *ngFor="let req of leaveRequests">
             <td>{{ req.leaveType?.name || 'N/A' }}</td>
-            <td>{{ req.startDate | date:'MMM d, yyyy' }}</td>
-            <td>{{ req.endDate | date:'MMM d, yyyy' }}</td>
+            <td>{{ formatLeaveDate(req.startDate) }}</td>
+            <td>{{ formatLeaveDate(req.endDate) }}</td>
             <td>{{ getLeaveDays(req) }}</td>
             <td>
               <span class="status-badge" [ngClass]="getLeaveStatusClass(req.status || 'PENDING')">{{ getApprovalStatusText(req) }}</span>
@@ -1044,7 +1044,7 @@
       <div class="request-info-bar">
         <span><strong>{{ selectedLeaveRequest.leaveType?.name }}</strong></span>
         <span class="separator">|</span>
-        <span>{{ selectedLeaveRequest.startDate | date:'MMM d, yyyy' }} - {{ selectedLeaveRequest.endDate | date:'MMM d, yyyy' }}</span>
+        <span>{{ formatLeaveDate(selectedLeaveRequest.startDate) }} - {{ formatLeaveDate(selectedLeaveRequest.endDate) }}</span>
         <span class="status-badge" [ngClass]="getLeaveStatusClass(selectedLeaveRequest.status || '')">{{ getApprovalStatusText(selectedLeaveRequest) }}</span>
       </div>
       <app-activity-timeline

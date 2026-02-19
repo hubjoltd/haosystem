@@ -945,12 +945,32 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
       return request.totalDays;
     }
     if (request.startDate && request.endDate) {
-      const start = new Date(request.startDate);
-      const end = new Date(request.endDate);
+      const start = this.parseLocalDate(request.startDate);
+      const end = this.parseLocalDate(request.endDate);
       const diffTime = Math.abs(end.getTime() - start.getTime());
       return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
     }
     return 0;
+  }
+
+  private parseLocalDate(date: any): Date {
+    if (Array.isArray(date)) {
+      return new Date(date[0], date[1] - 1, date[2]);
+    }
+    if (typeof date === 'string' && date.includes('-')) {
+      const parts = date.split('-');
+      if (parts.length === 3) {
+        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+      }
+    }
+    return new Date(date);
+  }
+
+  formatLeaveDate(date: any): string {
+    if (!date) return '-';
+    const d = this.parseLocalDate(date);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   getLoanStatusClass(status: string): string {

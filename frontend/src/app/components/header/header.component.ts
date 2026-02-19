@@ -213,6 +213,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       case 'LOAN': return 'fa-money-bill';
       case 'EXPENSE': return 'fa-receipt';
       case 'DOCUMENT_EXPIRY': return 'fa-file-exclamation';
+      case 'CHAT': return 'fa-comment';
       default: return 'fa-info-circle';
     }
   }
