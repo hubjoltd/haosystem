@@ -74,6 +74,12 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
   offerLetters: EssOfferLetter[] = [];
   showOfferViewModal = false;
   selectedOfferLetter: EssOfferLetter | null = null;
+
+  timesheetRecords: AttendanceRecord[] = [];
+  timesheetFromDate: string = '';
+  timesheetToDate: string = '';
+  timesheetTotalRegular: number = 0;
+  timesheetTotalOvertime: number = 0;
   
   currentEmployeeId: number = 0;
   currentEmployee: Employee | null = null;
@@ -480,6 +486,35 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
     this.attendanceSummary.lateDays = currentMonthRecords.filter(r => r.status === 'LATE').length;
     this.attendanceSummary.overtimeHours = currentMonthRecords.reduce((sum, r) => sum + (r.overtimeHours || 0), 0);
     this.attendanceSummary.totalWorkingHours = currentMonthRecords.reduce((sum, r) => sum + (r.regularHours || 0), 0);
+  }
+
+  loadTimesheetData(): void {
+    if (!this.timesheetFromDate || !this.timesheetToDate) {
+      const now = new Date();
+      const dayOfWeek = now.getDay();
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + mondayOffset);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      this.timesheetFromDate = monday.toISOString().split('T')[0];
+      this.timesheetToDate = sunday.toISOString().split('T')[0];
+    }
+    this.attendanceService.getByEmployeeAndDateRange(this.currentEmployeeId, this.timesheetFromDate, this.timesheetToDate).subscribe({
+      next: (records: AttendanceRecord[]) => {
+        this.timesheetRecords = records.sort((a, b) => a.attendanceDate.localeCompare(b.attendanceDate));
+        this.timesheetTotalRegular = records.reduce((sum, r) => sum + (r.regularHours || 0), 0);
+        this.timesheetTotalOvertime = records.reduce((sum, r) => sum + (r.overtimeHours || 0), 0);
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('Error loading timesheet:', err)
+    });
+  }
+
+  isTimesheetWeekend(record: AttendanceRecord): boolean {
+    const d = new Date(record.attendanceDate);
+    const day = d.getDay();
+    return day === 0 || day === 6;
   }
 
   // Clock In/Out Methods

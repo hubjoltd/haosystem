@@ -55,6 +55,9 @@
     <button class="tab" [class.active]="activeTab === 'offers'" (click)="activeTab = 'offers'">
       <i class="fas fa-file-signature"></i> Offer Letters
     </button>
+    <button class="tab" [class.active]="activeTab === 'timesheet'" (click)="activeTab = 'timesheet'; loadTimesheetData()">
+      <i class="fas fa-table"></i> Timesheet
+    </button>
   </div>
 
   <div class="tab-content" *ngIf="activeTab === 'paystubs'">
@@ -658,6 +661,87 @@
         <i class="fas fa-file-signature"></i>
         <p>No offer letters available</p>
       </div>
+    </div>
+  </div>
+
+  <div class="tab-content" *ngIf="activeTab === 'timesheet'">
+    <div class="section-header">
+      <h3>My Timesheet</h3>
+      <div class="header-actions">
+        <div class="date-filters" style="display: flex; gap: 10px; align-items: center;">
+          <div>
+            <label style="font-size: 12px; color: #888;">From:</label>
+            <input type="date" class="form-control" [(ngModel)]="timesheetFromDate" (change)="loadTimesheetData()" style="padding: 6px 10px; border: 1px solid #333; border-radius: 6px; background: #1a1a2e; color: #fff;" />
+          </div>
+          <div>
+            <label style="font-size: 12px; color: #888;">To:</label>
+            <input type="date" class="form-control" [(ngModel)]="timesheetToDate" (change)="loadTimesheetData()" style="padding: 6px 10px; border: 1px solid #333; border-radius: 6px; background: #1a1a2e; color: #fff;" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="summary-cards" style="margin-bottom: 20px;">
+      <div class="summary-card present">
+        <div class="card-icon"><i class="fas fa-business-time"></i></div>
+        <div class="card-info">
+          <span class="label">Regular Hours</span>
+          <span class="value">{{ timesheetTotalRegular | number:'1.1-1' }}h</span>
+        </div>
+      </div>
+      <div class="summary-card overtime">
+        <div class="card-icon"><i class="fas fa-hourglass-half"></i></div>
+        <div class="card-info">
+          <span class="label">Overtime Hours</span>
+          <span class="value">{{ timesheetTotalOvertime | number:'1.1-1' }}h</span>
+        </div>
+      </div>
+      <div class="summary-card hours">
+        <div class="card-icon"><i class="fas fa-clock"></i></div>
+        <div class="card-info">
+          <span class="label">Total Hours</span>
+          <span class="value">{{ timesheetTotalRegular + timesheetTotalOvertime | number:'1.1-1' }}h</span>
+        </div>
+      </div>
+    </div>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Day</th>
+            <th>Clock In</th>
+            <th>Clock Out</th>
+            <th>Regular Hrs</th>
+            <th>OT Hrs</th>
+            <th>Total</th>
+            <th>Project</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of timesheetRecords" [class.weekend-row]="isTimesheetWeekend(record)">
+            <td>{{ record.attendanceDate | date:'MMM d, yyyy' }}</td>
+            <td>{{ record.attendanceDate | date:'EEE' }}</td>
+            <td>{{ record.clockIn?.substring(0, 5) || '-' }}</td>
+            <td>{{ record.clockOut?.substring(0, 5) || '-' }}</td>
+            <td>{{ record.regularHours || 0 | number:'1.1-1' }}h</td>
+            <td>{{ record.overtimeHours || 0 | number:'1.1-1' }}h</td>
+            <td>{{ ((record.regularHours || 0) + (record.overtimeHours || 0)) | number:'1.1-1' }}h</td>
+            <td>
+              <span *ngIf="record.project?.name || record.projectName" class="project-badge">{{ record.project?.name || record.projectName }}</span>
+              <span *ngIf="!record.project?.name && !record.projectName">-</span>
+            </td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(getAttendanceStatusBadge(record))">
+                {{ getAttendanceStatusBadge(record) }}
+              </span>
+            </td>
+          </tr>
+          <tr *ngIf="timesheetRecords.length === 0">
+            <td colspan="9" class="no-data-row">No timesheet records found for this period</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

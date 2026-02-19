@@ -291,14 +291,7 @@ export class SidebarComponent implements OnInit {
       labelKey: 'nav.employeeServicePortal',
       expanded: false,
       permissionKey: 'ESS',
-      children: [
-        { icon: 'fas fa-file-invoice-dollar', label: 'Pay Slips', labelKey: 'nav.paySlips', route: '/app/payroll/self-service' },
-        { icon: 'fas fa-clock', label: 'My Attendance', labelKey: 'nav.myAttendance', route: '/app/ess/attendance' },
-        { icon: 'fas fa-umbrella-beach', label: 'My Leave', labelKey: 'nav.myLeave', route: '/app/ess/leave' },
-        { icon: 'fas fa-receipt', label: 'My Reimbursements', labelKey: 'nav.myReimbursements', route: '/app/ess/reimbursements' },
-        { icon: 'fas fa-laptop', label: 'My Assets', labelKey: 'nav.myAssets', route: '/app/ess/assets' },
-        { icon: 'fas fa-file-alt', label: 'HR Policies', labelKey: 'nav.hrPolicies', route: '/app/ess/policies' }
-      ]
+      route: '/app/payroll/self-service'
     },
     {
       icon: 'fas fa-boxes',
