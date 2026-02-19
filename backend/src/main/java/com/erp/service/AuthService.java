@@ -37,6 +37,10 @@ public class AuthService {
         Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
         
         if (userOpt.isEmpty()) {
+            userOpt = userRepository.findByEmail(request.getUsername());
+        }
+        
+        if (userOpt.isEmpty()) {
             throw new RuntimeException("Invalid username or password");
         }
         
@@ -80,7 +84,9 @@ public class AuthService {
                 throw new RuntimeException("You are not assigned to any company");
             }
         } else if (!isSuperAdmin && user.getBranch() == null) {
-            throw new RuntimeException("You are not assigned to any company. Please contact administrator.");
+            if (!"STAFF".equals(user.getRole().getName())) {
+                throw new RuntimeException("You are not assigned to any company. Please contact administrator.");
+            }
         }
         
         user.setLastLogin(LocalDateTime.now());

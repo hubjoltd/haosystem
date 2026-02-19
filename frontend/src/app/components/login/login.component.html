@@ -71,15 +71,15 @@
 
       <form (ngSubmit)="onSubmit()">
         <div class="form-group">
-          <label for="username">Email Address</label>
+          <label for="username">Username or Email</label>
           <div class="input-wrapper">
-            <i class="fas fa-envelope"></i>
+            <i class="fas fa-user"></i>
             <input
               type="text"
               id="username"
               [(ngModel)]="username"
               name="username"
-              placeholder="name@company.com"
+              placeholder="Employee code or email"
               class="form-control"
             />
           </div>

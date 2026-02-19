@@ -217,11 +217,12 @@ export class EmployeeSelfServiceComponent implements OnInit, OnDestroy {
     this.loadTodayClockRecord();
     // Note: loadOfferLetters is called after employee is loaded (needs email for filtering)
     
-    // Start clock timer
     this.clockInterval = setInterval(() => {
       this.currentTime = new Date();
       this.updateElapsedTime();
-      this.cdr.markForCheck();
+      if (this.activeTab === 'clock') {
+        this.cdr.markForCheck();
+      }
     }, 1000);
   }
 
