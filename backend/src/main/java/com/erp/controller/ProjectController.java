@@ -2,6 +2,7 @@ package com.erp.controller;
 
 import com.erp.model.*;
 import com.erp.repository.*;
+import com.erp.service.UserNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,9 @@ public class ProjectController {
     @Autowired
     private EmployeeRepository employeeRepository;
 
+    @Autowired
+    private UserNotificationService userNotificationService;
+
     @GetMapping
     public List<Project> getAllProjects() {
         return projectRepository.findByDeletedFalseOrderByCreatedAtDesc();
@@ -48,7 +52,14 @@ public class ProjectController {
         if (project.getProjectCode() == null || project.getProjectCode().isEmpty()) {
             project.setProjectCode(generateProjectCode());
         }
-        return projectRepository.save(project);
+        Project saved = projectRepository.save(project);
+        try {
+            userNotificationService.notifyAdminsAndHR(
+                "New Project Created",
+                "Project '" + saved.getName() + "' (" + saved.getProjectCode() + ") has been created",
+                "PROJECT", "PROJECT", saved.getId());
+        } catch (Exception e) {}
+        return saved;
     }
 
     @PutMapping("/{id}")
@@ -108,7 +119,16 @@ public class ProjectController {
                     }
                 }
             });
-            return ResponseEntity.ok(projectRepository.save(project));
+            Project saved = projectRepository.save(project);
+            try {
+                if (updates.containsKey("status")) {
+                    userNotificationService.notifyAdminsAndHR(
+                        "Project Status Updated",
+                        "Project '" + saved.getName() + "' status changed to " + saved.getStatus(),
+                        "PROJECT", "PROJECT", saved.getId());
+                }
+            } catch (Exception e) {}
+            return ResponseEntity.ok(saved);
         }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -130,7 +150,20 @@ public class ProjectController {
     public ResponseEntity<ProjectMember> addMember(@PathVariable Long projectId, @RequestBody ProjectMember member) {
         return projectRepository.findById(projectId).map(project -> {
             member.setProject(project);
-            return ResponseEntity.ok(memberRepository.save(member));
+            ProjectMember saved = memberRepository.save(member);
+            try {
+                if (saved.getEmployee() != null) {
+                    userNotificationService.notifyEmployee(saved.getEmployee(),
+                        "Project Assignment",
+                        "You have been added to project '" + project.getName() + "' as " + saved.getRole(),
+                        "PROJECT", "PROJECT", project.getId());
+                }
+                userNotificationService.notifyAdminsAndHR(
+                    "Project Member Added",
+                    "A new member has been added to project '" + project.getName() + "'",
+                    "PROJECT", "PROJECT", project.getId());
+            } catch (Exception e) {}
+            return ResponseEntity.ok(saved);
         }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -149,7 +182,16 @@ public class ProjectController {
     public ResponseEntity<ProjectTask> addTask(@PathVariable Long projectId, @RequestBody ProjectTask task) {
         return projectRepository.findById(projectId).map(project -> {
             task.setProject(project);
-            return ResponseEntity.ok(taskRepository.save(task));
+            ProjectTask saved = taskRepository.save(task);
+            try {
+                if (saved.getAssignee() != null) {
+                    userNotificationService.notifyEmployee(saved.getAssignee(),
+                        "Task Assigned",
+                        "You have been assigned task '" + saved.getName() + "' in project '" + project.getName() + "'",
+                        "PROJECT", "PROJECT", project.getId());
+                }
+            } catch (Exception e) {}
+            return ResponseEntity.ok(saved);
         }).orElse(ResponseEntity.notFound().build());
     }
 

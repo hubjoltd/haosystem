@@ -2,6 +2,7 @@ package com.erp.service;
 
 import com.erp.model.UserNotification;
 import com.erp.model.User;
+import com.erp.model.Employee;
 import com.erp.repository.UserNotificationRepository;
 import com.erp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserNotificationService {
@@ -60,8 +63,45 @@ public class UserNotificationService {
         List<User> managers = userRepository.findByRoleName("SUPER_ADMIN");
         managers.addAll(userRepository.findByRoleName("ADMIN"));
         managers.addAll(userRepository.findByRoleName("MANAGER"));
+        Set<String> notified = new HashSet<>();
         for (User manager : managers) {
-            createNotification(manager.getUsername(), title, message, type, referenceType, referenceId);
+            if (notified.add(manager.getUsername())) {
+                createNotification(manager.getUsername(), title, message, type, referenceType, referenceId);
+            }
+        }
+    }
+
+    @Transactional
+    public void notifyEmployee(Employee employee, String title, String message, String type, String referenceType, Long referenceId) {
+        if (employee == null) return;
+        String username = employee.getEmployeeCode();
+        if (username != null && !username.isEmpty()) {
+            try {
+                userRepository.findByUsername(username).ifPresent(u ->
+                    createNotification(u.getUsername(), title, message, type, referenceType, referenceId));
+            } catch (Exception ignored) {}
+        }
+        if (employee.getEmail() != null && !employee.getEmail().isEmpty()) {
+            try {
+                userRepository.findByEmail(employee.getEmail()).ifPresent(u -> {
+                    if (!u.getUsername().equals(username)) {
+                        createNotification(u.getUsername(), title, message, type, referenceType, referenceId);
+                    }
+                });
+            } catch (Exception ignored) {}
+        }
+    }
+
+    @Transactional
+    public void notifyAdminsAndHR(String title, String message, String type, String referenceType, Long referenceId) {
+        Set<String> notified = new HashSet<>();
+        List<User> users = userRepository.findByRoleName("SUPER_ADMIN");
+        users.addAll(userRepository.findByRoleName("ADMIN"));
+        users.addAll(userRepository.findByRoleName("HR"));
+        for (User u : users) {
+            if (notified.add(u.getUsername())) {
+                createNotification(u.getUsername(), title, message, type, referenceType, referenceId);
+            }
         }
     }
     

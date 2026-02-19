@@ -2,6 +2,7 @@ package com.erp.controller;
 
 import com.erp.model.*;
 import com.erp.service.TrainingService;
+import com.erp.service.UserNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -18,6 +19,9 @@ public class TrainingController {
 
     @Autowired
     private TrainingService trainingService;
+
+    @Autowired
+    private UserNotificationService userNotificationService;
 
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getDashboard() {
@@ -104,7 +108,14 @@ public class TrainingController {
 
     @PostMapping("/sessions")
     public ResponseEntity<TrainingSession> createSession(@RequestBody Map<String, Object> data) {
-        return ResponseEntity.ok(trainingService.createSession(data));
+        TrainingSession session = trainingService.createSession(data);
+        try {
+            userNotificationService.notifyAdminsAndHR(
+                "Training Session Created",
+                "Training session '" + session.getSessionName() + "' has been created",
+                "TRAINING", "TRAINING", session.getId());
+        } catch (Exception e) {}
+        return ResponseEntity.ok(session);
     }
 
     @PutMapping("/sessions/{id}")
@@ -154,7 +165,21 @@ public class TrainingController {
         Long employeeId = Long.valueOf(data.get("employeeId").toString());
         Long sessionId = Long.valueOf(data.get("sessionId").toString());
         String enrolledBy = auth != null && auth.getName() != null ? auth.getName() : "System";
-        return ResponseEntity.ok(trainingService.enrollEmployee(employeeId, sessionId, enrolledBy));
+        TrainingEnrollment enrollment = trainingService.enrollEmployee(employeeId, sessionId, enrolledBy);
+        try {
+            if (enrollment.getEmployee() != null && enrollment.getSession() != null) {
+                userNotificationService.notifyEmployee(enrollment.getEmployee(),
+                    "Training Enrollment",
+                    "You have been enrolled in training '" + enrollment.getSession().getSessionName() + "'",
+                    "TRAINING", "TRAINING", enrollment.getId());
+            }
+            String sessionName = enrollment.getSession() != null ? enrollment.getSession().getSessionName() : "";
+            userNotificationService.notifyAdminsAndHR(
+                "Training Enrollment",
+                "Employee enrolled in training '" + sessionName + "'",
+                "TRAINING", "TRAINING", enrollment.getId());
+        } catch (Exception e) {}
+        return ResponseEntity.ok(enrollment);
     }
 
     @PostMapping("/enrollments/{id}/attendance")

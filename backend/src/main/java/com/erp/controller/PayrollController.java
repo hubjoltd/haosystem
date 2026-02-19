@@ -3,6 +3,7 @@ package com.erp.controller;
 import com.erp.model.*;
 import com.erp.repository.*;
 import com.erp.service.PayrollCalculationService;
+import com.erp.service.UserNotificationService;
 import com.erp.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
@@ -52,6 +53,9 @@ public class PayrollController {
     @Autowired
     private PayFrequencyRepository payFrequencyRepository;
     
+    @Autowired
+    private UserNotificationService userNotificationService;
+
     @Autowired
     private JwtUtil jwtUtil;
     
@@ -386,6 +390,21 @@ public class PayrollController {
                 }
                 
                 payrollRunRepository.save(run);
+                
+                try {
+                    userNotificationService.notifyAdminsAndHR(
+                        "Payroll Processed",
+                        "Payroll run '" + run.getPayrollRunNumber() + "' has been processed with " + processedCount + " records",
+                        "PAYROLL", "PAYROLL", run.getId());
+                    for (PayrollRecord record : records) {
+                        if (record.getEmployee() != null) {
+                            userNotificationService.notifyEmployee(record.getEmployee(),
+                                "Payroll Processed",
+                                "Your payroll for period " + run.getPayrollRunNumber() + " has been processed",
+                                "PAYROLL", "PAYROLL", run.getId());
+                        }
+                    }
+                } catch (Exception e) {}
                 
                 Map<String, Object> accountPostings = new HashMap<>();
                 accountPostings.put("salaryExpenses", totalGross);

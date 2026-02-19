@@ -2,6 +2,7 @@ package com.erp.controller;
 
 import com.erp.model.*;
 import com.erp.service.RecruitmentService;
+import com.erp.service.UserNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,9 @@ public class RecruitmentController {
 
     @Autowired
     private RecruitmentService recruitmentService;
+
+    @Autowired
+    private UserNotificationService userNotificationService;
 
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getDashboard() {
@@ -56,7 +60,14 @@ public class RecruitmentController {
 
     @PostMapping("/requisitions")
     public ResponseEntity<JobRequisition> createRequisition(@RequestBody Map<String, Object> data) {
-        return ResponseEntity.ok(recruitmentService.createRequisition(data));
+        JobRequisition created = recruitmentService.createRequisition(data);
+        try {
+            userNotificationService.notifyAdminsAndHR(
+                "New Job Requisition",
+                "Job requisition for '" + created.getPositionTitle() + "' has been created",
+                "RECRUITMENT", "RECRUITMENT", created.getId());
+        } catch (Exception e) {}
+        return ResponseEntity.ok(created);
     }
 
     @PutMapping("/requisitions/{id}")
@@ -182,7 +193,14 @@ public class RecruitmentController {
     public ResponseEntity<Candidate> updateCandidateStage(@PathVariable Long id, @RequestBody Map<String, Object> data) {
         String stage = (String) data.get("stage");
         String status = (String) data.get("status");
-        return ResponseEntity.ok(recruitmentService.updateCandidateStage(id, stage, status));
+        Candidate updated = recruitmentService.updateCandidateStage(id, stage, status);
+        try {
+            userNotificationService.notifyAdminsAndHR(
+                "Candidate Status Updated",
+                "Candidate " + updated.getFirstName() + " " + updated.getLastName() + " status changed to " + status,
+                "RECRUITMENT", "RECRUITMENT", updated.getId());
+        } catch (Exception e) {}
+        return ResponseEntity.ok(updated);
     }
 
     @PostMapping("/candidates/{id}/convert")
@@ -233,7 +251,16 @@ public class RecruitmentController {
 
     @PostMapping("/interviews")
     public ResponseEntity<Interview> scheduleInterview(@RequestBody Map<String, Object> data) {
-        return ResponseEntity.ok(recruitmentService.scheduleInterview(data));
+        Interview interview = recruitmentService.scheduleInterview(data);
+        try {
+            String candidateName = interview.getCandidate() != null ?
+                interview.getCandidate().getFirstName() + " " + interview.getCandidate().getLastName() : "Unknown";
+            userNotificationService.notifyAdminsAndHR(
+                "Interview Scheduled",
+                "Interview scheduled for candidate " + candidateName,
+                "RECRUITMENT", "RECRUITMENT", interview.getId());
+        } catch (Exception e) {}
+        return ResponseEntity.ok(interview);
     }
 
     @PutMapping("/interviews/{id}")

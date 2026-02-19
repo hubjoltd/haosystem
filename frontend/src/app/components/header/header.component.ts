@@ -214,6 +214,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
       case 'EXPENSE': return 'fa-receipt';
       case 'DOCUMENT_EXPIRY': return 'fa-file-exclamation';
       case 'CHAT': return 'fa-comment';
+      case 'PROJECT': return 'fa-project-diagram';
+      case 'PAYROLL': return 'fa-wallet';
+      case 'RECRUITMENT': return 'fa-user-plus';
+      case 'ONBOARDING': return 'fa-clipboard-check';
+      case 'TRAINING': return 'fa-graduation-cap';
+      case 'HR_LETTER': return 'fa-envelope';
+      case 'EMPLOYEE': return 'fa-id-badge';
       default: return 'fa-info-circle';
     }
   }

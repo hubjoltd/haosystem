@@ -4,6 +4,7 @@ import com.erp.model.*;
 import com.erp.repository.EmployeeAssetRepository;
 import com.erp.repository.EmployeeRepository;
 import com.erp.service.OnboardingService;
+import com.erp.service.UserNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,9 @@ public class OnboardingController {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private UserNotificationService userNotificationService;
 
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getDashboard() {
@@ -68,7 +72,16 @@ public class OnboardingController {
 
     @PostMapping("/plans")
     public ResponseEntity<OnboardingPlan> createPlan(@RequestBody Map<String, Object> data) {
-        return ResponseEntity.ok(onboardingService.createPlan(data));
+        OnboardingPlan plan = onboardingService.createPlan(data);
+        try {
+            String empName = plan.getEmployee() != null ?
+                plan.getEmployee().getFirstName() + " " + plan.getEmployee().getLastName() : "Unknown";
+            userNotificationService.notifyAdminsAndHR(
+                "Onboarding Plan Created",
+                "Onboarding plan created for employee " + empName,
+                "ONBOARDING", "ONBOARDING", plan.getId());
+        } catch (Exception e) {}
+        return ResponseEntity.ok(plan);
     }
 
     @PutMapping("/plans/{id}")
@@ -83,7 +96,16 @@ public class OnboardingController {
 
     @PostMapping("/plans/{id}/complete")
     public ResponseEntity<OnboardingPlan> completePlan(@PathVariable Long id) {
-        return ResponseEntity.ok(onboardingService.completePlan(id));
+        OnboardingPlan plan = onboardingService.completePlan(id);
+        try {
+            String empName = plan.getEmployee() != null ?
+                plan.getEmployee().getFirstName() + " " + plan.getEmployee().getLastName() : "Unknown";
+            userNotificationService.notifyAdminsAndHR(
+                "Onboarding Completed",
+                "Onboarding completed for employee " + empName,
+                "ONBOARDING", "ONBOARDING", plan.getId());
+        } catch (Exception e) {}
+        return ResponseEntity.ok(plan);
     }
 
     @DeleteMapping("/plans/{id}")

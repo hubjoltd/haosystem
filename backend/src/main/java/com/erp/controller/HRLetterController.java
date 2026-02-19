@@ -2,6 +2,7 @@ package com.erp.controller;
 
 import com.erp.model.*;
 import com.erp.service.HRLetterService;
+import com.erp.service.UserNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,9 @@ public class HRLetterController {
 
     @Autowired
     private HRLetterService hrLetterService;
+
+    @Autowired
+    private UserNotificationService userNotificationService;
 
     @GetMapping
     public ResponseEntity<List<HRLetter>> getAllLetters() {
@@ -47,7 +51,20 @@ public class HRLetterController {
 
     @PostMapping
     public ResponseEntity<HRLetter> createLetter(@RequestBody Map<String, Object> data) {
-        return ResponseEntity.ok(hrLetterService.createLetter(data));
+        HRLetter letter = hrLetterService.createLetter(data);
+        try {
+            if (letter.getEmployee() != null) {
+                userNotificationService.notifyEmployee(letter.getEmployee(),
+                    "HR Letter Generated",
+                    "A " + letter.getLetterType() + " letter has been generated for you",
+                    "HR_LETTER", "HR_LETTER", letter.getId());
+            }
+            userNotificationService.notifyAdminsAndHR(
+                "HR Letter Created",
+                "A " + letter.getLetterType() + " letter has been created",
+                "HR_LETTER", "HR_LETTER", letter.getId());
+        } catch (Exception e) {}
+        return ResponseEntity.ok(letter);
     }
 
     @PutMapping("/{id}")
@@ -57,7 +74,20 @@ public class HRLetterController {
 
     @PostMapping("/{id}/generate")
     public ResponseEntity<HRLetter> generateLetter(@PathVariable Long id) {
-        return ResponseEntity.ok(hrLetterService.generateLetter(id));
+        HRLetter letter = hrLetterService.generateLetter(id);
+        try {
+            if (letter.getEmployee() != null) {
+                userNotificationService.notifyEmployee(letter.getEmployee(),
+                    "HR Letter Generated",
+                    "A " + letter.getLetterType() + " letter has been generated for you",
+                    "HR_LETTER", "HR_LETTER", letter.getId());
+            }
+            userNotificationService.notifyAdminsAndHR(
+                "HR Letter Generated",
+                "A " + letter.getLetterType() + " letter has been generated",
+                "HR_LETTER", "HR_LETTER", letter.getId());
+        } catch (Exception e) {}
+        return ResponseEntity.ok(letter);
     }
 
     @PostMapping("/{id}/sign")

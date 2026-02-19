@@ -2,6 +2,7 @@ package com.erp.controller;
 
 import com.erp.model.*;
 import com.erp.service.LoanService;
+import com.erp.service.UserNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,9 @@ public class LoanController {
 
     @Autowired
     private LoanService loanService;
+
+    @Autowired
+    private UserNotificationService userNotificationService;
 
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getDashboard() {
@@ -68,7 +72,16 @@ public class LoanController {
 
     @PostMapping
     public ResponseEntity<LoanApplication> applyForLoan(@RequestBody Map<String, Object> data) {
-        return ResponseEntity.ok(loanService.applyForLoan(data));
+        LoanApplication loan = loanService.applyForLoan(data);
+        try {
+            String empName = loan.getEmployee() != null ?
+                loan.getEmployee().getFirstName() + " " + loan.getEmployee().getLastName() : "Unknown";
+            userNotificationService.notifyAdminsAndHR(
+                "Loan Application Submitted",
+                "Loan application submitted by " + empName,
+                "LOAN", "LOAN", loan.getId());
+        } catch (Exception e) {}
+        return ResponseEntity.ok(loan);
     }
 
     @PutMapping("/{id}")
@@ -89,13 +102,31 @@ public class LoanController {
         if (data.containsKey("approvedAmount") && data.get("approvedAmount") != null) {
             approvedAmount = new BigDecimal(data.get("approvedAmount").toString());
         }
-        return ResponseEntity.ok(loanService.approveLoan(id, approverId, remarks, approvedAmount));
+        LoanApplication loan = loanService.approveLoan(id, approverId, remarks, approvedAmount);
+        try {
+            if (loan.getEmployee() != null) {
+                userNotificationService.notifyEmployee(loan.getEmployee(),
+                    "Loan Application Updated",
+                    "Your loan application status has been updated to " + loan.getStatus(),
+                    "LOAN", "LOAN", loan.getId());
+            }
+        } catch (Exception e) {}
+        return ResponseEntity.ok(loan);
     }
 
     @PostMapping("/{id}/reject")
     public ResponseEntity<LoanApplication> rejectLoan(@PathVariable Long id, @RequestBody Map<String, Object> data) {
         String reason = (String) data.get("reason");
-        return ResponseEntity.ok(loanService.rejectLoan(id, reason));
+        LoanApplication loan = loanService.rejectLoan(id, reason);
+        try {
+            if (loan.getEmployee() != null) {
+                userNotificationService.notifyEmployee(loan.getEmployee(),
+                    "Loan Application Updated",
+                    "Your loan application status has been updated to " + loan.getStatus(),
+                    "LOAN", "LOAN", loan.getId());
+            }
+        } catch (Exception e) {}
+        return ResponseEntity.ok(loan);
     }
 
     @PostMapping("/{id}/disburse")

@@ -4,6 +4,7 @@ import com.erp.model.ExpenseCategory;
 import com.erp.model.ExpenseRequest;
 import com.erp.model.ExpenseItem;
 import com.erp.service.ExpenseService;
+import com.erp.service.UserNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,9 @@ public class ExpenseController {
 
     @Autowired
     private ExpenseService expenseService;
+
+    @Autowired
+    private UserNotificationService userNotificationService;
 
     @GetMapping("/categories")
     public ResponseEntity<List<ExpenseCategory>> getAllCategories() {
@@ -142,6 +146,15 @@ public class ExpenseController {
     public ResponseEntity<?> createRequest(@RequestBody Map<String, Object> data) {
         try {
             ExpenseRequest created = expenseService.createRequest(data);
+            try {
+                String empName = created.getEmployee() != null ?
+                    created.getEmployee().getFirstName() + " " + created.getEmployee().getLastName() : "Unknown";
+                String amount = created.getTotalAmount() != null ? created.getTotalAmount().toString() : "N/A";
+                userNotificationService.notifyAdminsAndHR(
+                    "Expense Request Submitted",
+                    "Expense request submitted by " + empName + " for " + amount,
+                    "EXPENSE", "EXPENSE", created.getId());
+            } catch (Exception ex) {}
             return ResponseEntity.ok(created);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
@@ -216,6 +229,14 @@ public class ExpenseController {
     public ResponseEntity<?> approveRequest(@PathVariable Long id, @RequestBody Map<String, Object> approvalData) {
         try {
             ExpenseRequest approved = expenseService.approveRequest(id, approvalData);
+            try {
+                if (approved.getEmployee() != null) {
+                    userNotificationService.notifyEmployee(approved.getEmployee(),
+                        "Expense Request Updated",
+                        "Your expense request status has been updated to " + approved.getStatus(),
+                        "EXPENSE", "EXPENSE", approved.getId());
+                }
+            } catch (Exception ex) {}
             return ResponseEntity.ok(approved);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();
@@ -229,6 +250,14 @@ public class ExpenseController {
         try {
             String reason = (String) data.get("reason");
             ExpenseRequest rejected = expenseService.rejectRequest(id, reason);
+            try {
+                if (rejected.getEmployee() != null) {
+                    userNotificationService.notifyEmployee(rejected.getEmployee(),
+                        "Expense Request Updated",
+                        "Your expense request status has been updated to " + rejected.getStatus(),
+                        "EXPENSE", "EXPENSE", rejected.getId());
+                }
+            } catch (Exception ex) {}
             return ResponseEntity.ok(rejected);
         } catch (Exception e) {
             Map<String, String> error = new HashMap<>();

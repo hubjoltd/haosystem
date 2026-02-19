@@ -571,7 +571,16 @@ public class AttendanceController {
                     Long approverId = Long.valueOf(request.get("approverId").toString());
                     employeeRepository.findById(approverId).ifPresent(record::setApprovedBy);
                 }
-                return ResponseEntity.ok(attendanceRecordRepository.save(record));
+                AttendanceRecord saved = attendanceRecordRepository.save(record);
+                try {
+                    if (saved.getEmployee() != null) {
+                        userNotificationService.notifyEmployee(saved.getEmployee(),
+                            "Attendance Approved",
+                            "Your attendance record for " + saved.getAttendanceDate() + " has been approved",
+                            "ATTENDANCE", "ATTENDANCE", saved.getId());
+                    }
+                } catch (Exception e) {}
+                return ResponseEntity.ok(saved);
             })
             .orElse(ResponseEntity.notFound().build());
     }
