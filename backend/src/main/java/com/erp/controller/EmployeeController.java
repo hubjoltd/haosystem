@@ -55,6 +55,9 @@ public class EmployeeController {
     private UserNotificationService userNotificationService;
     
     @Autowired
+    private ProjectMemberRepository projectMemberRepository;
+    
+    @Autowired
     private JwtUtil jwtUtil;
     
     private Long extractBranchId(HttpServletRequest request) {
@@ -84,40 +87,79 @@ public class EmployeeController {
                 .orElse(false);
     }
 
+    private void populateProjectFromMembers(List<Employee> employees) {
+        for (Employee emp : employees) {
+            if (emp.getProject() == null) {
+                try {
+                    List<ProjectMember> memberships = projectMemberRepository.findByEmployeeId(emp.getId());
+                    if (!memberships.isEmpty()) {
+                        emp.setProject(memberships.get(0).getProject());
+                    }
+                } catch (Exception e) {}
+            }
+        }
+    }
+
+    private void populateProjectFromMembers(Employee emp) {
+        if (emp != null && emp.getProject() == null) {
+            try {
+                List<ProjectMember> memberships = projectMemberRepository.findByEmployeeId(emp.getId());
+                if (!memberships.isEmpty()) {
+                    emp.setProject(memberships.get(0).getProject());
+                }
+            } catch (Exception e) {}
+        }
+    }
+
     @GetMapping
     public List<Employee> getAll(HttpServletRequest request) {
+        List<Employee> employees;
         if (isSuperAdmin(request)) {
-            return employeeRepository.findAllByOrderByIdAsc();
+            employees = employeeRepository.findAllByOrderByIdAsc();
+        } else {
+            Long branchId = extractBranchId(request);
+            if (branchId != null) {
+                employees = employeeRepository.findByBranchIdOrderByIdAsc(branchId);
+            } else {
+                employees = employeeRepository.findAllByOrderByIdAsc();
+            }
         }
-        Long branchId = extractBranchId(request);
-        if (branchId != null) {
-            return employeeRepository.findByBranchIdOrderByIdAsc(branchId);
-        }
-        return employeeRepository.findAllByOrderByIdAsc();
+        populateProjectFromMembers(employees);
+        return employees;
     }
     
     @GetMapping("/active")
     public List<Employee> getActiveEmployees(HttpServletRequest request) {
+        List<Employee> employees;
         if (isSuperAdmin(request)) {
-            return employeeRepository.findByActiveTrue();
+            employees = employeeRepository.findByActiveTrue();
+        } else {
+            Long branchId = extractBranchId(request);
+            if (branchId != null) {
+                employees = employeeRepository.findByBranchIdAndActiveTrue(branchId);
+            } else {
+                employees = employeeRepository.findByActiveTrue();
+            }
         }
-        Long branchId = extractBranchId(request);
-        if (branchId != null) {
-            return employeeRepository.findByBranchIdAndActiveTrue(branchId);
-        }
-        return employeeRepository.findByActiveTrue();
+        populateProjectFromMembers(employees);
+        return employees;
     }
     
     @GetMapping("/search")
     public List<Employee> search(@RequestParam String query, HttpServletRequest request) {
+        List<Employee> employees;
         if (isSuperAdmin(request)) {
-            return employeeRepository.searchEmployees(query);
+            employees = employeeRepository.searchEmployees(query);
+        } else {
+            Long branchId = extractBranchId(request);
+            if (branchId != null) {
+                employees = employeeRepository.searchEmployeesByBranch(branchId, query);
+            } else {
+                employees = employeeRepository.searchEmployees(query);
+            }
         }
-        Long branchId = extractBranchId(request);
-        if (branchId != null) {
-            return employeeRepository.searchEmployeesByBranch(branchId, query);
-        }
-        return employeeRepository.searchEmployees(query);
+        populateProjectFromMembers(employees);
+        return employees;
     }
 
     @GetMapping("/next-code")
@@ -131,20 +173,19 @@ public class EmployeeController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Employee> getById(@PathVariable Long id, HttpServletRequest request) {
+        Optional<Employee> empOpt;
         if (isSuperAdmin(request)) {
-            return employeeRepository.findById(id)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
+            empOpt = employeeRepository.findById(id);
+        } else {
+            Long branchId = extractBranchId(request);
+            if (branchId != null) {
+                empOpt = employeeRepository.findByIdAndBranchId(id, branchId);
+            } else {
+                empOpt = employeeRepository.findById(id);
+            }
         }
-        Long branchId = extractBranchId(request);
-        if (branchId != null) {
-            return employeeRepository.findByIdAndBranchId(id, branchId)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        }
-        return employeeRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        empOpt.ifPresent(this::populateProjectFromMembers);
+        return empOpt.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     private String generateEmployeeCode(String prefix) {

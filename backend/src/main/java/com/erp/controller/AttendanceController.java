@@ -7,8 +7,10 @@ import com.erp.model.Employee;
 import com.erp.repository.AttendanceRecordRepository;
 import com.erp.repository.AttendanceRuleRepository;
 import com.erp.repository.ProjectTimeEntryRepository;
+import com.erp.repository.ProjectMemberRepository;
 import com.erp.repository.EmployeeRepository;
 import com.erp.repository.UserRepository;
+import com.erp.model.ProjectMember;
 import com.erp.model.User;
 import com.erp.service.UserNotificationService;
 import com.erp.security.JwtUtil;
@@ -51,6 +53,9 @@ public class AttendanceController {
     private UserNotificationService userNotificationService;
     
     @Autowired
+    private ProjectMemberRepository projectMemberRepository;
+    
+    @Autowired
     private JwtUtil jwtUtil;
     
     private Long extractBranchId(HttpServletRequest request) {
@@ -70,6 +75,21 @@ public class AttendanceController {
         }
         return false;
     }
+
+    private void setProjectFromEmployee(AttendanceRecord record, Employee employee) {
+        try {
+            if (employee.getProject() != null) {
+                record.setProjectCode(employee.getProject().getProjectCode());
+                record.setProjectName(employee.getProject().getName());
+            } else {
+                List<ProjectMember> memberships = projectMemberRepository.findByEmployeeId(employee.getId());
+                if (!memberships.isEmpty()) {
+                    record.setProjectCode(memberships.get(0).getProject().getProjectCode());
+                    record.setProjectName(memberships.get(0).getProject().getName());
+                }
+            }
+        } catch (Exception e) {}
+    }
     
     private List<Employee> getEmployeesForBranch(HttpServletRequest request) {
         if (isSuperAdmin(request)) {
@@ -88,12 +108,21 @@ public class AttendanceController {
                 .collect(Collectors.toSet());
     }
 
+    private void populateProjectForRecords(List<AttendanceRecord> records) {
+        for (AttendanceRecord record : records) {
+            if ((record.getProjectName() == null || record.getProjectName().isEmpty()) && record.getEmployee() != null) {
+                setProjectFromEmployee(record, record.getEmployee());
+            }
+        }
+    }
+
     @GetMapping
     public ResponseEntity<List<AttendanceRecord>> getAllRecords(HttpServletRequest request) {
         Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
         List<AttendanceRecord> records = attendanceRecordRepository.findAll().stream()
                 .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
                 .collect(Collectors.toList());
+        populateProjectForRecords(records);
         return ResponseEntity.ok(records);
     }
     
@@ -113,6 +142,7 @@ public class AttendanceController {
         List<AttendanceRecord> records = attendanceRecordRepository.findByAttendanceDateBetween(start, end).stream()
                 .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
                 .collect(Collectors.toList());
+        populateProjectForRecords(records);
         return ResponseEntity.ok(records);
     }
 
@@ -122,7 +152,9 @@ public class AttendanceController {
         if (!branchEmployeeIds.contains(employeeId)) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(attendanceRecordRepository.findByEmployeeId(employeeId));
+        List<AttendanceRecord> records = attendanceRecordRepository.findByEmployeeId(employeeId);
+        populateProjectForRecords(records);
+        return ResponseEntity.ok(records);
     }
 
     @GetMapping("/date/{date}")
@@ -132,6 +164,7 @@ public class AttendanceController {
         List<AttendanceRecord> records = attendanceRecordRepository.findByAttendanceDate(localDate).stream()
                 .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
                 .collect(Collectors.toList());
+        populateProjectForRecords(records);
         return ResponseEntity.ok(records);
     }
 
@@ -147,7 +180,9 @@ public class AttendanceController {
         }
         LocalDate start = LocalDate.parse(startDate);
         LocalDate end = LocalDate.parse(endDate);
-        return ResponseEntity.ok(attendanceRecordRepository.findByEmployeeIdAndAttendanceDateBetween(employeeId, start, end));
+        List<AttendanceRecord> records = attendanceRecordRepository.findByEmployeeIdAndAttendanceDateBetween(employeeId, start, end);
+        populateProjectForRecords(records);
+        return ResponseEntity.ok(records);
     }
 
     @GetMapping("/{id}")
@@ -155,7 +190,12 @@ public class AttendanceController {
         Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
         return attendanceRecordRepository.findById(id)
             .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
-            .map(ResponseEntity::ok)
+            .map(r -> {
+                if ((r.getProjectName() == null || r.getProjectName().isEmpty()) && r.getEmployee() != null) {
+                    setProjectFromEmployee(r, r.getEmployee());
+                }
+                return ResponseEntity.ok(r);
+            })
             .orElse(ResponseEntity.notFound().build());
     }
 
@@ -194,11 +234,7 @@ public class AttendanceController {
         record.setStatus("PRESENT");
         record.setApprovalStatus("APPROVED");
         
-        // Set project information from employee's assigned project
-        if (employee.getProject() != null) {
-            record.setProjectCode(employee.getProject().getProjectCode());
-            record.setProjectName(employee.getProject().getName());
-        }
+        setProjectFromEmployee(record, employee);
 
         AttendanceRule rule = attendanceRuleRepository.findByIsDefaultTrue().orElse(null);
         if (rule != null && rule.getStandardStartTime() != null && rule.getGraceMinutesIn() != null) {
@@ -369,10 +405,7 @@ public class AttendanceController {
         record.setCaptureMethod("MANUAL");
         record.setApprovalStatus("PENDING");
         
-        if (employee.getProject() != null) {
-            record.setProjectCode(employee.getProject().getProjectCode());
-            record.setProjectName(employee.getProject().getName());
-        }
+        setProjectFromEmployee(record, employee);
 
         if (clockIn != null && clockOut != null) {
             long minutesWorked = ChronoUnit.MINUTES.between(clockIn, clockOut);
