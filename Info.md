@@ -58,3 +58,4 @@ Preferred communication style: Simple, everyday language.
 - **Chat security**: WebSocket now requires JWT token authentication only (removed userId query param fallback), with username-based user lookup for backward compatibility with old tokens
 - **Employee code robust fallback**: 3-tier fallback: server `/api/employees/next-code` → prefix settings → employee list scan → default EMP-0001
 - **Chat real-time via HTTP polling**: Replaced WebSocket with HTTP polling (3s interval) for reliable real-time chat. Polls `/api/chat/unread` for badge counts and `/api/chat/messages/{userId}` for conversation updates. Messages sent via REST POST with server-generated IDs.
+- **Employee password save fix**: Fixed `NonUniqueResultException` caused by duplicate role names in database. Updated `RoleRepository.findByName()` and `findByNameAndBranch_Id()` to use `LIMIT 1` queries. Added duplicate-prevention checks in `RoleService.createDefaultRolesForBranch()`.

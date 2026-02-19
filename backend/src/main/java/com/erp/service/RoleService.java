@@ -107,14 +107,17 @@ public class RoleService {
         String staffPermissions = "{\"Dashboard\":{\"view\":true,\"add\":false,\"edit\":false,\"delete\":false},\"Customer Management\":{\"view\":true,\"add\":true,\"edit\":false,\"delete\":false},\"Attendance\":{\"view\":true,\"add\":true,\"edit\":false,\"delete\":false},\"Projects\":{\"view\":true,\"add\":true,\"edit\":true,\"delete\":false},\"Expenses\":{\"view\":true,\"add\":true,\"edit\":false,\"delete\":false},\"Leave\":{\"view\":true,\"add\":true,\"edit\":false,\"delete\":false}}";
         String viewerPermissions = "{\"Dashboard\":{\"view\":true,\"add\":false,\"edit\":false,\"delete\":false},\"Reports\":{\"view\":true,\"add\":false,\"edit\":false,\"delete\":false}}";
         
-        Role adminRole = new Role("ADMIN", "Company Administrator with full access", fullPermissions, branch);
-        Role managerRole = new Role("MANAGER", "Manager with limited administrative access", managerPermissions, branch);
-        Role staffRole = new Role("STAFF", "Standard staff member", staffPermissions, branch);
-        Role viewerRole = new Role("VIEWER", "Read-only access to reports", viewerPermissions, branch);
-        
-        roleRepository.save(adminRole);
-        roleRepository.save(managerRole);
-        roleRepository.save(staffRole);
-        roleRepository.save(viewerRole);
+        if (!roleRepository.existsByNameAndBranchId("ADMIN", branch.getId())) {
+            roleRepository.save(new Role("ADMIN", "Company Administrator with full access", fullPermissions, branch));
+        }
+        if (!roleRepository.existsByNameAndBranchId("MANAGER", branch.getId())) {
+            roleRepository.save(new Role("MANAGER", "Manager with limited administrative access", managerPermissions, branch));
+        }
+        if (!roleRepository.existsByNameAndBranchId("STAFF", branch.getId())) {
+            roleRepository.save(new Role("STAFF", "Standard staff member", staffPermissions, branch));
+        }
+        if (!roleRepository.existsByNameAndBranchId("VIEWER", branch.getId())) {
+            roleRepository.save(new Role("VIEWER", "Read-only access to reports", viewerPermissions, branch));
+        }
     }
 }

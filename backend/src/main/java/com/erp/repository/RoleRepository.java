@@ -10,11 +10,13 @@ import java.util.Optional;
 
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Long> {
-    Optional<Role> findByName(String name);
+    @Query("SELECT r FROM Role r WHERE r.name = :name ORDER BY r.id ASC LIMIT 1")
+    Optional<Role> findByName(@Param("name") String name);
     
     List<Role> findByBranch_Id(Long branchId);
     
-    Optional<Role> findByNameAndBranch_Id(String name, Long branchId);
+    @Query("SELECT r FROM Role r WHERE r.name = :name AND r.branch.id = :branchId ORDER BY r.id ASC LIMIT 1")
+    Optional<Role> findByNameAndBranch_Id(@Param("name") String name, @Param("branchId") Long branchId);
     
     @Query("SELECT r FROM Role r WHERE r.branch.id = :branchId OR r.isSystemRole = true")
     List<Role> findByBranchIdOrSystemRole(@Param("branchId") Long branchId);
