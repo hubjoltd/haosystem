@@ -85,6 +85,10 @@ export class MisDashboardService {
     return this.http.get<HRDashboardStats>(`${this.baseUrl}/hr`);
   }
 
+  getHRRecentActivities(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/hr/recent-activities`);
+  }
+
   getPayrollStats(): Observable<PayrollDashboardStats> {
     return this.http.get<PayrollDashboardStats>(`${this.baseUrl}/payroll`);
   }

@@ -26,22 +26,17 @@ export class HRDashboardComponent implements OnInit, OnDestroy {
     onLeave: 0
   };
 
-  recentActivities = [
-    { icon: 'fas fa-user-plus', message: 'John Doe joined Engineering department', time: '2 hours ago', type: 'hire' },
-    { icon: 'fas fa-check-circle', message: 'Leave approved for Jane Smith (3 days)', time: '3 hours ago', type: 'leave' },
-    { icon: 'fas fa-graduation-cap', message: 'Training completed: React Advanced - 12 participants', time: '5 hours ago', type: 'training' },
-    { icon: 'fas fa-award', message: 'Sarah Johnson promoted to Senior Developer', time: '1 day ago', type: 'promotion' },
-    { icon: 'fas fa-user-minus', message: 'Exit interview scheduled for Mike Wilson', time: '1 day ago', type: 'exit' },
-    { icon: 'fas fa-file-alt', message: 'Offer letter sent to Emily Davis - Marketing', time: '2 days ago', type: 'offer' },
-    { icon: 'fas fa-calendar-check', message: 'Quarterly performance review cycle started', time: '3 days ago', type: 'review' },
-    { icon: 'fas fa-user-plus', message: 'Alex Chen joined Finance department', time: '3 days ago', type: 'hire' }
-  ];
+  recentActivities: any[] = [];
 
   constructor(private dashboardService: MisDashboardService) {}
 
   ngOnInit(): void {
     this.loadStats();
-    this.refreshInterval = setInterval(() => this.loadStats(), 30000);
+    this.loadRecentActivities();
+    this.refreshInterval = setInterval(() => {
+      this.loadStats();
+      this.loadRecentActivities();
+    }, 30000);
   }
 
   ngOnDestroy(): void {
@@ -68,6 +63,19 @@ export class HRDashboardComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.isRefreshing = false;
         this.triggerAnimations();
+      }
+    });
+  }
+
+  loadRecentActivities(): void {
+    this.dashboardService.getHRRecentActivities().subscribe({
+      next: (activities) => {
+        if (activities && activities.length > 0) {
+          this.recentActivities = activities;
+        }
+      },
+      error: (err) => {
+        console.error('Error loading recent activities', err);
       }
     });
   }

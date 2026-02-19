@@ -8,13 +8,19 @@ import com.erp.repository.EmployeeRepository;
 import com.erp.repository.DepartmentRepository;
 import com.erp.repository.PayrollRecordRepository;
 import com.erp.repository.PayrollRunRepository;
+import com.erp.repository.LeaveRequestRepository;
+import com.erp.repository.UserNotificationRepository;
 import com.erp.model.PayrollRecord;
 import com.erp.model.PayrollRun;
 import com.erp.model.Employee;
+import com.erp.model.LeaveRequest;
+import com.erp.model.UserNotification;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,71 +41,293 @@ public class MisDashboardController {
     @Autowired
     private PayrollRunRepository payrollRunRepository;
 
+    @Autowired
+    private LeaveRequestRepository leaveRequestRepository;
+
+    @Autowired
+    private UserNotificationRepository userNotificationRepository;
+
     @GetMapping("/hr")
     public ResponseEntity<Map<String, Object>> getHRStats() {
-        Map<String, Object> stats = new HashMap<>();
-        
-        long totalEmployees = employeeRepository.count();
-        long activeEmployees = totalEmployees > 0 ? (long)(totalEmployees * 0.95) : 0;
-        
-        stats.put("totalHeadcount", totalEmployees);
-        stats.put("activeEmployees", activeEmployees);
-        stats.put("onLeave", 8);
-        stats.put("newHiresThisMonth", 12);
-        stats.put("exitsThisMonth", 3);
-        stats.put("attritionRate", 4.2);
-        stats.put("avgTenure", 3.5);
-        
-        Map<String, Object> genderDiversity = new HashMap<>();
-        genderDiversity.put("male", 92);
-        genderDiversity.put("female", 58);
-        genderDiversity.put("other", 6);
-        stats.put("genderDiversity", genderDiversity);
-        
-        List<Map<String, Object>> deptDistribution = new ArrayList<>();
-        departmentRepository.findAll().forEach(dept -> {
-            Map<String, Object> d = new HashMap<>();
-            d.put("department", dept.getName());
-            d.put("count", (int)(Math.random() * 40 + 10));
-            deptDistribution.add(d);
-        });
-        if (deptDistribution.isEmpty()) {
-            deptDistribution.add(Map.of("department", "Engineering", "count", 45));
-            deptDistribution.add(Map.of("department", "Sales", "count", 32));
-            deptDistribution.add(Map.of("department", "Marketing", "count", 18));
-            deptDistribution.add(Map.of("department", "HR", "count", 12));
-            deptDistribution.add(Map.of("department", "Finance", "count", 24));
+        try {
+            Map<String, Object> stats = new HashMap<>();
+
+            List<Employee> allEmployees = employeeRepository.findAll();
+            LocalDate today = LocalDate.now();
+            LocalDate monthStart = today.withDayOfMonth(1);
+
+            long totalHeadcount = allEmployees.size();
+
+            long activeEmployees = allEmployees.stream()
+                .filter(e -> Boolean.TRUE.equals(e.getActive()) || "Active".equalsIgnoreCase(e.getEmploymentStatus()))
+                .count();
+
+            long onLeave = 0;
+            try {
+                List<LeaveRequest> todayLeaves = leaveRequestRepository.findApprovedLeavesOnDate(today);
+                onLeave = todayLeaves.size();
+            } catch (Exception e) {
+            }
+
+            long newHiresThisMonth = allEmployees.stream()
+                .filter(e -> e.getJoiningDate() != null)
+                .filter(e -> !e.getJoiningDate().isBefore(monthStart) && !e.getJoiningDate().isAfter(today))
+                .count();
+
+            long exitsThisMonth = allEmployees.stream()
+                .filter(e -> {
+                    if (e.getResignationDate() != null) {
+                        return !e.getResignationDate().isBefore(monthStart) && !e.getResignationDate().isAfter(today);
+                    }
+                    return false;
+                })
+                .count();
+
+            LocalDate yearAgo = today.minusMonths(12);
+            long exitsLast12Months = allEmployees.stream()
+                .filter(e -> e.getResignationDate() != null)
+                .filter(e -> !e.getResignationDate().isBefore(yearAgo) && !e.getResignationDate().isAfter(today))
+                .count();
+            double attritionRate = totalHeadcount > 0 ? Math.round((double) exitsLast12Months / totalHeadcount * 1000.0) / 10.0 : 0;
+
+            double avgTenure = allEmployees.stream()
+                .filter(e -> Boolean.TRUE.equals(e.getActive()) && e.getJoiningDate() != null)
+                .mapToDouble(e -> {
+                    long months = ChronoUnit.MONTHS.between(e.getJoiningDate(), today);
+                    return months / 12.0;
+                })
+                .average()
+                .orElse(0.0);
+            avgTenure = Math.round(avgTenure * 10.0) / 10.0;
+
+            stats.put("totalHeadcount", totalHeadcount);
+            stats.put("activeEmployees", activeEmployees);
+            stats.put("onLeave", onLeave);
+            stats.put("newHiresThisMonth", newHiresThisMonth);
+            stats.put("exitsThisMonth", exitsThisMonth);
+            stats.put("attritionRate", attritionRate);
+            stats.put("avgTenure", avgTenure);
+
+            Map<String, Object> genderDiversity = new HashMap<>();
+            long maleCount = allEmployees.stream().filter(e -> "Male".equalsIgnoreCase(e.getGender())).count();
+            long femaleCount = allEmployees.stream().filter(e -> "Female".equalsIgnoreCase(e.getGender())).count();
+            long otherCount = totalHeadcount - maleCount - femaleCount;
+            genderDiversity.put("male", maleCount);
+            genderDiversity.put("female", femaleCount);
+            genderDiversity.put("other", Math.max(0, otherCount));
+            stats.put("genderDiversity", genderDiversity);
+
+            try {
+                Map<String, Long> deptMap = allEmployees.stream()
+                    .filter(e -> e.getDepartment() != null)
+                    .collect(Collectors.groupingBy(e -> e.getDepartment().getName(), Collectors.counting()));
+                List<Map<String, Object>> deptDistribution = deptMap.entrySet().stream()
+                    .map(entry -> {
+                        Map<String, Object> d = new HashMap<>();
+                        d.put("department", entry.getKey());
+                        d.put("count", entry.getValue());
+                        return d;
+                    })
+                    .sorted((a, b) -> Long.compare((Long) b.get("count"), (Long) a.get("count")))
+                    .collect(Collectors.toList());
+                if (deptDistribution.isEmpty()) {
+                    deptDistribution.add(Map.of("department", "No Departments", "count", 0L));
+                }
+                stats.put("departmentDistribution", deptDistribution);
+            } catch (Exception e) {
+                stats.put("departmentDistribution", List.of(Map.of("department", "No Departments", "count", 0L)));
+            }
+
+            try {
+                DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMM");
+                List<Map<String, Object>> hiringTrend = new ArrayList<>();
+                for (int i = 5; i >= 0; i--) {
+                    LocalDate monthDate = today.minusMonths(i);
+                    LocalDate mStart = monthDate.withDayOfMonth(1);
+                    LocalDate mEnd = monthDate.withDayOfMonth(monthDate.lengthOfMonth());
+                    String monthName = monthDate.format(monthFormatter);
+
+                    long hires = allEmployees.stream()
+                        .filter(e -> e.getJoiningDate() != null)
+                        .filter(e -> !e.getJoiningDate().isBefore(mStart) && !e.getJoiningDate().isAfter(mEnd))
+                        .count();
+
+                    long exits = allEmployees.stream()
+                        .filter(e -> e.getResignationDate() != null)
+                        .filter(e -> !e.getResignationDate().isBefore(mStart) && !e.getResignationDate().isAfter(mEnd))
+                        .count();
+
+                    Map<String, Object> entry = new HashMap<>();
+                    entry.put("month", monthName);
+                    entry.put("hires", hires);
+                    entry.put("exits", exits);
+                    hiringTrend.add(entry);
+                }
+                stats.put("monthlyHiringTrend", hiringTrend);
+            } catch (Exception e) {
+                stats.put("monthlyHiringTrend", List.of());
+            }
+
+            try {
+                List<Map<String, Object>> ageDistribution = new ArrayList<>();
+                long age18_25 = 0, age26_35 = 0, age36_45 = 0, age46_55 = 0, age55plus = 0;
+                for (Employee emp : allEmployees) {
+                    if (emp.getDateOfBirth() != null) {
+                        int age = Period.between(emp.getDateOfBirth(), today).getYears();
+                        if (age >= 18 && age <= 25) age18_25++;
+                        else if (age <= 35) age26_35++;
+                        else if (age <= 45) age36_45++;
+                        else if (age <= 55) age46_55++;
+                        else age55plus++;
+                    }
+                }
+                ageDistribution.add(createCountMap("18-25", age18_25));
+                ageDistribution.add(createCountMap("26-35", age26_35));
+                ageDistribution.add(createCountMap("36-45", age36_45));
+                ageDistribution.add(createCountMap("46-55", age46_55));
+                ageDistribution.add(createCountMap("55+", age55plus));
+                stats.put("ageDistribution", ageDistribution);
+            } catch (Exception e) {
+                stats.put("ageDistribution", List.of());
+            }
+
+            try {
+                Map<String, Long> empTypeMap = allEmployees.stream()
+                    .filter(e -> e.getEmploymentType() != null && !e.getEmploymentType().isEmpty())
+                    .collect(Collectors.groupingBy(Employee::getEmploymentType, Collectors.counting()));
+                List<Map<String, Object>> empTypes = empTypeMap.entrySet().stream()
+                    .map(entry -> {
+                        Map<String, Object> m = new HashMap<>();
+                        m.put("type", entry.getKey());
+                        m.put("count", entry.getValue());
+                        return m;
+                    })
+                    .sorted((a, b) -> Long.compare((Long) b.get("count"), (Long) a.get("count")))
+                    .collect(Collectors.toList());
+                if (empTypes.isEmpty()) {
+                    empTypes.add(Map.of("type", "Not Specified", "count", totalHeadcount));
+                }
+                stats.put("employmentTypeDistribution", empTypes);
+            } catch (Exception e) {
+                stats.put("employmentTypeDistribution", List.of());
+            }
+
+            return ResponseEntity.ok(stats);
+        } catch (Exception ex) {
+            return ResponseEntity.ok(getFallbackHRStats());
         }
-        stats.put("departmentDistribution", deptDistribution);
-        
-        List<Map<String, Object>> hiringTrend = Arrays.asList(
-            Map.of("month", "Jul", "hires", 8, "exits", 2),
-            Map.of("month", "Aug", "hires", 10, "exits", 4),
-            Map.of("month", "Sep", "hires", 6, "exits", 1),
-            Map.of("month", "Oct", "hires", 14, "exits", 3),
-            Map.of("month", "Nov", "hires", 9, "exits", 2),
-            Map.of("month", "Dec", "hires", 12, "exits", 3)
-        );
-        stats.put("monthlyHiringTrend", hiringTrend);
-        
-        List<Map<String, Object>> ageDistribution = Arrays.asList(
-            Map.of("range", "18-25", "count", 28),
-            Map.of("range", "26-35", "count", 62),
-            Map.of("range", "36-45", "count", 38),
-            Map.of("range", "46-55", "count", 20),
-            Map.of("range", "55+", "count", 8)
-        );
-        stats.put("ageDistribution", ageDistribution);
-        
-        List<Map<String, Object>> empTypes = Arrays.asList(
-            Map.of("type", "Full-Time", "count", 120),
-            Map.of("type", "Part-Time", "count", 15),
-            Map.of("type", "Contract", "count", 12),
-            Map.of("type", "Intern", "count", 9)
-        );
-        stats.put("employmentTypeDistribution", empTypes);
-        
-        return ResponseEntity.ok(stats);
+    }
+
+    private Map<String, Object> createCountMap(String range, long count) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("range", range);
+        m.put("count", count);
+        return m;
+    }
+
+    private Map<String, Object> getFallbackHRStats() {
+        Map<String, Object> stats = new HashMap<>();
+        long totalEmployees = employeeRepository.count();
+        stats.put("totalHeadcount", totalEmployees);
+        stats.put("activeEmployees", totalEmployees);
+        stats.put("onLeave", 0);
+        stats.put("newHiresThisMonth", 0);
+        stats.put("exitsThisMonth", 0);
+        stats.put("attritionRate", 0.0);
+        stats.put("avgTenure", 0.0);
+        stats.put("genderDiversity", Map.of("male", 0, "female", 0, "other", 0));
+        stats.put("departmentDistribution", List.of(Map.of("department", "All", "count", totalEmployees)));
+        stats.put("monthlyHiringTrend", List.of());
+        stats.put("ageDistribution", List.of());
+        stats.put("employmentTypeDistribution", List.of());
+        return stats;
+    }
+
+    @GetMapping("/hr/recent-activities")
+    public ResponseEntity<List<Map<String, Object>>> getHRRecentActivities() {
+        try {
+            List<Map<String, Object>> activities = new ArrayList<>();
+
+            List<UserNotification> allNotifications = userNotificationRepository.findAll();
+
+            allNotifications.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
+            List<UserNotification> recent = allNotifications.stream().limit(10).collect(Collectors.toList());
+
+            for (UserNotification notification : recent) {
+                Map<String, Object> activity = new HashMap<>();
+                activity.put("message", notification.getMessage() != null ? notification.getMessage() : notification.getTitle());
+                activity.put("type", mapNotificationType(notification.getType()));
+                activity.put("icon", getIconForType(notification.getType()));
+                activity.put("time", formatTimeAgo(notification.getCreatedAt()));
+                activities.add(activity);
+            }
+
+            if (activities.isEmpty()) {
+                List<Employee> recentEmployees = employeeRepository.findAll();
+                recentEmployees.sort((a, b) -> {
+                    LocalDate da = a.getJoiningDate() != null ? a.getJoiningDate() : LocalDate.MIN;
+                    LocalDate db = b.getJoiningDate() != null ? b.getJoiningDate() : LocalDate.MIN;
+                    return db.compareTo(da);
+                });
+
+                for (Employee emp : recentEmployees.stream().limit(5).collect(Collectors.toList())) {
+                    Map<String, Object> activity = new HashMap<>();
+                    String deptName = emp.getDepartment() != null ? emp.getDepartment().getName() : "the company";
+                    activity.put("message", emp.getFirstName() + " " + emp.getLastName() + " joined " + deptName);
+                    activity.put("type", "hire");
+                    activity.put("icon", "fas fa-user-plus");
+                    activity.put("time", formatTimeAgo(emp.getJoiningDate() != null ? emp.getJoiningDate().atStartOfDay() : java.time.LocalDateTime.now()));
+                    activities.add(activity);
+                }
+            }
+
+            return ResponseEntity.ok(activities);
+        } catch (Exception e) {
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+    }
+
+    private String mapNotificationType(String type) {
+        if (type == null) return "info";
+        switch (type.toUpperCase()) {
+            case "LEAVE": return "leave";
+            case "PAYROLL": return "payroll";
+            case "RECRUITMENT": return "offer";
+            case "ONBOARDING": return "hire";
+            case "TRAINING": return "training";
+            case "PROJECT": return "project";
+            case "EMPLOYEE": return "hire";
+            case "ATTENDANCE": return "attendance";
+            default: return "info";
+        }
+    }
+
+    private String getIconForType(String type) {
+        if (type == null) return "fas fa-info-circle";
+        switch (type.toUpperCase()) {
+            case "LEAVE": return "fas fa-calendar-check";
+            case "PAYROLL": return "fas fa-money-check-alt";
+            case "RECRUITMENT": return "fas fa-file-alt";
+            case "ONBOARDING": return "fas fa-user-plus";
+            case "TRAINING": return "fas fa-graduation-cap";
+            case "PROJECT": return "fas fa-project-diagram";
+            case "EMPLOYEE": return "fas fa-user-plus";
+            case "ATTENDANCE": return "fas fa-user-clock";
+            default: return "fas fa-info-circle";
+        }
+    }
+
+    private String formatTimeAgo(java.time.LocalDateTime dateTime) {
+        if (dateTime == null) return "recently";
+        long minutes = ChronoUnit.MINUTES.between(dateTime, java.time.LocalDateTime.now());
+        if (minutes < 1) return "just now";
+        if (minutes < 60) return minutes + " min ago";
+        long hours = minutes / 60;
+        if (hours < 24) return hours + (hours == 1 ? " hour ago" : " hours ago");
+        long days = hours / 24;
+        if (days < 30) return days + (days == 1 ? " day ago" : " days ago");
+        long months = days / 30;
+        return months + (months == 1 ? " month ago" : " months ago");
     }
 
     @GetMapping("/payroll")
