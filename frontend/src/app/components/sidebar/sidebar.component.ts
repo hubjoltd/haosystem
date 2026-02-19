@@ -146,6 +146,7 @@ export class SidebarComponent implements OnInit {
       expanded: false,
       permissionKey: 'HR Management',
       children: [
+        { icon: 'fas fa-tachometer-alt', label: 'HR Dashboard', labelKey: 'nav.hrDashboard', route: '/app/mis/hr-dashboard' },
         {
           icon: 'fas fa-users',
           label: 'Employee Master',
@@ -254,7 +255,6 @@ export class SidebarComponent implements OnInit {
           expanded: false,
           permissionKey: 'MIS Dashboards',
           children: [
-            { icon: 'fas fa-users', label: 'HR Dashboard', labelKey: 'nav.hrDashboard', route: '/app/mis/hr-dashboard' },
             { icon: 'fas fa-chart-line', label: 'Performance Dashboard', labelKey: 'nav.performanceDashboard', route: '/app/mis/performance-dashboard' },
             { icon: 'fas fa-file-alt', label: 'Custom Report Builder', labelKey: 'nav.customReports', route: '/app/mis/report-builder' }
           ]

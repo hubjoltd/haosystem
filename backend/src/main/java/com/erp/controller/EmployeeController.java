@@ -142,7 +142,10 @@ public class EmployeeController {
         int nextNumber = 1;
         if (lastCode != null && lastCode.length() > prefix.length()) {
             try {
-                nextNumber = Integer.parseInt(lastCode.substring(prefix.length())) + 1;
+                String numericPart = lastCode.substring(prefix.length()).replaceAll("[^0-9]", "");
+                if (!numericPart.isEmpty()) {
+                    nextNumber = Integer.parseInt(numericPart) + 1;
+                }
             } catch (NumberFormatException e) {
                 nextNumber = 1;
             }
