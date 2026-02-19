@@ -11,9 +11,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -30,6 +32,28 @@ public class ChatController {
         String username = auth.getName();
         Optional<User> user = userRepository.findByUsername(username);
         return user.map(User::getId).orElse(null);
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<Map<String, Object>>> getChatUsers(Authentication auth) {
+        Long currentUserId = getCurrentUserId(auth);
+        if (currentUserId == null) {
+            return ResponseEntity.ok(List.of());
+        }
+        List<User> allUsers = userRepository.findAll();
+        List<Map<String, Object>> result = allUsers.stream()
+                .filter(u -> u.getActive() != null && u.getActive() && !u.getId().equals(currentUserId))
+                .map(u -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", u.getId());
+                    map.put("firstName", u.getFirstName());
+                    map.put("lastName", u.getLastName());
+                    map.put("email", u.getEmail());
+                    map.put("username", u.getUsername());
+                    return map;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/messages/{userId}")

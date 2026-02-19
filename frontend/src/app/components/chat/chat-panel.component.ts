@@ -272,73 +272,20 @@ export class ChatPanelComponent implements OnInit, OnDestroy {
   }
 
   loadUsers(): void {
-    this.http.get<any[]>('/api/employees').subscribe({
-      next: (employees) => {
-        if (employees && employees.length > 0) {
-          this.users = employees
-            .filter(e => e.id !== this.currentUserId)
-            .map(e => ({
-              id: e.id,
-              name: `${e.firstName || ''} ${e.lastName || ''}`.trim() || e.email || 'Unknown',
-              employeeCode: e.employeeCode,
-              avatar: this.getInitials(e.firstName, e.lastName),
-              online: false,
-              lastMessage: '',
-              unreadCount: 0
-            }));
-          if (this.users.length === 0 && employees.length > 0) {
-            this.users = employees.map(e => ({
-              id: e.id,
-              name: `${e.firstName || ''} ${e.lastName || ''}`.trim() || e.email || 'Unknown',
-              employeeCode: e.employeeCode,
-              avatar: this.getInitials(e.firstName, e.lastName),
-              online: false,
-              lastMessage: '',
-              unreadCount: 0
-            }));
-          }
-          this.cdr.markForCheck();
-        } else {
-          this.loadUsersFromUsersEndpoint();
-        }
-      },
-      error: () => {
-        this.loadUsersFromUsersEndpoint();
-      }
-    });
-  }
-
-  private loadUsersFromUsersEndpoint(): void {
-    this.http.get<any[]>('/api/users').subscribe({
+    this.http.get<any[]>('/api/chat/users').subscribe({
       next: (users) => {
-        if (!users || users.length === 0) {
-          this.users = [];
-          this.cdr.markForCheck();
-          return;
-        }
-        this.users = users
-          .filter(u => u.id !== this.currentUserId)
-          .map(u => ({
-            id: u.id,
-            name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.username,
-            employeeCode: u.employeeCode || u.employee?.employeeCode,
-            avatar: this.getInitials(u.firstName, u.lastName),
-            online: false,
-            lastMessage: '',
-            unreadCount: 0
-          }));
-        if (this.users.length === 0 && users.length > 0) {
+        if (users && users.length > 0) {
           this.users = users.map(u => ({
             id: u.id,
-            name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.username,
-            employeeCode: u.employeeCode || u.employee?.employeeCode,
+            name: `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.username || u.email || 'Unknown',
+            employeeCode: u.username,
             avatar: this.getInitials(u.firstName, u.lastName),
             online: false,
             lastMessage: '',
             unreadCount: 0
           }));
+          this.cdr.markForCheck();
         }
-        this.cdr.markForCheck();
       },
       error: () => {
         this.users = [];
