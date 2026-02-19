@@ -12,6 +12,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.erp.service.UserNotificationService;
+
 @Component
 @Order(2)
 public class DataSeeder implements CommandLineRunner {
@@ -37,6 +39,8 @@ public class DataSeeder implements CommandLineRunner {
     @Autowired private CostCenterRepository costCenterRepository;
     @Autowired private HolidayRepository holidayRepository;
     @Autowired private SalaryBandRepository salaryBandRepository;
+    @Autowired private UserNotificationRepository userNotificationRepository;
+    @Autowired private UserNotificationService userNotificationService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -62,6 +66,7 @@ public class DataSeeder implements CommandLineRunner {
             seedBankAccounts();
             seedHolidays();
             seedSalaryBands();
+            seedNotifications();
             
             System.out.println("Sample data seeding completed!");
         } catch (Exception e) {
@@ -802,5 +807,29 @@ public class DataSeeder implements CommandLineRunner {
         if (grades.size() > 2) sb3.setGrade(grades.get(2));
         sb3.setIsActive(true);
         salaryBandRepository.save(sb3);
+    }
+
+    private void seedNotifications() {
+        if (userNotificationRepository.count() > 0) return;
+
+        userNotificationService.createNotification("admin", "Welcome to HAO System",
+            "Your ERP system is set up and ready to use. Explore the modules from the sidebar.", 
+            "SYSTEM", null, null);
+
+        userNotificationService.createNotification("admin", "3 Employees Added",
+            "Sample employees have been added: Rajesh Sharma, Priya Patel, and Amit Verma.", 
+            "HR_UPDATE", "Employee", null);
+
+        userNotificationService.createNotification("admin", "Inventory Ready",
+            "Warehouse and inventory items have been configured. You can start managing stock.", 
+            "STOCK_ALERT", "Inventory", null);
+
+        userNotificationService.createNotification("admin", "Leave Types Configured",
+            "Casual Leave, Sick Leave, and Earned Leave types are set up for the organization.", 
+            "HR_UPDATE", "LeaveType", null);
+
+        userNotificationService.createNotification("admin", "Projects Created",
+            "3 projects are available: Digital Transformation, Cloud Migration, and ERP Implementation.", 
+            "PR_APPROVAL", "Project", null);
     }
 }

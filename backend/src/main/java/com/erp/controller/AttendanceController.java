@@ -8,6 +8,9 @@ import com.erp.repository.AttendanceRecordRepository;
 import com.erp.repository.AttendanceRuleRepository;
 import com.erp.repository.ProjectTimeEntryRepository;
 import com.erp.repository.EmployeeRepository;
+import com.erp.repository.UserRepository;
+import com.erp.model.User;
+import com.erp.service.UserNotificationService;
 import com.erp.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -40,6 +43,12 @@ public class AttendanceController {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private UserNotificationService userNotificationService;
     
     @Autowired
     private JwtUtil jwtUtil;
@@ -203,7 +212,24 @@ public class AttendanceController {
             }
         }
 
-        return ResponseEntity.ok(attendanceRecordRepository.save(record));
+        AttendanceRecord saved = attendanceRecordRepository.save(record);
+        
+        try {
+            String empCode = employee.getEmployeeCode();
+            if (empCode != null) {
+                userRepository.findByUsername(empCode).ifPresent(user -> {
+                    userNotificationService.createNotification(user.getUsername(), 
+                        "Clock-In Recorded",
+                        "You clocked in at " + clockInTime.format(DateTimeFormatter.ofPattern("hh:mm a")) + " on " + today + ".",
+                        "ATTENDANCE", "Attendance", saved.getId());
+                });
+            }
+            userNotificationService.notifyAdmins("Employee Clocked In",
+                employee.getFirstName() + " " + employee.getLastName() + " clocked in at " + clockInTime.format(DateTimeFormatter.ofPattern("hh:mm a")),
+                "ATTENDANCE", "Attendance", saved.getId());
+        } catch (Exception e) {}
+        
+        return ResponseEntity.ok(saved);
     }
 
     @PostMapping("/clock-out")
@@ -264,7 +290,23 @@ public class AttendanceController {
 
         record.setApprovalStatus("PENDING");
 
-        return ResponseEntity.ok(attendanceRecordRepository.save(record));
+        AttendanceRecord savedOut = attendanceRecordRepository.save(record);
+        
+        try {
+            Employee employee = record.getEmployee();
+            if (employee != null && employee.getEmployeeCode() != null) {
+                userRepository.findByUsername(employee.getEmployeeCode()).ifPresent(user -> {
+                    long mins = record.getClockIn() != null ? ChronoUnit.MINUTES.between(record.getClockIn(), clockOutTime) : 0;
+                    String hours = String.format("%.1f", mins / 60.0);
+                    userNotificationService.createNotification(user.getUsername(),
+                        "Clock-Out Recorded",
+                        "You clocked out at " + clockOutTime.format(DateTimeFormatter.ofPattern("hh:mm a")) + ". Total hours: " + hours,
+                        "ATTENDANCE", "Attendance", savedOut.getId());
+                });
+            }
+        } catch (Exception e) {}
+        
+        return ResponseEntity.ok(savedOut);
     }
 
     @PostMapping("/manual-entry")

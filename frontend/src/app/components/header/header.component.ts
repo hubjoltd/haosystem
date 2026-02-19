@@ -206,6 +206,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
       case 'PR_APPROVAL': return 'fa-file-alt';
       case 'PO_CREATED': return 'fa-shopping-cart';
       case 'STOCK_ALERT': return 'fa-exclamation-triangle';
+      case 'ATTENDANCE': return 'fa-clock';
+      case 'HR_UPDATE': return 'fa-users';
+      case 'LEAVE': return 'fa-calendar-check';
+      case 'SYSTEM': return 'fa-cog';
+      case 'LOAN': return 'fa-money-bill';
+      case 'EXPENSE': return 'fa-receipt';
+      case 'DOCUMENT_EXPIRY': return 'fa-file-exclamation';
       default: return 'fa-info-circle';
     }
   }

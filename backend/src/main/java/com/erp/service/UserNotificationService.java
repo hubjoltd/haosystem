@@ -48,9 +48,20 @@ public class UserNotificationService {
     
     @Transactional
     public void notifyAdmins(String title, String message, String type, String referenceType, Long referenceId) {
-        List<User> admins = userRepository.findByRoleName("admin");
+        List<User> admins = userRepository.findByRoleName("SUPER_ADMIN");
+        admins.addAll(userRepository.findByRoleName("ADMIN"));
         for (User admin : admins) {
             createNotification(admin.getUsername(), title, message, type, referenceType, referenceId);
+        }
+    }
+
+    @Transactional
+    public void notifyManagers(String title, String message, String type, String referenceType, Long referenceId) {
+        List<User> managers = userRepository.findByRoleName("SUPER_ADMIN");
+        managers.addAll(userRepository.findByRoleName("ADMIN"));
+        managers.addAll(userRepository.findByRoleName("MANAGER"));
+        for (User manager : managers) {
+            createNotification(manager.getUsername(), title, message, type, referenceType, referenceId);
         }
     }
     

@@ -3,6 +3,7 @@ package com.erp.controller;
 import com.erp.model.*;
 import com.erp.repository.*;
 import com.erp.security.JwtUtil;
+import com.erp.service.UserNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -49,6 +50,9 @@ public class EmployeeController {
     
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private UserNotificationService userNotificationService;
     
     @Autowired
     private JwtUtil jwtUtil;
@@ -181,6 +185,11 @@ public class EmployeeController {
         if (loginPassword != null && !loginPassword.isEmpty()) {
             createOrUpdateUserForEmployee(saved, loginPassword);
         }
+        try {
+            userNotificationService.notifyAdmins("New Employee Added",
+                saved.getFirstName() + " " + saved.getLastName() + " (" + saved.getEmployeeCode() + ") has been added to the system.",
+                "HR_UPDATE", "Employee", saved.getId());
+        } catch (Exception e) {}
         return saved;
     }
 
