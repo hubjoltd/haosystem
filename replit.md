@@ -40,11 +40,12 @@ Preferred communication style: Simple, everyday language.
 - **Employee login feature**: Employees can now log in using their Employee Code as username and a password set in the employee form. When a password is set, a User account with STAFF role is automatically created/updated. STAFF role users see only the Employee Service Portal (ESS) section.
 - **Login page redesign**: HAO logo with dark blue/navy gradient, service category cards (Electrical, Access Control, CCTV, Networking, Servers, Communications), "Welcome Back" heading, "Email Address" label, "Sign in to Dashboard" button, removed company logos and "Remember Me" checkbox
 - **Employee list columns reordered**: Employee Code, Name, Designation, Department, Project, Email, Status, Actions
-- **Employee code auto-generation**: Uses branch code as prefix (or "EMP" default), generates sequential 4-digit codes via native SQL query
+- **Employee code auto-generation**: Uses branch code as prefix (or "EMP" default), generates sequential 4-digit codes via native SQL query. Fixed numeric extraction to handle dash-separated codes (EMP-001) and improved query sorting (LENGTH DESC, code DESC) for correct sequence.
 - **Employee delete fix**: Cascade deletes related records (bank details, salary, education, experience, assets) before deleting employee
 - **Employee list sorting**: Changed from DESC to ASC order
 - **Onboarding assets**: Added asset endpoints to OnboardingController (GET /assets/employee/{id}, POST /assets, POST /assets/{id}/return)
-- **Leave date fix**: Timezone-safe date parsing using component parts instead of new Date(string)
+- **Leave date fix**: Timezone-safe date parsing using component parts instead of new Date(string). Added WRITE_DATES_AS_TIMESTAMPS=false to serialize LocalDate as ISO strings instead of arrays.
+- **HR Dashboard moved**: Moved from MIS & Dashboards section to HR Management as the first option in sidebar navigation
 - **completeTask endpoint**: Made request body optional (@RequestBody(required = false))
 - Wrapped DataSeeder.run() in try-catch to prevent Hibernate compatibility issues from crashing the application
 - Created start.sh for development workflow (backend on 8080 + frontend dev server on 5000)
