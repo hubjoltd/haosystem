@@ -29,6 +29,7 @@ export class SidebarComponent implements OnInit {
 
   allMenuItems: MenuItem[] = [
     { icon: 'fas fa-home', label: 'Dashboard', labelKey: 'nav.dashboard', route: '/app/dashboard', permissionKey: 'Dashboard' },
+    { icon: 'fas fa-calendar-alt', label: 'Calendar', labelKey: 'nav.calendar', route: '/app/calendar', permissionKey: 'Dashboard' },
     { icon: 'fas fa-building', label: 'Companies', labelKey: 'nav.branchManagement', route: '/app/settings/branches', permissionKey: 'SuperAdminOnly' },
     {
       icon: 'fas fa-project-diagram',

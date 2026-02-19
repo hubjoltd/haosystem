@@ -1,0 +1,274 @@
+<div class="calendar-container" @fadeIn>
+  <div class="calendar-sidebar">
+    <div class="sidebar-profile">
+      <button class="create-btn" (click)="openCreateModal()">
+        <i class="fas fa-plus"></i> Create Event
+      </button>
+    </div>
+
+    <div class="upcoming-section" *ngIf="upcomingEvents.length > 0">
+      <h4>Upcoming Events</h4>
+      <div class="upcoming-event" *ngFor="let event of upcomingEvents" (click)="openEventDetail(event)" @fadeIn>
+        <div class="upcoming-icon" [style.background]="event.color + '22'" [style.color]="event.color">
+          <i [class]="getEventTypeInfo(event.eventType).icon"></i>
+        </div>
+        <div class="upcoming-info">
+          <span class="upcoming-title">{{ event.title }}</span>
+          <span class="upcoming-time">{{ formatDisplayDate(event.eventDate) }}<span *ngIf="event.startTime">, {{ formatTime(event.startTime) }}</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mini-calendar">
+      <div class="mini-header">
+        <span class="mini-title">{{ monthNames[miniCalendarDate.getMonth()] }} {{ miniCalendarDate.getFullYear() }}</span>
+        <div class="mini-nav">
+          <button (click)="navigateMiniCalendar(-1)"><i class="fas fa-chevron-left"></i></button>
+          <button (click)="navigateMiniCalendar(1)"><i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="mini-grid">
+        <div class="mini-day-name" *ngFor="let d of ['M','T','W','T','F','S','S']">{{ d }}</div>
+        <ng-container *ngFor="let week of miniCalendarDays">
+          <div class="mini-day" 
+               *ngFor="let day of week"
+               [class.other-month]="!day.isCurrentMonth"
+               [class.today]="day.isToday"
+               [class.has-events]="day.hasEvents"
+               (click)="selectMiniCalendarDay(day)">
+            {{ day.date.getDate() }}
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="time-breakdown" *ngIf="getTimeBreakdown().length > 0">
+      <h4>Time breakdown</h4>
+      <div class="breakdown-item" *ngFor="let item of getTimeBreakdown()">
+        <div class="breakdown-dot" [style.background]="item.color"></div>
+        <span class="breakdown-label">{{ item.label }}</span>
+        <div class="breakdown-bar">
+          <div class="breakdown-fill" [style.background]="item.color" [style.width.%]="Math.min(item.count * 20, 100)"></div>
+        </div>
+        <span class="breakdown-count">{{ item.count }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="calendar-main">
+    <div class="calendar-header">
+      <h2 class="header-title">{{ getHeaderTitle() }}</h2>
+      <div class="header-controls">
+        <div class="view-toggle">
+          <button [class.active]="viewMode === 'month'" (click)="setView('month')">Month</button>
+          <button [class.active]="viewMode === 'week'" (click)="setView('week')">Week</button>
+          <button [class.active]="viewMode === 'day'" (click)="setView('day')">Day</button>
+        </div>
+        <div class="nav-controls">
+          <button class="nav-btn" (click)="navigate(-1)"><i class="fas fa-chevron-left"></i></button>
+          <button class="nav-btn" (click)="navigate(1)"><i class="fas fa-chevron-right"></i></button>
+          <button class="today-btn" (click)="goToToday()">Today</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="week-view" *ngIf="viewMode === 'week'" @fadeIn>
+      <div class="week-header">
+        <div class="time-gutter-header">GMT+4</div>
+        <div class="day-header" *ngFor="let day of weekDays" [class.today]="isToday(day)">
+          <span class="day-date">{{ day.getDate() }}</span>
+          <span class="day-name">{{ weekDayNames[day.getDay()] }}</span>
+        </div>
+      </div>
+      <div class="week-body">
+        <div class="time-gutter">
+          <div class="time-slot" *ngFor="let slot of timeSlots">
+            <span class="time-label">{{ slot.label }}</span>
+          </div>
+        </div>
+        <div class="day-columns">
+          <div class="day-column" *ngFor="let day of weekDays" [class.today]="isToday(day)">
+            <div class="hour-cell" *ngFor="let slot of timeSlots" (click)="onSlotClick(day, slot.hour)">
+              <div class="event-card" 
+                   *ngFor="let event of getEventsForDayAndHour(day, slot.hour)"
+                   [style.background]="event.color + '20'"
+                   [style.border-left-color]="event.color"
+                   [style.height.px]="getEventHeight(event)"
+                   (click)="openEventDetail(event, $event)"
+                   @scaleIn>
+                <span class="event-time">{{ formatTime(event.startTime) }}-{{ formatTime(event.endTime) }}</span>
+                <span class="event-title">{{ event.title }}</span>
+              </div>
+            </div>
+            <div class="current-time-line" *ngIf="isToday(day) && getCurrentTimePosition() >= 0" [style.top.px]="getCurrentTimePosition()"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="month-view" *ngIf="viewMode === 'month'" @fadeIn>
+      <div class="month-header">
+        <div class="month-day-name" *ngFor="let name of weekDayNames">{{ name }}</div>
+      </div>
+      <div class="month-body">
+        <div class="month-week" *ngFor="let week of monthDays">
+          <div class="month-cell" 
+               *ngFor="let day of week"
+               [class.other-month]="!day.isCurrentMonth"
+               [class.today]="day.isToday"
+               (click)="onMonthDayClick(day)">
+            <span class="cell-date">{{ day.date.getDate() }}</span>
+            <div class="cell-events">
+              <div class="cell-event" 
+                   *ngFor="let event of day.events.slice(0, 3)"
+                   [style.background]="event.color + '25'"
+                   [style.color]="event.color"
+                   (click)="openEventDetail(event, $event)">
+                <span class="dot" [style.background]="event.color"></span>
+                {{ event.title }}
+              </div>
+              <div class="more-events" *ngIf="day.events.length > 3">
+                +{{ day.events.length - 3 }} more
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-view" *ngIf="viewMode === 'day'" @fadeIn>
+      <div class="day-view-header">
+        <h3>{{ currentDate | date:'EEEE, MMMM d, y' }}</h3>
+      </div>
+      <div class="day-view-body">
+        <div class="day-timeline">
+          <div class="day-time-row" *ngFor="let slot of timeSlots" (click)="onSlotClick(currentDate, slot.hour)">
+            <div class="day-time-label">{{ slot.label }}</div>
+            <div class="day-time-content">
+              <div class="event-card day-event"
+                   *ngFor="let event of getEventsForDayAndHour(currentDate, slot.hour)"
+                   [style.background]="event.color + '15'"
+                   [style.border-left-color]="event.color"
+                   (click)="openEventDetail(event, $event)"
+                   @scaleIn>
+                <div class="event-card-header">
+                  <span class="event-time">{{ formatTime(event.startTime) }} - {{ formatTime(event.endTime) }}</span>
+                  <span class="event-type-badge" [style.background]="event.color" [style.color]="'white'">{{ getEventTypeInfo(event.eventType).label }}</span>
+                </div>
+                <span class="event-title">{{ event.title }}</span>
+                <span class="event-location" *ngIf="event.location"><i class="fas fa-map-marker-alt"></i> {{ event.location }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showEventDetail" (click)="closeEventDetail()" @fadeIn>
+    <div class="event-detail-panel" (click)="$event.stopPropagation()" @slideIn>
+      <div class="detail-header" [style.background]="selectedEvent?.color + '15'">
+        <div class="detail-title-row">
+          <h3>{{ selectedEvent?.title }}</h3>
+          <div class="detail-actions">
+            <button class="icon-btn" (click)="openEditModal(selectedEvent!)" title="Edit"><i class="fas fa-edit"></i></button>
+            <button class="icon-btn danger" (click)="deleteEvent()" title="Delete"><i class="fas fa-trash"></i></button>
+            <button class="icon-btn" (click)="closeEventDetail()" title="Close"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+      </div>
+      <div class="detail-body">
+        <div class="detail-row">
+          <i class="fas fa-calendar"></i>
+          <span>{{ formatDisplayDate(selectedEvent?.eventDate || '') }}</span>
+        </div>
+        <div class="detail-row" *ngIf="selectedEvent?.startTime">
+          <i class="fas fa-clock"></i>
+          <span>{{ formatTime(selectedEvent?.startTime) }} <span *ngIf="selectedEvent?.endTime">- {{ formatTime(selectedEvent?.endTime) }}</span></span>
+        </div>
+        <div class="detail-row" *ngIf="selectedEvent?.location">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>{{ selectedEvent?.location }}</span>
+        </div>
+        <div class="detail-row" *ngIf="selectedEvent?.meetingLink">
+          <i class="fas fa-link"></i>
+          <a [href]="selectedEvent?.meetingLink" target="_blank">{{ selectedEvent?.meetingLink }}</a>
+        </div>
+        <div class="detail-row type-badges" *ngIf="selectedEvent?.eventType">
+          <span class="type-badge" [style.background]="selectedEvent?.color + '20'" [style.color]="selectedEvent?.color">
+            {{ getEventTypeInfo(selectedEvent?.eventType || '').label }}
+          </span>
+        </div>
+        <div class="detail-description" *ngIf="selectedEvent?.description">
+          <p>{{ selectedEvent?.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showEventModal" (click)="closeModal()" @fadeIn>
+    <div class="event-modal" (click)="$event.stopPropagation()" @scaleIn>
+      <div class="modal-header">
+        <h3>{{ editMode ? 'Edit Event' : 'Create New Event' }}</h3>
+        <button class="close-btn" (click)="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" [(ngModel)]="newEvent.title" placeholder="Event title" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label>Event Type</label>
+          <div class="type-selector">
+            <div class="type-option" 
+                 *ngFor="let type of eventTypes"
+                 [class.selected]="newEvent.eventType === type.value"
+                 [style.--type-color]="type.color"
+                 (click)="selectEventType(type)">
+              <i [class]="type.icon"></i>
+              <span>{{ type.label }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" [(ngModel)]="newEvent.eventDate" class="form-input" />
+          </div>
+          <div class="form-group" *ngIf="!newEvent.allDay">
+            <label>Start Time</label>
+            <input type="time" [(ngModel)]="newEvent.startTime" class="form-input" />
+          </div>
+          <div class="form-group" *ngIf="!newEvent.allDay">
+            <label>End Time</label>
+            <input type="time" [(ngModel)]="newEvent.endTime" class="form-input" />
+          </div>
+        </div>
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="newEvent.allDay" />
+            <span>All day event</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" [(ngModel)]="newEvent.location" placeholder="Add location" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label>Meeting Link</label>
+          <input type="text" [(ngModel)]="newEvent.meetingLink" placeholder="https://meet.google.com/..." class="form-input" />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea [(ngModel)]="newEvent.description" placeholder="Add description" class="form-input textarea" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="cancel-btn" (click)="closeModal()">Cancel</button>
+        <button class="save-btn" (click)="saveEvent()" [disabled]="!newEvent.title || !newEvent.eventDate">
+          {{ editMode ? 'Update Event' : 'Add Event' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

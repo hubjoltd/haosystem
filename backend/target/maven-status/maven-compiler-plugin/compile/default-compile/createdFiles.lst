@@ -66,6 +66,7 @@ com/erp/service/CompensationService.class
 com/erp/service/ValuationService.class
 com/erp/controller/HRLetterController.class
 com/erp/repository/InterviewRepository.class
+com/erp/model/CalendarEvent.class
 com/erp/model/OnboardingPlan.class
 com/erp/model/JobRequisition.class
 com/erp/service/FinalSettlementService.class
@@ -174,6 +175,7 @@ com/erp/config/CorsConfig.class
 com/erp/controller/LeaveController.class
 com/erp/repository/PayrollRecordRepository.class
 com/erp/controller/AuditController.class
+com/erp/controller/CalendarEventController.class
 com/erp/repository/OnboardingTaskRepository.class
 com/erp/model/TrainingEnrollment.class
 com/erp/repository/GoodsIssueLineRepository.class
@@ -247,6 +249,7 @@ com/erp/dto/RegisterRequest.class
 com/erp/model/PRFulfillment.class
 com/erp/repository/IntegrationConfigRepository.class
 com/erp/service/TrainingService.class
+com/erp/repository/CalendarEventRepository.class
 com/erp/model/Grade.class
 com/erp/service/ChartOfAccountService.class
 com/erp/service/AuditLogService.class

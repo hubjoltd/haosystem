@@ -126,6 +126,7 @@ import { BudgetsComponent } from './components/accounting/budgets/budgets.compon
 import { ReconciliationComponent } from './components/accounting/reconciliation/reconciliation.component';
 import { FinancialReportsComponent } from './components/accounting/reports/financial-reports.component';
 import { FinanceSettingsComponent as AccountingSettingsComponent } from './components/accounting/settings/finance-settings.component';
+import { CalendarComponent } from './components/calendar/calendar.component';
 
 @NgModule({
   declarations: [
@@ -244,6 +245,7 @@ import { FinanceSettingsComponent as AccountingSettingsComponent } from './compo
     RecruitmentOffersComponent,
     ToastComponent,
     ChatPanelComponent,
+    CalendarComponent,
     TranslateModule
   ],
   providers: [

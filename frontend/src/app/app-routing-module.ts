@@ -136,6 +136,7 @@ import { LoanEmiComponent } from './components/loans/emi/emi.component';
 import { LoanLedgerComponent } from './components/loans/ledger/ledger.component';
 import { LoanRepaymentsComponent } from './components/loans/repayments/repayments.component';
 import { ProjectManagementComponent } from './components/projects/project-management.component';
+import { CalendarComponent } from './components/calendar/calendar.component';
 import { ExpenseTypesSettingsComponent } from './components/settings/expense-types/expense-types.component';
 
 import { AccountingDashboardComponent } from './components/accounting/dashboard/accounting-dashboard.component';
@@ -285,6 +286,7 @@ const routes: Routes = [
       { path: 'loans/ledger', component: LoanLedgerComponent },
       { path: 'loans/repayments', component: LoanRepaymentsComponent },
       { path: 'projects', component: ProjectManagementComponent },
+      { path: 'calendar', component: CalendarComponent },
       { path: 'settings/expense-types', component: ExpenseTypesSettingsComponent },
       { path: 'accounting', component: AccountingDashboardComponent },
       { path: 'accounting/dashboard', component: AccountingDashboardComponent },

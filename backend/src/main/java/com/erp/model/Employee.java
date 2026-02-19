@@ -97,7 +97,7 @@ public class Employee {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "members", "tasks", "milestones", "customer", "projectManager"})
     private Project project;
     
     private LocalDate joiningDate;
