@@ -181,6 +181,7 @@ public class AttendanceController {
         LocalTime clockInTime = clientTime != null ? LocalTime.parse(clientTime) : LocalTime.now();
         record.setClockIn(clockInTime);
         record.setCaptureMethod(captureMethod);
+        record.setLocationType(captureMethod);
         record.setStatus("PRESENT");
         record.setApprovalStatus("APPROVED");
         
@@ -483,6 +484,9 @@ public class AttendanceController {
                 }
                 if (data.containsKey("remarks") && data.get("remarks") != null) {
                     existing.setRemarks(data.get("remarks").toString());
+                }
+                if (data.containsKey("locationType") && data.get("locationType") != null) {
+                    existing.setLocationType(data.get("locationType").toString());
                 }
                 
                 if (existing.getClockIn() != null && existing.getClockOut() != null) {

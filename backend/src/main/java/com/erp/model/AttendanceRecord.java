@@ -59,6 +59,9 @@ public class AttendanceRecord {
     @Column(length = 20)
     private String approvalStatus; // PENDING, APPROVED, REJECTED
 
+    @Column(length = 20)
+    private String locationType;
+
     @Column(length = 50)
     private String projectCode;
     
@@ -141,6 +144,9 @@ public class AttendanceRecord {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getLocationType() { return locationType; }
+    public void setLocationType(String locationType) { this.locationType = locationType; }
 
     public String getProjectCode() { return projectCode; }
     public void setProjectCode(String projectCode) { this.projectCode = projectCode; }

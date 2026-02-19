@@ -19,6 +19,7 @@ export interface AttendanceRecord {
   earlyDeparture?: boolean;
   earlyMinutes?: number;
   remarks?: string;
+  locationType?: string;
   approvalStatus?: string;
   approvedBy?: any;
   approvedAt?: string;

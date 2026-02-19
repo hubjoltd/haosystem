@@ -170,6 +170,17 @@
           <input type="time" class="edit-time-input" [(ngModel)]="editClockOut" />
         </div>
       </div>
+      <div class="edit-form-row">
+        <div class="edit-form-group" style="flex: 1;">
+          <label>Location</label>
+          <select class="edit-time-input" [(ngModel)]="editLocationType">
+            <option value="ON_SITE">On Site</option>
+            <option value="OFF_SITE">Off Site</option>
+            <option value="REMOTE">Remote</option>
+            <option value="FIELD">Field</option>
+          </select>
+        </div>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" (click)="cancelEdit()">Cancel</button>

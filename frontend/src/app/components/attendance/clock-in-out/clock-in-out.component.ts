@@ -52,6 +52,7 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
   editingRowId: number | null = null;
   editClockIn: string = '';
   editClockOut: string = '';
+  editLocationType: string = 'ON_SITE';
   savingEdit = false;
   showEditModal = false;
   editEmployee: EmployeeRow | null = null;
@@ -210,8 +211,9 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
   }
 
   isOnSite(row: EmployeeRow): boolean | null {
-    if (!row.record || !row.record.captureMethod) return null;
-    const method = row.record.captureMethod.toUpperCase();
+    const loc = row.record?.locationType || row.record?.captureMethod;
+    if (!loc) return null;
+    const method = loc.toUpperCase();
     return method === 'ON_SITE' || method === 'ONSITE' || method === 'WEB' || method === 'BIOMETRIC';
   }
 
@@ -351,6 +353,7 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     this.editEmployee = row;
     this.editClockIn = row.record.clockIn ? row.record.clockIn.substring(0, 5) : '';
     this.editClockOut = row.record.clockOut ? row.record.clockOut.substring(0, 5) : '';
+    this.editLocationType = row.record.locationType || row.record.captureMethod || 'ON_SITE';
     this.showEditModal = true;
     this.cdr.markForCheck();
   }
@@ -360,6 +363,7 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     this.editEmployee = null;
     this.editClockIn = '';
     this.editClockOut = '';
+    this.editLocationType = 'ON_SITE';
     this.cdr.markForCheck();
   }
 
@@ -369,9 +373,11 @@ export class ClockInOutComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     const updatedRecord: any = {
-      ...this.editEmployee.record,
       clockIn: this.editClockIn ? this.editClockIn + ':00' : this.editEmployee.record.clockIn,
-      clockOut: this.editClockOut ? this.editClockOut + ':00' : this.editEmployee.record.clockOut
+      clockOut: this.editClockOut ? this.editClockOut + ':00' : this.editEmployee.record.clockOut,
+      status: this.editEmployee.record.status,
+      remarks: this.editEmployee.record.remarks,
+      locationType: this.editLocationType
     };
 
     this.attendanceService.update(this.editEmployee.record.id, updatedRecord).subscribe({
