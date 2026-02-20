@@ -208,30 +208,42 @@ public class EmployeeController {
     }
 
     @PostMapping
-    public Employee create(@RequestBody Employee employee, Authentication auth, HttpServletRequest request) {
-        employee.setCreatedBy(auth != null ? auth.getName() : "system");
-        Long branchId = extractBranchId(request);
-        if (branchId != null && employee.getBranch() == null) {
-            branchRepository.findById(branchId).ifPresent(employee::setBranch);
-        }
-        if (employee.getEmployeeCode() == null || employee.getEmployeeCode().isEmpty()) {
-            String prefix = "EMP";
-            if (employee.getBranch() != null && employee.getBranch().getCode() != null) {
-                prefix = employee.getBranch().getCode();
-            }
-            employee.setEmployeeCode(generateEmployeeCode(prefix));
-        }
-        String loginPassword = employee.getLoginPassword();
-        Employee saved = employeeRepository.save(employee);
-        if (loginPassword != null && !loginPassword.isEmpty()) {
-            createOrUpdateUserForEmployee(saved, loginPassword);
-        }
+    public ResponseEntity<?> create(@RequestBody Employee employee, Authentication auth, HttpServletRequest request) {
         try {
-            userNotificationService.notifyAdmins("New Employee Added",
-                saved.getFirstName() + " " + saved.getLastName() + " (" + saved.getEmployeeCode() + ") has been added to the system.",
-                "HR_UPDATE", "Employee", saved.getId());
-        } catch (Exception e) {}
-        return saved;
+            employee.setCreatedBy(auth != null ? auth.getName() : "system");
+            Long branchId = extractBranchId(request);
+            if (branchId != null && employee.getBranch() == null) {
+                branchRepository.findById(branchId).ifPresent(employee::setBranch);
+            }
+            if (employee.getEmployeeCode() == null || employee.getEmployeeCode().isEmpty()) {
+                String prefix = "EMP";
+                if (employee.getBranch() != null && employee.getBranch().getCode() != null) {
+                    prefix = employee.getBranch().getCode();
+                }
+                employee.setEmployeeCode(generateEmployeeCode(prefix));
+            }
+            String loginPassword = employee.getLoginPassword();
+            Employee saved = employeeRepository.save(employee);
+            if (loginPassword != null && !loginPassword.isEmpty()) {
+                try {
+                    createOrUpdateUserForEmployee(saved, loginPassword);
+                } catch (Exception e) {
+                    System.err.println("Error creating user for employee: " + e.getMessage());
+                }
+            }
+            try {
+                userNotificationService.notifyAdmins("New Employee Added",
+                    saved.getFirstName() + " " + saved.getLastName() + " (" + saved.getEmployeeCode() + ") has been added to the system.",
+                    "HR_UPDATE", "Employee", saved.getId());
+            } catch (Exception e) {}
+            Employee freshEmployee = employeeRepository.findById(saved.getId()).orElse(saved);
+            populateProjectFromMembers(freshEmployee);
+            return ResponseEntity.ok(freshEmployee);
+        } catch (Exception e) {
+            System.err.println("Error creating employee: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(java.util.Map.of("message", "Failed to create employee: " + e.getMessage()));
+        }
     }
 
     @PutMapping("/{id}")
