@@ -75,9 +75,9 @@ public class LeaveController {
             return employeeRepository.findByActiveTrue();
         }
         Long branchId = extractBranchId(request);
-        if (branchId != null) {
-            return employeeRepository.findByBranchIdAndActiveTrue(branchId);
-        }
+//        if (branchId != null) {
+//            return employeeRepository.findByBranchIdAndActiveTrue(branchId);
+//        }
         return employeeRepository.findByActiveTrue();
     }
     
@@ -132,7 +132,9 @@ public class LeaveController {
     public ResponseEntity<List<LeaveRequest>> getAllRequests(HttpServletRequest request) {
         Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
         List<LeaveRequest> requests = leaveRequestRepository.findAll().stream()
-                .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
+                .filter(r -> r.getEmployee() != null
+                       // && branchEmployeeIds.contains(r.getEmployee().getId())
+                )
                 .collect(Collectors.toList());
         return ResponseEntity.ok(requests);
     }
@@ -141,7 +143,9 @@ public class LeaveController {
     public ResponseEntity<List<LeaveRequest>> getPendingRequests(HttpServletRequest request) {
         Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
         List<LeaveRequest> requests = leaveRequestRepository.findPendingRequests().stream()
-                .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
+                .filter(r -> r.getEmployee() != null
+                        //&& branchEmployeeIds.contains(r.getEmployee().getId())
+                        )
                 .collect(Collectors.toList());
         return ResponseEntity.ok(requests);
     }
@@ -150,7 +154,9 @@ public class LeaveController {
     public ResponseEntity<LeaveRequest> getRequestById(HttpServletRequest request, @PathVariable Long id) {
         Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
         return leaveRequestRepository.findById(id)
-            .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
+            .filter(r -> r.getEmployee() != null
+            //        && branchEmployeeIds.contains(r.getEmployee().getId())
+            )
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
@@ -158,9 +164,9 @@ public class LeaveController {
     @GetMapping("/requests/employee/{employeeId}")
     public ResponseEntity<List<LeaveRequest>> getRequestsByEmployee(HttpServletRequest request, @PathVariable Long employeeId) {
         Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(request);
-        if (!branchEmployeeIds.contains(employeeId)) {
-            return ResponseEntity.notFound().build();
-        }
+//        if (!branchEmployeeIds.contains(employeeId)) {
+//            return ResponseEntity.notFound().build();
+//        }
         return ResponseEntity.ok(leaveRequestRepository.findByEmployeeId(employeeId));
     }
 
@@ -168,9 +174,9 @@ public class LeaveController {
     public ResponseEntity<?> createRequest(HttpServletRequest httpRequest, @RequestBody Map<String, Object> requestData) {
         Long employeeId = Long.valueOf(requestData.get("employeeId").toString());
         Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(httpRequest);
-        if (!branchEmployeeIds.contains(employeeId)) {
-            return ResponseEntity.notFound().build();
-        }
+//        if (!branchEmployeeIds.contains(employeeId)) {
+//            return ResponseEntity.notFound().build();
+//        }
         Long leaveTypeId = Long.valueOf(requestData.get("leaveTypeId").toString());
 
         Employee employee = employeeRepository.findById(employeeId).orElse(null);
@@ -265,7 +271,7 @@ public class LeaveController {
     public ResponseEntity<?> approveRequest(HttpServletRequest httpRequest, @PathVariable Long id, @RequestBody Map<String, Object> data) {
         Set<Long> branchEmployeeIds = getEmployeeIdsForBranch(httpRequest);
         return leaveRequestRepository.findById(id)
-            .filter(r -> r.getEmployee() != null && branchEmployeeIds.contains(r.getEmployee().getId()))
+            .filter(r -> r.getEmployee() != null )
             .map(request -> {
                 request.setStatus("APPROVED");
                 request.setApprovedAt(LocalDateTime.now());

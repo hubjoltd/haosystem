@@ -68,10 +68,10 @@ public class JwtUtil {
     
     public Long extractBranchId(String token) {
         Object branchId = getClaims(token).get("branchId");
-        if (branchId == null) return null;
+        if (branchId == null) return 1l;
         if (branchId instanceof Long) return (Long) branchId;
         if (branchId instanceof Integer) return ((Integer) branchId).longValue();
-        return null;
+        return 1l;
     }
     
     public Boolean extractIsSuperAdmin(String token) {

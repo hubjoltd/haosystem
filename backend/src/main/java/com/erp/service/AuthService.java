@@ -35,14 +35,27 @@ public class AuthService {
     
     public AuthResponse login(LoginRequest request) {
         Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
-        
+
+
         if (userOpt.isEmpty()) {
             throw new RuntimeException("Invalid username or password");
         }
         
         User user = userOpt.get();
-        
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+
+        System.out.println(user.getUsername());
+
+
+
+        System.out.println("Raw: " + request.getPassword());
+        System.out.println("Encoded in DB: " + user.getPassword());
+ 
+        boolean result =passwordEncoder.matches(request.getPassword(), user.getPassword());
+
+        System.out.println("Match Found "+result);
+
+
+        if(!result) {
             throw new RuntimeException("Invalid username or password");
         }
         

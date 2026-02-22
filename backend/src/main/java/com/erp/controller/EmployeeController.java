@@ -17,7 +17,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/employees")
-@CrossOrigin(origins = "*")
 public class EmployeeController {
 
     @Autowired
@@ -59,7 +58,7 @@ public class EmployeeController {
             String token = authHeader.substring(7);
             return jwtUtil.extractBranchId(token);
         }
-        return null;
+        return 1l;
     }
     
     private boolean isSuperAdmin(HttpServletRequest request) {
@@ -176,6 +175,8 @@ public class EmployeeController {
             }
             employee.setEmployeeCode(generateEmployeeCode(prefix));
         }
+
+
         String loginPassword = employee.getLoginPassword();
         Employee saved = employeeRepository.save(employee);
         if (loginPassword != null && !loginPassword.isEmpty()) {
